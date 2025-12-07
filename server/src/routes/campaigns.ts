@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 
 interface StubCampaign {
   id: string;
@@ -10,11 +10,11 @@ const campaigns: StubCampaign[] = [];
 
 export const campaignsRouter = Router();
 
-campaignsRouter.get("/", (_req, res) => {
+campaignsRouter.get("/", (_req: Request, res: Response) => {
   res.json(campaigns);
 });
 
-campaignsRouter.post("/", (req, res) => {
+campaignsRouter.post("/", (req: Request, res: Response) => {
   const { name } = req.body ?? {};
   if (typeof name !== "string" || !name.trim()) {
     return res.status(400).json({ error: "name is required" });

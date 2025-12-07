@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 
 // In a real implementation this would query Postgres for all definitions
 // for the current ruleset. For now, it returns an empty payload so the
@@ -6,7 +6,7 @@ import { Router } from "express";
 
 export const definitionsRouter = Router();
 
-definitionsRouter.get("/", async (_req, res) => {
+definitionsRouter.get("/", async (_req: Request, res: Response) => {
   res.json({
     ruleset: null,
     attributes: [],
