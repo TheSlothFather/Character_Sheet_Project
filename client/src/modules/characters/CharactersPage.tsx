@@ -1,5 +1,6 @@
 import React from "react";
 import { api, Character, ApiError } from "../../api/client";
+import { useDefinitions } from "../definitions/DefinitionsContext";
 
 const isCharacter = (value: unknown): value is Character => {
   if (!value || typeof value !== "object") return false;
@@ -20,6 +21,11 @@ export const CharactersPage: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const {
+    data: definitions,
+    loading: definitionsLoading,
+    error: definitionsError
+  } = useDefinitions();
 
   React.useEffect(() => {
     let isMounted = true;
@@ -74,6 +80,45 @@ export const CharactersPage: React.FC = () => {
   return (
     <div>
       <h2>Characters</h2>
+      <section style={{ marginBottom: "1.5rem" }}>
+        <h3 style={{ margin: "0 0 0.5rem" }}>Ruleset metadata</h3>
+        {definitionsLoading && <p>Loading ruleset definitions...</p>}
+        {definitionsError && <p style={{ color: "#f55" }}>{definitionsError}</p>}
+        {!definitionsLoading && !definitionsError && definitions && (
+          <div style={{ display: "flex", gap: "2rem" }}>
+            <div>
+              <h4 style={{ margin: "0 0 0.25rem" }}>Attributes</h4>
+              {definitions.attributes.length ? (
+                <ul style={{ margin: 0, paddingLeft: "1.2rem" }}>
+                  {definitions.attributes.map((attr) => (
+                    <li key={attr.id}>
+                      <strong>{attr.name}</strong>
+                      {attr.description ? ` — ${attr.description}` : ""}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p style={{ margin: 0 }}>No attributes defined.</p>
+              )}
+            </div>
+            <div>
+              <h4 style={{ margin: "0 0 0.25rem" }}>Skills</h4>
+              {definitions.skills.length ? (
+                <ul style={{ margin: 0, paddingLeft: "1.2rem" }}>
+                  {definitions.skills.map((skill) => (
+                    <li key={skill.id}>
+                      <strong>{skill.name}</strong>
+                      {skill.description ? ` — ${skill.description}` : ""}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p style={{ margin: 0 }}>No skills defined.</p>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
       <div style={{ marginBottom: "1rem" }}>
         <input
           value={name}

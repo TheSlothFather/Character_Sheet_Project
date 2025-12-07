@@ -10,6 +10,25 @@ export interface Campaign {
   joinCode: string;
 }
 
+export interface NamedDefinition {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+export interface DefinitionsResponse {
+  ruleset: string | null;
+  attributes: NamedDefinition[];
+  skills: NamedDefinition[];
+  races: NamedDefinition[];
+  subraces: NamedDefinition[];
+  feats: NamedDefinition[];
+  items: NamedDefinition[];
+  statusEffects: NamedDefinition[];
+  derivedStats: NamedDefinition[];
+  modifiers: unknown[];
+}
+
 export class ApiError extends Error {
   status: number;
   info?: unknown;
@@ -90,5 +109,6 @@ export const api = {
     apiRequest<Campaign>("/campaigns", {
       method: "POST",
       body: JSON.stringify(payload)
-    })
+    }),
+  getDefinitions: () => apiRequest<DefinitionsResponse>("/definitions")
 };
