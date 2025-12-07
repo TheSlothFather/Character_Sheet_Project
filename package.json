@@ -1,0 +1,15 @@
+{
+  "name": "adurun-character-sheet",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "server",
+    "client",
+    "shared"
+  ],
+  "scripts": {
+    "lint": "echo \"add linter\"",
+    "test": "echo \"add tests\""
+  }
+}
+
