@@ -1,0 +1,709 @@
+﻿Background
+
+
+Each of the five stages of your character background imparts features, increases or decreases to your starting points in particular skills, or maybe even those in relation to your Martial Prowess, Psionic Techniques, or Ildakar, as examples. Four of the five stages are determined by percentile dice and thus are the least impactful. Adulthood is the 4th stage and also the most impactful on your character’s skills, features, and flaws, and therefore also the stage that you, as a player, have the most choice with. 
+
+
+1. Family	
+
+* Orphanage: Your parents died or abandoned you when you were a young child. You may have had to engage in petty crime or low-wage work to earn your crumbs. [+4 Feat of Defiance]
+* Farm: Your family was common farmers or serfs, working the land to scratch a living. You were poor, but the village was a joyous, tight-knit place, and it was honest hard work. [+4 Animal Husbandry] 
+* Frontier: You were born to a band of foresters, explorers, or colonists and have seldom witnessed or experienced civilization. Most things you had or ate were of the land, hunted or gathered. [+4 Forage] 
+* Ship: You were born on the seas or rivers, and feel more at home with water, rather than land, under your feet. Your family may have been in a navy, merchant fleet, or pirate crew. [+4 Navigate]
+* Travelling Caravan: Your parents were caravaneers, whether as travelling entertainers, pilgrims, or merchants. You’ve seldom stayed in one place for longer than a phase, and thus, those you trust, made friends with, or fell in love with were of the band alone. [+4 Identify]
+* Guild Hall: The Guild was your family as much as your parents were. This could be a mercantile guild, a martial company, or a criminal organization. Loyalty and keeping secrets still make a place in the back of your mind. [+4 Trade]
+* Workshop: Your parents were tinkerers or artisans. From the time you could walk or talk, you helped them with their crafts and trades. [+4 Craft]
+* Cloth: Your family was clergy or religious leaders of your community. You focused on the study of the divine and the stories of your religion more than on history, politics, or local customs. [+4 Divine Intervention]
+* Congregation: Your family was at your local church, temple, or shrine as often as they were at work or in bed. You learned piety and austerity above all other worldly wants. [+4 Worship]
+* Streets: You grew up in a criminal organization that your family belonged to. They may have been scammers or serious criminals, or perhaps even a rebel or bandit army, but either way, you still trust criminals more than the authorities. [+4 Conceal]
+* Stage: Your parents were entertainers, perhaps bards, circus performers, or stage actors. Their knack for theatre and high energy rubbed off on you, and with those, a sense for reading any crowd. [+4 Perform]
+* Warehouse: Your family was common laborers or serfs, scraping together coins for rent in a city or large town. You were poor, but you made many friends, allies, and rivals, and enjoyed the amenities of an urban population center. [+4 Interpret]
+* Battlefield: You were born on campaign, among the camp followers. Your parents may have been warriors themselves, or support staff and servants. You seldom knew naught but war and internal military politics. [+4 Battle]
+* University: Your parents were scholars, obsessed with their studies, tomes, and experiments. They imparted what knowledge they had time to give unto you, as well as a healthy respect for education and educators. [+4 Academic Recall]
+* Palace: You belong to a line of nobles, whether high or lowly. You lived a cushy and privileged life, even if belonging to a minor house, but a cold and lonely one. Palace intrigue cuts one off from even one’s own family and friends. [+4 Deceive]
+
+
+2. Childhood 	
+
+* Kidnapped: You were taken from your home at a young age, whether to be sold into slavery, used for ransom, or for fouler purposes. [+4 Persevere, -4 Interpret]
+* Apprenticed: You learned how to perform basic tasks related to a craft or trade under a trusted member of your community. [+4 Craft, -4 Deceive]
+* Bullied: You were relentlessly picked on or ostracized as a loner. [+4 Endure, -4 Parley]
+* Bad Habits: You picked up a bad habit you’ve never been able to shake. [+4 Conceal, -4 Feat of Austerity]
+* Served Priest: You entered into service under a member of the clergy in your community, intending to become a member of the clergy yourself. [+4 Worship, -4 deceive]
+* Pet: You have a favorite pet that you’ve been raising since you were young. [+4 Animal Husbandry, -4 Conceal]
+* Explored: You found yourself oftentimes far from home, searching around and mapping out your local area. [+4 Navigate, -4 Interpret]
+* Fought: You were always getting into fights and disputes. [+4 Battle, -4 Parley]
+* Petty Crime: You engaged in small-time crime, whether out of desperation or boredom. [+4 Feat of Agility, -4 academic recall]
+* Worked: When you could walk and talk, your family put you to work with the family trade. [+4 Endure, -4 Deceive]
+* Easy Money: You found a way to make quick cash, whether through trickery or genius. [+4 Trade, -4 Divine Intervention]
+* Cursed: You were cursed by a supernatural entity or religious organization. [+4 Sense Supernatural, -4 Resist Supernatural]
+* Blessed: You were blessed by a supernatural entity or religious organization. [+4 Worship, -4 Incite Fate]
+* Revelatory Secret: You discovered something of grave importance not meant for you to know and still carry the secret. [+4 Interpret, -4 Intuit]
+
+
+3. Adolescence 
+
+* Got Away With It: You did something horrible and nobody but you knows. [+8 Deceive, -4 Worship]
+* Learned a Trade: You learned how to perform advanced tasks related to a craft or trade under a trusted member of your community. [+8 Craft, -4 Deceive]
+* Fell in Love: You became romantically or sexually infatuated or involved with someone, and this may be a prior or current relationship, or entirely unrequited. [+8 Feat of Defiance, -4 Seduce]
+* Witnessed Battles: Your homeland became war-torn, and you survived the carnage and aftermath of a major conflict. [+8 Battle, -4 Academic Recall]
+* Athlete: You trained your body to participate in contests, tournaments, and festival events within your community. [+8 Feat of Strength, -4 Academic Recall]
+* Studied: You studied under a teacher or at a college. [+8 Academic Recall, -4 Seduce] 
+* Picked Up A Hobby: You engaged with a serious hobby, game, or interest that you still enjoy from time to time. [+8 Perform, -4 Academic Recall]
+* Journeyed: You moved a far distance to a new home and made it your own. [+8 Translate, -4 Interpret] 
+* Contacted Supernatural: You communed with or summoned a supernatural entity. [+8 Worship, -4 Incite Fate]
+
+
+4. Adulthood
+Choose one from the list below. 
+
+
+Academic
+Choose two
+
+* Historian: [+30 Academic Recall, +17 Identify, +8 Translate] 
+Starting Wealth: Moderate
+10 historical tomes, 5 region maps, 3 city maps, 2 site maps, organization signifier 
+Your character has access to various private libraries and museums that allow you to study or temporarily borrow ancient books and relics. 
+* Scientist: [+30 Academic Recall, +17 Interpret, +8 Craft] 
+Starting Wealth: Moderate
+10 natural sciences tomes, a magnifying glass, chemistry tools, and an organization signifier
+Your character has access to private libraries and laboratories that allow you to study or create various curiosities, substances, and anomalies. Starting Wealth
+* Litigator: [+30 Academic Recall, +17 Perform, +8 Interpret] 
+Starting Wealth: Moderate
+10 legal tomes, a set of fine clothes, organization signifier
+Your character has access to higher-ups and records in courts. 
+* Philosopher: [+30 Interpret, +17 Academic Recall, +8 Perform] 
+Starting Wealth: Insignificant 
+2 friends, organization signifier 
+You have numerous adherents in many settlements and regions who may offer shelter or help. 
+* Doctor: [+30 Heal, +17 Academic Recall, +8 Resist Toxins] 
+Starting Wealth: Moderate
+Medical tools, 10 medical tomes, 10 antidotes, 1 poison, organization signifier
+Your character has access to hospitals and clinics, and their records. May perform surgeries.  
+* Rhetorician: [+30 Perform, +17 Parley, +8 Interpret]
+Starting Wealth: Moderate
+Set of fine clothes, organization signifier
+When debating in public, large crowds gather around. 
+
+
+Agent
+Choose two	
+
+* Courtier: [+30 Interpret, +17 Deceive, +8 Perform]
+Starting Wealth: Wealthy
+Carriage, 2 horses, 2 bodyguards, 2 servants, writ, organization signifier, 3 sets of fine clothes, 1 poison, 1 antidote 
+You have private access to individuals who are higher-ups in politics. 
+* Spy: [+30 Gather Intelligence, +17 Identify, +8 Conceal]
+Starting Wealth: Significant
+Disguise tools, small weapon of choice, spyglass, lockpicking tools, horse, 3 forged organization signifiers, 3 forged writs, cloak, set of fine clothes
+You belong to a network of spies and informants that you may access for information.
+* Order Representative: [+30 Identify, +17 Interpret, +8 Navigate]
+Starting Wealth: Significant
+Horse or pack mule, weapon of choice, light armor, set of fine clothes, 1 potion, organization signifier
+You belong to an organization that will lend you supplies if you are in significant peril.  
+* Assassin: [+30 Identify, +17 Conceal, +8 Feat of Agility]
+Starting Wealth: Significant
+Disguise tools, spyglass, poison tools, 3 poisons, 1 antidote, 2 small weapons of choice, 1 ranged weapon of choice, forged writ, forged organization signifier, cloak  
+You have access to secret safehouses in various cities and regions where law enforcement will not find you. 
+* Diplomat: [+30 Parley, +17 Deceive, +8 Interpret]
+Starting Wealth: Wealthy
+Carriage, 2 horses, 1 servant, 2 bodyguards, small or medium weapon of choice, writ, organization signifier, set of fine clothes
+You have the ability to gain public access to political rulers and powerful leaders.  
+* Strategist: [+30 Interpret, +17 Intuit, +8 Identify] 
+Starting Wealth: Wealthy
+Horse, 2 bodyguards, weapon of choice, era and race appropriate armor, organization signifier
+You have the ability to gain public access to military leaders.
+
+
+Artisan
+Choose two 	
+
+* Smith: [+30 Craft, +17 Feat of Strength, +8 Trade]
+Starting Wealth: Moderate
+Smithing tools, a small blunt weapon
+You can produce metal goods. 
+* Carpenter: [+30 Craft, +17 Feat of Strength, +8 Endure]
+Starting Wealth: Moderate
+Carpentry tools, measuring tools
+You can produce wood goods. 
+* Tinkerer: [+30 Craft, +17 Feat of Agility, +8 Conceal]
+Starting Wealth: Significant
+Tinkering tools, 3 precious gems, magnifying glass
+You can produce intricate goods. 
+* Engineer: [+30 Craft, +17 Academic Recall, +8 Identify]
+Starting Wealth: Moderate
+Tool set of choice, measuring tools
+You can design and construct large crafts and items. 
+* Mason: [+30 Craft, +17 Feat of Strength, +8 Identify]
+Starting Wealth: Moderate
+Masonry tools, measuring tools
+You can produce stone goods. 
+* Lightkeeper: [+30 Craft, +17 Academic Recall, +8 Resist Toxins]
+Starting Wealth: Wealthy
+Chemistry tools, 10 lights of choice, packmule
+You can produce lights and basic potions.  
+
+
+Celebrity
+Choose two 
+	
+
+* Troubadour: [+30 Perform, +17 Deceive, +8 Interpret]
+Starting Wealth: Insignificant
+2 instruments of choice, a horse, 1 region map, 1 friend, weapon of choice, a set of fine clothes
+You may entertain and network at high-end parties you are not affiliated with. 
+* War Hero: [+30 Battle, +17 Feat of Defiance, +8 Endure]
+Starting Wealth: Moderate
+2 weapons of choice, era and race appropriate armor, organization signifier 
+There are military organizations that will aid you if you are in peril. 
+* Folk Hero: [+30 Feat of Defiance, +17 Persevere, +8 Endure]
+Starting Wealth: Insignificant 
+1 weapon of choice, packmule, 1 friend
+Common people will offer you shelter and supplies as you travel. 
+* Saint: [+30 Worship, +17 Resist Supernatural, +8 Parley]
+Starting Wealth: Pauper
+Organization signifier, clergy robes, staff, 1 artifact, religious or ideological tome, 2 servants, 3 antidotes
+Religious organizations will aid you if you are in peril. +30 Deity Relationship Points. 
+* Relative: [+30 Parley, +17 Perform, +8 Deceive]
+Starting Wealth: Wealthy
+Tent, horse, packmule, 1 servant, 1 bodyguard, set of fine clothes
+You have a powerful relative who you can obtain money or aid from.
+* Debutante/Suitor: [+30 Seduce, +17 Interpret, +8 Perform]
+Starting Wealth: Wealthy
+Carriage, 2 horses, 2 servants, 1 bodyguard, 3 sets of fine clothes
+You have private and public access to higher echelons of society for the purpose of courting. 
+ 
+Cheat
+Choose two 
+	
+
+* Con Artist: [+30 Deceive, +17 Trade, +8 Identify]
+Starting Wealth: Moderate
+Set of fine clothes, 3 joke items, 3 forged organization signifiers  
+There are many people who are convinced that your products are real. 
+* Gambler: [+30 Incite Fate, +17 Interpret, +8 Conceal]
+Starting Wealth: Insignificant
+2 games of choice
+You can find a place to gamble in any settlement, ship, or region. +1 Fate Point. 
+* Snakeoil Seller: [+30 Deceive, +17 Perform, +8 Craft]
+Starting Wealth: Moderate
+10 fake potions, 10 fake antidotes, packmule 
+You can produce fake potions, poisons, and antidotes, etc. 
+* Rake: [+30 Seduce, +17 Deceive, +8 Small Blades]
+Starting Wealth: Moderate
+Small or medium blade of choice, set of fine clothes, game or instrument of choice
+You have lovers in various settlements and regions who will offer you food and shelter. 
+* Poser: [+30 Identify, +17 Deceive, +8 Perform]
+Starting Wealth: Insignificant
+Disguise tools, 10 forged organization signifiers 
+There are numerous people who believe you are a part of several different organizations or represent powerful people. 
+* Accuser: [+30 Deceive, +17 Search, +8 Endure]
+Starting Wealth: Significant
+1 legal tome
+When you are injured, you may claim money from the local authorities and courts. 
+
+
+Clergy
+Choose two	
+
+* Priest: [+30 Worship, +17 Divine Intervention, +8 Resist Supernatural]
+Starting Wealth: Pauper
+Organization signifier, writ, religious or ideological tome, clergy robes, 1 servant
+You may conduct services within your religion, and gain access to relevant places of worship. +30 Deity Relationship Points. 
+* Monk: [+30 Feat of Austerity, +17 Persevere, +8 Resist Supernatural]
+Starting Wealth: Pauper
+Organization signifier, writ, religious or ideological tome, clergy robes
+You have private access to monasteries of your order in various settlements and regions. +30 Deity Relationship Points. 
+* Exorcist: [+30 Divine Intervention, +17 Sense Supernatural, +8 Resist Supernatural]
+Starting Wealth: Pauper
+Organization signifier, writ, religious or ideological tome, exorcism aids, clergy robes, 1 servant, 3 antidotes
+You may conduct exorcisms in various settlements, ruins, and places of worship in order to exert your religion’s influence in the area. +30 Deity Relationship Points. 
+* Missionary: [+30 Perform, +17 Parley, +8 Resist Supernatural]
+Starting Wealth: Pauper
+Organization signifier, religious or ideological tome, staff, horse, or clergy robes
+Your religious organization will send aid or supplies if you are in peril. +30 Deity Relationship Points. 
+* Paladin: [+30 Battle, +17 Sense Supernatural, +8 Resist Supernatural]
+Starting Wealth: Insignificant
+Organization signifier, writ, religious or ideological tome, horse, era and race-appropriate armor, 2 weapons of choice, clergy robes
+Supernatural beings and cultists of opposing religions generally flee from you outside of combat. +30 Deity Relationship Points. 
+* Cultist: [+30 Conceal, +17 Deceive, +8 Worship]
+Starting Wealth: Insignificant
+Organization signifier, religious or ideological tome, small weapon of choice, light armor, clergy robes, 1 friend, 1 poison 
+You have private access to safehouses among your cult that will aid you if you are able to carry out a goal of your deity. +30 Deity Relationship Points.  
+
+
+Creative
+Choose two 	
+
+* Musician: [+30 Perform, +17 Artistry, +8 Feat of Agility]
+Starting Wealth: Moderate
+        Instrument of choice, a set of fine clothes
+        You may perform music for a patron who will fund your endeavors. 
+* Painter: [+30 Artistry, +17 Identify, +8 Feat of Agility]
+Starting Wealth: Moderate
+Painting tools, 1 artpiece
+You may paint for a patron who will fund your endeavors. 
+* Novelist: [+30 Artistry, +17 Translate, +8 Gather Intelligence]
+Starting Wealth: Moderate
+Unwritten book, 3 tomes of choice
+You write anonymous letters or stories that make the rounds in a certain settlement or region. 
+* Poet: [+30 Intuit, +17 Artistry, +8 Seduce]
+Starting Wealth: Moderate
+3 tomes of Poetry
+You may write poetry for a patron who will fund your endeavors. 
+* Sculptor: [+30 Artistry, +17 Craft, +8 Feat of Agility]
+Starting Wealth: Moderate
+Sculpting tools
+You may sculpt for a patron who will fund your endeavors.
+* Architect: [+30 Navigate, +17 Identify, +8 Intuit]
+Starting Wealth: Significant
+10 site maps, measuring tools, set of fine clothes 
+You generally have a decent understanding of a building or dungeon’s layout, even if you’ve never been there before. 
+
+
+Criminal
+Choose two 	
+
+* Professional Thief: [+30 Feat of Agility, +17 Conceal, +8 Gather Intelligence]
+Starting Wealth: Significant
+2 small weapons of choice, light armor, lockpicking kit, 3 site maps, 3 forged organization signifiers, disguise tools 
+You are part of a thieves' guild that will aid you if you find places to rob. 
+* Serial Killer: [+30 Track, +17 Battle, +8 Intimidate]
+Starting Wealth: Pauper
+Small weapon of choice, 1 poison. +1 Fate Point. 
+When you are trying to kill someone, you automatically succeed at tracking them in settlements.
+* Organized Crime Boss: [+30 Intimidate, +17 Deceive, +8 Interpret]
+Starting Wealth: Wealthy
+Weapon of choice, light armor, 1 artifact, 3 precious gems, 3 henchmen, set of fine clothes, organization signifier
+You command an organized crime syndicate. 
+* Raider/Pirate: [+30 Battle, +17 Track, +8 Search]
+Starting Wealth: Insignificant
+Weapon of choice, light armor, organization signifier
+You are part of a pirate or bandit organization that will aid you if you find settlements or ships to pillage. +1 Fate Point. 
+* Saboteur: [+30 Gather Intelligence, +17 Search, +8 Craft]
+Starting Wealth: Insignificant
+Tinderbox, trap kit, 3 forged organization signifiers, disguise tools
+You are part of an organization or are hired by someone who will give supplies if you find important or infrastructural/military efforts to sabotage.  
+* Anarchist/Revolutionary: [+30 Feat of Defiance, +17 Battle, +8 Intimidate]
+Starting Wealth: Pauper
+Religious or ideological tome, organization signifier, 1 friend
+You have safehouses in a region that will offer aid if you have committed crimes in the area. +1 Fate Point.  
+
+
+Entertainer
+Choose two	
+
+* Bard: [+30 Perform, +17 Deceive, +8 Seduce]
+Starting Wealth: Insignificant
+2 Instruments of choice, 1 friend
+You may perform at local inns, taverns, events for money. 
+* Tumbler: [+30 Feat of Agility, +17 Perform, +8 Feat of Strength]
+Starting Wealth: Insignificant
+Rope
+You may perform at local inns, taverns, events for money. 
+* Magician: [+30 Feat of Agility, +17 Will Dakar, +8 Incite Fate]
+Starting Wealth: Insignificant
+Cloak, game of choice, 2 joke items, 1 servant
+There are many people who believe your magic tricks are real. +1 Fate Point.
+* Trickster: [+30 Deceive, +17 Feat of Agility, +8 Conceal]
+Starting Wealth: Insignificant
+Game of choice, string, 1 joke item 
+You may use perform in place of feat of agility and conceal.
+* Puppeteer: [+30 Perform, +17 Feat of Agility, +8 Craft]
+Starting Wealth: Insignificant
+Puppets, string
+You may use perform in place of feat of agility and conceal. 
+* Jester: [+30 Parley, +17 Perform, +8 Feat of Agility]
+Starting Wealth: Moderate
+3 joke items, 1 friend, set of fine clothes
+You may make jokes at the expense of or belittle powerful figures without suffering organization consequences. +1 Fate Point.
+
+
+Farmer
+Choose two
+
+* Harvester: [+30 Feat of Strength, +17 Forage, +8 Small Blades]
+Starting Wealth: Insignificant
+Small blade or large bearded weapon of choice, farming tools
+You can work for farmers or artisans for money.  
+* Herder: [+30 Animal Husbandry, +17 Track, +8 Long Ranged]
+Starting Wealth: Insignificant
+Long ranged weapon of choice, whistle, 1 antidote, tinderbox
+You can automatically find lost domestic animals.  
+* Serf: [+30 Endure, +17 Persevere, +8 Polearms]
+Starting Wealth: Insignificant
+Tinderbox, farming tools  
+When you commit crimes, you can blend into crowds in order to conceal.
+* Animal Trainer: [+30 Animal Husbandry, +17 Heal, +8 Flexible]
+Starting Wealth: Insignificant
+1 horse, 6 trained dogs, 1 trained bird, or 1 exotic pet, 1 antidote 
+Animals tend to trust you far more quickly and easily than is typical. 
+* Miller: [+30 Feat of Strength, +17 Craft, +8 Trade]
+Starting Wealth: Moderate
+You own a mill that produces steady income. 
+* Butcher: [+30 Heal, +17 Small Blades, +8 Trade]
+Starting Wealth: Moderate
+Butcher tools
+Meat you hunted does not spoil or go to waste, and you obtain maximum meat from hunted animals. 
+
+
+Homeless
+Choose two	
+
+* Hermit: [+30 Forage, +17 Search, +8 Feat of Defiance]
+Starting Wealth: Pauper
+Tinderbox, hunting trap
+You know of secret public hiding spots in the wilderness. +1 Fate Point. 
+* Alley: [+30 Conceal, +17 Unarmed, +8 Feat of Defiance]
+Starting Wealth: Pauper
+1 friend, tinderbox
+You know of secret public hiding spots in settlements. +1 Fate Point.
+* Poorhouse: [+30 Interpret, +17 Interpret, +8 Parley]
+Starting Wealth: Pauper
+You have connections to informants in poor areas of settlements. +10 Deity Relationship Points. +1 Fate Point.
+* Petty Thief: [+30 Feat of Agility, +17 Conceal, +8 Deceive]
+Starting Wealth: Pauper
+1 precious gem, lockpicking tools, 1 friend 
+You have connections to petty criminals in settlements. +1 Fate Point.
+* Sewer: [+30 Resist Toxins, +17 Persevere, +8 Endure]
+Starting Wealth: Pauper
+You know the layouts of sewers in settlements. +1 Fate Point.
+* Squatter: [+30 Search, +17 Forage, +8 Conceal]
+Starting Wealth: Pauper
+Tinderbox
+You know of abandoned buildings in settlements. +1 Fate Point.
+
+
+Hunter
+Choose two	
+
+* Forester: [+30 Forage, +17 Track, +8 Navigate]
+Starting Wealth: Insignificant
+Ranged weapon of choice, forested region map, appropriate scavenging tools, 3 hunting traps, tinderbox, 1 poison, 1 antidote
+You are unable to become lost in forested areas. 
+* Fisher: [+30 Forage, +17 Incite Fate, +8 Trade]
+Starting Wealth: Insignificant
+Fishing tools, bait 
+You are always successful at and catch maximum weight fish when fishing. 
+* Plains: [+30 Navigate, +17 Forage, +8 Track]
+Starting Wealth: Insignificant
+Horse or bird, spyglass, ranged weapon of choice, tinderbox, plains region map  
+You are unable to become lost in plains areas.
+* Ratcatcher: [+30 Track, +17 Search, +8 Resist Toxins]
+Starting Wealth: Insignificant
+3 hunting traps, 3 poisons, poison tools 
+You automatically find pests and small animals. 
+* Monster Hunter: [+30 Battle, +17 Sense Supernatural, +8 Track]
+Starting Wealth: Significant
+1 artifact, 1 potion, weapon of choice, era and race appropriate armor, 1 antidote 
+Your criticals are automatically 1 tier higher when fighting against creatures larger than yourself. 
+* Bounty Hunter: [+30 Battle, +17 Track, +8 Gather Intelligence]
+Starting Wealth: Significant
+Bounty, site map, weapon of choice, light armor, horse, tinderbox 
+You may always choose to deal nonlethal damage instead of lethal damage, regardless of how the damage is dealt. 
+
+
+Ildakar
+Choose two 	
+
+* Thermomancer: [+30 Will Dakar, +17 Academic Recall, +8 Search]
+Starting Wealth: Wealthy
+3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ
+Ildakar Faculties Unlocked: Thermomancy. This faculty costs you -20% energy and action points to use. 
+* Vivomancer: [+30 Will Dakar, +17 Heal, +8 Resist Toxins]
+Starting Wealth: Wealthy
+3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ
+Ildakar Faculties Unlocked: Vivomancy. This faculty costs you -20% energy and action points to use. 
+* Photomancer: [+30 Will Dakar, +17 Conceal, +8 Interpret]
+Starting Wealth: Wealthy
+3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ
+Ildakar Faculties Unlocked: Photomancy. This faculty costs you -20% energy and action points to use. 
+* Pneumancer: [+30 Will Dakar, +17 Navigate, +8 Academic Recall]
+Starting Wealth: Wealthy
+3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ
+Ildakar Faculties Unlocked: Pneumancy. This faculty costs you -20% energy and action points to use. 
+* Electromancer: [+30 Will Dakar, +17 Endure, +8 Link]
+Starting Wealth: Wealthy
+3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ
+Ildakar Faculties Unlocked: Electromancy. This faculty costs you -20% energy and action points to use. 
+* Graviturgist: [+30 Will Dakar, +17 Academic Recall, +8 Feat of Agility]
+Starting Wealth: Wealthy
+3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ
+Ildakar Faculties Unlocked: Graviturgy. This faculty costs you -20% energy and action points to use.  
+
+
+Laborer
+Choose two	
+
+* Dock Worker: [+30 Feat of Strength, +17 Small Bearded, +8 Forage]
+Starting Wealth: Insignificant
+Rope
+You may perform labor for pay in coastal areas. 
+* Processor: [+30 Craft, +17 Endure, +8 Feat of Agility]
+Starting Wealth: Insignificant
+You may perform labor for pay for farmers and artisans, and you can create textile goods. 
+* Warehouse Worker: [+30 Feat of Strength, +17 Endure, +8 Unarmed]
+Starting Wealth: Insignificant
+You may perform labor for pay in settlements. 
+* Builder: [+30 Feat of Strength, +17 Small Blunt, +8 Endure]
+Starting Wealth: Insignificant
+Appropriate builder tools, small blunt weapon 
+You may construct buildings and structures. 
+* Plowhand: [+30 Feat of Strength, +17 Animal Husbandry, +8 Endure]
+Starting Wealth: Insignificant
+Farming tools, tinderbox  
+You may perform labor for pay for farmers. 
+* Raker: [+30 Resist Toxins, +17 Search, +8 Navigate]
+Starting Wealth: Moderate
+Cloak, settlement map, tinderbox
+You may perform labor for pay in sewers. 
+
+
+Merchant
+Choose two	
+
+* Guild Master: [+30 Trade, +17 Perform, +8 Interpret]
+Starting Wealth: Wealthy
+1 horse, 1 pack mule, 2 servants, 2 bodyguards, organization signifier, 3 sets of fine clothes
+You command a mercantile or trade guild. 
+* Black Market Dealer: [+30 Conceal, +17 Trade, +8 Deceive]
+Starting Wealth: Significant
+1 artifact, 1 potion, 1 spell scroll, 1 bodyguard, forged organization signifier
+You have private access to black markets in settlements and regions.  
+* Innkeeper: [+30 Interpret, +17 Parley, +8 Trade]
+Starting Wealth: Significant
+1 servant, 1 bodyguard 
+You own an inn that provides steady income. 
+* Peddler: [+30 Trade, +17 Identify, +8 Navigate]
+Starting Wealth: Moderate
+Carriage, 2 horses, region map, tinderbox
+You know the overland routes between all settlements. 
+* Bookkeeper: [+30 Search, +17 Translate, +8 Academic Recall]
+Starting Wealth: Moderate
+10 tomes of subject choice, 1 spell scroll
+You have private access to various organizations’ records and private offices. 
+* Hawker: [+30 Perform, +17 Trade, +8 Perform]
+Starting Wealth: Moderate
+Tent
+You may perform labor for pay in markets. 
+
+
+Noble
+Choose two
+
+* Knight: [+30 Battle, +17 Endure, +8 Parley]
+Starting Wealth: Significant
+Era and race appropriate armor, 2 weapons of choice, horse, religious or ideological tome, squire, organization signifier, set of fine clothes, writ
+You may perform quests for a higher noble than yourself to gain titles and land. 
+* Baron: [+30 Perform, +17 Battle, +8 Parley]
+Starting Wealth: Wealthy
+Era and race appropriate armor, weapon of choice, tent, horse, packmule, 2 servants, 2 bodyguards, organization signifier, 3 sets of fine clothes, writ
+You command a barony and serve a higher noble than yourself to gain titles and land. 
+* Landed Gentry: [+30 Parley, +17 Perform, +8 Seduce]
+Starting Wealth: Wealthy
+Small or medium weapon of choice, tent, packmule, 1 servant, organization signifier, 3 sets of fine clothes, writ
+You command an estate. 
+* Squire: [+30 Persevere, +17 Feat of Defiance, +8 Endure]
+Starting Wealth: Insignificant
+Light armor, weapon of choice, religious or ideological tome, organization signifier, set of fine clothes, tinderbox
+You serve under a knight or party member to gain titles and land (knighthood). +1 Fate Point.
+* Thuil: [+30 Incite Fate, +17 Intuit, +8 Resist Supernatural] Must be Thuilin or Ganzenonin
+Starting Wealth: Wealthy
+organization signifier
+You have access to narrative ancillaries relating to Fireborn. You can see during Har'Rheunen without Ozoar. +30 Deity Relationship Points. +1 Fate Point.
+* Inheritor: [+30 Parley, +17 Deceive, +8 Perform]
+Starting Wealth: Wealthy
+Packmule, 1 servant, organization signifier, 3 sets of fine clothes
+You are related to someone very powerful or rich who you will eventually take over for during some part of the campaign. 
+
+
+Psion 
+Choose two 	
+
+* Psychometrist: [+30 Psionic Technique, +17 Link, +8 Track]
+Starting Wealth: Significant
+Psionic Technique Tree, Unlocked: Psychometry, and 2 of the following: Claircognizance, Clairvoyance, Identify, Psychoscopy, or Track, and 1 additional psi-point. 
+* Telekineticist: [+30 Psionic Technique, +17 Link, +8 Feat of Strength]
+Starting Wealth: Significant
+Psionic Technique Tree, Unlocked: Telekinesis, and 2 of the following: Levitation, Psychokinesis, Dynakinesis, Psychometabolism, or Density, and 1 additional psi-point.
+* Telepath: [+30 Psionic Technique, +17 Link, +8 Identify]
+Starting Wealth: Significant
+Psionic Technique Tree, Unlocked: Telepathy, and 2 of the following: Pry, Sense Presence, Communicate, Interfere, or Interconnect, and 1 additional psi-point. 
+* Hypnotist: [+30 Psionic Technique, +17 Link, +8 Perform]
+Starting Wealth: Significant
+Psionic Technique Tree, Unlocked: Hypnosis, and 2 of the following: Pathokinesis, Illusion, Possession, Mnokinesis, or Override, and 1 additional psi-point. 
+* Dynakineticist: [+30 Psionic Technique, +17 Link, +8 Interpret]
+Starting Wealth: Significant
+Psionic Technique Tree, Unlocked: Telekinesis, Dynakinesis, and 1 of the following: Shield, Field, or Force.
+* Illusionist: [+30 Psionic Technique, +17 Link, +8 Deceive]
+Starting Wealth: Significant
+Psionic Technique Tree, Unlocked: Hypnosis, Illusion, and one of the following: Amplify I, Dampen, or Alter Illusion.
+
+
+Sailor
+Choose two
+
+* Rigger: [+30 Feat of Agility, +17 Feat of Strength, +8 Feat of Defiance]
+Starting Wealth: Insignificant
+Small or medium weapon of choice, game of choice, rope
+Climbing does not cost extra action or energy. +1 Fate Point.
+* Boatswain: [+30 Craft, +17 Forage, +8 Search]
+Starting Wealth: Insignificant
+Carpentry tools, textile tools, rope making tools, measuring tools
+You may perform labor for pay aboard ships. +1 Fate Point.
+* Captain: [+30 intimidate, +17 Battle, +8 Parley]
+Starting Wealth: Significant
+Spyglass, exotic pet, small or medium weapon of choice, 1 artifact, game of choice, 1 friend, set of fine clothes, organization signifier
+You command a crewed ship. +1 Fate Point.
+* Navy: [+30 Battle, +17 Endure, +8 Parley]
+Starting Wealth: Moderate
+Weapon of choice, light armor, writ, organization signifier
+You are part of a navy that you report to and will provide supplies for you in coastal or maritime areas if you are performing relevant tasks.  
+* Navigator: [+30 Navigate, +17 Incite Fate, +8 Search]
+Starting Wealth: Insignificant
+Navigation tools, 10 region maps 
+You cannot become lost at sea. +1 Fate Point.
+* Quartermaster: [+30 Identify, +17 Trade, +8 Heal]
+Starting Wealth: Moderate
+Tool set of choice, rope, medical kit, tinderbox, cooking utensils 
+Crews and military units will perform favors for you in exchange for goods. +1 Fate Point. 
+
+
+Wanderer
+Choose two
+
+* Rheunen Walker: [+30 Navigate, +17 Forage, +8 Battle]
+Starting Wealth: Wealthy
+Weapon of choice, cloak, 10 region maps, 1 potion, organization signifier, writ, tinderbox  
+You know of a secret passage in every region. You can see during Har'Rheunen without Ozoar.
+* Explorer: [+30 Navigate, +17 Search, +8 Identify]
+Starting Wealth: Moderate
+Navigation tools, pack mule, exotic pet, rope, 10 region maps, tinderbox
+You know of a secret passage in every region.
+* Archaeologist: [+30 Search, +17 Academic Recall, +8 Navigate]
+Starting Wealth: Moderate
+Archaeologist tools, pack mule, artifact, rope, 10 site maps 
+You know of a hidden ruin in every region. 
+* Vagabond: [+30 Endure, +17 Persevere, +8 Battle]
+Starting Wealth: Pauper
+You have a friend who can give aid and shelter in every region. +1 Fate Point.
+* Exile: [+30 Intimidate, +17 Battle, +8 Forage]
+Starting Wealth: Pauper
+You have a particular people or organization you can perfectly replicate and that cannot be seen through (disguise-wise etc) by magic or other means. +1 Fate Point.
+* Pilgrim: [+30 Intuit, +17 Incite Fate, +8 Feat of Austerity]
+Starting Wealth: Pauper 
+Religious or ideological tome, staff, tinderbox
+You may visit places of worship to vastly increase your relationship with a deity(s). 
+
+
+Warrior 
+Choose two
+
+* Soldier: [+30 Battle, +17 Persevere, +8 Feat of Strength]
+Starting Wealth: Moderate
+Weapon of choice, shield, era and race appropriate armor, organization signifier 
+You are part of an army that you report to and will give aid and supplies if you are performing relevant tasks. 
+* Guard: [+30 Interpret, +17 identify, +8 Battle]
+Starting Wealth: Insignificant
+Small, medium, or ranged weapon of choice, shield, era and race appropriate armor, organization signifier
+Criminal elements will generally flee from you outside of combat. 
+* Barbarian: [+30 Endure, +17 Battle, +8 Feat of Strength]
+Starting Wealth: Pauper
+Weapon of choice, light armor of choice, tinderbox, organization signifier
+You may use intimidate in place of perform and parley. 
+* Gladiator: [+30 Perform, +17 endure, +8 Intimidate]
+Starting Wealth: Moderate
+Weapon of choice, light armor of choice
+You may use perform in place of battle. +1 Fate Point.
+* Officer: [+30 Intimidate, +17 Parley, +8 Battle]
+Starting Wealth: Significant
+Weapon of choice, era and race-appropriate armor, horse, writ, organization signifier
+You command a military unit and serve in a military to obtain a higher rank. 
+* Scout: [+30 Gather Intelligence, +17 Search, +8 Conceal]
+Starting Wealth: Moderate 
+Small or ranged weapon of choice, horse, spyglass, region map, organization signifier, tinderbox 
+You have private access to military leaders and military informants relating to the movements of armies and raiders/pirates. 
+
+
+Flaws:
+
+
+* Addicted: You have an itch that cannot be scratched. A vice of yours or a substance you use controls your thoughts and emotions more than you do.
+* Aggressive: Fight first and ask questions later! You find it difficult to resist battle, and often, it seems like the best or only solution to a problem. 
+* Arrogant: You are better than everyone else because of your status or talents. Those who belittle or slight you had better watch out. 
+* Broken: Tough living ground you down. The life you’ve lived thus far has given you a serious physical or mental condition. 
+* Cloistered: You don’t remember the last time you saw someone else. Your lifestyle has led you to be an awkward loner when out of your element. 
+* Cold: Keep your friends close and your enemies closer. In your life, you’ve learned to trust your mind more than your heart.
+* Corrupt: It’s good to be the King! When in a position of power or authority, you cannot resist abusing or taking advantage of it to enrich yourself. 
+* Craven: Life is too short. You avoid pain, danger, and confrontation whenever possible. 
+* Cruel: If they wanted you to stop, they’d have asked. You go far and beyond what’s necessary when it comes to fights, disputes, and vengeance. 
+* Eccentric: Nobody gets you, and that’s fine. You’re a strange person whom people find difficult to engage with, whether because of your demeanor or your interests. 
+* Extravagant: You like nice things, and that’s just because you have high standards. You have lived a life of luxury and plenty that has led to your inability to cope with a substandard lifestyle.  
+* Greedy: Enough is never enough! You always want more, whether it’s money, sex, status, or respect. 
+* Guilty: What have you done? You’ve lived a life where you’ve had to do some nasty things, and they still haunt you. 
+* Impatient: What are you waiting for? Time is of the essence, and you cannot stand it when people waste it. 
+* Impulsive: Why not? If you want to do something, you have a tough time stopping yourself.
+* Incurious: Who cares? You keep your nose to the grindstone, and any attempt to sway you from your path is just an inane distraction.  
+* Indecisive: Left or right? Any time you have to make a decision, it’s a tough decision, and you always overthink it.  
+* Jealous: You are green with envy. Any time someone has more than you or is better at something you’re good at, you cannot stand it. 
+* Lazy: Why bother? You avoid work and hard things at all costs. 
+* Oblivious: Nothing ever happens. You have a terrible sense of self-awareness and situational awareness. 
+* Out of Touch: The little people are back. Your lifestyle has either led to you being so far removed from people due to wealth and fame, or so far away that you don’t understand normal people. 
+* Overzealous: You’re very enthusiastic, and that’s good! You believe in a cause, ideology, or organization so much, it’s caused you to hate your enemies with an unquenchable burning passion. 
+* Paranoid: They’re watching you! You’ve made so many enemies throughout your life, they’re bound to come for you, and for all you know, they may be around the next corner. 
+* Perfectionist: Practice makes perfect! You cannot settle for subpar work, and as such, take way too long to do things, and oftentimes throw out your work altogether to restart. 
+* Power Hungry: Adûrun is ripe for the taking! You aspire to gain power, influence, and might at all costs. 
+* Procrastinator: You can do it later. You always put things off until the consequences of ignoring them cannot be ignored. 
+* Simple: What’re they even talking about? Things ought not be complicated, and so if it is, you refuse to or cannot understand complex issues or situations.
+* Stubborn: When you’re right, you’re right. Nobody else knows what they’re talking about, and you have to prove that to them. 
+* Unhealthy: You hurt all over. Your lifestyle has led to a generally warped body, mind, social life, or spirit, and you refuse to do anything about it. 
+* Unwise: You can just read about it. You are so wrapped up in your intellect or ideology, you’ve become unable to cope with the worldly. 
+* Weak-Willed: You go with the flow. Anytime you are confronted with something difficult, you fold under the pressure.
+
+
+        For flaws, roleplaying them out should allow your GM to allot you more Fate in relation to your Incite Fate skill. Flaws may also be rolled for or picked from if your GM allows it. 
+
+
+5. Inciting Incident	
+
+* Exiled: You did something or were accused of something so bad, you were exiled from your home or shunned by your community. [+5 Forage]
+* Debts: You incurred an enormous amount of debt and are either working to pay them off or attempting to escape from them. [+5 Trade]
+* Rumors: You heard some rumors or gossip about an opportunity or threat that would change your life. [+5 Gather Intelligence]
+* Destroyed Home: Your home was destroyed by natural disasters, conflict, or a supernatural phenomenon. [+5 Persevere]
+* Revenge: Someone ruined your life or destroyed someone or something precious to you, and you now seek vengeance. [+5 Track]
+* Following Dreams: You are simply following your dream or passion and have set out to achieve it. [+5 Incite Fate]
+* Accomplished Feat: You accomplished something very impressive and were either encouraged to achieve more or were pressured by your community or an outsider to continue with your talents and skills. [+5 Endure]
+* Vision: You had a vision, a revelatory experience, or a dream where life-changing or world-changing knowledge and insight were delivered unto you. [+5 Intuit]
+
+
+        For Inciting Incidents, you should have short-term, intermediate, and campaign-spanning goals related to the reason for why you are adventuring. Work with your GM to determine these goals. Whenever they are accomplished, your Incite Fate skill will determine how much Fate you have accrued for completing a goal. Fate will be revisited later.
+
+
+Starting Wealth
+
+
+        Your starting wealth is determined by your adulthood choices, using the higher of the two you choose. These determine your starting net worth, supplies, and starting items in your inventory.  
+Pauper,0 cp,1 supplies,3 items
+Insignificant,Will+Mental x1 (min 1) pp,3 supplies,4 items
+Moderate,Will+Mental x25 (min 25) gp,10 supplies,5 items
+Significant,Will+Mental x5 (min 5) pp,30 supplies,6 items 
+Wealthy,Will+Mental x10 (min 10) pp,100 supplies,10 items 
+	
+
+        Your highest wealth level generates passive income as you travel through different areas and during character tier advancements. 
+
+
+Pauper [2 cp/phase passive] = Saint, Priest, Monk, Exorcist, Missionary, Serial Killer, Anarchist/Revolutionary, Hermit, Alley, Poorhouse, Petty Thief, Sewer, Squatter, Vagabond, Exile, Pilgrim, Barbarian
+
+
+Insignificant [2 sp/phase passive] = Philosopher, Carpenter, Troubadour, Folk Hero, Gambler, Poser, Paladin, Cultist, Raider/Pirate, Saboteur, Bard, Tumbler, Magician, Trickster, Puppeteer, Harvester, Herder, Serf, Animal Trainer, Forester, Fisher, Plains, Ratcatcher, Dock Worker, Processor, Warehouse Worker, Builder, Plowhand, Squire, Rigger, Boatswain, Navigator, Guard
+
+
+Moderate [2 gp/phase passive] = Historian, Scientist, Litigator, Doctor, Rhetorician, Smith, Carpenter, Engineer, Mason, War Hero, Con Artist, Snakeoil Seller, Rake, Musician, Painter, Moderate, Poet, Sculptor, Jester, Miller, Butcher, Raker, Peddler, Bookkeeper, Hawker, Navy, Quartermaster, Explorer, Archaeologist, Soldier, Gladiator, Scout
+
+
+Significant [2 pp/phase passive] = Spy, Order Representative, Assassin, Tinkerer, Accuser, Architect, Professional Thief, Monster Hunter, Bounty Hunter, Black Market Dealer, Innkeeper, Knight, Psychometrist, Telekineticist, Telepath, Hypnotist, Dynakineticist, Illusionist, Captain, Officer
+
+
+Wealthy [20 pp/phase passive] = Courtier, Diplomat, Strategist, Lightkeeper, Relative, Debutante/Suitor, Organized Crime Boss, Thermomancer, Vivomancer, Photomancer, Pneumancer, Electromancer, Graviturgist, Guild Master, Baron, Landed Gentry, Thuil, Inheritor, Rheunen Walker
