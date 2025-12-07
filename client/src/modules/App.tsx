@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { CampaignsPage } from "./campaigns/CampaignsPage";
 import { CharactersPage } from "./characters/CharactersPage";
+import { DefinitionsProvider } from "./definitions/DefinitionsContext";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -24,32 +25,34 @@ const NotFound: React.FC = () => (
 
 export const App: React.FC = () => {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#111", color: "#eee" }}>
-      <nav
-        style={{
-          width: 220,
-          borderRight: "1px solid #333",
-          padding: "1rem",
-          boxSizing: "border-box"
-        }}
-      >
-        <h1 style={{ fontSize: 18, marginBottom: "1rem" }}>Adûrun Builder</h1>
-        <NavLink to="/characters" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
-          Characters
-        </NavLink>
-        <NavLink to="/campaigns" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
-          Campaigns
-        </NavLink>
-      </nav>
-      <main style={{ flex: 1, padding: "1rem" }}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/characters" replace />} />
-          <Route path="/characters" element={<CharactersPage />} />
-          <Route path="/campaigns" element={<CampaignsPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-    </div>
+    <DefinitionsProvider>
+      <div style={{ display: "flex", minHeight: "100vh", background: "#111", color: "#eee" }}>
+        <nav
+          style={{
+            width: 220,
+            borderRight: "1px solid #333",
+            padding: "1rem",
+            boxSizing: "border-box"
+          }}
+        >
+          <h1 style={{ fontSize: 18, marginBottom: "1rem" }}>Adûrun Builder</h1>
+          <NavLink to="/characters" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+            Characters
+          </NavLink>
+          <NavLink to="/campaigns" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+            Campaigns
+          </NavLink>
+        </nav>
+        <main style={{ flex: 1, padding: "1rem" }}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/characters" replace />} />
+            <Route path="/characters" element={<CharactersPage />} />
+            <Route path="/campaigns" element={<CampaignsPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </div>
+    </DefinitionsProvider>
   );
 };
 
