@@ -38,7 +38,7 @@ Each of the five stages of your character background imparts features, increases
 * Easy Money: You found a way to make quick cash, whether through trickery or genius. [+4 Trade, -4 Divine Intervention]
 * Cursed: You were cursed by a supernatural entity or religious organization. [+4 Sense Supernatural, -4 Resist Supernatural]
 * Blessed: You were blessed by a supernatural entity or religious organization. [+4 Worship, -4 Incite Fate]
-* Revelatory Secret: You discovered something of grave importance not meant for you to know and still carry the secret. [+4 Interpret, -4 Intuit]
+* Revelatory Secret: You discovered something of grave importance not meant for you to know and still carry the secret. [+4 Interpret, -4 Deduce]
 
 
 3. Adolescence 
@@ -59,7 +59,7 @@ Choose one from the list below.
 
 
 Academic
-Choose two
+
 
 * Historian: [+30 Academic Recall, +17 Identify, +8 Translate] 
 Starting Wealth: Moderate
@@ -88,7 +88,7 @@ When debating in public, large crowds gather around.
 
 
 Agent
-Choose two	
+	
 
 * Courtier: [+30 Interpret, +17 Deceive, +8 Perform]
 Starting Wealth: Wealthy
@@ -110,14 +110,14 @@ You have access to secret safehouses in various cities and regions where law enf
 Starting Wealth: Wealthy
 Carriage, 2 horses, 1 servant, 2 bodyguards, small or medium weapon of choice, writ, organization signifier, set of fine clothes
 You have the ability to gain public access to political rulers and powerful leaders.  
-* Strategist: [+30 Interpret, +17 Intuit, +8 Identify] 
+* Strategist: [+30 Interpret, +17 Deduce, +8 Identify] 
 Starting Wealth: Wealthy
 Horse, 2 bodyguards, weapon of choice, era and race appropriate armor, organization signifier
 You have the ability to gain public access to military leaders.
 
 
 Artisan
-Choose two 	
+ 	
 
 * Smith: [+30 Craft, +17 Feat of Strength, +8 Trade]
 Starting Wealth: Moderate
@@ -146,7 +146,7 @@ You can produce lights and basic potions.
 
 
 Celebrity
-Choose two 
+ 
 	
 
 * Troubadour: [+30 Perform, +17 Deceive, +8 Interpret]
@@ -175,7 +175,7 @@ Carriage, 2 horses, 2 servants, 1 bodyguard, 3 sets of fine clothes
 You have private and public access to higher echelons of society for the purpose of courting. 
  
 Cheat
-Choose two 
+ 
 	
 
 * Con Artist: [+30 Deceive, +17 Trade, +8 Identify]
@@ -205,7 +205,7 @@ When you are injured, you may claim money from the local authorities and courts.
 
 
 Clergy
-Choose two	
+	
 
 * Priest: [+30 Worship, +17 Divine Intervention, +8 Resist Supernatural]
 Starting Wealth: Pauper
@@ -234,7 +234,7 @@ You have private access to safehouses among your cult that will aid you if you a
 
 
 Creative
-Choose two 	
+ 	
 
 * Musician: [+30 Perform, +17 Artistry, +8 Feat of Agility]
 Starting Wealth: Moderate
@@ -248,7 +248,7 @@ You may paint for a patron who will fund your endeavors.
 Starting Wealth: Moderate
 Unwritten book, 3 tomes of choice
 You write anonymous letters or stories that make the rounds in a certain settlement or region. 
-* Poet: [+30 Intuit, +17 Artistry, +8 Seduce]
+* Poet: [+30 Deduce, +17 Artistry, +8 Seduce]
 Starting Wealth: Moderate
 3 tomes of Poetry
 You may write poetry for a patron who will fund your endeavors. 
@@ -256,14 +256,14 @@ You may write poetry for a patron who will fund your endeavors.
 Starting Wealth: Moderate
 Sculpting tools
 You may sculpt for a patron who will fund your endeavors.
-* Architect: [+30 Navigate, +17 Identify, +8 Intuit]
+* Architect: [+30 Navigate, +17 Identify, +8 Deduce]
 Starting Wealth: Significant
 10 site maps, measuring tools, set of fine clothes 
 You generally have a decent understanding of a building or dungeon’s layout, even if you’ve never been there before. 
 
 
 Criminal
-Choose two 	
+ 	
 
 * Professional Thief: [+30 Feat of Agility, +17 Conceal, +8 Gather Intelligence]
 Starting Wealth: Significant
@@ -292,7 +292,7 @@ You have safehouses in a region that will offer aid if you have committed crimes
 
 
 Entertainer
-Choose two	
+	
 
 * Bard: [+30 Perform, +17 Deceive, +8 Seduce]
 Starting Wealth: Insignificant
@@ -321,7 +321,7 @@ You may make jokes at the expense of or belittle powerful figures without suffer
 
 
 Farmer
-Choose two
+
 
 * Harvester: [+30 Feat of Strength, +17 Forage, +8 Small Blades]
 Starting Wealth: Insignificant
@@ -349,7 +349,7 @@ Meat you hunted does not spoil or go to waste, and you obtain maximum meat from 
 
 
 Homeless
-Choose two	
+	
 
 * Hermit: [+30 Forage, +17 Search, +8 Feat of Defiance]
 Starting Wealth: Pauper
@@ -376,7 +376,7 @@ You know of abandoned buildings in settlements. +1 Fate Point.
 
 
 Hunter
-Choose two	
+	
 
 * Forester: [+30 Forage, +17 Track, +8 Navigate]
 Starting Wealth: Insignificant
@@ -405,7 +405,7 @@ You may always choose to deal nonlethal damage instead of lethal damage, regardl
 
 
 Ildakar
-Choose two 	
+ 	
 
 * Thermomancer: [+30 Will Dakar, +17 Academic Recall, +8 Search]
 Starting Wealth: Wealthy
@@ -423,7 +423,7 @@ Ildakar Faculties Unlocked: Photomancy. This faculty costs you -20% energy and a
 Starting Wealth: Wealthy
 3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ
 Ildakar Faculties Unlocked: Pneumancy. This faculty costs you -20% energy and action points to use. 
-* Electromancer: [+30 Will Dakar, +17 Endure, +8 Link]
+* Electromancer: [+30 Will Dakar, +17 Endure, +8 Feat of Agility]
 Starting Wealth: Wealthy
 3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ
 Ildakar Faculties Unlocked: Electromancy. This faculty costs you -20% energy and action points to use. 
@@ -434,7 +434,7 @@ Ildakar Faculties Unlocked: Graviturgy. This faculty costs you -20% energy and a
 
 
 Laborer
-Choose two	
+	
 
 * Dock Worker: [+30 Feat of Strength, +17 Small Bearded, +8 Forage]
 Starting Wealth: Insignificant
@@ -461,7 +461,7 @@ You may perform labor for pay in sewers.
 
 
 Merchant
-Choose two	
+	
 
 * Guild Master: [+30 Trade, +17 Perform, +8 Interpret]
 Starting Wealth: Wealthy
@@ -490,7 +490,7 @@ You may perform labor for pay in markets.
 
 
 Noble
-Choose two
+
 
 * Knight: [+30 Battle, +17 Endure, +8 Parley]
 Starting Wealth: Significant
@@ -508,7 +508,7 @@ You command an estate.
 Starting Wealth: Insignificant
 Light armor, weapon of choice, religious or ideological tome, organization signifier, set of fine clothes, tinderbox
 You serve under a knight or party member to gain titles and land (knighthood). +1 Fate Point.
-* Thuil: [+30 Incite Fate, +17 Intuit, +8 Resist Supernatural] Must be Thuilin or Ganzenonin
+* Thuil: [+30 Incite Fate, +17 Deduce, +8 Resist Supernatural] Must be Thuilin or Ganzenonin
 Starting Wealth: Wealthy
 organization signifier
 You have access to narrative ancillaries relating to Fireborn. You can see during Har'Rheunen without Ozoar. +30 Deity Relationship Points. +1 Fate Point.
@@ -519,30 +519,30 @@ You are related to someone very powerful or rich who you will eventually take ov
 
 
 Psion 
-Choose two 	
+ 	
 
-* Psychometrist: [+30 Psionic Technique, +17 Link, +8 Track]
+* Psychometrist: [+30 Psionic Technique, +17 Resist Psionics, +8 Track]
 Starting Wealth: Significant
 Psionic Technique Tree, Unlocked: Psychometry, and 2 of the following: Claircognizance, Clairvoyance, Identify, Psychoscopy, or Track, and 1 additional psi-point. 
-* Telekineticist: [+30 Psionic Technique, +17 Link, +8 Feat of Strength]
+* Telekineticist: [+30 Psionic Technique, +17 Resist Psionics, +8 Feat of Strength]
 Starting Wealth: Significant
 Psionic Technique Tree, Unlocked: Telekinesis, and 2 of the following: Levitation, Psychokinesis, Dynakinesis, Psychometabolism, or Density, and 1 additional psi-point.
-* Telepath: [+30 Psionic Technique, +17 Link, +8 Identify]
+* Telepath: [+30 Psionic Technique, +17 Resist Psionics, +8 Identify]
 Starting Wealth: Significant
 Psionic Technique Tree, Unlocked: Telepathy, and 2 of the following: Pry, Sense Presence, Communicate, Interfere, or Interconnect, and 1 additional psi-point. 
-* Hypnotist: [+30 Psionic Technique, +17 Link, +8 Perform]
+* Hypnotist: [+30 Psionic Technique, +17 Resist Psionics, +8 Perform]
 Starting Wealth: Significant
 Psionic Technique Tree, Unlocked: Hypnosis, and 2 of the following: Pathokinesis, Illusion, Possession, Mnokinesis, or Override, and 1 additional psi-point. 
-* Dynakineticist: [+30 Psionic Technique, +17 Link, +8 Interpret]
+* Dynakineticist: [+30 Psionic Technique, +17 Resist Psionics, +8 Interpret]
 Starting Wealth: Significant
 Psionic Technique Tree, Unlocked: Telekinesis, Dynakinesis, and 1 of the following: Shield, Field, or Force.
-* Illusionist: [+30 Psionic Technique, +17 Link, +8 Deceive]
+* Illusionist: [+30 Psionic Technique, +17 Resist Psionics, +8 Deceive]
 Starting Wealth: Significant
 Psionic Technique Tree, Unlocked: Hypnosis, Illusion, and one of the following: Amplify I, Dampen, or Alter Illusion.
 
 
 Sailor
-Choose two
+
 
 * Rigger: [+30 Feat of Agility, +17 Feat of Strength, +8 Feat of Defiance]
 Starting Wealth: Insignificant
@@ -571,7 +571,7 @@ Crews and military units will perform favors for you in exchange for goods. +1 F
 
 
 Wanderer
-Choose two
+
 
 * Rheunen Walker: [+30 Navigate, +17 Forage, +8 Battle]
 Starting Wealth: Wealthy
@@ -591,14 +591,14 @@ You have a friend who can give aid and shelter in every region. +1 Fate Point.
 * Exile: [+30 Intimidate, +17 Battle, +8 Forage]
 Starting Wealth: Pauper
 You have a particular people or organization you can perfectly replicate and that cannot be seen through (disguise-wise etc) by magic or other means. +1 Fate Point.
-* Pilgrim: [+30 Intuit, +17 Incite Fate, +8 Feat of Austerity]
+* Pilgrim: [+30 Deduce, +17 Incite Fate, +8 Feat of Austerity]
 Starting Wealth: Pauper 
 Religious or ideological tome, staff, tinderbox
 You may visit places of worship to vastly increase your relationship with a deity(s). 
 
 
 Warrior 
-Choose two
+
 
 * Soldier: [+30 Battle, +17 Persevere, +8 Feat of Strength]
 Starting Wealth: Moderate
@@ -674,7 +674,7 @@ Flaws:
 * Revenge: Someone ruined your life or destroyed someone or something precious to you, and you now seek vengeance. [+5 Track]
 * Following Dreams: You are simply following your dream or passion and have set out to achieve it. [+5 Incite Fate]
 * Accomplished Feat: You accomplished something very impressive and were either encouraged to achieve more or were pressured by your community or an outsider to continue with your talents and skills. [+5 Endure]
-* Vision: You had a vision, a revelatory experience, or a dream where life-changing or world-changing knowledge and insight were delivered unto you. [+5 Intuit]
+* Vision: You had a vision, a revelatory experience, or a dream where life-changing or world-changing knowledge and insight were delivered unto you. [+5 Deduce]
 
 
         For Inciting Incidents, you should have short-term, intermediate, and campaign-spanning goals related to the reason for why you are adventuring. Work with your GM to determine these goals. Whenever they are accomplished, your Incite Fate skill will determine how much Fate you have accrued for completing a goal. Fate will be revisited later.
