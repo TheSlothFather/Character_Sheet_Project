@@ -1,5 +1,5 @@
 import React from "react";
-import { useDefinitions } from "../definitions/DefinitionsProvider";
+import { Definitions } from "../definitions/DefinitionsProvider";
 
 interface Character {
   id: string;
@@ -7,8 +7,11 @@ interface Character {
   level: number;
 }
 
-export const CharactersPage: React.FC = () => {
-  const definitions = useDefinitions();
+interface CharactersPageProps {
+  definitions: Definitions;
+}
+
+export const CharactersPage: React.FC<CharactersPageProps> = ({ definitions }) => {
   const [characters, setCharacters] = React.useState<Character[]>([]);
   const [name, setName] = React.useState("");
 
@@ -19,17 +22,9 @@ export const CharactersPage: React.FC = () => {
       .catch(() => {});
   }, []);
 
-  if (definitions.loading) {
-    return <div>Loading ruleset definitions...</div>;
-  }
-
-  if (definitions.error || !definitions.data) {
-    return <div>Failed to load ruleset definitions: {definitions.error ?? "Unknown error"}</div>;
-  }
-
   const attributeByKey = React.useMemo(() => {
-    return new Map(definitions.data.attributes.map((attr) => [attr.key, attr]));
-  }, [definitions.data.attributes]);
+    return new Map(definitions.attributes.map((attr) => [attr.key, attr]));
+  }, [definitions.attributes]);
 
   const onCreate = async () => {
     if (!name.trim()) return;
@@ -68,16 +63,16 @@ export const CharactersPage: React.FC = () => {
       <section style={{ marginTop: "2rem" }}>
         <h3>Ruleset definitions</h3>
         <div style={{ marginBottom: "0.5rem" }}>
-          Active ruleset: {definitions.data.ruleset?.name ?? "None specified"}
+          Active ruleset: {definitions.ruleset?.name ?? "None specified"}
         </div>
         <div style={{ display: "flex", gap: "2rem" }}>
           <div>
             <h4>Attributes</h4>
-            {definitions.data.attributes.length === 0 ? (
+            {definitions.attributes.length === 0 ? (
               <div style={{ color: "#aaa" }}>No attributes configured yet.</div>
             ) : (
               <ul>
-                {definitions.data.attributes.map((attr) => (
+                {definitions.attributes.map((attr) => (
                   <li key={attr.key}>
                     <strong>{attr.name}</strong> ({attr.key})
                     {attr.description ? ` — ${attr.description}` : ""}
@@ -88,11 +83,11 @@ export const CharactersPage: React.FC = () => {
           </div>
           <div>
             <h4>Skills</h4>
-            {definitions.data.skills.length === 0 ? (
+            {definitions.skills.length === 0 ? (
               <div style={{ color: "#aaa" }}>No skills configured yet.</div>
             ) : (
               <ul>
-                {definitions.data.skills.map((skill) => (
+                {definitions.skills.map((skill) => (
                   <li key={skill.key}>
                     <strong>{skill.name}</strong>
                     {skill.attributeKey

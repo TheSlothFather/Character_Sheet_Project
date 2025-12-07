@@ -50,7 +50,7 @@ type ModifierDefinition = {
   conditionExpression?: unknown;
 };
 
-type Definitions = {
+export type Definitions = {
   ruleset: RulesetMeta | null;
   attributes: AttributeDefinition[];
   skills: SkillDefinition[];

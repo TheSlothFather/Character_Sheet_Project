@@ -1,11 +1,29 @@
 import React from "react";
 import { CharactersPage } from "./characters/CharactersPage";
 import { CampaignsPage } from "./campaigns/CampaignsPage";
+import { useDefinitions } from "./definitions/DefinitionsProvider";
 
 type View = "characters" | "campaigns";
 
 export const App: React.FC = () => {
   const [view, setView] = React.useState<View>("characters");
+  const definitions = useDefinitions();
+
+  const renderView = () => {
+    if (view === "campaigns") {
+      return <CampaignsPage />;
+    }
+
+    if (definitions.loading) {
+      return <div>Loading ruleset definitions...</div>;
+    }
+
+    if (definitions.error || !definitions.data) {
+      return <div>Failed to load ruleset definitions: {definitions.error ?? "Unknown error"}</div>;
+    }
+
+    return <CharactersPage definitions={definitions.data} />;
+  };
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#111", color: "#eee" }}>
@@ -24,7 +42,7 @@ export const App: React.FC = () => {
         </button>
       </nav>
       <main style={{ flex: 1, padding: "1rem" }}>
-        {view === "characters" ? <CharactersPage /> : <CampaignsPage />}
+        {renderView()}
       </main>
     </div>
   );
