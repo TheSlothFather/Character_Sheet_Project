@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 
 // Simple in-memory stub for characters so frontend work can begin.
 // This should be replaced with real DB-backed logic once the DB layer
@@ -14,11 +14,11 @@ const characters: StubCharacter[] = [];
 
 export const charactersRouter = Router();
 
-charactersRouter.get("/", (_req, res) => {
+charactersRouter.get("/", (_req: Request, res: Response) => {
   res.json(characters);
 });
 
-charactersRouter.post("/", (req, res) => {
+charactersRouter.post("/", (req: Request, res: Response) => {
   const { name, level } = req.body ?? {};
   if (typeof name !== "string" || !name.trim()) {
     return res.status(400).json({ error: "name is required" });
@@ -33,7 +33,7 @@ charactersRouter.post("/", (req, res) => {
   res.status(201).json(ch);
 });
 
-charactersRouter.get("/:id", (req, res) => {
+charactersRouter.get("/:id", (req: Request, res: Response) => {
   const ch = characters.find((c) => c.id === req.params.id);
   if (!ch) return res.status(404).json({ error: "not found" });
   res.json(ch);
