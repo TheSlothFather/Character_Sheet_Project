@@ -1,0 +1,81 @@
+[
+  {
+    "id": "LIN_ININ",
+    "code": "ININ",
+    "name": "Inin",
+    "size_code": null,
+    "movement": {},
+    "languages": [],
+    "description": "Roll d100.\n|Roll       |Result             |\n|1-2        |Ecthvasin          |\n|3-4        |Georothin          |\n|5-6        |Kaindorin          |\n|7-9        |Jiinin             |\n|10-12      |Thairin            |\n|13-17      |Grazin             |\n|18-22      |Rodonin            |\n|23-29      |Bryonin            |\n|30-36      |Ganzenonin         |\n|37-43      |Rivanonin          |\n|44-60      |Melfarionin        |\n|61-80      |Letelin            |\n|81-100\u00a0    |Thuilin            |\nInin Features:\nInin stand at about 5-6 ft tall, weighing approximately 120-200 lbs on average.\nInin have standard length pointed ears.\nInin are the most numerous species by far on Ad\u00fbrun, and thus the most varied in their appearances, cultures, and\ndemeanors.\nInin typically live 80-120 years.\nInin seemingly have less survival instincts than average, and are oftentimes more warlike, but on the other side of that\ncoin, are far more spirited and willing to endure hardship."
+  },
+  {
+    "id": "LIN_ANZ",
+    "code": "ANZ",
+    "name": "Anz",
+    "size_code": null,
+    "movement": {},
+    "languages": [],
+    "description": "Roll d100.\n|Roll      |Result            |\n|1-70      |West Anzar        |\n|71-100    |East Anzar        |\nAnz Features:\nAnz stand at about 12-15 ft tall, and weigh approximately 600-700 lbs on average.\nAnz have long saber-like ears about the length of one\u2019s forearm and white eyes with no irises or pupils\nAnz have a naturally low fat content, broad features, coarse woolly black hair, caramel, coffee, or umber brown skin, and\nput on muscle faster than the other species.\nAnz value tranquility and are stoic in demeanor due to a quickness to anger that plagues them.\nAnz live about 60-100 years on average.\nAnz are a large creature."
+  },
+  {
+    "id": "LIN_PHI_ILIN",
+    "code": "PHI_ILIN",
+    "name": "Phi'ilin",
+    "size_code": null,
+    "movement": {},
+    "languages": [],
+    "description": ""
+  },
+  {
+    "id": "LIN_CEREVU",
+    "code": "CEREVU",
+    "name": "Cerevu",
+    "size_code": null,
+    "movement": {},
+    "languages": [],
+    "description": "Roll d100.\n|Roll      |Result     |\n|1-55      |Darii      |\n|56-100    |Cerii      |\nCerevu Features:\nCerevu typically stand at about 4-5 ft tall, weighing about 200-300 lbs on average.\nCerevu have rounded ears and are hairier than the other species, but are otherwise androgynous, as the other species are\nunsure of how Cerevu reproduce.\nCerevu tend to be rounder and squatter in shape.\nCerevu live around 150-200 years on average.\nCerevu tend to have a very calm and tranquil disposition, and value quiet and industriousness above all else."
+  },
+  {
+    "id": "LIN_VENII",
+    "code": "VENII",
+    "name": "Venii",
+    "size_code": null,
+    "movement": {},
+    "languages": [
+      {
+        "language_id": "LANG_DARII",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_DARII",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_MELFARIC",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Roll d100.\n|Roll      |Result     |\n|1-40      |Agunic     |\n|41-100    |Unfaic     |\nVenii Features:\nVenii usually stand at 6-8 ft tall, weighing approximately 120-200 lbs on average.\nVenii have jet black smooth chitinous skin, fine stark white hair, and glossy reflective eyes with arachnoid faces and\npedipalps, which they almost always keep veiled or hidden from non-Venii.\nVenii have stringy, scrawny, tall, and slender builds, who otherwise seem like Phi\u2019ilin.\nVenii typically live 150-200 years on average.\nVenii maintains an attempted pleasant attitude but suffers from a terribly awkward disposition."
+  },
+  {
+    "id": "LIN_FREININ",
+    "code": "FREININ",
+    "name": "Freinin",
+    "size_code": null,
+    "movement": {},
+    "languages": [],
+    "description": ""
+  }
+]

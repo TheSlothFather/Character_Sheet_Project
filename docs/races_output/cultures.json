@@ -1,0 +1,359 @@
+[
+  {
+    "id": "CUL_ININ_ECTHVASIN",
+    "code": "ECTHVASIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Ecthvasin",
+    "languages": [
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Wavy bright red hair, bright green eyes, pale skin."
+  },
+  {
+    "id": "CUL_ININ_GEOROTHIN",
+    "code": "GEOROTHIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Georothin",
+    "languages": [
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Black hair, green eyes, pale skin."
+  },
+  {
+    "id": "CUL_ININ_KAINDORIN",
+    "code": "KAINDORIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Kaindorin",
+    "languages": [
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Thick black hair, brown eyes, taller than average, olive skin."
+  },
+  {
+    "id": "CUL_ININ_JIININ",
+    "code": "JIININ",
+    "lineage_id": "LIN_ININ",
+    "name": "Jiinin",
+    "languages": [
+      {
+        "language_id": "LANG_YAICH",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Fine black hair, almond-shaped brown eyes, less hairy than average, shorter and thinner on average, pale or olive skin"
+  },
+  {
+    "id": "CUL_ININ_THAIRIN",
+    "code": "THAIRIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Thairin",
+    "languages": [
+      {
+        "language_id": "LANG_THAIRIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Black curly hair, shorter and hairier than average, dark brown eyes, olive skin"
+  },
+  {
+    "id": "CUL_ININ_GRAZIN",
+    "code": "GRAZIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Grazin",
+    "languages": [
+      {
+        "language_id": "LANG_GRAZIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Fine blonde hair, broader and taller than average, blue eyes, pale skin"
+  },
+  {
+    "id": "CUL_ININ_RODONIN",
+    "code": "RODONIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Rodonin",
+    "languages": [
+      {
+        "language_id": "LANG_MELFARIC",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_TWO_LANGUAGES_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Dark stringy greenish-black hair, smooth and round facial features, almond-shaped dark green eyes, olive skin"
+  },
+  {
+    "id": "CUL_ININ_BRYONIN",
+    "code": "BRYONIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Bryonin",
+    "languages": [
+      {
+        "language_id": "LANG_BRYONIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Black hair, red eyes, pale skin"
+  },
+  {
+    "id": "CUL_ININ_GANZENONIN",
+    "code": "GANZENONIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Ganzenonin",
+    "languages": [
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Fine black hair, blue eyes, pale skin"
+  },
+  {
+    "id": "CUL_ININ_RIVANONIN",
+    "code": "RIVANONIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Rivanonin",
+    "languages": [
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Pale brown hair, pale brown eyes, pale skin"
+  },
+  {
+    "id": "CUL_ININ_MELFARIONIN",
+    "code": "MELFARIONIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Melfarionin",
+    "languages": [
+      {
+        "language_id": "LANG_MELFARIC",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_TWO_LANGUAGES_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Dirty blonde hair, bright golden eyes, pale or bronze skin"
+  },
+  {
+    "id": "CUL_ININ_LETELIN",
+    "code": "LETELIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Letelin",
+    "languages": [
+      {
+        "language_id": "LANG_FELANI",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Thick dark brown hair, dark brown eyes, pale skin"
+  },
+  {
+    "id": "CUL_ININ_THUILIN",
+    "code": "THUILIN",
+    "lineage_id": "LIN_ININ",
+    "name": "Thuilin",
+    "languages": [
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Black hair, bright silver-rimmed irises in eyes, pale skin"
+  },
+  {
+    "id": "CUL_ANZ_WEST_ANZAR",
+    "code": "WEST_ANZAR",
+    "lineage_id": "LIN_ANZ",
+    "name": "West Anzar",
+    "languages": [
+      {
+        "language_id": "LANG_ANZ",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": ""
+  },
+  {
+    "id": "CUL_ANZ_EAST_ANZAR",
+    "code": "EAST_ANZAR",
+    "lineage_id": "LIN_ANZ",
+    "name": "East Anzar",
+    "languages": [
+      {
+        "language_id": "LANG_ANZ",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_MELFARIC",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": ""
+  },
+  {
+    "id": "CUL_PHI_ILIN_ELARI",
+    "code": "ELARI",
+    "lineage_id": "LIN_PHI_ILIN",
+    "name": "Elari",
+    "languages": [
+      {
+        "language_id": "LANG_PHI_ILIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      }
+    ],
+    "description": ""
+  },
+  {
+    "id": "CUL_PHI_ILIN_LAIGONI",
+    "code": "LAIGONI",
+    "lineage_id": "LIN_PHI_ILIN",
+    "name": "Laigoni",
+    "languages": [
+      {
+        "language_id": "LANG_PHI_ILIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_AND_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": ""
+  },
+  {
+    "id": "CUL_PHI_ILIN_RODINI",
+    "code": "RODINI",
+    "lineage_id": "LIN_PHI_ILIN",
+    "name": "Rodini",
+    "languages": [
+      {
+        "language_id": "LANG_PHI_ILIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_MELFARIC",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_AND_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": ""
+  },
+  {
+    "id": "CUL_CEREVU_DARII",
+    "code": "DARII",
+    "lineage_id": "LIN_CEREVU",
+    "name": "Darii",
+    "languages": [
+      {
+        "language_id": "LANG_DARII",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_NARINDUILIN",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Black hair, dark brown eyes"
+  },
+  {
+    "id": "CUL_CEREVU_CERII",
+    "code": "CERII",
+    "lineage_id": "LIN_CEREVU",
+    "name": "Cerii",
+    "languages": [
+      {
+        "language_id": "LANG_DARII",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_MELFARIC",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Grey hair, dark grey eyes"
+  },
+  {
+    "id": "CUL_FREININ_FREININ",
+    "code": "FREININ",
+    "lineage_id": "LIN_FREININ",
+    "name": "Freinin",
+    "languages": [
+      {
+        "language_id": "LANG_TWO_OF_THE_PLAYER_S_CHOICE",
+        "proficiency": "native"
+      }
+    ],
+    "description": "Freinin usually stand at about half an Inin\u2019s height, weighing approximately a quarter as much on average as well.\nFreinin come in all shapes and sizes, but are considered small creatures.\nFreinin have a variety of skin, hair, and eye colors.\nFreinin typically live 60-80 years on average.\nFreinin, called \u201chumans\u201d or \u201cmankind\u201d in their own tongues and native to Ad\u00fbrun, maintain a variety of demeanors, but\ngenerally speaking, tend to be characterized as frail and craven, or at least, quite risk-averse compared to the other\nspecies.\nFreinin cannot use Dakar or Psionics, including Links.\nFreinin does not have any subspecies."
+  }
+]

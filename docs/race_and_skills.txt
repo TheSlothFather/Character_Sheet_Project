@@ -1,0 +1,779 @@
+
+
+Attributes and Skills
+
+
+
+
+                                             Character Creation Point Allocation
+
+
+
+During character creation, you will be given 3 Attribute Points to spread across your Attributes. You may take up to 1
+negative attribute point in a given attribute, but at character creation, you may not have any more than 3 attribute points
+in a given attribute. For each attribute point added or subtracted, all associated skills increase or decrease by 10. 4
+categories of the skills are associated with 1 attribute, and 6 categories of the skills are associated with 2 attributes,
+whereby you add together the positive and negative 10-point bonuses from both attributes. In addition, you have 100 skill
+points to allocate, independent of bonuses added to skills by attributes, background, and race. You can apply these to
+skills, will dakar, and to martial prowess. You cannot take negative skill points. Martial prowess also has a baseline
+determined by race and certain pieces of your background. You cannot have martial prowess above +30 at character creation
+once all of your baseline and allocated skill points are added together.  
+
+
+
+The Skills
+
+
+
+
+                                             Challenge Rolls and Contested Rolls
+
+
+
+While playing the ARPG, all mechanical interactions can be divided into two categories: Challenge Rolls and Contested
+Rolls. Challenge Rolls occur when you are performing an action that does not involve another creature or NPC. Contested
+Rolls are when you are matching one of your skills against a creature or NPC’s skills. Challenge Rolls will have target
+numbers set by the GM. Generally speaking, the target difficulty is based on a mundane individual’s ability to accomplish a
+task, where 0 is a task the player character cannot fail (eg, opening an unlocked door or walking across a hazard-free
+surface) and 100 is the peak of what a person could succeed at bar magical or technological aid (eg, world-class feats of
+strength or intellect) or the highest levels of expertise. 100+ is supernatural.
+|Mundane        |Focused      |Intermediate         |Challenging       |Peak    |
+|0              |25           |50                   |75                |100     |
+
+
+Contested Rolls often use skills to that allow a creature to resist the effects of other skills. These scenarios are
+detailed in the skills list. 
+
+
+
+                                                          Physical
+
+
+
+Battle: The ability to physically attack or defend yourself and others. This skill also determines initiative. This skill
+may also be used to initiation of a grapple. 
+Feat of Strength: The ability to execute actions such as leaping across a chasm, scaling a sheer cliff, or lifting a
+boulder.
+Feat of Agility: The ability to execute actions such as picking a lock, pickpocketing, or walking across a tightrope. This
+skill also determines your ability to potentially escape from area-of-effect attacks and avoid traps and initiation of
+grapples. 
+Conceal: The ability to hide yourself, an item on your person, hide something behind yourself, or execute a hidden signal.
+This skill contests search.
+Resist Toxins: The ability to defend against poisons, toxins, venoms, infections, diseases, and harmful gases. This skill
+also determines how many potions you can take at once.
+
+
+
+                                                           Mental
+
+
+
+Psionic Technique: Utilizing a psionic technique. (See Psionic Techniques)
+Resist Psionics: The ability to contest psionic techniques and magics targeting the mind. 
+Academic Recall: General intellect, booksmarts, memory, and academics. 
+Translate: The ability to communicate and learn known or new languages and codes.
+Search: Ability to find hidden or missing items before you. This skill also determines your ability to find traps contest
+concealed things and people. 
+
+
+
+                                                            Will
+
+
+
+Will Dakar: The ability to Will Dakar. The opposing effect within an Ildakar Faculty acts as a direct contest of Will
+Dakar. (See Will Dakar and Ildakar)
+Endure: The ability to resist exhaustion, regain energy mid or post-battle, as well as execute feats of extreme endurance
+or pain resistance.
+Persevere: The ability to resist cracking under terrible odds or horrifying situations, as well as execute morale checks
+and contest intimidate. 
+Feat of Austerity: The ability to resist character-specific vices, temptations and maintain personal discipline. This is
+also how once contests taunts and seduce. 
+Feat of Defiance: The ability to defend against certain death, such as being struck when unconscious, stabbed in your
+sleep, or falling off a cliff. This skill is also utilized when you are the target of resurrection, revival, etc.
+
+
+                                                          Spiritual
+
+
+Worship: The ability to build relationships and favor with deities or spirits. (See Deities)
+Divine Intervention: The ability to utilize worship points. (See Deities)
+Sense Supernatural: The ability to detect holy or unholy places, items, spells, and entities. 
+Resist Supernatural: The ability to contest divine intervention and defend against divine magic, divine weapons, or
+supernatural entities hostile to you. 
+Attune Wondrous Item: The ability to use and understand magic items. This skill also determines the number of attunement
+slots you can utilize at once. 
+
+
+
+                                               Subsistence (Physical + Mental)
+
+
+
+Craft: The creation and repair of provisions, items, arms, structures, as well as your ability to operate advanced
+machinery or tools. 
+Forage: The ability to hunt, find food, water, bedding, and medicinal ingredients.
+Track: The ability to follow people or animals through cities, dungeons, and wilderness.
+
+
+
+                                                 Presence (Physical + Will)
+
+
+
+Intimidate: The ability to make someone back down, rout a foe mid-battle, interrogate, or torture.
+Seduce: The ability to execute actions such as courting, flirting, or sex. 
+Perform: The ability to execute actions such as tell stories, debate, play music, dance, and entertain with magic tricks.
+
+
+
+                                              Intuition (Physical + Spiritual)
+
+
+
+Navigate: The ability to find your way through places like dungeons, dense cities, or when traveling in remote places.
+Heal: Identifying and mending wounds, treating poisons, aiding the mentally impaired, and determining how quickly and
+effectively you can recover from injuries. This skill also pertains to your ability to determine the general condition of a
+foe or ally mid-battle. 
+Animal Husbandry: The ability to tame, train, maintain, and ride beasts.
+
+                                                   Cunning (Mental + Will)
+
+
+
+Trade: The ability to conduct deals, have or gain knowledge of local economies, or haggle. 
+Gather Intelligence: The ability to conduct research into specific figures, myths, or places. This skill also determines
+your ability to eavesdrop and track down rumors or gossip.
+Deceive: The ability to tell lies, half-truths, and mislead.
+
+
+
+                                                Sagacity (Mental + Spiritual)
+
+
+
+Interpret: The ability to find hidden meanings in conversation or writing, detect lies, read body language, and determine
+tactical information about foes’ plans or actions pre- or mid-battle. This skill allows you to contest deceive. 
+Deduce: The ability to notice patterns, recognize clues, and have moments of brilliance in difficult or complicated
+situations. [Obtaining Meta Knowledge]
+ Identify: The ability to pick out a person’s cultural, racial, socioeconomic class, professions, hidden injuries and
+ailments, or religious affiliations. This skill also pertains to your ability to create and see through disguises, as well
+as imitate foreign mannerisms, customs, and modes of speech. This skill also allows you to contest conceal. 
+
+
+
+                                               Benediction (Will + Spiritual)
+
+
+
+Incite Fate: The ability to feel hints or clues relating to your personal aspirations. This skill also increases the yields
+of Fate Points and determines Fate; Luck. 
+Parley: The ability to calm hostile people, including in the midst of combat.
+Artistry: The ability to create art, music, poetry, architecture, etc. 
+
+
+
+Race
+
+
+
+Your race will determine your species in the category of creatures called Mortals, as well as the specific culture and
+lineage you are a part of. Your race will also determine many things, such as attribute or skill points, as well as
+languages or special senses. For a GM or player new to the system and setting, it may be best to stick with full Inin
+parties. However, the other species are available should the GM wish to open those options up. A player may choose or roll
+for their species and race. The ranges in the left column of the following table for each result on the right column may
+also act to contextualize the rarities of different species and races on Adûrun for players and GMs.  
+
+
+
+Species
+
+Roll d100. 
+|Roll     |Result      |
+|1-70     |Inin        |
+|71-85    |Anz         |
+|86-92    |Phi’ilin    |
+|93-96    |Cerevu      |
+|97-99    |Venii       |
+|100      |Freinin     |
+
+
+
+Inin
+
+Roll d100. 
+|Roll       |Result             |
+|1-2        |Ecthvasin          |
+|3-4        |Georothin          |
+|5-6        |Kaindorin          |
+|7-9        |Jiinin             |
+|10-12      |Thairin            |
+|13-17      |Grazin             |
+|18-22      |Rodonin            |
+|23-29      |Bryonin            |
+|30-36      |Ganzenonin         |
+|37-43      |Rivanonin          |
+|44-60      |Melfarionin        |
+|61-80      |Letelin            |
+|81-100     |Thuilin            |
+
+
+Inin Features: 
+Inin stand at about 5-6 ft tall, weighing approximately 120-200 lbs on average. 
+Inin have standard length pointed ears. 
+Inin are the most numerous species by far on Adûrun, and thus the most varied in their appearances, cultures, and
+demeanors. 
+Inin typically live 80-120 years.
+Inin seemingly have less survival instincts than average, and are oftentimes more warlike, but on the other side of that
+coin, are far more spirited and willing to endure hardship. 
+Inin Ferocity: Inin deal 2x their attribute modifier for damage when fighting against other mortal species.
+
+
+                                                Inin Subraces and Cultures: 
+
+
+
+Ecthvasin
+
+Wavy bright red hair, bright green eyes, pale skin. 
+Languages: Narinduilin
++10 Martial Prowess points
++30 Ildakar Faculty points
++3/Spiritual Modifier for Deity Relationship point caps
+Magically Inclined: 
++15 to either worship, will dakar, or psionic technique 
++5 to combined efforts for utilizing the chosen skill above 
++20% damage with chosen skill above when using offensively 
++15 to either resist psionics, resist supernatural, or countering will dakar
+Prone to Ire:
+-5 battle when defending against non-Ecthvasin Inin
+non-Ecthvasin Inin deal +1 damage to you when using battle, psionic technique, will dakar, and divine intervention
+-10 to conceal checks when non-Ecthvasin Inin are using search against you in a contested roll 
+-10 to resist psionics and resist supernatural when a foe attempts to charm or intimidate you magically 
+
+
+
+Georothin
+
+Black hair, green eyes, pale skin.
+Languages: Narinduilin, one of the player’s choice
++20 Martial Prowess points
++20 Ildakar Faculty points
++1/Spiritual Modifier for Deity Relationship point caps
+Swamper Upbringing:
++7 to either forage, animal husbandry, or recall academics when in swamplands.
++10 to navigate in swamplands
++5 to resist toxins and immunity to the poisoned status
+Swimming only takes 1 energy as opposed to 2
+Purifiers of The Dead:
+2x attribute modifier when dealing damage to undead
++5 battle against undead
++10 to sense supernatural with regards to undead
+Once per phase, you may reduce damage dealt to you by undead creatures by your spiritual modifier for spiritual modifier
+rounds (minimum 1 round)
+
+
+
+Kaindorin
+
+Thick black hair, brown eyes, taller than average, olive skin. 
+Languages: Narinduilin 
++10 Martial Prowess points
++10 Ildakar Faculty points
++2/Spiritual Modifier for Deity Relationship point caps
+Swamper Upbringing:
++7 to either forage, animal husbandry, or recall academics when in swamplands.
++5 to resist toxins
+Smooth Talker:
++1 Will 
++14 to either seduce, perform, or deceive when made against non-Kaindorin 
+Cool Head:
++10 to resist psionics and resist supernatural when a foe attempts to charm or intimidate you magically
++10 to feat of austerity 
+
+
+
+Jiinin
+
+Fine black hair, almond-shaped brown eyes, less hairy than average, shorter and thinner on average, pale or olive skin
+Languages: Yaich, one of the player’s choice
++30 Martial Prowess points
++10 Ildakar Faculty points
++2/Spiritual Modifier for Deity Relationship point caps
+Multi-faceted Warriors:
++10 Martial Prowess at character tier increase 
++5 to battle, and +10 to artistry and resist supernatural 
+Add physical modifier to initiative rolls (minimum 1)
+Devastating Onslaught:
+Wicked Criticals are now Vicious Criticals, and Vicious Criticals are now Brutal Criticals
+When you critically hit a foe, you critically hit a second adjacent foe if one is available at the cost of 1 exhaustion. If
+there is no second adjacent foe, you gain energy equal to your normal attack with this weapon at the cost of 1 exhaustion.
+This is not optional. 
+
+
+
+Thairin
+
+Black curly hair, shorter and hairier than average, dark brown eyes, olive skin
+Languages: Thairin, one of the player’s choice
++30 Martial Prowess points
++10 Ildakar Faculty points
++2/Spiritual Modifier for Deity Relationship point caps
+Athletic Upbringing: 
++10 to feat of strength, feat of agility
+Thairin Training
++10 to battle, whether attacking or defending, while adjacent to an ally
+Add physical modifier to weapon damage twice as opposed to once
+May use two-handed weapons and shields simultaneously 
+May switch to another equipped item without costing energy or action points once per round
+
+
+
+Grazin
+
+Fine blonde hair, broader and taller than average, blue eyes, pale skin
+Languages: Grazin, one of the player’s choice
++30 Martial Prowess points
++10 Ildakar Faculty points
++1/Spiritual Modifier for Deity Relationship point caps
+Rugged Living:
+33% damage reduction when targeted by magic using cold or frost, or thermomancy
+Add physical modifier to the energy gained through heal spells or potions used or cast upon you
++15 to either endure or persevere, and either resist toxins or feat of defiance 
++1 to armor damage reduction
++20% to starting energy at character creation, and energy increases when leveling up 
+Swimming only takes 1 energy as opposed to 2
+
+
+
+Rodonin
+
+Dark stringy greenish-black hair, smooth and round facial features, almond-shaped dark green eyes, olive skin
+Languages: Melfaric, two languages of the player’s choice
++10 Martial Prowess points
++30 Ildakar Faculty points
+Swift of Foot:
+May move once for no energy cost once per round while in darkness
+Wicked Criticals are now Vicious Criticals, and Vicious Criticals are now Brutal Criticals while flanking in darkness
+May move once for no energy or action point cost, once per round after making a flanking attack in darkness
++5 to feat of agility
+May switch to another equipped item without costing energy or action points once per round
+Shadow Blender:
++10 to conceal while in darkness
++10 to initiative while in darkness
+20 ft of darkvision 
+
+
+
+Bryonin
+
+Black hair, red eyes, pale skin
+Languages: Bryonin, Narinduilin
++20 Martial Prowess points
++20 Ildakar Faculty points
++2/Spiritual Modifier for Deity Relationship point caps
+Superior Eyes:
+60 ft of darkvision
++10 to search
++7 to identify when parsing a disguise
++7 to initiative 
+Bryonin Arrogance:
+-5 to perform or seduce for non-Bryonin
++1 to Physical, Mental, and Spiritual, but -1 to Will
+
+
+
+Ganzenonin
+
+Fine black hair, blue eyes, pale skin
+Languages: Narinduilin
++60 Martial Prowess points
+War-Torn Homeland:
+-1 to all Physical, Mental, and Spiritual, but +1 to Will, and -3 in a skill of the player’s choice, but +3 in a skill of
+the player’s choice
++1 ancillary at character creation, and +1 ancillary upon reaching every character tier
++10 to intimidate and battle against non-Ganzenonin
+Add physical to weapon damage when fighting non-Ganzenonin twice as opposed to once
++30 Martial Prowess at every character tier increase
+Will to Live:
++1 Physical at Advanced Character-Tier Advancement
++1 Mental at Heroic Character-Tier Advancement
++1 Spiritual at Epic Character-Tier Advancement
+
+
+
+Rivanonin
+
+Pale brown hair, pale brown eyes, pale skin
+Languages: Narinduilin 
++20 Martial Prowess points
++10 Ildakar Faculty points
++3 Psi-Points
++3/Spiritual Modifier for Deity Relationship point caps
+Deep Mind: 
+Can link with more than one link partner without spending psionic technique points in the link tree
++1 link point per level per link partner
+May spend a link point after a failed link once per moonface per link partner to attempt again
++15 to psionic technique 
++10 to either persevere, resist psionics, or resist supernatural
+Isolated Rivermen:
++7 to feat of strength and navigate when in marine environments, e.g. a jungle river or coastline.
+Swimming only takes 1 energy as opposed to 2
+-10 to recall academics and identify when related to the histories or religions of non-Rivanonin cultures and groups
+
+
+
+Melfarionin
+
+Dirty blonde hair, bright golden eyes, pale or bronze skin
+Languages: Melfaric, two languages of the player’s choice
++30 Martial Prowess points
++20 Ildakar Faculty points
+Melfaric Unity:
++5 to battle against non-Melfarionin Inin
++7 to deception against non-Melfarionin Inin
++5 to either feat of strength or feat of agility, and +5 to either psionic technique, will dakar, or divine intervention 
+May move twice per round with no energy or action point cost if advancing towards a foe
++7 to battle, whether attacking or defending, while adjacent to a Melfarionin ally
+Far Traveled:
++3 to recall academics and identify when related to non-Inin histories, cultures, and religions
+-3 to recall academics and identify when related to non-Melfarionin Inin histories, cultures, and religions
+Child of The Twin Stars:
++8 to navigate while outside and with a clear view of the sky
++10 to resist psionics and resist supernatural when a non-Melfarionin Inin foe attempts to charm or intimidate you
+magically, but -10 to resist psionics and resist supernatural when any other type of foe attempts to charm or intimidate
+you magically
+May use message with an adjacent link partner you have linked with once or more, permanently, without having to unlock it
+in the psionic technique tree
+Can illuminate a 20ft cone for 1 minute, once per moonface if you are not blinded
+Once per moonface, you may use Dynakinesis without having to unlock it in the Psionic Technique Tree  
+
+
+
+Letelin
+
+Thick dark brown hair, dark brown eyes, pale skin
+Languages: Felani, Narinduilin
++20 Martial Prowess points
+Utilitarian Conditioning
+Only need half the provisions to not suffer exhaustion penalties
+Your rests take half as long
+You may travel 50% longer before taking exhaustion penalties
+Player at character creation may choose an ability that requires the changing of a moonface to refresh automatically once
+per moonface
+Recover all spent ammunition per encounter
++15 to endure
+-5 to psionic technique, resist psionics, will dakar, divine intervention, and resist supernatural
+Prone to Authority:
++7 to intimidate, perform, and seduce, and -7 to feat of austerity, persevere, and interpret 
+Once per round, may reduce damage from a weapon or spell dealt to an adjacent ally by 50%, taking 50% of the damage
+yourself, at the cost of 1 energy 
+
+
+
+Thuilin
+
+Black hair, bright silver-rimmed irises in eyes, pale skin
+Languages: Narinduilin
++30 Martial Prowess points
++20 Ildakar Faculty points
++5/Spiritual Modifier Deity Relationship point caps
+Superlative Eyes:
++1 spiritual
+120 ft of darkvision and magical darkvision
+Immune to blinded
++15 to navigate while outside and with a clear view of the sky
++5 to feat of agility and initiative
+May use a feat of agility to defend against ranged weapons and spells instead of using battle 
+Mind of Steel:
+Negates one factor attributing to a foe’s bonus or one of your detriments in a contested roll once per round (eg, flanking,
+grappling, when you are prone)
++7 to academic recall when related to Inin cultures, religions, and histories
+Thuilin Arrogance:
+-7 to the following: deceive, seduce, and perform, when related to non-Thuilin 
+
+
+
+Anz
+
+Roll d100.
+|Roll      |Result            |
+|1-70      |West Anzar        |
+|71-100    |East Anzar        |
+
+
+Anz Features: 
+Anz stand at about 12-15 ft tall, and weigh approximately 600-700 lbs on average.
+Anz have long saber-like ears about the length of one’s forearm and white eyes with no irises or pupils 
+Anz have a naturally low fat content, broad features, coarse woolly black hair, caramel, coffee, or umber brown skin, and
+put on muscle faster than the other species. 
+Anz value tranquility and are stoic in demeanor due to a quickness to anger that plagues them. 
+Anz live about 60-100 years on average. 
+Anz are a large creature.
+Regenerative:
+Immune to bleeding and can regenerate severed limbs and digits over the course of a phase
++10 to endure and feat of strength 
++10 to unarmed martial prowess
+Automatically regains 2x character tier energy every round without spending action points, but cannot heal via magical
+means
++40% to starting energy at character creation, and energy increases when leveling up 
+
+
+Anz Subraces and Cultures: 
+
+
+
+West Anzar
+
+Languages: Anz, Narinduilin, one of the player’s choice
++10 Martial Prowess points
++5/Spiritual Modifier for Deity Relationship point caps
+Aduric Lands:
+Unless brought to 0 energy after sustaining damage, may spend an action point as a reaction to regain 2x level energy
+When conscious again after being unconscious, may add feat of strength skill’s value to energy at the cost of a level of
+exhaustion
++15 to forage and track in deserts and mountains
+
+
+
+East Anzar 
+
+Languages: Anz, Melfaric, one of player’s choice
++30 Martial Prowess points
++3/Spiritual Modifier for Deity Relationship point caps
+Unfaic Lands: 
++1 physical 
++1 armor reduction when fighting Inin and West Anzar Anz, as well as +10 to resist supernatural and resist psionics when
+used by an Inin and West Anzar Anz
++10 to battle, divine intervention, psionic technique, and will dakar against Inin and West Anzar Anz
++15 to recall academics when related to religion and history 
+
+
+
+Phi’ilin 
+
+Roll d100.
+|Roll      |Result      |
+|1-20      |Elari       |
+|21-80     |Laigoni     |
+|81-100    |Rodini      |
+
+
+Phi’ilin Features:
+A Phi’iel stands at about 6-8ft tall, and weighs approximately 300-400 lbs on average.
+Phi’ilin have long, knife-length pointed ears with fair features, and silver eyes and fine hair. 
+Despite a lithe and slender visage, Phi’ilin are heavy due to extremely dense muscle mass, which gives them superior
+strength and speed for their size.
+Phi’ilin live for 800-1200 years on average.
+Phi’ilin maintain a graceful and haughty utilitarian-obsessed disposition that can slowly change to one of despair, chaos,
+and loathing with long memories to match their long lifespans.
+Superlative Eyes:
+120 ft of darkvision and magical darkvision
+Immune to blindness 
++15 to navigate while outside and with a clear view of the sky
++5 to feat of agility and initiative
+May use a feat of agility to defend against ranged weapons and spells instead of using battle 
+Dense:
++15 to contested rolls when being knocked prone or moved forcefully by physical or magical means
+Swimming costs 3 energy as opposed to 2 
+Move for no energy cost twice per round 
+
+
+Phi’ilin Subraces and Cultures:
+
+
+
+Elari
+
+Languages: Phi’ilin, Narinduilin
++30 Martial Prowess points
++30 Ildakar Faculty points
+Fanatical Environmentalists:
+-10 to battle against animals
+-7 to seduce and perform with non-Phi’ilin
++7 to deceive and intimidate against non-Phi’ilin
++10 to two of the following: foraging, tracking, animal husbandry, and will dakar
+Spellblade: 
++1 ancillary at character creation
+May use will Dakar skill value for divine intervention and psionic technique as well
+May use Will Dakar for 2 fewer action points (minimum 1 action point)
++30 Martial Prowess Points per character tier increase 
+
+
+
+Laigoni 
+
+Languages: Phi’ilin, Narinduilin, and one of the player’s choice
++50 Martial Prowess points
++10 Ildakar Faculty points
+Military Drilling: 
+Add 2x physical attribute value to initiative
++1 Physical, -1 Will 
+Move once with no energy cost the first time you move, every encounter 
+No action point cost on the first weapon attack you make, every encounter
+Scholarly Drilling:
++7 to three of the following: academic recall, Heal, identify, interpret, translate, and navigate 
+
+
+
+Rodini 
+
+Languages: Phi’ilin, Melfaric, and one of the player’s choice
++10 Martial Prowess points
++50 Ildakar Faculty points
+Phi’ilin Resiliance:
++1 damage reduction from armor and shields
++8 to endure, persevere, resist toxins, resist psionics, resist supernatural, and feat of austerity 
+Sentinels:
++1 Physical
+Climbing only costs 1 energy as opposed to 2 
+
+
+
+Cerevu
+
+Roll d100.
+|Roll      |Result     |
+|1-55      |Darii      |
+|56-100    |Cerii      |
+
+
+Cerevu Features:
+Cerevu typically stand at about 4-5 ft tall, weighing about 200-300 lbs on average.
+Cerevu have rounded ears and are hairier than the other species, but are otherwise androgynous, as the other species are
+unsure of how Cerevu reproduce. 
+Cerevu tend to be rounder and squatter in shape. 
+Cerevu live around 150-200 years on average. 
+Cerevu tend to have a very calm and tranquil disposition, and value quiet and industriousness above all else.
+Cavernous Mansions:
++8 to search with hearing and smelling
++15 to navigate when indoors or cannot see the sky
++5 to interpret
++12 to craft, academic recall, and forage when in subterranean and mountain environments.
+Cerevu cannot use the seduce skill 
+Cool Head:
++10 to resist psionics and resist supernatural when a foe attempts to charm or intimidate you magically
++10 to feat of austerity 
+
+
+Cerevu Subraces and Cultures:
+
+
+
+Darii
+
+Black hair, dark brown eyes
+Languages: Darii, Narinduilin, one of the player’s choice
++30 Martial Prowess points
++20 Ildakar Faculty points
+Mountain Cleansers:
++1 physical and +3 to endure
++1 armor damage reduction when defending against non-Cerevu
++12 to craft
+You may carry a set of tools that does not take up inventory slots
+Ancestral Feuds:
++10 battle against a creature type of your choice (if you choose mortals, you must specify which species, and if Inin, a
+specific subrace) 
++10 battle when defending and adjacent to a Cerevu ally 
+
+
+
+Cerii
+
+Grey hair, dark grey eyes
+Languages: Darii, Melfaric, one of the player’s choice
++30 Martial Prowess points 
++20 Ildakar Faculty points 
+Tunnel Cleansers: 
++1 physical and +3 to endure
++15 to animal husbandry and interpret when related to subterranean creatures
+Deep Delvers:
+15 ft of darkvision
++15 to feat of defiance when falling
+Climbing only costs 1 energy as opposed to 2
++15 to feat of strength and endure when in subterranean and mountain environments.
+
+
+
+Venii
+
+Roll d100.
+|Roll      |Result     |
+|1-40      |Agunic     |
+|41-100    |Unfaic     |
+
+
+Venii Features:
+Venii usually stand at 6-8 ft tall, weighing approximately 120-200 lbs on average.
+Venii have jet black smooth chitinous skin, fine stark white hair, and glossy reflective eyes with arachnoid faces and
+pedipalps, which they almost always keep veiled or hidden from non-Venii. 
+Venii have stringy, scrawny, tall, and slender builds, who otherwise seem like Phi’ilin.
+Venii typically live 150-200 years on average. 
+Venii maintains an attempted pleasant attitude but suffers from a terribly awkward disposition.
+Depth Strider:
+Complete darkvision, as well as 60 ft of pallesthesia 
+Immune to suffocation, does not need air to breathe
++12 to initiative while in darkness, -6 to initiative while illuminated
++5 to battle while in darkness, -5 to battle while illuminated
+Moves silently in darkness and has +6 to conceal while in darkness
++15 to navigate when indoors or cannot see the sky
+-8 to seduce and perform with non-Venii 
+
+
+Venii Subraces and Cultures:
+
+
+
+Agunic: 
+
+Languages: Darii, Narinduilin, one of the player’s choice
++20 Martial Prowess points
++20 Ildakar Faculty points
++3 Psi-Points 
+Estranged Friends:
++7 to intimidate, convert, and seduce against spirits, animals, undead, and aliens
+May use animal handling with spirits, animals, undead, and aliens
++12 to resist toxins
+All weapon attacks are poisoned if you wish
+
+
+
+Unfaic:
+
+Languages: Darii, Melfaric, one of the player’s choice
++20 Martial Prowess points
++20 Ildakar Faculty points
++3 Psi-Points
+Karst Hunter: 
+120 ft of pallesthesia with small-sized creatures and larger, unless under magical effects used to conceal their passage
++15 to feat of defiance when falling, and immune to fall damage from 40 ft or less
+Can climb on sheer surfaces and ceilings
+Climbing and swimming only cost 1 energy as opposed to 2
+ 
+
+
+
+Freinin
+
+Freinin usually stand at about half an Inin’s height, weighing approximately a quarter as much on average as well. 
+Freinin come in all shapes and sizes, but are considered small creatures. 
+Freinin have a variety of skin, hair, and eye colors. 
+Freinin typically live 60-80 years on average. 
+Freinin, called “humans” or “mankind” in their own tongues and native to Adûrun, maintain a variety of demeanors, but
+generally speaking, tend to be characterized as frail and craven, or at least, quite risk-averse compared to the other
+species.
+Freinin cannot use Dakar or Psionics, including Links.
+Freinin does not have any subspecies. 
+Languages: Two of the player’s choice
++50 Martial Prowess points
++1/Spiritual Modifier for Deity Relationship point caps
+Only Human: 
+-2 Physical, +2 Will 
+Immunity to psionics
++10 energy at character creation and per level-up 
++1 ancillary at character creation and at character tier increases
++10 Martial Prowess at character tier increases 
++7 to feat of defiance, artistry, endure, persevere, perform, Parley, conceal, incite fate
+
+
+
