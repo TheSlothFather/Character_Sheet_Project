@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ATTR_PHYSICAL",
+    "code": "PHYSICAL",
+    "name": "PHYSICAL",
+    "description": ""
+  },
+  {
+    "id": "ATTR_MENTAL",
+    "code": "MENTAL",
+    "name": "MENTAL",
+    "description": ""
+  },
+  {
+    "id": "ATTR_WILL",
+    "code": "WILL",
+    "name": "WILL",
+    "description": ""
+  },
+  {
+    "id": "ATTR_SPIRITUAL",
+    "code": "SPIRITUAL",
+    "name": "SPIRITUAL",
+    "description": ""
+  }
+]

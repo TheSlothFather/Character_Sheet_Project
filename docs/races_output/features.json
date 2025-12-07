@@ -1,0 +1,677 @@
+[
+  {
+    "id": "FEAT_ININ_ININ_BASELINE",
+    "code": "ININ_BASELINE",
+    "source_type": "lineage",
+    "source_id": "LIN_ININ",
+    "name": "Inin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_ININ_ININ_FEROCITY",
+    "code": "ININ_FEROCITY",
+    "source_type": "lineage",
+    "source_id": "LIN_ININ",
+    "name": "Inin Ferocity",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_ININ_ININ_SUBRACES_AND_CULTURES",
+    "code": "ININ_SUBRACES_AND_CULTURES",
+    "source_type": "lineage",
+    "source_id": "LIN_ININ",
+    "name": "Inin Subraces and Cultures",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_ECTHVASIN_ECTHVASIN_BASELINE",
+    "code": "ECTHVASIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_ECTHVASIN",
+    "name": "Ecthvasin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_ECTHVASIN_MAGICALLY_INCLINED",
+    "code": "MAGICALLY_INCLINED",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_ECTHVASIN",
+    "name": "Magically Inclined",
+    "category": "trait",
+    "description": "+5 to combined efforts for utilizing the chosen skill above"
+  },
+  {
+    "id": "FEAT_ECTHVASIN_PRONE_TO_IRE",
+    "code": "PRONE_TO_IRE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_ECTHVASIN",
+    "name": "Prone to Ire",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_GEOROTHIN_GEOROTHIN_BASELINE",
+    "code": "GEOROTHIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_GEOROTHIN",
+    "name": "Georothin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING",
+    "code": "SWAMPER_UPBRINGING",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_GEOROTHIN",
+    "name": "Swamper Upbringing",
+    "category": "trait",
+    "description": "Swimming only takes 1 energy as opposed to 2"
+  },
+  {
+    "id": "FEAT_GEOROTHIN_PURIFIERS_OF_THE_DEAD",
+    "code": "PURIFIERS_OF_THE_DEAD",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_GEOROTHIN",
+    "name": "Purifiers of The Dead",
+    "category": "trait",
+    "description": "2x attribute modifier when dealing damage to undead\nOnce per phase, you may reduce damage dealt to you by undead creatures by your spiritual modifier for spiritual modifier\nrounds (minimum 1 round)"
+  },
+  {
+    "id": "FEAT_KAINDORIN_KAINDORIN_BASELINE",
+    "code": "KAINDORIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_KAINDORIN",
+    "name": "Kaindorin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_KAINDORIN_SWAMPER_UPBRINGING",
+    "code": "SWAMPER_UPBRINGING",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_KAINDORIN",
+    "name": "Swamper Upbringing",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_KAINDORIN_SMOOTH_TALKER",
+    "code": "SMOOTH_TALKER",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_KAINDORIN",
+    "name": "Smooth Talker",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_KAINDORIN_COOL_HEAD",
+    "code": "COOL_HEAD",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_KAINDORIN",
+    "name": "Cool Head",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_JIININ_JIININ_BASELINE",
+    "code": "JIININ_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_JIININ",
+    "name": "Jiinin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_JIININ_MULTI",
+    "code": "MULTI",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_JIININ",
+    "name": "Multi",
+    "category": "trait",
+    "description": "faceted Warriors:\nAdd physical modifier to initiative rolls (minimum 1)"
+  },
+  {
+    "id": "FEAT_JIININ_DEVASTATING_ONSLAUGHT",
+    "code": "DEVASTATING_ONSLAUGHT",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_JIININ",
+    "name": "Devastating Onslaught",
+    "category": "trait",
+    "description": "Wicked Criticals are now Vicious Criticals, and Vicious Criticals are now Brutal Criticals\nWhen you critically hit a foe, you critically hit a second adjacent foe if one is available at the cost of 1 exhaustion. If\nthere is no second adjacent foe, you gain energy equal to your normal attack with this weapon at the cost of 1 exhaustion.\nThis is not optional."
+  },
+  {
+    "id": "FEAT_THAIRIN_THAIRIN_BASELINE",
+    "code": "THAIRIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_THAIRIN",
+    "name": "Thairin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_THAIRIN_ATHLETIC_UPBRINGING",
+    "code": "ATHLETIC_UPBRINGING",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_THAIRIN",
+    "name": "Athletic Upbringing",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_GRAZIN_GRAZIN_BASELINE",
+    "code": "GRAZIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_GRAZIN",
+    "name": "Grazin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_GRAZIN_RUGGED_LIVING",
+    "code": "RUGGED_LIVING",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_GRAZIN",
+    "name": "Rugged Living",
+    "category": "trait",
+    "description": "33% damage reduction when targeted by magic using cold or frost, or thermomancy\nAdd physical modifier to the energy gained through heal spells or potions used or cast upon you\n+20% to starting energy at character creation, and energy increases when leveling up\nSwimming only takes 1 energy as opposed to 2"
+  },
+  {
+    "id": "FEAT_RODONIN_RODONIN_BASELINE",
+    "code": "RODONIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_RODONIN",
+    "name": "Rodonin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_RODONIN_SWIFT_OF_FOOT",
+    "code": "SWIFT_OF_FOOT",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_RODONIN",
+    "name": "Swift of Foot",
+    "category": "trait",
+    "description": "May move once for no energy cost once per round while in darkness\nWicked Criticals are now Vicious Criticals, and Vicious Criticals are now Brutal Criticals while flanking in darkness\nMay move once for no energy or action point cost, once per round after making a flanking attack in darkness\nMay switch to another equipped item without costing energy or action points once per round"
+  },
+  {
+    "id": "FEAT_RODONIN_SHADOW_BLENDER",
+    "code": "SHADOW_BLENDER",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_RODONIN",
+    "name": "Shadow Blender",
+    "category": "trait",
+    "description": "20 ft of darkvision"
+  },
+  {
+    "id": "FEAT_BRYONIN_BRYONIN_BASELINE",
+    "code": "BRYONIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_BRYONIN",
+    "name": "Bryonin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_BRYONIN_SUPERIOR_EYES",
+    "code": "SUPERIOR_EYES",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_BRYONIN",
+    "name": "Superior Eyes",
+    "category": "trait",
+    "description": "60 ft of darkvision"
+  },
+  {
+    "id": "FEAT_BRYONIN_BRYONIN_ARROGANCE",
+    "code": "BRYONIN_ARROGANCE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_BRYONIN",
+    "name": "Bryonin Arrogance",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_GANZENONIN_GANZENONIN_BASELINE",
+    "code": "GANZENONIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_GANZENONIN",
+    "name": "Ganzenonin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_GANZENONIN_WAR",
+    "code": "WAR",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_GANZENONIN",
+    "name": "War",
+    "category": "trait",
+    "description": "Torn Homeland:\nthe player\u2019s choice\n+1 ancillary at character creation, and +1 ancillary upon reaching every character tier\nAdd physical to weapon damage when fighting non-Ganzenonin twice as opposed to once"
+  },
+  {
+    "id": "FEAT_GANZENONIN_WILL_TO_LIVE",
+    "code": "WILL_TO_LIVE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_GANZENONIN",
+    "name": "Will to Live",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_RIVANONIN_RIVANONIN_BASELINE",
+    "code": "RIVANONIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_RIVANONIN",
+    "name": "Rivanonin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_RIVANONIN_DEEP_MIND",
+    "code": "DEEP_MIND",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_RIVANONIN",
+    "name": "Deep Mind",
+    "category": "trait",
+    "description": "Can link with more than one link partner without spending psionic technique points in the link tree\n+1 link point per level per link partner\nMay spend a link point after a failed link once per moonface per link partner to attempt again"
+  },
+  {
+    "id": "FEAT_RIVANONIN_ISOLATED_RIVERMEN",
+    "code": "ISOLATED_RIVERMEN",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_RIVANONIN",
+    "name": "Isolated Rivermen",
+    "category": "trait",
+    "description": "Swimming only takes 1 energy as opposed to 2"
+  },
+  {
+    "id": "FEAT_MELFARIONIN_MELFARIONIN_BASELINE",
+    "code": "MELFARIONIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_MELFARIONIN",
+    "name": "Melfarionin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_MELFARIONIN_MELFARIC_UNITY",
+    "code": "MELFARIC_UNITY",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_MELFARIONIN",
+    "name": "Melfaric Unity",
+    "category": "trait",
+    "description": "May move twice per round with no energy or action point cost if advancing towards a foe"
+  },
+  {
+    "id": "FEAT_MELFARIONIN_FAR_TRAVELED",
+    "code": "FAR_TRAVELED",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_MELFARIONIN",
+    "name": "Far Traveled",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS",
+    "code": "CHILD_OF_THE_TWIN_STARS",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_MELFARIONIN",
+    "name": "Child of The Twin Stars",
+    "category": "trait",
+    "description": "you magically\nMay use message with an adjacent link partner you have linked with once or more, permanently, without having to unlock it\nin the psionic technique tree\nCan illuminate a 20ft cone for 1 minute, once per moonface if you are not blinded\nOnce per moonface, you may use Dynakinesis without having to unlock it in the Psionic Technique Tree"
+  },
+  {
+    "id": "FEAT_LETELIN_LETELIN_BASELINE",
+    "code": "LETELIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_LETELIN",
+    "name": "Letelin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_THUILIN_THUILIN_BASELINE",
+    "code": "THUILIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_THUILIN",
+    "name": "Thuilin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_THUILIN_SUPERLATIVE_EYES",
+    "code": "SUPERLATIVE_EYES",
+    "source_type": "culture",
+    "source_id": "CUL_ININ_THUILIN",
+    "name": "Superlative Eyes",
+    "category": "trait",
+    "description": "120 ft of darkvision and magical darkvision"
+  },
+  {
+    "id": "FEAT_ANZ_ANZ_BASELINE",
+    "code": "ANZ_BASELINE",
+    "source_type": "lineage",
+    "source_id": "LIN_ANZ",
+    "name": "Anz Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_ANZ_REGENERATIVE",
+    "code": "REGENERATIVE",
+    "source_type": "lineage",
+    "source_id": "LIN_ANZ",
+    "name": "Regenerative",
+    "category": "trait",
+    "description": "Immune to bleeding and can regenerate severed limbs and digits over the course of a phase\nAutomatically regains 2x character tier energy every round without spending action points, but cannot heal via magical\nmeans\n+40% to starting energy at character creation, and energy increases when leveling up"
+  },
+  {
+    "id": "FEAT_ANZ_ANZ_SUBRACES_AND_CULTURES",
+    "code": "ANZ_SUBRACES_AND_CULTURES",
+    "source_type": "lineage",
+    "source_id": "LIN_ANZ",
+    "name": "Anz Subraces and Cultures",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_WEST_ANZAR_WEST_ANZAR_BASELINE",
+    "code": "WEST_ANZAR_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ANZ_WEST_ANZAR",
+    "name": "West Anzar Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_WEST_ANZAR_ADURIC_LANDS",
+    "code": "ADURIC_LANDS",
+    "source_type": "culture",
+    "source_id": "CUL_ANZ_WEST_ANZAR",
+    "name": "Aduric Lands",
+    "category": "trait",
+    "description": "Unless brought to 0 energy after sustaining damage, may spend an action point as a reaction to regain 2x level energy\nWhen conscious again after being unconscious, may add feat of strength skill\u2019s value to energy at the cost of a level of\nexhaustion"
+  },
+  {
+    "id": "FEAT_EAST_ANZAR_EAST_ANZAR_BASELINE",
+    "code": "EAST_ANZAR_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_ANZ_EAST_ANZAR",
+    "name": "East Anzar Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_EAST_ANZAR_UNFAIC_LANDS",
+    "code": "UNFAIC_LANDS",
+    "source_type": "culture",
+    "source_id": "CUL_ANZ_EAST_ANZAR",
+    "name": "Unfaic Lands",
+    "category": "trait",
+    "description": "used by an Inin and West Anzar Anz\n+15 to recall academics when related to religion and history\nPhi\u2019ilin\nRoll d100.\n|Roll      |Result      |\n|1-20      |Elari       |\n|21-80\u00a0    |Laigoni     |\n|81-100    |Rodini\u00a0     |\nPhi\u2019ilin Features:\nA Phi\u2019iel stands at about 6-8ft tall, and weighs approximately 300-400 lbs on average.\nPhi\u2019ilin have long, knife-length pointed ears with fair features, and silver eyes and fine hair.\nDespite a lithe and slender visage, Phi\u2019ilin are heavy due to extremely dense muscle mass, which gives them superior\nstrength and speed for their size.\nPhi\u2019ilin live for 800-1200 years on average.\nPhi\u2019ilin maintain a graceful and haughty utilitarian-obsessed disposition that can slowly change to one of despair, chaos,\nand loathing with long memories to match their long lifespans."
+  },
+  {
+    "id": "FEAT_EAST_ANZAR_SUPERLATIVE_EYES",
+    "code": "SUPERLATIVE_EYES",
+    "source_type": "culture",
+    "source_id": "CUL_ANZ_EAST_ANZAR",
+    "name": "Superlative Eyes",
+    "category": "trait",
+    "description": "120 ft of darkvision and magical darkvision"
+  },
+  {
+    "id": "FEAT_ELARI_ELARI_BASELINE",
+    "code": "ELARI_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_PHI_ILIN_ELARI",
+    "name": "Elari Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS",
+    "code": "FANATICAL_ENVIRONMENTALISTS",
+    "source_type": "culture",
+    "source_id": "CUL_PHI_ILIN_ELARI",
+    "name": "Fanatical Environmentalists",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_ELARI_SPELLBLADE",
+    "code": "SPELLBLADE",
+    "source_type": "culture",
+    "source_id": "CUL_PHI_ILIN_ELARI",
+    "name": "Spellblade",
+    "category": "trait",
+    "description": "+1 ancillary at character creation\nMay use will Dakar skill value for divine intervention and psionic technique as well\nMay use Will Dakar for 2 fewer action points (minimum 1 action point)"
+  },
+  {
+    "id": "FEAT_LAIGONI_LAIGONI_BASELINE",
+    "code": "LAIGONI_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_PHI_ILIN_LAIGONI",
+    "name": "Laigoni Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_LAIGONI_MILITARY_DRILLING",
+    "code": "MILITARY_DRILLING",
+    "source_type": "culture",
+    "source_id": "CUL_PHI_ILIN_LAIGONI",
+    "name": "Military Drilling",
+    "category": "trait",
+    "description": "Add 2x physical attribute value to initiative\nMove once with no energy cost the first time you move, every encounter\nNo action point cost on the first weapon attack you make, every encounter"
+  },
+  {
+    "id": "FEAT_LAIGONI_SCHOLARLY_DRILLING",
+    "code": "SCHOLARLY_DRILLING",
+    "source_type": "culture",
+    "source_id": "CUL_PHI_ILIN_LAIGONI",
+    "name": "Scholarly Drilling",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_RODINI_RODINI_BASELINE",
+    "code": "RODINI_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_PHI_ILIN_RODINI",
+    "name": "Rodini Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_RODINI_PHI_ILIN_RESILIANCE",
+    "code": "PHI_ILIN_RESILIANCE",
+    "source_type": "culture",
+    "source_id": "CUL_PHI_ILIN_RODINI",
+    "name": "Phi\u2019ilin Resiliance",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_RODINI_SENTINELS",
+    "code": "SENTINELS",
+    "source_type": "culture",
+    "source_id": "CUL_PHI_ILIN_RODINI",
+    "name": "Sentinels",
+    "category": "trait",
+    "description": "Climbing only costs 1 energy as opposed to 2"
+  },
+  {
+    "id": "FEAT_CEREVU_CEREVU_BASELINE",
+    "code": "CEREVU_BASELINE",
+    "source_type": "lineage",
+    "source_id": "LIN_CEREVU",
+    "name": "Cerevu Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_CEREVU_CAVERNOUS_MANSIONS",
+    "code": "CAVERNOUS_MANSIONS",
+    "source_type": "lineage",
+    "source_id": "LIN_CEREVU",
+    "name": "Cavernous Mansions",
+    "category": "trait",
+    "description": "Cerevu cannot use the seduce skill"
+  },
+  {
+    "id": "FEAT_CEREVU_COOL_HEAD",
+    "code": "COOL_HEAD",
+    "source_type": "lineage",
+    "source_id": "LIN_CEREVU",
+    "name": "Cool Head",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_CEREVU_CEREVU_SUBRACES_AND_CULTURES",
+    "code": "CEREVU_SUBRACES_AND_CULTURES",
+    "source_type": "lineage",
+    "source_id": "LIN_CEREVU",
+    "name": "Cerevu Subraces and Cultures",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_DARII_DARII_BASELINE",
+    "code": "DARII_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_CEREVU_DARII",
+    "name": "Darii Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_DARII_MOUNTAIN_CLEANSERS",
+    "code": "MOUNTAIN_CLEANSERS",
+    "source_type": "culture",
+    "source_id": "CUL_CEREVU_DARII",
+    "name": "Mountain Cleansers",
+    "category": "trait",
+    "description": "You may carry a set of tools that does not take up inventory slots"
+  },
+  {
+    "id": "FEAT_DARII_ANCESTRAL_FEUDS",
+    "code": "ANCESTRAL_FEUDS",
+    "source_type": "culture",
+    "source_id": "CUL_CEREVU_DARII",
+    "name": "Ancestral Feuds",
+    "category": "trait",
+    "description": "specific subrace)"
+  },
+  {
+    "id": "FEAT_CERII_CERII_BASELINE",
+    "code": "CERII_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_CEREVU_CERII",
+    "name": "Cerii Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_CERII_TUNNEL_CLEANSERS",
+    "code": "TUNNEL_CLEANSERS",
+    "source_type": "culture",
+    "source_id": "CUL_CEREVU_CERII",
+    "name": "Tunnel Cleansers",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_CERII_DEEP_DELVERS",
+    "code": "DEEP_DELVERS",
+    "source_type": "culture",
+    "source_id": "CUL_CEREVU_CERII",
+    "name": "Deep Delvers",
+    "category": "trait",
+    "description": "15 ft of darkvision\nClimbing only costs 1 energy as opposed to 2"
+  },
+  {
+    "id": "FEAT_VENII_VENII_BASELINE",
+    "code": "VENII_BASELINE",
+    "source_type": "lineage",
+    "source_id": "LIN_VENII",
+    "name": "Venii Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_VENII_DEPTH_STRIDER",
+    "code": "DEPTH_STRIDER",
+    "source_type": "lineage",
+    "source_id": "LIN_VENII",
+    "name": "Depth Strider",
+    "category": "trait",
+    "description": "Complete darkvision, as well as 60 ft of pallesthesia\nImmune to suffocation, does not need air to breathe"
+  },
+  {
+    "id": "FEAT_VENII_VENII_SUBRACES_AND_CULTURES",
+    "code": "VENII_SUBRACES_AND_CULTURES",
+    "source_type": "lineage",
+    "source_id": "LIN_VENII",
+    "name": "Venii Subraces and Cultures",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_VENII_AGUNIC",
+    "code": "AGUNIC",
+    "source_type": "lineage",
+    "source_id": "LIN_VENII",
+    "name": "Agunic",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_VENII_ESTRANGED_FRIENDS",
+    "code": "ESTRANGED_FRIENDS",
+    "source_type": "lineage",
+    "source_id": "LIN_VENII",
+    "name": "Estranged Friends",
+    "category": "trait",
+    "description": "May use animal handling with spirits, animals, undead, and aliens\nAll weapon attacks are poisoned if you wish"
+  },
+  {
+    "id": "FEAT_VENII_UNFAIC",
+    "code": "UNFAIC",
+    "source_type": "lineage",
+    "source_id": "LIN_VENII",
+    "name": "Unfaic",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_VENII_KARST_HUNTER",
+    "code": "KARST_HUNTER",
+    "source_type": "lineage",
+    "source_id": "LIN_VENII",
+    "name": "Karst Hunter",
+    "category": "trait",
+    "description": "120 ft of pallesthesia with small-sized creatures and larger, unless under magical effects used to conceal their passage\nCan climb on sheer surfaces and ceilings\nClimbing and swimming only cost 1 energy as opposed to 2"
+  },
+  {
+    "id": "FEAT_FREININ_FREININ_BASELINE",
+    "code": "FREININ_BASELINE",
+    "source_type": "culture",
+    "source_id": "CUL_FREININ_FREININ",
+    "name": "Freinin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "FEAT_FREININ_ONLY_HUMAN",
+    "code": "ONLY_HUMAN",
+    "source_type": "culture",
+    "source_id": "CUL_FREININ_FREININ",
+    "name": "Only Human",
+    "category": "trait",
+    "description": ""
+  }
+]

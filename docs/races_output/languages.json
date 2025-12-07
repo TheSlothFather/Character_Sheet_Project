@@ -1,0 +1,77 @@
+[
+  {
+    "id": "LANG_NARINDUILIN",
+    "code": "NARINDUILIN",
+    "name": "Narinduilin"
+  },
+  {
+    "id": "LANG_ONE_OF_THE_PLAYER_S_CHOICE",
+    "code": "ONE_OF_THE_PLAYER_S_CHOICE",
+    "name": "one of the player\u2019s choice"
+  },
+  {
+    "id": "LANG_YAICH",
+    "code": "YAICH",
+    "name": "Yaich"
+  },
+  {
+    "id": "LANG_THAIRIN",
+    "code": "THAIRIN",
+    "name": "Thairin"
+  },
+  {
+    "id": "LANG_GRAZIN",
+    "code": "GRAZIN",
+    "name": "Grazin"
+  },
+  {
+    "id": "LANG_MELFARIC",
+    "code": "MELFARIC",
+    "name": "Melfaric"
+  },
+  {
+    "id": "LANG_TWO_LANGUAGES_OF_THE_PLAYER_S_CHOICE",
+    "code": "TWO_LANGUAGES_OF_THE_PLAYER_S_CHOICE",
+    "name": "two languages of the player\u2019s choice"
+  },
+  {
+    "id": "LANG_BRYONIN",
+    "code": "BRYONIN",
+    "name": "Bryonin"
+  },
+  {
+    "id": "LANG_FELANI",
+    "code": "FELANI",
+    "name": "Felani"
+  },
+  {
+    "id": "LANG_ANZ",
+    "code": "ANZ",
+    "name": "Anz"
+  },
+  {
+    "id": "LANG_ONE_OF_PLAYER_S_CHOICE",
+    "code": "ONE_OF_PLAYER_S_CHOICE",
+    "name": "one of player\u2019s choice"
+  },
+  {
+    "id": "LANG_PHI_ILIN",
+    "code": "PHI_ILIN",
+    "name": "Phi\u2019ilin"
+  },
+  {
+    "id": "LANG_AND_ONE_OF_THE_PLAYER_S_CHOICE",
+    "code": "AND_ONE_OF_THE_PLAYER_S_CHOICE",
+    "name": "and one of the player\u2019s choice"
+  },
+  {
+    "id": "LANG_DARII",
+    "code": "DARII",
+    "name": "Darii"
+  },
+  {
+    "id": "LANG_TWO_OF_THE_PLAYER_S_CHOICE",
+    "code": "TWO_OF_THE_PLAYER_S_CHOICE",
+    "name": "Two of the player\u2019s choice"
+  }
+]

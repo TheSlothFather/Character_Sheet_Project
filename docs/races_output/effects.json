@@ -1,0 +1,2868 @@
+[
+  {
+    "id": "FEAT_ECTHVASIN_ECTHVASIN_BASELINE_E01",
+    "feature_id": "FEAT_ECTHVASIN_ECTHVASIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_ECTHVASIN_ECTHVASIN_BASELINE_E02",
+    "feature_id": "FEAT_ECTHVASIN_ECTHVASIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_ECTHVASIN_ECTHVASIN_BASELINE_E03",
+    "feature_id": "FEAT_ECTHVASIN_ECTHVASIN_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 13,
+        "2": 26,
+        "3": 39,
+        "4": 52,
+        "5": 65,
+        "6": 78
+      },
+      "cap_step": 13,
+      "per_spiritual": 3
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_ECTHVASIN_MAGICALLY_INCLINED_E01",
+    "feature_id": "FEAT_ECTHVASIN_MAGICALLY_INCLINED",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "PSIONIC_TECHNIQUE",
+      "id": "SKILL_PSIONIC_TECHNIQUE"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_ECTHVASIN_MAGICALLY_INCLINED_E02",
+    "feature_id": "FEAT_ECTHVASIN_MAGICALLY_INCLINED",
+    "effect_type": "damage_modifier",
+    "target": {
+      "type": "damage"
+    },
+    "magnitude": {
+      "percent": 20
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "using offensively"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_ECTHVASIN_MAGICALLY_INCLINED_E03",
+    "feature_id": "FEAT_ECTHVASIN_MAGICALLY_INCLINED",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_PSIONICS",
+      "id": "SKILL_RESIST_PSIONICS"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_ECTHVASIN_PRONE_TO_IRE_E01",
+    "feature_id": "FEAT_ECTHVASIN_PRONE_TO_IRE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": -5
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "defending against non-Ecthvasin Inin"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Ecthvasin Inin"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_ECTHVASIN_PRONE_TO_IRE_E02",
+    "feature_id": "FEAT_ECTHVASIN_PRONE_TO_IRE",
+    "effect_type": "damage_modifier",
+    "target": {
+      "type": "damage"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "using battle, psionic technique, will dakar, and divine intervention"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_ECTHVASIN_PRONE_TO_IRE_E03",
+    "feature_id": "FEAT_ECTHVASIN_PRONE_TO_IRE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "CONCEAL",
+      "id": "SKILL_CONCEAL"
+    },
+    "magnitude": {
+      "flat": -10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "non-Ecthvasin Inin are using search against you in a contested roll"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "you in a contested roll"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Ecthvasin Inin are using search against you in a contested roll"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_ECTHVASIN_PRONE_TO_IRE_E04",
+    "feature_id": "FEAT_ECTHVASIN_PRONE_TO_IRE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_PSIONICS",
+      "id": "SKILL_RESIST_PSIONICS"
+    },
+    "magnitude": {
+      "flat": -10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "a foe attempts to charm or intimidate you magically"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_GEOROTHIN_GEOROTHIN_BASELINE_E01",
+    "feature_id": "FEAT_GEOROTHIN_GEOROTHIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GEOROTHIN_GEOROTHIN_BASELINE_E02",
+    "feature_id": "FEAT_GEOROTHIN_GEOROTHIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GEOROTHIN_GEOROTHIN_BASELINE_E03",
+    "feature_id": "FEAT_GEOROTHIN_GEOROTHIN_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 11,
+        "2": 22,
+        "3": 33,
+        "4": 44,
+        "5": 55,
+        "6": 66
+      },
+      "cap_step": 11,
+      "per_spiritual": 1
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING_E01",
+    "feature_id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FORAGE",
+      "id": "SKILL_FORAGE"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "environment",
+        "condition_value": {
+          "equals": "swampland"
+        }
+      },
+      {
+        "condition_type": "when",
+        "condition_value": "in swamplands"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING_E02",
+    "feature_id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "NAVIGATE",
+      "id": "SKILL_NAVIGATE"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "environment",
+        "condition_value": {
+          "equals": "swampland"
+        }
+      }
+    ]
+  },
+  {
+    "id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING_E03",
+    "feature_id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_TOXINS",
+      "id": "SKILL_RESIST_TOXINS"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GEOROTHIN_PURIFIERS_OF_THE_DEAD_E01",
+    "feature_id": "FEAT_GEOROTHIN_PURIFIERS_OF_THE_DEAD",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "undead"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_GEOROTHIN_PURIFIERS_OF_THE_DEAD_E02",
+    "feature_id": "FEAT_GEOROTHIN_PURIFIERS_OF_THE_DEAD",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "SENSE_SUPERNATURAL",
+      "id": "SKILL_SENSE_SUPERNATURAL"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_KAINDORIN_KAINDORIN_BASELINE_E01",
+    "feature_id": "FEAT_KAINDORIN_KAINDORIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_KAINDORIN_KAINDORIN_BASELINE_E02",
+    "feature_id": "FEAT_KAINDORIN_KAINDORIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_KAINDORIN_KAINDORIN_BASELINE_E03",
+    "feature_id": "FEAT_KAINDORIN_KAINDORIN_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 12,
+        "2": 24,
+        "3": 36,
+        "4": 48,
+        "5": 60,
+        "6": 72
+      },
+      "cap_step": 12,
+      "per_spiritual": 2
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_KAINDORIN_SWAMPER_UPBRINGING_E01",
+    "feature_id": "FEAT_KAINDORIN_SWAMPER_UPBRINGING",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FORAGE",
+      "id": "SKILL_FORAGE"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "environment",
+        "condition_value": {
+          "equals": "swampland"
+        }
+      },
+      {
+        "condition_type": "when",
+        "condition_value": "in swamplands"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_KAINDORIN_SWAMPER_UPBRINGING_E02",
+    "feature_id": "FEAT_KAINDORIN_SWAMPER_UPBRINGING",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_TOXINS",
+      "id": "SKILL_RESIST_TOXINS"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_KAINDORIN_SMOOTH_TALKER_E01",
+    "feature_id": "FEAT_KAINDORIN_SMOOTH_TALKER",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "WILL",
+      "id": "ATTR_WILL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_KAINDORIN_SMOOTH_TALKER_E02",
+    "feature_id": "FEAT_KAINDORIN_SMOOTH_TALKER",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "SEDUCE",
+      "id": "SKILL_SEDUCE"
+    },
+    "magnitude": {
+      "flat": 14
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "made against non-Kaindorin"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Kaindorin"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_KAINDORIN_COOL_HEAD_E01",
+    "feature_id": "FEAT_KAINDORIN_COOL_HEAD",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_PSIONICS",
+      "id": "SKILL_RESIST_PSIONICS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "a foe attempts to charm or intimidate you magically"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_KAINDORIN_COOL_HEAD_E02",
+    "feature_id": "FEAT_KAINDORIN_COOL_HEAD",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FEAT_OF_AUSTERITY",
+      "id": "SKILL_FEAT_OF_AUSTERITY"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_JIININ_JIININ_BASELINE_E01",
+    "feature_id": "FEAT_JIININ_JIININ_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_JIININ_JIININ_BASELINE_E02",
+    "feature_id": "FEAT_JIININ_JIININ_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_JIININ_JIININ_BASELINE_E03",
+    "feature_id": "FEAT_JIININ_JIININ_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 12,
+        "2": 24,
+        "3": 36,
+        "4": 48,
+        "5": 60,
+        "6": 72
+      },
+      "cap_step": 12,
+      "per_spiritual": 2
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_JIININ_MULTI_E01",
+    "feature_id": "FEAT_JIININ_MULTI",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_JIININ_MULTI_E02",
+    "feature_id": "FEAT_JIININ_MULTI",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_JIININ_MULTI_E03",
+    "feature_id": "FEAT_JIININ_MULTI",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_SUPERNATURAL",
+      "id": "SKILL_RESIST_SUPERNATURAL"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_THAIRIN_THAIRIN_BASELINE_E01",
+    "feature_id": "FEAT_THAIRIN_THAIRIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_THAIRIN_THAIRIN_BASELINE_E02",
+    "feature_id": "FEAT_THAIRIN_THAIRIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_THAIRIN_THAIRIN_BASELINE_E03",
+    "feature_id": "FEAT_THAIRIN_THAIRIN_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 12,
+        "2": 24,
+        "3": 36,
+        "4": 48,
+        "5": 60,
+        "6": 72
+      },
+      "cap_step": 12,
+      "per_spiritual": 2
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_THAIRIN_ATHLETIC_UPBRINGING_E01",
+    "feature_id": "FEAT_THAIRIN_ATHLETIC_UPBRINGING",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FEAT_OF_STRENGTH",
+      "id": "SKILL_FEAT_OF_STRENGTH"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GRAZIN_GRAZIN_BASELINE_E01",
+    "feature_id": "FEAT_GRAZIN_GRAZIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GRAZIN_GRAZIN_BASELINE_E02",
+    "feature_id": "FEAT_GRAZIN_GRAZIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GRAZIN_GRAZIN_BASELINE_E03",
+    "feature_id": "FEAT_GRAZIN_GRAZIN_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 11,
+        "2": 22,
+        "3": 33,
+        "4": 44,
+        "5": 55,
+        "6": 66
+      },
+      "cap_step": 11,
+      "per_spiritual": 1
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_GRAZIN_RUGGED_LIVING_E01",
+    "feature_id": "FEAT_GRAZIN_RUGGED_LIVING",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_TOXINS",
+      "id": "SKILL_RESIST_TOXINS"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GRAZIN_RUGGED_LIVING_E02",
+    "feature_id": "FEAT_GRAZIN_RUGGED_LIVING",
+    "effect_type": "damage_modifier",
+    "target": {
+      "type": "damage"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RODONIN_RODONIN_BASELINE_E01",
+    "feature_id": "FEAT_RODONIN_RODONIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RODONIN_RODONIN_BASELINE_E02",
+    "feature_id": "FEAT_RODONIN_RODONIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RODONIN_SWIFT_OF_FOOT_E01",
+    "feature_id": "FEAT_RODONIN_SWIFT_OF_FOOT",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FEAT_OF_AGILITY",
+      "id": "SKILL_FEAT_OF_AGILITY"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RODONIN_SHADOW_BLENDER_E01",
+    "feature_id": "FEAT_RODONIN_SHADOW_BLENDER",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "CONCEAL",
+      "id": "SKILL_CONCEAL"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "lighting",
+        "condition_value": {
+          "equals": "darkness"
+        }
+      },
+      {
+        "condition_type": "while",
+        "condition_value": "in darkness"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_RODONIN_SHADOW_BLENDER_E02",
+    "feature_id": "FEAT_RODONIN_SHADOW_BLENDER",
+    "effect_type": "derived_stat_bonus",
+    "target": {
+      "type": "derived_stat",
+      "code": "INITIATIVE"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "lighting",
+        "condition_value": {
+          "equals": "darkness"
+        }
+      },
+      {
+        "condition_type": "while",
+        "condition_value": "in darkness"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_BRYONIN_BRYONIN_BASELINE_E01",
+    "feature_id": "FEAT_BRYONIN_BRYONIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_BRYONIN_BRYONIN_BASELINE_E02",
+    "feature_id": "FEAT_BRYONIN_BRYONIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_BRYONIN_BRYONIN_BASELINE_E03",
+    "feature_id": "FEAT_BRYONIN_BRYONIN_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 12,
+        "2": 24,
+        "3": 36,
+        "4": 48,
+        "5": 60,
+        "6": 72
+      },
+      "cap_step": 12,
+      "per_spiritual": 2
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_BRYONIN_SUPERIOR_EYES_E01",
+    "feature_id": "FEAT_BRYONIN_SUPERIOR_EYES",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "SEARCH",
+      "id": "SKILL_SEARCH"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_BRYONIN_SUPERIOR_EYES_E02",
+    "feature_id": "FEAT_BRYONIN_SUPERIOR_EYES",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "IDENTIFY",
+      "id": "SKILL_IDENTIFY"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "parsing a disguise"
+      },
+      {
+        "condition_type": "if",
+        "condition_value": "y when parsing a disguise"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_BRYONIN_SUPERIOR_EYES_E03",
+    "feature_id": "FEAT_BRYONIN_SUPERIOR_EYES",
+    "effect_type": "derived_stat_bonus",
+    "target": {
+      "type": "derived_stat",
+      "code": "INITIATIVE"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_BRYONIN_BRYONIN_ARROGANCE_E01",
+    "feature_id": "FEAT_BRYONIN_BRYONIN_ARROGANCE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "SEDUCE",
+      "id": "SKILL_SEDUCE"
+    },
+    "magnitude": {
+      "flat": -5
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Bryonin"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_BRYONIN_BRYONIN_ARROGANCE_E02",
+    "feature_id": "FEAT_BRYONIN_BRYONIN_ARROGANCE",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "ATTR_PHYSICAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_BRYONIN_BRYONIN_ARROGANCE_E03",
+    "feature_id": "FEAT_BRYONIN_BRYONIN_ARROGANCE",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "WILL",
+      "id": "ATTR_WILL"
+    },
+    "magnitude": {
+      "flat": -1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GANZENONIN_GANZENONIN_BASELINE_E01",
+    "feature_id": "FEAT_GANZENONIN_GANZENONIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 60
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GANZENONIN_WAR_E01",
+    "feature_id": "FEAT_GANZENONIN_WAR",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "ATTR_PHYSICAL"
+    },
+    "magnitude": {
+      "flat": -1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GANZENONIN_WAR_E02",
+    "feature_id": "FEAT_GANZENONIN_WAR",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "WILL",
+      "id": "ATTR_WILL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GANZENONIN_WAR_E03",
+    "feature_id": "FEAT_GANZENONIN_WAR",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Ganzenonin"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_GANZENONIN_WAR_E04",
+    "feature_id": "FEAT_GANZENONIN_WAR",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GANZENONIN_WILL_TO_LIVE_E01",
+    "feature_id": "FEAT_GANZENONIN_WILL_TO_LIVE",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "ATTR_PHYSICAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GANZENONIN_WILL_TO_LIVE_E02",
+    "feature_id": "FEAT_GANZENONIN_WILL_TO_LIVE",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "MENTAL",
+      "id": "ATTR_MENTAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_GANZENONIN_WILL_TO_LIVE_E03",
+    "feature_id": "FEAT_GANZENONIN_WILL_TO_LIVE",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "SPIRITUAL",
+      "id": "ATTR_SPIRITUAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RIVANONIN_RIVANONIN_BASELINE_E01",
+    "feature_id": "FEAT_RIVANONIN_RIVANONIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RIVANONIN_RIVANONIN_BASELINE_E02",
+    "feature_id": "FEAT_RIVANONIN_RIVANONIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RIVANONIN_RIVANONIN_BASELINE_E03",
+    "feature_id": "FEAT_RIVANONIN_RIVANONIN_BASELINE",
+    "effect_type": "resource_bonus",
+    "target": {
+      "type": "resource",
+      "code": "PSI_POINTS"
+    },
+    "magnitude": {
+      "flat": 3
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RIVANONIN_RIVANONIN_BASELINE_E04",
+    "feature_id": "FEAT_RIVANONIN_RIVANONIN_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 13,
+        "2": 26,
+        "3": 39,
+        "4": 52,
+        "5": 65,
+        "6": 78
+      },
+      "cap_step": 13,
+      "per_spiritual": 3
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_RIVANONIN_DEEP_MIND_E01",
+    "feature_id": "FEAT_RIVANONIN_DEEP_MIND",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "PSIONIC_TECHNIQUE",
+      "id": "SKILL_PSIONIC_TECHNIQUE"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RIVANONIN_DEEP_MIND_E02",
+    "feature_id": "FEAT_RIVANONIN_DEEP_MIND",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_PSIONICS",
+      "id": "SKILL_RESIST_PSIONICS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RIVANONIN_ISOLATED_RIVERMEN_E01",
+    "feature_id": "FEAT_RIVANONIN_ISOLATED_RIVERMEN",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FEAT_OF_STRENGTH",
+      "id": "SKILL_FEAT_OF_STRENGTH"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "in marine environments, e"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_RIVANONIN_ISOLATED_RIVERMEN_E02",
+    "feature_id": "FEAT_RIVANONIN_ISOLATED_RIVERMEN",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "IDENTIFY",
+      "id": "SKILL_IDENTIFY"
+    },
+    "magnitude": {
+      "flat": -10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "related to the histories or religions of non-Rivanonin cultures and groups"
+      },
+      {
+        "condition_type": "if",
+        "condition_value": "y when related to the histories or religions of non-Rivanonin cultures and groups"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Rivanonin cultures and groups"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_MELFARIONIN_MELFARIONIN_BASELINE_E01",
+    "feature_id": "FEAT_MELFARIONIN_MELFARIONIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_MELFARIONIN_MELFARIONIN_BASELINE_E02",
+    "feature_id": "FEAT_MELFARIONIN_MELFARIONIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E01",
+    "feature_id": "FEAT_MELFARIONIN_MELFARIC_UNITY",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Melfarionin Inin"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E02",
+    "feature_id": "FEAT_MELFARIONIN_MELFARIC_UNITY",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "DECEIVE",
+      "id": "SKILL_DECEIVE"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Melfarionin Inin"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E03",
+    "feature_id": "FEAT_MELFARIONIN_MELFARIC_UNITY",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FEAT_OF_STRENGTH",
+      "id": "SKILL_FEAT_OF_STRENGTH"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E04",
+    "feature_id": "FEAT_MELFARIONIN_MELFARIC_UNITY",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "PSIONIC_TECHNIQUE",
+      "id": "SKILL_PSIONIC_TECHNIQUE"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E05",
+    "feature_id": "FEAT_MELFARIONIN_MELFARIC_UNITY",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "ally_state",
+        "condition_value": "adjacent_ally"
+      },
+      {
+        "condition_type": "while",
+        "condition_value": "adjacent to a Melfarionin ally"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_MELFARIONIN_FAR_TRAVELED_E01",
+    "feature_id": "FEAT_MELFARIONIN_FAR_TRAVELED",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "IDENTIFY",
+      "id": "SKILL_IDENTIFY"
+    },
+    "magnitude": {
+      "flat": 3
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "related to non-Inin histories, cultures, and religions"
+      },
+      {
+        "condition_type": "if",
+        "condition_value": "y when related to non-Inin histories, cultures, and religions"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Inin histories"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_MELFARIONIN_FAR_TRAVELED_E02",
+    "feature_id": "FEAT_MELFARIONIN_FAR_TRAVELED",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "IDENTIFY",
+      "id": "SKILL_IDENTIFY"
+    },
+    "magnitude": {
+      "flat": -3
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "related to non-Melfarionin Inin histories, cultures, and religions"
+      },
+      {
+        "condition_type": "if",
+        "condition_value": "y when related to non-Melfarionin Inin histories, cultures, and religions"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Melfarionin Inin histories"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS_E01",
+    "feature_id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "NAVIGATE",
+      "id": "SKILL_NAVIGATE"
+    },
+    "magnitude": {
+      "flat": 8
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "while",
+        "condition_value": "outside and with a clear view of the sky"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS_E02",
+    "feature_id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_PSIONICS",
+      "id": "SKILL_RESIST_PSIONICS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "a non-Melfarionin Inin foe attempts to charm or intimidate you"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Melfarionin Inin foe attempts to charm or intimidate you"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS_E03",
+    "feature_id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_PSIONICS",
+      "id": "SKILL_RESIST_PSIONICS"
+    },
+    "magnitude": {
+      "flat": -10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "any other type of foe attempts to charm or intimidate"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_LETELIN_LETELIN_BASELINE_E01",
+    "feature_id": "FEAT_LETELIN_LETELIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_THUILIN_THUILIN_BASELINE_E01",
+    "feature_id": "FEAT_THUILIN_THUILIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_THUILIN_THUILIN_BASELINE_E02",
+    "feature_id": "FEAT_THUILIN_THUILIN_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_THUILIN_THUILIN_BASELINE_E03",
+    "feature_id": "FEAT_THUILIN_THUILIN_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 15,
+        "2": 30,
+        "3": 45,
+        "4": 60,
+        "5": 75,
+        "6": 90
+      },
+      "cap_step": 15,
+      "per_spiritual": 5
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_THUILIN_SUPERLATIVE_EYES_E01",
+    "feature_id": "FEAT_THUILIN_SUPERLATIVE_EYES",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "SPIRITUAL",
+      "id": "ATTR_SPIRITUAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_ANZ_REGENERATIVE_E01",
+    "feature_id": "FEAT_ANZ_REGENERATIVE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FEAT_OF_STRENGTH",
+      "id": "SKILL_FEAT_OF_STRENGTH"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_ANZ_REGENERATIVE_E02",
+    "feature_id": "FEAT_ANZ_REGENERATIVE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_WEST_ANZAR_WEST_ANZAR_BASELINE_E01",
+    "feature_id": "FEAT_WEST_ANZAR_WEST_ANZAR_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_WEST_ANZAR_WEST_ANZAR_BASELINE_E02",
+    "feature_id": "FEAT_WEST_ANZAR_WEST_ANZAR_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 15,
+        "2": 30,
+        "3": 45,
+        "4": 60,
+        "5": 75,
+        "6": 90
+      },
+      "cap_step": 15,
+      "per_spiritual": 5
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_WEST_ANZAR_ADURIC_LANDS_E01",
+    "feature_id": "FEAT_WEST_ANZAR_ADURIC_LANDS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "TRACK",
+      "id": "SKILL_TRACK"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_EAST_ANZAR_EAST_ANZAR_BASELINE_E01",
+    "feature_id": "FEAT_EAST_ANZAR_EAST_ANZAR_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_EAST_ANZAR_EAST_ANZAR_BASELINE_E02",
+    "feature_id": "FEAT_EAST_ANZAR_EAST_ANZAR_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 13,
+        "2": 26,
+        "3": 39,
+        "4": 52,
+        "5": 65,
+        "6": 78
+      },
+      "cap_step": 13,
+      "per_spiritual": 3
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_EAST_ANZAR_UNFAIC_LANDS_E01",
+    "feature_id": "FEAT_EAST_ANZAR_UNFAIC_LANDS",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "ATTR_PHYSICAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_EAST_ANZAR_UNFAIC_LANDS_E02",
+    "feature_id": "FEAT_EAST_ANZAR_UNFAIC_LANDS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_PSIONICS",
+      "id": "SKILL_RESIST_PSIONICS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": ""
+      }
+    ]
+  },
+  {
+    "id": "FEAT_EAST_ANZAR_UNFAIC_LANDS_E03",
+    "feature_id": "FEAT_EAST_ANZAR_UNFAIC_LANDS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "Inin and West Anzar Anz"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_ELARI_ELARI_BASELINE_E01",
+    "feature_id": "FEAT_ELARI_ELARI_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_ELARI_ELARI_BASELINE_E02",
+    "feature_id": "FEAT_ELARI_ELARI_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS_E01",
+    "feature_id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": -10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "animals"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS_E02",
+    "feature_id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "SEDUCE",
+      "id": "SKILL_SEDUCE"
+    },
+    "magnitude": {
+      "flat": -7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Phi"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS_E03",
+    "feature_id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "INTIMIDATE",
+      "id": "SKILL_INTIMIDATE"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Phi\u2019ilin"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Phi"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS_E04",
+    "feature_id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "WILL_DAKAR",
+      "id": "SKILL_WILL_DAKAR"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_ELARI_SPELLBLADE_E01",
+    "feature_id": "FEAT_ELARI_SPELLBLADE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_LAIGONI_LAIGONI_BASELINE_E01",
+    "feature_id": "FEAT_LAIGONI_LAIGONI_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 50
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_LAIGONI_LAIGONI_BASELINE_E02",
+    "feature_id": "FEAT_LAIGONI_LAIGONI_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_LAIGONI_MILITARY_DRILLING_E01",
+    "feature_id": "FEAT_LAIGONI_MILITARY_DRILLING",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "ATTR_PHYSICAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_LAIGONI_MILITARY_DRILLING_E02",
+    "feature_id": "FEAT_LAIGONI_MILITARY_DRILLING",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "WILL",
+      "id": "ATTR_WILL"
+    },
+    "magnitude": {
+      "flat": -1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_LAIGONI_SCHOLARLY_DRILLING_E01",
+    "feature_id": "FEAT_LAIGONI_SCHOLARLY_DRILLING",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ACADEMIC_RECALL",
+      "id": "SKILL_ACADEMIC_RECALL"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "y, interpret, translate, and navigate"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_RODINI_RODINI_BASELINE_E01",
+    "feature_id": "FEAT_RODINI_RODINI_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RODINI_RODINI_BASELINE_E02",
+    "feature_id": "FEAT_RODINI_RODINI_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 50
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RODINI_PHI_ILIN_RESILIANCE_E01",
+    "feature_id": "FEAT_RODINI_PHI_ILIN_RESILIANCE",
+    "effect_type": "damage_modifier",
+    "target": {
+      "type": "damage"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RODINI_PHI_ILIN_RESILIANCE_E02",
+    "feature_id": "FEAT_RODINI_PHI_ILIN_RESILIANCE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_TOXINS",
+      "id": "SKILL_RESIST_TOXINS"
+    },
+    "magnitude": {
+      "flat": 8
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_RODINI_SENTINELS_E01",
+    "feature_id": "FEAT_RODINI_SENTINELS",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "ATTR_PHYSICAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_CEREVU_CAVERNOUS_MANSIONS_E01",
+    "feature_id": "FEAT_CEREVU_CAVERNOUS_MANSIONS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "SEARCH",
+      "id": "SKILL_SEARCH"
+    },
+    "magnitude": {
+      "flat": 8
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_CEREVU_CAVERNOUS_MANSIONS_E02",
+    "feature_id": "FEAT_CEREVU_CAVERNOUS_MANSIONS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "NAVIGATE",
+      "id": "SKILL_NAVIGATE"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "environment",
+        "condition_value": {
+          "equals": "indoor"
+        }
+      },
+      {
+        "condition_type": "when",
+        "condition_value": "indoors or cannot see the sky"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_CEREVU_CAVERNOUS_MANSIONS_E03",
+    "feature_id": "FEAT_CEREVU_CAVERNOUS_MANSIONS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "INTERPRET",
+      "id": "SKILL_INTERPRET"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_CEREVU_CAVERNOUS_MANSIONS_E04",
+    "feature_id": "FEAT_CEREVU_CAVERNOUS_MANSIONS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ACADEMIC_RECALL",
+      "id": "SKILL_ACADEMIC_RECALL"
+    },
+    "magnitude": {
+      "flat": 12
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "in subterranean and mountain environments"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_CEREVU_COOL_HEAD_E01",
+    "feature_id": "FEAT_CEREVU_COOL_HEAD",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_PSIONICS",
+      "id": "SKILL_RESIST_PSIONICS"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "a foe attempts to charm or intimidate you magically"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_CEREVU_COOL_HEAD_E02",
+    "feature_id": "FEAT_CEREVU_COOL_HEAD",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FEAT_OF_AUSTERITY",
+      "id": "SKILL_FEAT_OF_AUSTERITY"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_DARII_DARII_BASELINE_E01",
+    "feature_id": "FEAT_DARII_DARII_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_DARII_DARII_BASELINE_E02",
+    "feature_id": "FEAT_DARII_DARII_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_DARII_MOUNTAIN_CLEANSERS_E01",
+    "feature_id": "FEAT_DARII_MOUNTAIN_CLEANSERS",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "ATTR_PHYSICAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_DARII_MOUNTAIN_CLEANSERS_E02",
+    "feature_id": "FEAT_DARII_MOUNTAIN_CLEANSERS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ENDURE",
+      "id": "SKILL_ENDURE"
+    },
+    "magnitude": {
+      "flat": 3
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_DARII_MOUNTAIN_CLEANSERS_E03",
+    "feature_id": "FEAT_DARII_MOUNTAIN_CLEANSERS",
+    "effect_type": "damage_modifier",
+    "target": {
+      "type": "damage"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "defending against non-Cerevu"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Cerevu"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_DARII_MOUNTAIN_CLEANSERS_E04",
+    "feature_id": "FEAT_DARII_MOUNTAIN_CLEANSERS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "CRAFT",
+      "id": "SKILL_CRAFT"
+    },
+    "magnitude": {
+      "flat": 12
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_DARII_ANCESTRAL_FEUDS_E01",
+    "feature_id": "FEAT_DARII_ANCESTRAL_FEUDS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "you choose mortals, you must specify which species, and if Inin, a"
+      },
+      {
+        "condition_type": "opponent",
+        "condition_value": "a creature type of your choice (if you choose mortals, you must specify which species, and if Inin, a"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_DARII_ANCESTRAL_FEUDS_E02",
+    "feature_id": "FEAT_DARII_ANCESTRAL_FEUDS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "ally_state",
+        "condition_value": "adjacent_ally"
+      },
+      {
+        "condition_type": "when",
+        "condition_value": "defending and adjacent to a Cerevu ally"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_CERII_CERII_BASELINE_E01",
+    "feature_id": "FEAT_CERII_CERII_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 30
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_CERII_CERII_BASELINE_E02",
+    "feature_id": "FEAT_CERII_CERII_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_CERII_TUNNEL_CLEANSERS_E01",
+    "feature_id": "FEAT_CERII_TUNNEL_CLEANSERS",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "ATTR_PHYSICAL"
+    },
+    "magnitude": {
+      "flat": 1
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_CERII_TUNNEL_CLEANSERS_E02",
+    "feature_id": "FEAT_CERII_TUNNEL_CLEANSERS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ENDURE",
+      "id": "SKILL_ENDURE"
+    },
+    "magnitude": {
+      "flat": 3
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_CERII_TUNNEL_CLEANSERS_E03",
+    "feature_id": "FEAT_CERII_TUNNEL_CLEANSERS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ANIMAL_HUSBANDRY",
+      "id": "SKILL_ANIMAL_HUSBANDRY"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "related to subterranean creatures"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_CERII_DEEP_DELVERS_E01",
+    "feature_id": "FEAT_CERII_DEEP_DELVERS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FEAT_OF_DEFIANCE",
+      "id": "SKILL_FEAT_OF_DEFIANCE"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "falling"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_CERII_DEEP_DELVERS_E02",
+    "feature_id": "FEAT_CERII_DEEP_DELVERS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "FEAT_OF_STRENGTH",
+      "id": "SKILL_FEAT_OF_STRENGTH"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "in subterranean and mountain environments"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_VENII_DEPTH_STRIDER_E01",
+    "feature_id": "FEAT_VENII_DEPTH_STRIDER",
+    "effect_type": "derived_stat_bonus",
+    "target": {
+      "type": "derived_stat",
+      "code": "INITIATIVE"
+    },
+    "magnitude": {
+      "flat": 12
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "lighting",
+        "condition_value": {
+          "equals": "darkness"
+        }
+      },
+      {
+        "condition_type": "while",
+        "condition_value": "in darkness"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_VENII_DEPTH_STRIDER_E02",
+    "feature_id": "FEAT_VENII_DEPTH_STRIDER",
+    "effect_type": "derived_stat_bonus",
+    "target": {
+      "type": "derived_stat",
+      "code": "INITIATIVE"
+    },
+    "magnitude": {
+      "flat": -6
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "while",
+        "condition_value": "illuminated"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_VENII_DEPTH_STRIDER_E03",
+    "feature_id": "FEAT_VENII_DEPTH_STRIDER",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "lighting",
+        "condition_value": {
+          "equals": "darkness"
+        }
+      },
+      {
+        "condition_type": "while",
+        "condition_value": "in darkness"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_VENII_DEPTH_STRIDER_E04",
+    "feature_id": "FEAT_VENII_DEPTH_STRIDER",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "BATTLE",
+      "id": "SKILL_BATTLE"
+    },
+    "magnitude": {
+      "flat": -5
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "while",
+        "condition_value": "illuminated"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_VENII_DEPTH_STRIDER_E05",
+    "feature_id": "FEAT_VENII_DEPTH_STRIDER",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "CONCEAL",
+      "id": "SKILL_CONCEAL"
+    },
+    "magnitude": {
+      "flat": 6
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "lighting",
+        "condition_value": {
+          "equals": "darkness"
+        }
+      },
+      {
+        "condition_type": "while",
+        "condition_value": "in darkness"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_VENII_DEPTH_STRIDER_E06",
+    "feature_id": "FEAT_VENII_DEPTH_STRIDER",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "NAVIGATE",
+      "id": "SKILL_NAVIGATE"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "environment",
+        "condition_value": {
+          "equals": "indoor"
+        }
+      },
+      {
+        "condition_type": "when",
+        "condition_value": "indoors or cannot see the sky"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_VENII_DEPTH_STRIDER_E07",
+    "feature_id": "FEAT_VENII_DEPTH_STRIDER",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "SEDUCE",
+      "id": "SKILL_SEDUCE"
+    },
+    "magnitude": {
+      "flat": -8
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "non-Venii"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_VENII_AGUNIC_E01",
+    "feature_id": "FEAT_VENII_AGUNIC",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_VENII_AGUNIC_E02",
+    "feature_id": "FEAT_VENII_AGUNIC",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_VENII_AGUNIC_E03",
+    "feature_id": "FEAT_VENII_AGUNIC",
+    "effect_type": "resource_bonus",
+    "target": {
+      "type": "resource",
+      "code": "PSI_POINTS"
+    },
+    "magnitude": {
+      "flat": 3
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_VENII_ESTRANGED_FRIENDS_E01",
+    "feature_id": "FEAT_VENII_ESTRANGED_FRIENDS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "INTIMIDATE",
+      "id": "SKILL_INTIMIDATE"
+    },
+    "magnitude": {
+      "flat": 7
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "opponent",
+        "condition_value": "spirits, animals, undead, and aliens"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_VENII_ESTRANGED_FRIENDS_E02",
+    "feature_id": "FEAT_VENII_ESTRANGED_FRIENDS",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_TOXINS",
+      "id": "SKILL_RESIST_TOXINS"
+    },
+    "magnitude": {
+      "flat": 12
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_VENII_UNFAIC_E01",
+    "feature_id": "FEAT_VENII_UNFAIC",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_VENII_UNFAIC_E02",
+    "feature_id": "FEAT_VENII_UNFAIC",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "ILDAKAR_FACULTY",
+      "id": "SKILL_ILDAKAR_FACULTY"
+    },
+    "magnitude": {
+      "flat": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_VENII_UNFAIC_E03",
+    "feature_id": "FEAT_VENII_UNFAIC",
+    "effect_type": "resource_bonus",
+    "target": {
+      "type": "resource",
+      "code": "PSI_POINTS"
+    },
+    "magnitude": {
+      "flat": 3
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_VENII_KARST_HUNTER_E01",
+    "feature_id": "FEAT_VENII_KARST_HUNTER",
+    "effect_type": "damage_modifier",
+    "target": {
+      "type": "damage"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "when",
+        "condition_value": "falling, and immune to fall damage from 40 ft or less"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_FREININ_FREININ_BASELINE_E01",
+    "feature_id": "FEAT_FREININ_FREININ_BASELINE",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "MARTIAL_PROWESS",
+      "id": "SKILL_MARTIAL_PROWESS"
+    },
+    "magnitude": {
+      "flat": 50
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_FREININ_FREININ_BASELINE_E02",
+    "feature_id": "FEAT_FREININ_FREININ_BASELINE",
+    "effect_type": "deity_relationship_cap",
+    "target": {
+      "type": "deity_relationship_cap"
+    },
+    "magnitude": {
+      "cap_progression": {
+        "0": 0,
+        "1": 11,
+        "2": 22,
+        "3": 33,
+        "4": 44,
+        "5": 55,
+        "6": 66
+      },
+      "cap_step": 11,
+      "per_spiritual": 1
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "if",
+        "condition_value": "ier for Deity Relationship point caps"
+      }
+    ]
+  },
+  {
+    "id": "FEAT_FREININ_ONLY_HUMAN_E01",
+    "feature_id": "FEAT_FREININ_ONLY_HUMAN",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "ATTR_PHYSICAL"
+    },
+    "magnitude": {
+      "flat": -2
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "FEAT_FREININ_ONLY_HUMAN_E02",
+    "feature_id": "FEAT_FREININ_ONLY_HUMAN",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "WILL",
+      "id": "ATTR_WILL"
+    },
+    "magnitude": {
+      "flat": 2
+    },
+    "applies_automatically": true,
+    "conditions": []
+  }
+]

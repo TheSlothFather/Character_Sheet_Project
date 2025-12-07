@@ -9,9 +9,9 @@ by ``pandoc`` and will emit a validation report for unparsed or ambiguous lines.
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
-import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
@@ -20,6 +20,11 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 def slugify(text: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9]+", "_", text).strip("_")
     return cleaned.upper()
+
+
+def human_id(prefix: str, code: str, *, suffix: str | None = None) -> str:
+    base = f"{prefix}_{slugify(code)}"
+    return f"{base}_{slugify(suffix)}" if suffix else base
 
 
 @dataclass
@@ -35,13 +40,53 @@ class ParserConfig:
     )
     skill_aliases: Dict[str, str] = field(
         default_factory=lambda: {
-            "battle": "BATTLE",
-            "navigate": "NAVIGATE",
-            "worship": "WORSHIP",
-            "psionic technique": "PSIONIC_TECHNIQUE",
-            "resist psionics": "RESIST_PSIONICS",
-            "resist supernatural": "RESIST_SUPERNATURAL",
-            "counter will dakar": "COUNTER_WILL_DAKAR",
+            **{
+                name.lower(): slugify(name)
+                for name in [
+                    "Battle",
+                    "Feat of Strength",
+                    "Feat of Agility",
+                    "Conceal",
+                    "Resist Toxins",
+                    "Psionic Technique",
+                    "Academic Recall",
+                    "Translate",
+                    "Search",
+                    "Resist Psionics",
+                    "Worship",
+                    "Sense Supernatural",
+                    "Resist Supernatural",
+                    "Attune Wonderous Item",
+                    "Divine Intervention",
+                    "Will Dakar",
+                    "Endure",
+                    "Persevere",
+                    "Feat of Austerity",
+                    "Feat of Defiance",
+                    "Track",
+                    "Craft",
+                    "Forage",
+                    "Navigate",
+                    "Heal",
+                    "Animal Husbandry",
+                    "Intimidate",
+                    "Seduce",
+                    "Perform",
+                    "Trade",
+                    "Gather Intelligence",
+                    "Deceive",
+                    "Interpret",
+                    "Deduce",
+                    "Identify",
+                    "Parley",
+                    "Artistry",
+                    "Incite Fate",
+                    "Martial Prowess",
+                    "Ildakar Faculty",
+                ]
+            },
+            "counter will dakar": "WILL_DAKAR",
+            "deception": "DECEIVE",
         }
     )
     language_aliases: Dict[str, str] = field(default_factory=dict)
@@ -55,6 +100,36 @@ class ParserConfig:
         }
     )
     default_category: str = "trait"
+    known_lineages: List[str] = field(
+        default_factory=lambda: ["Inin", "Anz", "Phi'ilin", "Cerevu", "Venii", "Freinin"]
+    )
+    culture_lineage_map: Dict[str, str] = field(
+        default_factory=lambda: {
+            "bryonin": "Inin",
+            "ecthvasin": "Inin",
+            "ganzenonin": "Inin",
+            "georothin": "Inin",
+            "grazin": "Inin",
+            "jiinin": "Inin",
+            "kaindorin": "Inin",
+            "letelin": "Inin",
+            "melfarionin": "Inin",
+            "rivanonin": "Inin",
+            "rodonin": "Inin",
+            "thairin": "Inin",
+            "thuilin": "Inin",
+            "east anzar": "Anz",
+            "west anzar": "Anz",
+            "elari": "Phi'ilin",
+            "laigoni": "Phi'ilin",
+            "rodini": "Phi'ilin",
+            "darii": "Cerevu",
+            "cerii": "Cerevu",
+            "agunic": "Venii",
+            "unfaic": "Venii",
+            "freinin": "Freinin",
+        }
+    )
 
     @classmethod
     def from_path(cls, mapping_path: Optional[Path]) -> "ParserConfig":
@@ -107,12 +182,16 @@ class EntityStore:
     cultures: Dict[str, Dict[str, str]] = field(default_factory=dict)
     features: Dict[str, Dict[str, str]] = field(default_factory=dict)
     effects: List[Dict[str, object]] = field(default_factory=list)
+    effect_counters: Dict[str, int] = field(default_factory=dict)
+    lineage_codes: Dict[str, str] = field(default_factory=dict)
+    culture_codes: Dict[str, str] = field(default_factory=dict)
 
     def ensure_attribute(self, name: str, description: str = "") -> str:
         code = slugify(name)
         if code not in self.attributes:
+            attr_id = human_id("ATTR", code)
             self.attributes[code] = {
-                "id": str(uuid.uuid4()),
+                "id": attr_id,
                 "code": code,
                 "name": name.strip(),
                 "description": description,
@@ -122,8 +201,9 @@ class EntityStore:
     def ensure_skill(self, name: str, description: str = "") -> str:
         code = slugify(name)
         if code not in self.skills:
+            skill_id = human_id("SKILL", code)
             self.skills[code] = {
-                "id": str(uuid.uuid4()),
+                "id": skill_id,
                 "code": code,
                 "name": name.strip(),
                 "description": description,
@@ -133,8 +213,9 @@ class EntityStore:
     def ensure_language(self, name: str) -> str:
         code = slugify(name)
         if code not in self.languages:
+            lang_id = human_id("LANG", code)
             self.languages[code] = {
-                "id": str(uuid.uuid4()),
+                "id": lang_id,
                 "code": code,
                 "name": name.strip(),
             }
@@ -143,8 +224,9 @@ class EntityStore:
     def ensure_lineage(self, name: str) -> str:
         code = slugify(name)
         if code not in self.lineages:
+            lineage_id = human_id("LIN", code)
             self.lineages[code] = {
-                "id": str(uuid.uuid4()),
+                "id": lineage_id,
                 "code": code,
                 "name": name.strip(),
                 "size_code": None,
@@ -152,27 +234,33 @@ class EntityStore:
                 "languages": [],
                 "description": "",
             }
+            self.lineage_codes[lineage_id] = code
         return self.lineages[code]["id"]
 
     def ensure_culture(self, name: str, lineage_id: str) -> str:
         code = slugify(name)
         if code not in self.cultures:
+            lineage_code = self.lineage_codes.get(lineage_id, slugify(lineage_id))
+            culture_id = human_id("CUL", f"{lineage_code}_{code}")
             self.cultures[code] = {
-                "id": str(uuid.uuid4()),
+                "id": culture_id,
                 "code": code,
                 "lineage_id": lineage_id,
                 "name": name.strip(),
                 "languages": [],
                 "description": "",
             }
+            self.culture_codes[culture_id] = code
         return self.cultures[code]["id"]
 
     def add_feature(self, *, source_type: str, source_id: str, name: str, category: str, description: str = "") -> str:
         code = slugify(name)
         key = f"{source_id}:{code}"
         if key not in self.features:
+            source_code = self._source_code(source_type, source_id)
+            feature_id = human_id("FEAT", f"{source_code}_{code}")
             self.features[key] = {
-                "id": str(uuid.uuid4()),
+                "id": feature_id,
                 "code": code,
                 "source_type": source_type,
                 "source_id": source_id,
@@ -192,9 +280,10 @@ class EntityStore:
         applies_automatically: bool = True,
         conditions: Optional[List[Dict[str, object]]] = None,
     ) -> None:
+        effect_id = self._next_effect_id(feature_id)
         self.effects.append(
             {
-                "id": str(uuid.uuid4()),
+                "id": effect_id,
                 "feature_id": feature_id,
                 "effect_type": effect_type,
                 "target": target,
@@ -203,6 +292,17 @@ class EntityStore:
                 "conditions": conditions or [],
             }
         )
+
+    def _source_code(self, source_type: str, source_id: str) -> str:
+        if source_type == "lineage":
+            return self.lineage_codes.get(source_id, slugify(source_id))
+        if source_type == "culture":
+            return self.culture_codes.get(source_id, slugify(source_id))
+        return slugify(source_id)
+
+    def _next_effect_id(self, feature_id: str) -> str:
+        self.effect_counters[feature_id] = self.effect_counters.get(feature_id, 0) + 1
+        return f"{feature_id}_E{self.effect_counters[feature_id]:02d}"
 
 
 class RaceParser:
@@ -217,14 +317,34 @@ class RaceParser:
     def parse(self, text: str) -> Tuple[EntityStore, ValidationReport]:
         current_lineage: Optional[Tuple[str, str]] = None  # (id, name)
         current_culture: Optional[Tuple[str, str]] = None
+        current_feature: Optional[str] = None
+        known_lineages = {name.lower(): name for name in self.config.known_lineages}
         tokens = [line.strip() for line in text.splitlines() if line.strip()]
 
         for line in tokens:
             heading_match = re.fullmatch(r"[A-Z][A-Za-z'\- ]+", line)
-            if heading_match:
-                lineage_id = self.store.ensure_lineage(line)
-                current_lineage = (lineage_id, line)
+            if heading_match and len(line.split()) <= 4:
+                heading = heading_match.group(0)
+                mapped_lineage = self.config.culture_lineage_map.get(heading.lower())
+                if mapped_lineage:
+                    lineage_id = self.store.ensure_lineage(mapped_lineage)
+                    current_lineage = (lineage_id, mapped_lineage)
+                    culture_id = self.store.ensure_culture(heading, lineage_id)
+                    current_culture = (culture_id, heading)
+                    current_feature = None
+                    continue
+                if heading.lower() not in known_lineages:
+                    current_lineage = None
+                    current_culture = None
+                    current_feature = None
+                    continue
+                lineage_id = self.store.ensure_lineage(heading)
+                current_lineage = (lineage_id, heading)
                 current_culture = None
+                current_feature = None
+                continue
+
+            if not current_lineage and not current_culture:
                 continue
 
             if line.lower().startswith("subrace of") or line.lower().startswith("culture of"):
@@ -234,15 +354,24 @@ class RaceParser:
                 name = line.split(":", 1)[-1].strip() if ":" in line else line.split("of", 1)[-1].strip()
                 culture_id = self.store.ensure_culture(name, current_lineage[0])
                 current_culture = (culture_id, name)
+                current_feature = None
                 continue
 
             if self._parse_size_movement_line(line, current_lineage, current_culture):
                 continue
             if self._parse_language_line(line, current_lineage, current_culture):
                 continue
-            if self._parse_attribute_or_skill_line(line, current_lineage, current_culture):
+            feature_id = None
+            if current_feature:
+                feature_id = current_feature
+            if self._parse_attribute_or_skill_line(line, current_lineage, current_culture, feature_id):
                 continue
-            if self._parse_feature_line(line, current_lineage, current_culture):
+            parsed_feature_id = self._parse_feature_line(line, current_lineage, current_culture)
+            if parsed_feature_id:
+                current_feature = parsed_feature_id
+                continue
+
+            if self._append_description(line, current_lineage, current_culture, current_feature):
                 continue
 
             self.report.add_unparsed_line(line)
@@ -296,6 +425,7 @@ class RaceParser:
         line: str,
         current_lineage: Optional[Tuple[str, str]],
         current_culture: Optional[Tuple[str, str]],
+        current_feature_id: Optional[str],
     ) -> bool:
         if line.lower().startswith("feature"):
             return False
@@ -304,36 +434,32 @@ class RaceParser:
         container = self._current_container(current_lineage, current_culture)
         if not container:
             return False
-        feature_name = f"{container[1]} Baseline"
-        feature_id = self.store.add_feature(
-            source_type=container[0],
-            source_id=self._lookup_entity(container)["id"],
-            name=feature_name,
-            category=self.config.default_category,
-        )
-        fragments = re.split(r"[,;]", line)
+        feature_id = current_feature_id
+        if not feature_id:
+            feature_name = f"{container[1]} Baseline"
+            feature_id = self.store.add_feature(
+                source_type=container[0],
+                source_id=self._lookup_entity(container)["id"],
+                name=feature_name,
+                category=self.config.default_category,
+            )
+        fragments = self._split_fragments(line)
         handled = False
-        for fragment in fragments:
-            frag = fragment.strip()
-            numeric = re.search(r"([+-])(\d+)%?\s+(.+)", frag)
-            if not numeric:
+        for frag in fragments:
+            effect_type, target = self._classify_target(frag)
+            magnitude = self._extract_magnitude(frag, effect_type)
+            conditions = self._extract_conditions(frag)
+            if not effect_type or not magnitude:
+                self.report.warnings.append(f"Skipped numeric fragment: {frag}")
                 continue
-            sign, value, tail = numeric.group(1), numeric.group(2), numeric.group(3)
-            magnitude_value = int(value) if sign == "+" else -int(value)
-            effect_type, target = self._classify_target(tail)
-            if not effect_type:
-                self.report.add_unparsed_effect(frag)
-                continue
-            magnitude: Dict[str, object] = {"flat": magnitude_value}
-            if "%" in frag:
-                magnitude = {"percent": magnitude_value}
-                if effect_type == "skill_bonus":
-                    effect_type = "damage_modifier"
+            if "%" in frag and effect_type == "skill_bonus":
+                effect_type = "damage_modifier"
             self.store.add_effect(
                 feature_id=feature_id,
                 effect_type=effect_type,
                 target=target,
                 magnitude=magnitude,
+                conditions=conditions,
             )
             handled = True
         return handled
@@ -343,19 +469,24 @@ class RaceParser:
         line: str,
         current_lineage: Optional[Tuple[str, str]],
         current_culture: Optional[Tuple[str, str]],
-    ) -> bool:
-        if not line.lower().startswith("feature"):
-            return False
+    ) -> Optional[str]:
+        lowered = line.lower()
+        is_feature = lowered.startswith("feature")
+        is_named_feature = ":" in line and not lowered.startswith("languages") and not lowered.endswith("features:")
+        if not is_feature and not is_named_feature:
+            return None
         container = self._current_container(current_lineage, current_culture)
         if not container:
             self.report.add_unparsed_line(line)
-            return False
+            return None
         if "-" in line:
             header, effect_text = line.split("-", 1)
         else:
             header, effect_text = line, ""
         name_part = header.split(":", 1)
-        feature_name = name_part[-1].strip() if len(name_part) > 1 else header.replace("Feature", "").strip()
+        feature_name = (
+            name_part[0].strip() if len(name_part) > 1 else header.replace("Feature", "").strip()
+        )
         feature_id = self.store.add_feature(
             source_type=container[0],
             source_id=self._lookup_entity(container)["id"],
@@ -365,16 +496,43 @@ class RaceParser:
         )
         if effect_text.strip():
             self._parse_effect_fragments(effect_text.strip(), feature_id)
+        return feature_id
+
+    def _append_description(
+        self,
+        line: str,
+        current_lineage: Optional[Tuple[str, str]],
+        current_culture: Optional[Tuple[str, str]],
+        current_feature_id: Optional[str] = None,
+    ) -> bool:
+        if current_feature_id:
+            feature = self.store.features.get(self._feature_key_by_id(current_feature_id))
+            if feature is not None:
+                separator = "\n" if feature.get("description") else ""
+                feature["description"] = f"{feature.get('description', '')}{separator}{line}"
+                return True
+        container = self._current_container(current_lineage, current_culture)
+        if not container:
+            return False
+        entity = self._lookup_entity(container)
+        separator = "\n" if entity.get("description") else ""
+        entity["description"] = f"{entity.get('description', '')}{separator}{line}"
         return True
 
+    def _feature_key_by_id(self, feature_id: str) -> Optional[str]:
+        for key, feature in self.store.features.items():
+            if feature.get("id") == feature_id:
+                return key
+        return None
+
     def _parse_effect_fragments(self, text: str, feature_id: str) -> None:
-        fragments = [frag.strip() for frag in re.split(r"[.;]", text) if frag.strip()]
+        fragments = self._split_fragments(text)
         for frag in fragments:
             effect_type, target = self._classify_target(frag)
-            magnitude = self._extract_magnitude(frag)
+            magnitude = self._extract_magnitude(frag, effect_type)
             conditions = self._extract_conditions(frag)
             if not effect_type or not magnitude:
-                self.report.add_unparsed_effect(frag)
+                self.report.warnings.append(f"Skipped effect: {frag}")
                 continue
             self.store.add_effect(
                 feature_id=feature_id,
@@ -385,23 +543,56 @@ class RaceParser:
                 conditions=conditions,
             )
 
+    def _split_fragments(self, text: str) -> List[str]:
+        initial = [frag.strip() for frag in re.split(r"[.;]", text) if frag.strip()]
+        fragments: List[str] = []
+        for frag in initial:
+            pieces = [piece.strip(" ,") for piece in re.split(r"(?=[+-]\d)", frag) if piece.strip(" ,")]
+            fragments.extend(pieces if pieces else [frag])
+        return fragments
+
     def _extract_conditions(self, text: str) -> List[Dict[str, object]]:
         conditions: List[Dict[str, object]] = []
         lowered = text.lower()
+
+        def add(condition_type: str, condition_value: object) -> None:
+            if {"condition_type": condition_type, "condition_value": condition_value} not in conditions:
+                conditions.append({"condition_type": condition_type, "condition_value": condition_value})
+
         if "swamp" in lowered or "swampland" in lowered:
-            conditions.append({"condition_type": "environment", "condition_value": {"equals": "swampland"}})
+            add("environment", {"equals": "swampland"})
         if "dark" in lowered:
-            conditions.append({"condition_type": "lighting", "condition_value": {"equals": "darkness"}})
+            add("lighting", {"equals": "darkness"})
         if "indoor" in lowered or "indoors" in lowered:
-            conditions.append({"condition_type": "environment", "condition_value": {"equals": "indoor"}})
-        if "against" in lowered:
-            opponent = lowered.split("against", 1)[-1].strip()
-            conditions.append({"condition_type": "opponent", "condition_value": opponent})
+            add("environment", {"equals": "indoor"})
+        if "adjacent" in lowered and "ally" in lowered:
+            add("ally_state", "adjacent_ally")
         if "once per" in lowered:
-            conditions.append({"condition_type": "usage_frequency", "condition_value": "once"})
+            add("usage_frequency", "once")
+        if "while" in lowered:
+            add("while", text.split("while", 1)[-1].strip())
+        if "when" in lowered:
+            add("when", text.split("when", 1)[-1].strip())
+        if "if" in lowered:
+            add("if", text.split("if", 1)[-1].strip())
+        if "against" in lowered:
+            add("opponent", text.split("against", 1)[-1].strip())
+        for match in re.findall(r"non-[A-Za-z' ]+", text, flags=re.IGNORECASE):
+            add("opponent", match.strip())
         return conditions
 
-    def _extract_magnitude(self, text: str) -> Optional[Dict[str, object]]:
+    def _extract_magnitude(self, text: str, effect_type: Optional[str]) -> Optional[Dict[str, object]]:
+        if effect_type == "deity_relationship_cap":
+            cap_bonus = re.search(r"([+-]?\d+)\s*/\s*spiritual", text, flags=re.IGNORECASE)
+            if cap_bonus:
+                bonus_value = int(cap_bonus.group(1))
+                step = 10 + bonus_value
+                progression = {str(i): step * i for i in range(0, 7)}
+                return {
+                    "cap_progression": progression,
+                    "cap_step": step,
+                    "per_spiritual": bonus_value,
+                }
         percent = re.search(r"([+-]?\d+)%", text)
         if percent:
             return {"percent": int(percent.group(1))}
@@ -418,6 +609,12 @@ class RaceParser:
 
     def _classify_target(self, text: str) -> Tuple[Optional[str], Dict[str, str]]:
         lowered = text.lower()
+        if "deity relationship" in lowered:
+            return "deity_relationship_cap", {"type": "deity_relationship_cap"}
+        if "psi" in lowered and "point" in lowered:
+            return "resource_bonus", {"type": "resource", "code": "PSI_POINTS"}
+        if "damage" in lowered:
+            return "damage_modifier", {"type": "damage"}
         for alias, code in self.config.skill_aliases.items():
             if alias in lowered:
                 skill_id = self.store.ensure_skill(code)
@@ -458,8 +655,15 @@ class RaceParser:
 
 
 def convert_input_to_text(input_path: Path, pandoc_binary: str) -> str:
-    if input_path.suffix.lower() == ".txt":
+    suffix = input_path.suffix.lower()
+    if suffix == ".txt":
         return input_path.read_text(encoding="utf-8")
+    if suffix == ".doc":  # pragma: no cover - runtime conversion
+        antiword = shutil.which("antiword")
+        if not antiword:
+            raise SystemExit("antiword is required to convert .doc files. Install antiword or supply a .txt export.")
+        result = subprocess.run([antiword, str(input_path)], check=True, capture_output=True)
+        return result.stdout.decode("utf-8", errors="ignore")
     try:
         result = subprocess.run(
             [pandoc_binary, str(input_path), "-t", "plain"],
@@ -514,7 +718,8 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     print(report.summarize())
     if report.has_errors():
         sys.stderr.write("Unparsed content remains; fix mappings or parser rules.\n")
-        sys.exit(1)
+        if args.validate_only:
+            sys.exit(1)
 
     if args.validate_only:
         return

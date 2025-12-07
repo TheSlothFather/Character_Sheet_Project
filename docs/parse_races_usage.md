@@ -1,12 +1,13 @@
 # Race and Skills Parser
 
 `tools/parse_races.py` reads `Race and Skills.doc` after conversion to plain text
-(via `pandoc`) and emits normalized JSON aligned with the schema described in
-`ttrpg_data_schema.md`.
+(via `pandoc` for `.docx` and `antiword` for `.doc`) and emits normalized JSON
+aligned with the schema described in `ttrpg_data_schema.md`.
 
 ## Prerequisites
 - Python 3.10+ (standard library only)
-- `pandoc` on PATH for `.doc` conversion (or provide a `.txt` export)
+- `antiword` on PATH for `.doc` conversion (or provide a `.txt` export)
+- `pandoc` on PATH for `.docx` conversion
 
 ## CLI
 ```
@@ -27,6 +28,8 @@ python tools/parse_races.py --input Race\ and\ Skills.doc --output out_dir --map
 - `cultures.json`
 - `features.json` (separate from effects for normalization)
 - `effects.json` (atomic entries with optional conditions)
+- IDs are deterministic and human-readable (e.g., `LIN_ININ`,
+  `CUL_ININ_ECTHVASIN`, `FEAT_LIN_ININ_FEROCITY`).
 
 ## Sample conversion
 `docs/sample_race_text.txt` mirrors a small slice of the source file. Running:
