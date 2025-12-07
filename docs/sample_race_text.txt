@@ -1,0 +1,10 @@
+ININ
+Size: Medium Movement: 30
+Languages: Narinduilin, Common
++5 Physical, +2 Mental
+Feature: Magically Inclined - +15 Worship; +20% damage with worship when offensive; +15 Resist Psionics; advantage to initiative while indoors.
+
+Subrace of Inin: Ecthvasin
+Languages: Narinduilin
++2 Spiritual
+Feature: Swamper Upbringing - +15 Navigate in swamplands; +10 movement in swamplands; once per round swap items as free action.

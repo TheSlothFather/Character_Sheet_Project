@@ -1,0 +1,15 @@
+[
+  {
+    "id": "28840669-dedd-46d5-a3bd-d3cecedda26a",
+    "code": "ECTHVASIN",
+    "lineage_id": "1b00fd44-2f75-40f9-8bff-482e7529f337",
+    "name": "Ecthvasin",
+    "languages": [
+      {
+        "language_id": "bc87f943-ad15-469b-90a2-16724ddd1899",
+        "proficiency": "native"
+      }
+    ],
+    "description": ""
+  }
+]

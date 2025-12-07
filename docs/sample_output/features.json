@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1a490a61-9b17-475c-b78a-3beee6f6db3f",
+    "code": "ININ_BASELINE",
+    "source_type": "lineage",
+    "source_id": "1b00fd44-2f75-40f9-8bff-482e7529f337",
+    "name": "ININ Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "a830e713-95f4-4368-960e-9e045ca4796b",
+    "code": "MAGICALLY_INCLINED",
+    "source_type": "lineage",
+    "source_id": "1b00fd44-2f75-40f9-8bff-482e7529f337",
+    "name": "Magically Inclined",
+    "category": "trait",
+    "description": "+15 Worship; +20% damage with worship when offensive; +15 Resist Psionics; advantage to initiative while indoors."
+  },
+  {
+    "id": "81ad5f09-cdb2-4451-8e1a-293e626b83f3",
+    "code": "ECTHVASIN_BASELINE",
+    "source_type": "culture",
+    "source_id": "28840669-dedd-46d5-a3bd-d3cecedda26a",
+    "name": "Ecthvasin Baseline",
+    "category": "trait",
+    "description": ""
+  },
+  {
+    "id": "7d03e65c-1fa6-4537-9dee-3d1ed5d11502",
+    "code": "SWAMPER_UPBRINGING",
+    "source_type": "culture",
+    "source_id": "28840669-dedd-46d5-a3bd-d3cecedda26a",
+    "name": "Swamper Upbringing",
+    "category": "trait",
+    "description": "+15 Navigate in swamplands; +10 movement in swamplands; once per round swap items as free action."
+  }
+]

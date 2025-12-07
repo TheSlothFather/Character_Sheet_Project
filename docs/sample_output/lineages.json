@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1b00fd44-2f75-40f9-8bff-482e7529f337",
+    "code": "ININ",
+    "name": "ININ",
+    "size_code": "MEDIUM",
+    "movement": {
+      "walk": 30
+    },
+    "languages": [
+      {
+        "language_id": "bc87f943-ad15-469b-90a2-16724ddd1899",
+        "proficiency": "native"
+      },
+      {
+        "language_id": "65782ebe-8b82-4984-9e81-af01b93973de",
+        "proficiency": "native"
+      }
+    ],
+    "description": ""
+  }
+]
