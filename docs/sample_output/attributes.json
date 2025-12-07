@@ -1,0 +1,26 @@
+[
+  {
+    "id": "663edc8d-e171-4ba1-950c-32b33b4ed9ff",
+    "code": "PHYSICAL",
+    "name": "PHYSICAL",
+    "description": ""
+  },
+  {
+    "id": "a03ef0eb-9bf8-49b4-bb21-726fa30acc32",
+    "code": "MENTAL",
+    "name": "MENTAL",
+    "description": ""
+  },
+  {
+    "id": "a701fbd8-e561-4868-ba33-88e01f90dab6",
+    "code": "WILL",
+    "name": "WILL",
+    "description": ""
+  },
+  {
+    "id": "be44b393-98a5-4b0e-bf41-819b7f802c6e",
+    "code": "SPIRITUAL",
+    "name": "SPIRITUAL",
+    "description": ""
+  }
+]

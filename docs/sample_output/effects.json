@@ -1,0 +1,173 @@
+[
+  {
+    "id": "6c1c573a-2ebb-4a7a-9354-25be630a7e38",
+    "feature_id": "1a490a61-9b17-475c-b78a-3beee6f6db3f",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "PHYSICAL",
+      "id": "663edc8d-e171-4ba1-950c-32b33b4ed9ff"
+    },
+    "magnitude": {
+      "flat": 5
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "8d5eac04-784e-4dbc-8ede-204c75745a98",
+    "feature_id": "1a490a61-9b17-475c-b78a-3beee6f6db3f",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "MENTAL",
+      "id": "a03ef0eb-9bf8-49b4-bb21-726fa30acc32"
+    },
+    "magnitude": {
+      "flat": 2
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "d8d27aca-a76a-4b1a-9aa8-7c1c52732994",
+    "feature_id": "a830e713-95f4-4368-960e-9e045ca4796b",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "WORSHIP",
+      "id": "c06eca2e-2e45-4df0-b282-26550e84012e"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "fbe8f3dc-310a-40a1-9b1d-93202d65f1ba",
+    "feature_id": "a830e713-95f4-4368-960e-9e045ca4796b",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "WORSHIP",
+      "id": "c06eca2e-2e45-4df0-b282-26550e84012e"
+    },
+    "magnitude": {
+      "percent": 20
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "cdd4c4f9-5a23-4ade-9dd2-dfc3721f00f2",
+    "feature_id": "a830e713-95f4-4368-960e-9e045ca4796b",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "RESIST_PSIONICS",
+      "id": "cbf1ef74-23d6-4200-abad-3301915ccb34"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "ca680958-8fd4-43f5-ae38-b947e63c0cde",
+    "feature_id": "a830e713-95f4-4368-960e-9e045ca4796b",
+    "effect_type": "advantage_rule",
+    "target": {
+      "type": "rule"
+    },
+    "magnitude": {
+      "rule": "advantage"
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "environment",
+        "condition_value": {
+          "equals": "indoor"
+        }
+      }
+    ]
+  },
+  {
+    "id": "3db1ef0d-dfec-470c-85bb-25f2ae8428f3",
+    "feature_id": "81ad5f09-cdb2-4451-8e1a-293e626b83f3",
+    "effect_type": "attribute_bonus",
+    "target": {
+      "type": "attribute",
+      "code": "SPIRITUAL",
+      "id": "be44b393-98a5-4b0e-bf41-819b7f802c6e"
+    },
+    "magnitude": {
+      "flat": 2
+    },
+    "applies_automatically": true,
+    "conditions": []
+  },
+  {
+    "id": "dd69df6a-1146-4d80-ab9b-a12f9dbadb89",
+    "feature_id": "7d03e65c-1fa6-4537-9dee-3d1ed5d11502",
+    "effect_type": "skill_bonus",
+    "target": {
+      "type": "skill",
+      "code": "NAVIGATE",
+      "id": "38d34de7-c1ce-4b2f-bb29-d4ce1c6d8805"
+    },
+    "magnitude": {
+      "flat": 15
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "environment",
+        "condition_value": {
+          "equals": "swampland"
+        }
+      }
+    ]
+  },
+  {
+    "id": "643279f4-bdb6-40e9-a592-15d7eb6082f4",
+    "feature_id": "7d03e65c-1fa6-4537-9dee-3d1ed5d11502",
+    "effect_type": "movement_mod",
+    "target": {
+      "type": "movement",
+      "mode": "walk"
+    },
+    "magnitude": {
+      "flat": 10
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "environment",
+        "condition_value": {
+          "equals": "swampland"
+        }
+      }
+    ]
+  },
+  {
+    "id": "370ba030-82cd-4053-a928-e376ca811278",
+    "feature_id": "7d03e65c-1fa6-4537-9dee-3d1ed5d11502",
+    "effect_type": "action_cost_mod",
+    "target": {
+      "type": "action"
+    },
+    "magnitude": {
+      "rule": "free_action"
+    },
+    "applies_automatically": true,
+    "conditions": [
+      {
+        "condition_type": "usage_frequency",
+        "condition_value": "once"
+      }
+    ]
+  }
+]
