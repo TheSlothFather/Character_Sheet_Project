@@ -143,7 +143,7 @@ Psychometry,Determine Purpose,5,Prior Users,understand what prior user used item
 Psychometry,Maker,3,Psychoscopy,determine identity of primary crafter of item,15,
 Psychometry,Method of Creation,4,Maker,identify methods of crafting,20,
 Psychometry,Age of Item,5,Method of Creation,determine when item was crafted,25,
-Psychometry,Track,2,Psychoscopy,Always know locations of items attuned to you,10,
+Psychometry,Track,2,Psychometry,Always know locations of items attuned to you,10,
 Psychometry,Trail I,3,Track,determine path of last owner/user up to mental attribute minutes after departure from item,15,
 Psychometry,Trail II,4,Trail I,increase to mental attribute hours,20,
 Psychometry,Trail III,5,Trail II,increase to mental attribute phases,25,
@@ -204,3 +204,4 @@ Hypnosis,Agility,5,Speed,reaction,25,
 Hypnosis,Morale,3,Override,+1 morale to target,15,
 Hypnosis,Fear,4,Morale,-1 morale to target,20,
 Hypnosis,Horror,5,Fear,- mental attribute morale to target. May choose to incapacitate target instead of flee if target's morale reaches -5,25,
+
