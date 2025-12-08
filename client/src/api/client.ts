@@ -4,6 +4,11 @@ export interface Character {
   level: number;
   raceKey?: string;
   subraceKey?: string;
+  notes?: string;
+  skillPoints: number;
+  skillAllocations: Record<string, number>;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 import type { Expr } from "@shared/rules/expressions";
@@ -119,9 +124,33 @@ export async function apiRequest<T>(
 
 export const api = {
   listCharacters: () => apiRequest<Character[]>("/characters"),
-  createCharacter: (payload: { name: string; level: number; raceKey?: string; subraceKey?: string }) =>
+  createCharacter: (payload: {
+    name: string;
+    level: number;
+    raceKey?: string;
+    subraceKey?: string;
+    notes?: string;
+    skillPoints?: number;
+    skillAllocations?: Record<string, number>;
+  }) =>
     apiRequest<Character>("/characters", {
       method: "POST",
+      body: JSON.stringify(payload)
+    }),
+  updateCharacter: (
+    id: string,
+    payload: Partial<{
+      name: string;
+      level: number;
+      raceKey?: string;
+      subraceKey?: string;
+      notes?: string;
+      skillPoints?: number;
+      skillAllocations?: Record<string, number>;
+    }>
+  ) =>
+    apiRequest<Character>(`/characters/${id}`, {
+      method: "PUT",
       body: JSON.stringify(payload)
     }),
   getDefinitions: () => apiRequest<DefinitionsResponse>("/definitions")
