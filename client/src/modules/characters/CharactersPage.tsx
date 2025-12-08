@@ -1,8 +1,8 @@
 import React from "react";
-import { applyModifiers } from "@shared/rules/modifiers";
-import type { Character, ModifierWithSource, NamedDefinition } from "../../api/client";
+import type { Character, NamedDefinition } from "../../api/client";
 import { api, ApiError } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
+import { computeRacialSkillBonuses } from "./racialBonuses";
 
 const SKILL_POINT_POOL = 100;
 
@@ -361,28 +361,10 @@ export const CharactersPage: React.FC = () => {
     [definitions, raceKey]
   );
 
-  const racialBonuses = React.useMemo(() => {
-    if (!definitions || !selectedCharacter) return {} as Record<string, number>;
-    const baseSkills = Object.fromEntries(
-      definitions.skills.map((skill) => [getSkillCode(skill), { score: 0, racialBonus: 0 }])
-    );
-    const baseState = { skills: baseSkills } as Record<string, unknown>;
-
-    const applicable = (definitions.modifiers as ModifierWithSource[]).filter((m) => {
-      if (m.sourceType === "race") return m.sourceKey === selectedCharacter.raceKey;
-      if (m.sourceType === "subrace") return m.sourceKey === selectedCharacter.subraceKey;
-      return false;
-    });
-
-    const state = applyModifiers({ baseState, modifiers: applicable });
-    const result: Record<string, number> = {};
-    for (const skill of definitions.skills) {
-      const code = getSkillCode(skill);
-      const entry = (state.skills as Record<string, any> | undefined)?.[code];
-      result[code] = typeof entry?.racialBonus === "number" ? entry.racialBonus : 0;
-    }
-    return result;
-  }, [definitions, selectedCharacter]);
+  const racialBonuses = React.useMemo(
+    () => computeRacialSkillBonuses(definitions ?? null, selectedCharacter),
+    [definitions, selectedCharacter]
+  );
 
   const loadingAny = loading || definitionsLoading;
 
