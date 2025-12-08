@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { CharactersPage } from "./characters/CharactersPage";
 import { DefinitionsProvider } from "./definitions/DefinitionsContext";
+import { PsionicsPage } from "./psionics/PsionicsPage";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -38,11 +39,15 @@ export const App: React.FC = () => {
           <NavLink to="/characters" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
             Characters
           </NavLink>
+          <NavLink to="/psionics" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+            Psionics
+          </NavLink>
         </nav>
         <main style={{ flex: 1, padding: "1rem" }}>
           <Routes>
             <Route path="/" element={<Navigate to="/characters" replace />} />
             <Route path="/characters" element={<CharactersPage />} />
+            <Route path="/psionics" element={<PsionicsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
