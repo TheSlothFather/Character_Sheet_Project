@@ -5,7 +5,8 @@ import {
   PsionicAbility,
   evaluateFormula,
   isAbilityUnlocked,
-  parsePsionicsCsv
+  parsePsionicsCsv,
+  replaceMentalAttributePlaceholders
 } from "./psionicsUtils";
 
 interface PsiState {
@@ -54,8 +55,10 @@ const AbilityCard: React.FC<{
   onPurchase: (ability: PsionicAbility) => void;
 }> = ({ ability, purchased, unlocked, remainingPsi, onPurchase }) => {
   const derived = ability.formula ? evaluateFormula(ability.formula, mentalStat) : null;
-  const canAfford = remainingPsi >= ability.energyCost;
+  const psiCost = ability.tier;
+  const canAfford = remainingPsi >= psiCost;
   const statusLabel = purchased ? "Purchased" : unlocked ? (canAfford ? "Unlocked" : "Insufficient Psi") : "Locked";
+  const formattedDescription = replaceMentalAttributePlaceholders(ability.description, mentalStat);
 
   return (
     <button
@@ -80,18 +83,34 @@ const AbilityCard: React.FC<{
           <div style={{ fontWeight: 700 }}>{ability.name}</div>
           <div style={{ fontSize: 12, color: "#9aa3b5" }}>Tier {ability.tier}</div>
         </div>
-        <div style={{
-          background: "#0e141b",
-          border: "1px solid #273442",
-          borderRadius: 6,
-          padding: "0.2rem 0.5rem",
-          fontSize: 12,
-          color: "#9ae6b4"
-        }}>
-          {ability.energyCost} Psi
+        <div style={{ display: "flex", gap: 8 }}>
+          <div
+            style={{
+              background: "#0e141b",
+              border: "1px solid #273442",
+              borderRadius: 6,
+              padding: "0.2rem 0.5rem",
+              fontSize: 12,
+              color: "#9ae6b4"
+            }}
+          >
+            {psiCost} Psi
+          </div>
+          <div
+            style={{
+              background: "#121926",
+              border: "1px solid #2b3747",
+              borderRadius: 6,
+              padding: "0.2rem 0.5rem",
+              fontSize: 12,
+              color: "#c5ccd9"
+            }}
+          >
+            Energy: {ability.energyCost}
+          </div>
         </div>
       </div>
-      <p style={{ margin: "0 0 0.5rem", fontSize: 14, lineHeight: 1.4 }}>{ability.description}</p>
+      <p style={{ margin: "0 0 0.5rem", fontSize: 14, lineHeight: 1.4 }}>{formattedDescription}</p>
       <div style={{ fontSize: 13, color: "#c5ccd9", marginBottom: 4 }}>
         <strong>Prerequisites:</strong> {ability.prerequisiteNames.length ? ability.prerequisiteNames.join(", ") : "None"}
       </div>
@@ -145,11 +164,12 @@ export const PsionicsPage: React.FC = () => {
     setState((prev) => {
       if (prev.purchased.has(ability.id)) return prev;
       if (!isAbilityUnlocked(ability, prev.purchased)) return prev;
-      if (prev.remaining < ability.energyCost) return prev;
+      const psiCost = ability.tier;
+      if (prev.remaining < psiCost) return prev;
 
       const nextPurchased = new Set(prev.purchased);
       nextPurchased.add(ability.id);
-      return { remaining: prev.remaining - ability.energyCost, purchased: nextPurchased };
+      return { remaining: prev.remaining - psiCost, purchased: nextPurchased };
     });
   };
 
