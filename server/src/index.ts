@@ -3,7 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { definitionsRouter } from "./routes/definitions";
 import { charactersRouter } from "./routes/characters";
-import { campaignsRouter } from "./routes/campaigns";
 
 dotenv.config();
 
@@ -17,7 +16,6 @@ app.get("/api/health", (_req: Request, res: Response) => {
 
 app.use("/api/definitions", definitionsRouter);
 app.use("/api/characters", charactersRouter);
-app.use("/api/campaigns", campaignsRouter);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
