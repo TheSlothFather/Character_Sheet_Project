@@ -6,12 +6,6 @@ export interface Character {
   subraceKey?: string;
 }
 
-export interface Campaign {
-  id: string;
-  name: string;
-  joinCode: string;
-}
-
 export interface NamedDefinition {
   id: string;
   code?: string;
@@ -105,12 +99,6 @@ export const api = {
   listCharacters: () => apiRequest<Character[]>("/characters"),
   createCharacter: (payload: { name: string; level: number; raceKey?: string; subraceKey?: string }) =>
     apiRequest<Character>("/characters", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    }),
-  listCampaigns: () => apiRequest<Campaign[]>("/campaigns"),
-  createCampaign: (payload: { name: string }) =>
-    apiRequest<Campaign>("/campaigns", {
       method: "POST",
       body: JSON.stringify(payload)
     }),
