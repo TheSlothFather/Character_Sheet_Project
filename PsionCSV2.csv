@@ -1,0 +1,206 @@
+"Ability Tree","Ability","Tier","Prerequisite","Description","Energy Cost"
+"Telepathy","Telepathy",1,,"Allows user to read surface level thoughts of adjacent creatures, send silent messages to creatures, alert yourself to unspecified presences adjacent to you, add your mental attribute to your resist psionics, and use manifold manifestation up to mental attribute psionic techniques in the Telepathy tree at once",5
+"Telepathy","Pry",2,"Telepathy","Search an adjacent target's thoughts for specifics",10
+"Telepathy","Interlink",3,"Pry","Allow another creature you are linked with or communicating with to engage with your telepathy as well.",15
+"Telepathy","Transfer",4,"Interlink","send memories or thoughts of target to another creature",20
+"Telepathy","Project (Pry)",5,"Transfer","send memories or thoughts to all creatures within an area equal to mental attribute x10 ft of you",25
+"Telepathy","Read Memory",3,"Pry","search through a creature’s memory for information",15
+"Telepathy","Read Link",4,"Read Memory","read what links a creature has access to and what those links are",20
+"Telepathy","Read Genome",5,"Read Link","gain access to a creature’s historical lineage",25
+"Telepathy","Higher Conscious",3,"Pry","read surface thoughts of a creature within mental attribute x10 ft of you",15
+"Telepathy","Lower Conscious",4,"Higher Conscious","read underlying thoughts of a creature within mental attribute x10 ft of you",20
+"Telepathy","Deep Dive",5,"Lower Conscious","discover all there is to know within a creature's mind within mental attribute x10 ft of you save for masked or otherwise magically or psionically secured information",25
+"Telepathy","Sense Presence",2,"Telepathy","automatically sense non-supernatural unmasked presences adjacent to you",10
+"Telepathy","Focus Signal",3,"Sense Presence","hone in on a specific type of non-supernatural presence",15
+"Telepathy","Project Signal",4,"Focus Signal","focus in on areas not adjacent to you within a range of 10 ft",20
+"Telepathy","Locate Presence",5,"Project Signal","ability to locate exact positions of presences within range also now applies to supernatural presences",25
+"Telepathy","Sensitivity I",3,"Sense Presence","overcome mask I",15
+"Telepathy","Sensitivity II",4,"Sensitivity I","overcome mask II",20
+"Telepathy","Sensitivity III",5,"Sensitivity II","overcome mask III",25
+"Telepathy","Area I",3,"Sense Presence","increase aura to mental attribute x5 ft",15
+"Telepathy","Area II",4,"Area I","increase aura to mental attribute x10 ft",20
+"Telepathy","Area III",5,"Area II","increase aura to mental attribute x25 ft",25
+"Telepathy","Communicate",2,"Telepathy","Ability to send silent messages images, sounds, etc. to creatures within 15ft of you",10
+"Telepathy","Project (Communicate)",3,"Communicate","Increase aura to 30ft",15
+"Telepathy","Forward Chain",4,"Project","Speak to a creature through another creature you are currently communicating with",20
+"Telepathy","Back Chain",5,"Forward Chain","Allow creature you are communicating with to communicate with another creature you are already communicating with",25
+"Telepathy","Range I",3,"Communicate","Increase range of Communicate to 3 miles",15
+"Telepathy","Range II",4,"Range I","Increase range of Communicate to 30 miles",20
+"Telepathy","Range III",5,"Range II","Increase range of Communicate to 300 miles",25
+"Telepathy","Number I",3,"Communicate","Increase total creatures involved to 15 creatures.",15
+"Telepathy","Number II",4,"Number I","Increase total creatures involved to 30 creatures.",20
+"Telepathy","Number III",5,"Number II","Increase total creatures involved to 300 creatures.",25
+"Telepathy","Interfere",2,"Telepathy","reaction technique used to stop or interrupt a psion utilizing a technique forcing target to resist psionics or have that technique fail automatically",10
+"Telepathy","Mask I",3,"Interfere","ability to hide presence or usage of psionic abilities from other psions overcomes Tap I if target cannot resist psionics",15
+"Telepathy","Mask II",4,"Mask I","may overcome Tap II if target cannot resist psionics",20
+"Telepathy","Mask III",5,"Mask II","may overcome Tap III if target cannot resist psionics",25
+"Telepathy","Jam I",3,"Interfere","disrupts a psionic technique overcomes level 1-3 techniques if target cannot resist psionics",15
+"Telepathy","Jam II",4,"Jam I","overcomes level 4 techniques if target cannot resist psionics",20
+"Telepathy","Jam III",5,"Jam II","overcomes level 5 techniques if target cannot resist psionics",25
+"Telepathy","Tap I",3,"Interfere","ability to intercept communicate within mental attribute x1 miles overcomes mask I if target cannot resist psionics",15
+"Telepathy","Tap II",4,"Tap I","ability to intercept communicate within mental attribute x10 miles overcomes mask II if target cannot resist psionics",20
+"Telepathy","Tap III",5,"Tap II","ability to intercept communicate within mental attribute x100 miles overcomes mask III if target cannot resist psionics
+",25
+"Telepathy","Interconnect",2,,"increases manifold manifestation by 2",10
+"Telepathy","Combined Psionics I",3,"Interconnect","may combine technique with efforts of a linked psion",15
+"Telepathy","Combined Psionics II",4,"Combined Psionics I","may combine technique with efforts of linked psions equal to mental attribute",20
+"Telepathy","Combined Psionics III",5,"Combined Psionics II","may combine technique with linked or unlinked psions equal to mental attribute x3",25
+"Telepathy","Metapsionics I",3,"Interconnect","Use mulitple psionic disciplines up to 0 at once",15
+"Telepathy","Metapsionics II",4,"Metapsionics I","Use mulitple psionic disciplines up to 0 at once",20
+"Telepathy","Metapsionics III",5,"Metapsionics II","Use mulitple psionic disciplines up to 0 at once",25
+"Telepathy","Storage I",3,"Interconnect","store a mental message or image in an inanimate object that is activated by touch",15
+"Telepathy","Storage II",4,"Storage I","Store memories techniques and links in inanimate object activated by touch on a timer",20
+"Telepathy","Storage III",5,"Storage II","store up to manifold manifestation limit techniques in inanimate object activated by touch timer or conditions",25
+"Telekinesis","Telekinesis",1,,"can make small or unstable inanimate objects vibrate or move a few inches mildly confuse the senses of creatures adjacent to you and reduce damage of ranged spell and weapon attacks against you by 1 as a passive",5
+"Telekinesis","Levitation",2,"Telekinesis","ability to lift mental attribute x5 lbs objects up to mental attribute x1 ft high and slowly move them up to mental attribute x10 ft around",10
+"Telekinesis","Lift",3,"Levitation","may lift up to mental attribute x25 lbs weight up to mental attribute x5 ft high",15
+"Telekinesis","Push",4,"Lift","push up to mental attribute x25 lbs up to mental attribute x5 ft away",20
+"Telekinesis","Throw",5,"Push","quickly throw up to mental attribute x100 lbs up to mental attribute x10 ft away",25
+"Telekinesis","Hold Item",3,"Levitation","makes an inanimate object weighing up to mental attribute x50 lbs stay still",15
+"Telekinesis","Hold Unintelligent Creature",4,"Hold Item","hold small or medium creature still if they cannot resist psionics",20
+"Telekinesis","Hold Intelligent Creature",5,"Hold Unintelligent Creature","Hold large, huge, colossal, or titanic creature still if they cannot resist psionics",25
+"Telekinesis","Gather",3,"Levitation","may drag self to a creature within mental attribute x 5 ft",15
+"Telekinesis","Pull",4,"Gather","pull up to mental attribute x25 lbs up to mental attribute 5ft towards you",20
+"Telekinesis","Vortex",5,"Pull","pull all loose objects and creatures within area of mental attribute x10 ft into a central point up to a range of mental attribute x25 ft away",25
+"Telekinesis","Psychokinesis",2,"Telekinesis","increase or decrease a target's specific mental based skill by 10 for a roll",10
+"Telekinesis","Scramble",3,"Psychokinesis","reduce touched target mental by mental attribute (to minimum -3) if they cannot resist psionics for mental attribute hours",15
+"Telekinesis","Ranged Scramble",4,"Scramble","increase range up to mental attribute x5 ft",20
+"Telekinesis","Area Scramble",5,"Ranged Scramble","increase area to mental attribute x5 ft",25
+"Telekinesis","Cross",3,"Psychokinesis","swap 2 adjacent target's mental attribute for mental attribute minutes",15
+"Telekinesis","Ranged Cross",4,"Cross","swap now has range of mental attribute x25 ft",20
+"Telekinesis","Area Cross",5,"Ranged Cross","Swap number of creature’s mental attributes in an area of up to mental attribute x25 ft picking who gets which values, or combining multiple targets into 1 target's mental attribute with maximum of 6",25
+"Telekinesis","Sleep",3,"Psychokinesis","non-damaging reduce adjacent target to -5 exhaustion if they cannot resist psionics",15
+"Telekinesis","Ranged Sleep",4,"Sleep","increase range to mental attribute x10 ft",20
+"Telekinesis","Area Sleep",5,"Ranged Sleep","increase area to mental attribute x10 ft",25
+"Telekinesis","Dynakinesis",2,"Telekinesis","May haste or slow target by 1",10
+"Telekinesis","Shield",3,"Dynakinesis","damage reduction reaction against ranged attack or spell of mental attribute x2",15
+"Telekinesis","Ranged Shield",4,"Shield","ability to shield target up to mental attribute x10 ft away",20
+"Telekinesis","Area Shield",5,"Ranged Shield","shield within range of area up to mental attribute x5 ft",25
+"Telekinesis","Field",3,"Dynakinesis","area of mental attribute x5 ft triggered by movement of a creature into field deals mental damage equal to mental attribute x5 or triggers a stored technique",15
+"Telekinesis","Timed Field",4,"Field","field can now be set to activate after a set amount of time",20
+"Telekinesis","Conditional Field",5,"Timed Field","field can now be set to activate after specific conditions are met",25
+"Telekinesis","Force",3,"Dynakinesis","mental force attack of mental attribute x2 damage if adjacent target cannot resist psionics",15
+"Telekinesis","Ranged Force",4,"Force","force at mental attribute x10 ft range",20
+"Telekinesis","Area Force",5,"Ranged Force","force in area of mental attribute x10 ft",25
+"Telekinesis","Psychometabolism",2,"Telekinesis","increase target energy by mental attribute x character tier",10
+"Telekinesis","Draw",3,"Psychometabolism","causes target up to mental attribute miles away to develop physical want/need eg hunger, thirst, sleep, for mental attribute minutes if they cannot resist psionics",15
+"Telekinesis","Persistent Draw",4,"Draw","increases to mental attribute moonfaces",20
+"Telekinesis","Conditional Draw",5,"Persistent Draw","triggered by specific conditions",25
+"Telekinesis","Repel",3,"Psychometabolism","causes target up to mental attribute miles away to develop a physical disgust or discomfort eg itching",15
+"Telekinesis","Persistent Repel",4,"Repel","increases to mental attribute moonfaces",20
+"Telekinesis","Conditional Repel",5,"Persistent Repel","triggered by specific conditions",25
+"Telekinesis","Health",3,"Psychometabolism","causes target up to mental attribute miles away to feel as if and exhibit symptoms for mental attribute minutes if they cannot resist psionics",15
+"Telekinesis","Persistent Health",4,"Health","increases to mental attribute moonfaces",20
+"Telekinesis","Conditional Health",5,"Persistent Health","triggered by specific conditions",25
+"Telekinesis","Density",2,"Telekinesis","concentrate",10
+"Telekinesis","Congeal Gas",3,"Density","concentrate gas to small ball in area up to mental attribute x5 ft",15
+"Telekinesis","Congeal Dust",4,"Congeal Gas","does so for dust",20
+"Telekinesis","Congeal Liquid",5,"Congeal Dust","does so for liquid",25
+"Telekinesis","Disperse Gas",3,"Density","may cause gas to expand and dilute up to mental attribute x5 ft from an area",15
+"Telekinesis","Disperse Dust",4,"Disperse Gas","does so for dust",20
+"Telekinesis","Disperse Liquid",5,"Disperse Dust","does so for liquids",25
+"Telekinesis","Mix Gas",3,"Density","mix gasses together in preferred measurements up to mental attribute x5 ft area",15
+"Telekinesis","Mix Dust",4,"Mix Gas","does so for dust",20
+"Telekinesis","Mix Liquid",5,"Mix Dust","does so for liquid",25
+"Psychometry","Psychometry",1,,"automatically know if there are items in container unless it has been magically/psionically secured",5
+"Psychometry","Claircognizance",2,"Psychometry","may enter into dreams of creatures up to mental attribute x5 ft away",10
+"Psychometry","Clairsentience",3,"Claircognizance","aura",15
+"Psychometry","Clairempathy",4,"Clairsentience","aura",20
+"Psychometry","Attune Conversation",5,"Clairempathy","listen to non-psionic conversation up to mental attribute x50 ft away",25
+"Psychometry","Dowsing I",3,"Claircognizance","find inanimate substance or material within mental attribute x5 ft of you",15
+"Psychometry","Dowsing II",4,"Dowsing I","find inanimate substance or material within mental attribute x100 ft of you",20
+"Psychometry","Dowsing III",5,"Dowsing II","find inanimate substance or material within mental attribute miles of you",25
+"Psychometry","Unlock Dream",3,"Claircognizance","search a creature's mind for a dream up to mental attribute phases ago",15
+"Psychometry","Unlock Subconscious",4,"Unlock Dream","overcomes subtract or tamper memory",20
+"Psychometry","Manifest Mind",5,"Unlock Subconscious","allows you to perfectly reconstruct a target's mind if you have successfully used a technique on said target before if target is alive or has been dead for less than a phase",25
+"Psychometry","Clairvoyance",2,"Psychometry","may still act even when surprised",10
+"Psychometry","Retrocognition I",3,"Clairvoyance","glimpse at what happened in an area up to mental attribute minutes ago",15
+"Psychometry","Retrocognition II",4,"Retrocognition I","glimpse at what happened in an area up to mental attribute phases ago",20
+"Psychometry","Retrocognition III",5,"Retrocognition II","glimpse at what happened in an area up to mental attribute centuries ago",25
+"Psychometry","Precognition I",3,"Clairvoyance","glimpse at what may happen up to mental attribute minutes in the future",15
+"Psychometry","Prognition II",4,"Precognition I","glimpse at what may happen up to to mental attribute cycles in the future",20
+"Psychometry","Precognition III",5,"Prognition II","glimpse at what may happen up to mental attribute years in the future",25
+"Psychometry","Area of Sight",3,"Clairvoyance","may see when blind or around obstacles",15
+"Psychometry","Distal Projection",4,"Area of Sight","see in an area up to mental attribute x5 ft up to mental attribute miles away",20
+"Psychometry","Interplanar Projection",5,"Distal Projection","see in an area up to mental attribute x5 ft on another plane",25
+"Psychometry","Identify",2,"Psychometry","automatically know what an item is when you touch it if it is not magically/psionically secured",10
+"Psychometry","Origin",3,"Identify","know where an item was crafted",15
+"Psychometry","Age of Material",4,"Origin","know when raw materials for an item were collected or made",20
+"Psychometry","Origin of Material",5,"Age of Material","know where raw materials for an item were gathered",25
+"Psychometry","Material",3,"Identify","know what the item is broadly composed of",15
+"Psychometry","Integrity",4,"Material","know the condition of an item automatically",20
+"Psychometry","Purity",5,"Integrity","know about precise compositions of an item",25
+"Psychometry","Detect Poison",3,"Identify","detect poisons in or on an item",15
+"Psychometry","Detect Trap",4,"Detect Poison","detect traps in or on an item",20
+"Psychometry","Detect Arcane",5,"Detect Trap","detect spells in or on an item",25
+"Psychometry","Psychoscopy",2,"Psychometry","glimpse brief history of area when entering",10
+"Psychometry","Psychoportation",3,"Psychoscopy","know the path an item took to get to where it currently is for up to mental attribute hours",15
+"Psychometry","Retroscribation",4,"Psychoportation","know who has written something by touch within mental attribute hours",20
+"Psychometry","Xenoglossy",5,"Retroscribation","automatically understand a message written in a foreign language or code by touch",25
+"Psychometry","User",3,"Psychoscopy","determine identity of item's last user/owner",15
+"Psychometry","Prior Users",4,"User","determine chain of prior identities up to mental attribute",20
+"Psychometry","Determine Purpose",5,"Prior Users","understand what prior user used item primarily for",25
+"Psychometry","Maker",3,"Psychoscopy","determine identity of primary crafter of item",15
+"Psychometry","Method of Creation",4,"Maker","identify methods of crafting",20
+"Psychometry","Age of Item",5,"Method of Creation","determine when item was crafted",25
+"Psychometry","Track",2,"Psychoscopy","Always know locations of items attuned to you",10
+"Psychometry","Trail I",3,"Track","determine path of last owner/user up to mental attribute minutes after departure from item",15
+"Psychometry","Trail II",4,"Trail I","increase to mental attribute hours",20
+"Psychometry","Trail III",5,"Trail II","increase to mental attribute phases",25
+"Psychometry","Item I",3,"Track","if you have used psychometry on a specific item before",15
+"Psychometry","Item II",4,"Item I","increase to mental attribute hours",20
+"Psychometry","Item III",5,"Item II","increase to mental attribute phases",25
+"Psychometry","Aura I",3,"Track","know when an item entered or departed a place up to mental attribute minutes ago",15
+"Psychometry","Aura II",4,"Aura I","know when an item entered or departed a place up to mental attribute cycles ago",20
+"Psychometry","Aura III",5,"Aura II","know when an item entered or departed a place up to mental attribute centuries ago",25
+"Hypnosis","Hypnosis",1,,"automatically gain the attention of a target within mental attribute x5 ft of you. If applicable target is not immediately hostile to you if it otherwise would be if it cannot successfully resist psionics",5
+"Hypnosis","Pathokinesis",2,"Hypnosis","increase or decrease a specific social based skill by 10 for mental attribute for a roll",10
+"Hypnosis","Suggest",3,"Pathokinesis","add mental attribute to persuade",15
+"Hypnosis","Command",4,"Suggest","increase to mental attribute x10",20
+"Hypnosis","Aura",5,"Command","may execute against all targets within mental attribute x10 ft of you",25
+"Hypnosis","Dissuade",3,"Pathokinesis","add mental attribute to intimidate",15
+"Hypnosis","Forbid",4,"Dissuade","increase to mental attribute x10",20
+"Hypnosis","Aura",5,"Forbid","may execute against all targets within mental attribute x10 ft of you",25
+"Hypnosis","Force Emotion",3,"Pathokinesis","insert a strong specific emotion into a target up to mental attribute x10 ft away",15
+"Hypnosis","Timed Insertion",4,"Force Emotion","may set to activate upon timer",20
+"Hypnosis","Conditional Insertion",5,"Timed Insertion","may set to activate upon specific conditions",25
+"Hypnosis","Illusion",2,"Hypnosis","create small false images",10
+"Hypnosis","Amplify I",3,"Illusion","increase intensity of target's perception or sense of an item/person/event",15
+"Hypnosis","Amplify II",4,"Amplify I","targets have -25% resist psionics with your illusions",20
+"Hypnosis","Amplify III",5,"Amplify II","targets have -50% resist psionics with your illusions",25
+"Hypnosis","Dampen",3,"Illusion","decrease intensity of target’s perception or sense of an item/person/event",15
+"Hypnosis","Nondetection",4,"Dampen","targets have -50% to search when you are using psionics to conceal or deceive",20
+"Hypnosis","Invisibility",5,"Nondetection","remove your target's ability to sense a target in one way entirely if they cannot resist psionics",25
+"Hypnosis","Alter Illusion",3,"Illusion","change what a target perceives or senses so long as the illusion matches size and duration",15
+"Hypnosis","Timed Insertion",4,"Alter Illusion","may set an illusion to activate on specific timer",20
+"Hypnosis","Conditional Insertion",5,"Timed Insertion","may set an illusion to activate upon specific conditions",25
+"Hypnosis","Possession",2,"Hypnosis","may assume control of a creature with no mental score such as an insect for mental attribute hours",10
+"Hypnosis","Unintelligent Animal",3,"Possession","may assume control of a creature with -3 mental if it fails to resist psionics for mental attribute rounds",15
+"Hypnosis","Intelligent Animal",4,"Unintelligent Animal","May assume control of a creature with -2 mental or less if it fails to resist psionics for mental attribute rounds",20
+"Hypnosis","Mortal",5,"Intelligent Animal","May assume control of a creature if it fails to resist psionics for mental attribute rounds",25
+"Hypnosis","Target I",3,"Possession","Increase number of targets able to control at once to 3",15
+"Hypnosis","Target II",4,"Target I","Increase to 6 targets",20
+"Hypnosis","Target III",5,"Target II","Increase to 9 targets",25
+"Hypnosis","Range I",3,"Possession","increase range to 30 ft",15
+"Hypnosis","Range II",4,"Range I","Increase range to 300 ft",20
+"Hypnosis","Range III",5,"Range II","Increase range to 3 miles",25
+"Hypnosis","Mnokinesis",2,"Hypnosis","You gain Perfect Recall ancillary as a passive",10
+"Hypnosis","Addition I",3,"Mnokinesis","Add insignificant memory to a target",15
+"Hypnosis","Addition II",4,"Addition I","Add a significant memory",20
+"Hypnosis","Addition III",5,"Addition II","Add life-changing or crucial to identity memory",25
+"Hypnosis","Subtraction I",3,"Mnokinesis","Remove Insignificant memory from a target",15
+"Hypnosis","Subtraction II",4,"Subtraction I","Remove a Significant memory",20
+"Hypnosis","Subtraction III",5,"Subtraction II","Remove life-changing or crucial to identity memory",25
+"Hypnosis","Alter Memory",3,"Mnokinesis","Change details of a target's specific memory",15
+"Hypnosis","Timed Restore",4,"Alter Memory","Restore a target's memory upon a specific timer",20
+"Hypnosis","Conditional Restore",5,"Timed Restore","Restore a target's memory upon a specific condition",25
+"Hypnosis","Override",2,"Hypnosis","Give a target +1 action points x character tier for 1 round",10
+"Hypnosis","Endurance",3,"Override","Add mental attribute x3 to target's endure for specific roll",15
+"Hypnosis","Defy Exhaustion",4,"Endurance","Remove 1 level of exhaustion from a target",20
+"Hypnosis","Defy Death",5,"Defy Exhaustion","Add mental attribute x10 to target's feat of defiance on specific roll",25
+"Hypnosis","Strength",3,"Override","reaction",15
+"Hypnosis","Speed",4,"Strength","reaction",20
+"Hypnosis","Agility",5,"Speed","reaction",25
+"Hypnosis","Morale",3,"Override","+1 morale to target",15
+"Hypnosis","Fear",4,"Morale","-1 morale to target",20
+"Hypnosis","Horror",5,"Fear","- mental attribute morale to target. May choose to incapacitate target instead of flee if target's morale reaches -5",25
