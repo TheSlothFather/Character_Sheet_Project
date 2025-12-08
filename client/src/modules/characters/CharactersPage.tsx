@@ -3,9 +3,12 @@ import { api, Character, ApiError, ModifierWithSource, NamedDefinition } from ".
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { applyModifiers } from "@shared/rules/modifiers";
 
-const SKILL_POINT_POOL = 100;
+const DEFAULT_SKILL_POINT_POOL = 100;
 
-type SkillAllocationMap = Record<string, Record<string, number>>;
+const isAllocationMap = (value: unknown): value is Record<string, number> => {
+  if (!value || typeof value !== "object") return false;
+  return Object.values(value as Record<string, unknown>).every((v) => typeof v === "number");
+};
 
 const isCharacter = (value: unknown): value is Character => {
   if (!value || typeof value !== "object") return false;
@@ -13,7 +16,9 @@ const isCharacter = (value: unknown): value is Character => {
   return (
     typeof candidate.id === "string" &&
     typeof candidate.name === "string" &&
-    typeof candidate.level === "number"
+    typeof candidate.level === "number" &&
+    typeof candidate.skillPoints === "number" &&
+    isAllocationMap(candidate.skillAllocations)
   );
 };
 
@@ -155,7 +160,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   {remaining}
                 </div>
               </div>
-              <div style={{ fontSize: 12, color: "#9aa3b5" }}>Pool: {SKILL_POINT_POOL}</div>
+              <div style={{ fontSize: 12, color: "#9aa3b5" }}>Pool: {skillPointPool}</div>
             </div>
             <div style={{ overflowY: "auto", padding: "0.5rem 0.75rem", flex: 1 }}>
               {skills.length === 0 ? (
@@ -249,7 +254,7 @@ export const CharactersPage: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [skillAllocations, setSkillAllocations] = React.useState<SkillAllocationMap>({});
+  const [allocationSavingId, setAllocationSavingId] = React.useState<string | null>(null);
 
   const {
     data: definitions,
@@ -299,7 +304,9 @@ export const CharactersPage: React.FC = () => {
         name: name.trim(),
         level: 1,
         raceKey: raceKey || undefined,
-        subraceKey: subraceKey || undefined
+        subraceKey: subraceKey || undefined,
+        skillPoints: DEFAULT_SKILL_POINT_POOL,
+        skillAllocations: {}
       });
       if (!created || !isCharacter(created)) {
         setError("Unexpected response when creating character.");
@@ -316,29 +323,47 @@ export const CharactersPage: React.FC = () => {
     }
   };
 
-  const onChangeAllocation = (skillCode: string, delta: number) => {
-    setSkillAllocations((prev) => {
-      if (!selectedId) return prev;
-      const current = prev[selectedId] ?? {};
-      const currentValue = current[skillCode] ?? 0;
-      const nextValue = Math.max(0, currentValue + delta);
-      const currentTotal = sumAllocations(current);
-      const proposedTotal = currentTotal - currentValue + nextValue;
-      if (proposedTotal > SKILL_POINT_POOL) return prev;
-      return {
-        ...prev,
-        [selectedId]: {
-          ...current,
-          [skillCode]: nextValue
-        }
-      };
-    });
+  const onChangeAllocation = async (skillCode: string, delta: number) => {
+    if (!selectedId) return;
+    const selectedCharacter = characters.find((c) => c.id === selectedId);
+    if (!selectedCharacter) return;
+
+    const pool = selectedCharacter.skillPoints ?? DEFAULT_SKILL_POINT_POOL;
+    const currentAllocations = selectedCharacter.skillAllocations ?? {};
+    const currentValue = currentAllocations[skillCode] ?? 0;
+    const nextValue = Math.max(0, currentValue + delta);
+    const currentTotal = sumAllocations(currentAllocations);
+    const proposedTotal = currentTotal - currentValue + nextValue;
+    if (proposedTotal > pool) return;
+
+    const nextAllocations = {
+      ...currentAllocations,
+      [skillCode]: nextValue
+    };
+
+    const optimistic = { ...selectedCharacter, skillAllocations: nextAllocations };
+    setCharacters((prev) => prev.map((c) => (c.id === selectedId ? optimistic : c)));
+    setAllocationSavingId(selectedId);
+    try {
+      const saved = await api.updateCharacter(selectedId, { skillAllocations: nextAllocations });
+      if (!isCharacter(saved)) {
+        throw new Error("Unexpected response when saving allocations");
+      }
+      setCharacters((prev) => prev.map((c) => (c.id === saved.id ? saved : c)));
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Failed to save skill allocation";
+      setError(message);
+      setCharacters((prev) => prev.map((c) => (c.id === selectedId ? selectedCharacter : c)));
+    } finally {
+      setAllocationSavingId(null);
+    }
   };
 
   const selectedCharacter = characters.find((c) => c.id === selectedId) || null;
-  const currentAllocations = selectedCharacter && skillAllocations[selectedCharacter.id] ? skillAllocations[selectedCharacter.id] : {};
+  const currentAllocations = selectedCharacter?.skillAllocations ?? {};
+  const skillPointPool = selectedCharacter?.skillPoints ?? DEFAULT_SKILL_POINT_POOL;
   const totalAllocated = sumAllocations(currentAllocations);
-  const remaining = SKILL_POINT_POOL - totalAllocated;
+  const remaining = skillPointPool - totalAllocated;
 
   const raceMap = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -505,7 +530,7 @@ export const CharactersPage: React.FC = () => {
               allocations={currentAllocations}
               racialBonuses={racialBonuses}
               onChangeAllocation={onChangeAllocation}
-              disableAllocation={loadingAny}
+              disableAllocation={loadingAny || allocationSavingId === selectedCharacter.id}
             />
           )}
         </main>
