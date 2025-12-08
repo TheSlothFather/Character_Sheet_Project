@@ -52,10 +52,11 @@ const mapDerivedStat = ({ key, name, description, expression }: { key: string; n
   expression
 });
 
-const ensureModifierId = (modifier: ContentModifier): ContentModifierWithId => ({
-  id: modifier.id ?? `${modifier.sourceType}:${modifier.sourceKey}:${modifier.targetPath}:${modifier.operation}`,
-  ...modifier
-});
+const ensureModifierId = (modifier: ContentModifier): ContentModifierWithId => {
+  const id = modifier.id ?? `${modifier.sourceType}:${modifier.sourceKey}:${modifier.targetPath}:${modifier.operation}`;
+
+  return { ...modifier, id };
+};
 
 const collectModifiers = (pack: ContentPack): ContentModifierWithId[] => {
   const list: ContentModifierWithId[] = [];
