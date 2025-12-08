@@ -76,31 +76,48 @@ export const parsePsionicsCsv = (csvText: string): PsionicAbility[] => {
     console.warn("Errors while parsing psionics CSV", parsed.errors);
   }
 
-  const abilityMap = new Map<string, PsionicAbility>();
+  const abilityBuckets = new Map<string, PsionicAbility[]>();
+  const abilities: PsionicAbility[] = [];
 
   for (const row of parsed.data || []) {
     if (!row.Ability) continue;
     const tree = row["Ability Tree"];
     const name = row.Ability;
     const key = `${tree}:${name}`;
-    if (abilityMap.has(key)) continue;
 
     const prerequisiteNames = parsePrerequisites(row.Prerequisite);
 
-    abilityMap.set(key, {
-      id: key,
+    const priorEntries = abilityBuckets.get(key) ?? [];
+    const occurrence = priorEntries.length + 1;
+    const id = occurrence === 1 ? key : `${key}#${occurrence}`;
+
+    const prerequisiteIds = prerequisiteNames.map((prereq) => {
+      const prereqKey = `${tree}:${prereq}`;
+      const prereqBucket = abilityBuckets.get(prereqKey);
+      if (!prereqBucket || prereqBucket.length === 0) {
+        return prereqKey;
+      }
+      return prereqBucket[prereqBucket.length - 1].id;
+    });
+
+    const ability: PsionicAbility = {
+      id,
       tree,
       name,
       tier: Number(row.Tier),
       prerequisiteNames,
-      prerequisiteIds: prerequisiteNames.map((prereq) => `${tree}:${prereq}`),
+      prerequisiteIds,
       description: row.Description,
       energyCost: Number(row["Energy Cost"]),
       formula: row.Formula?.trim() || undefined
-    });
+    };
+
+    abilities.push(ability);
+    priorEntries.push(ability);
+    abilityBuckets.set(key, priorEntries);
   }
 
-  return Array.from(abilityMap.values()).sort((a, b) => {
+  return abilities.sort((a, b) => {
     if (a.tree === b.tree) {
       if (a.tier === b.tier) return a.name.localeCompare(b.name);
       return a.tier - b.tier;
