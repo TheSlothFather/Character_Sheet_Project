@@ -1,4 +1,6 @@
 import React from "react";
+import { api, Character } from "../../api/client";
+import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
 import psionicsCsv from "../../data/psionics.csv?raw";
 import {
   DEFAULT_PSI_POINTS,
@@ -10,37 +12,48 @@ import {
 } from "./psionicsUtils";
 
 interface PsiState {
-  remaining: number;
+  psiPool: number;
   purchased: Set<string>;
+  mental: number;
 }
 
 const STORAGE_KEY = "psionics_skill_tree_v1";
-const mentalStat = 3;
+const DEFAULT_MENTAL_ATTRIBUTE = 3;
 
-const loadPersistedState = (storageKey: string, defaultPsi: number, abilityIds: Set<string>): PsiState => {
-  if (typeof window === "undefined") {
-    return { remaining: defaultPsi, purchased: new Set() };
+const loadPersistedState = (
+  storageKey: string | null,
+  defaultPsi: number,
+  defaultMental: number,
+  abilityIds: Set<string>
+): PsiState => {
+  if (typeof window === "undefined" || !storageKey) {
+    return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental };
   }
 
   try {
     const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return { remaining: defaultPsi, purchased: new Set() };
-    const parsed = JSON.parse(raw) as { remaining?: number; purchased?: string[] };
-    const remaining = typeof parsed.remaining === "number" && parsed.remaining >= 0 ? parsed.remaining : defaultPsi;
+    if (!raw) return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental };
+    const parsed = JSON.parse(raw) as { psiPool?: number; purchased?: string[]; mental?: number };
+    const psiPool = typeof parsed.psiPool === "number" && parsed.psiPool >= 0 ? parsed.psiPool : defaultPsi;
+    const mental = typeof parsed.mental === "number" && parsed.mental >= 0 ? parsed.mental : defaultMental;
     const purchased = Array.isArray(parsed.purchased)
       ? parsed.purchased.filter((id) => abilityIds.has(id))
       : [];
-    return { remaining, purchased: new Set(purchased) };
+    return { psiPool, mental, purchased: new Set(purchased) };
   } catch (err) {
     console.warn("Unable to parse psionics state", err);
-    return { remaining: defaultPsi, purchased: new Set() };
+    return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental };
   }
 };
 
-const persistState = (storageKey: string, state: PsiState) => {
-  if (typeof window === "undefined") return;
+const persistState = (storageKey: string | null, state: PsiState) => {
+  if (typeof window === "undefined" || !storageKey) return;
   try {
-    const payload = JSON.stringify({ remaining: state.remaining, purchased: Array.from(state.purchased) });
+    const payload = JSON.stringify({
+      psiPool: state.psiPool,
+      mental: state.mental,
+      purchased: Array.from(state.purchased)
+    });
     window.localStorage.setItem(storageKey, payload);
   } catch (err) {
     console.warn("Unable to persist psionics state", err);
@@ -52,8 +65,9 @@ const AbilityCard: React.FC<{
   purchased: boolean;
   unlocked: boolean;
   remainingPsi: number;
+  mentalStat: number;
   onPurchase: (ability: PsionicAbility) => void;
-}> = ({ ability, purchased, unlocked, remainingPsi, onPurchase }) => {
+}> = ({ ability, purchased, unlocked, remainingPsi, mentalStat, onPurchase }) => {
   const derived = ability.formula ? evaluateFormula(ability.formula, mentalStat) : null;
   const psiCost = ability.tier;
   const canAfford = remainingPsi >= psiCost;
@@ -128,14 +142,59 @@ const AbilityCard: React.FC<{
 export const PsionicsPage: React.FC = () => {
   const abilities = React.useMemo(() => parsePsionicsCsv(psionicsCsv), []);
   const abilityIds = React.useMemo(() => new Set(abilities.map((a) => a.id)), [abilities]);
+  const abilityCostMap = React.useMemo(() => new Map(abilities.map((a) => [a.id, a.tier])), [abilities]);
+
+  const { selectedId } = useSelectedCharacter();
+  const [selectedCharacter, setSelectedCharacter] = React.useState<Character | null>(null);
+  const [characterError, setCharacterError] = React.useState<string | null>(null);
+  const [loadingCharacter, setLoadingCharacter] = React.useState(false);
+
+  const storageKey = React.useMemo(() => (selectedId ? `${STORAGE_KEY}:${selectedId}` : null), [selectedId]);
 
   const [state, setState] = React.useState<PsiState>(() =>
-    loadPersistedState(STORAGE_KEY, DEFAULT_PSI_POINTS, abilityIds)
+    loadPersistedState(storageKey, DEFAULT_PSI_POINTS, DEFAULT_MENTAL_ATTRIBUTE, abilityIds)
   );
 
   React.useEffect(() => {
-    persistState(STORAGE_KEY, state);
-  }, [state]);
+    setState(loadPersistedState(storageKey, DEFAULT_PSI_POINTS, DEFAULT_MENTAL_ATTRIBUTE, abilityIds));
+  }, [abilityIds, storageKey]);
+
+  React.useEffect(() => {
+    persistState(storageKey, state);
+  }, [state, storageKey]);
+
+  React.useEffect(() => {
+    setSelectedCharacter(null);
+    if (!selectedId) {
+      setCharacterError("Select a character on the Characters page to manage psionics.");
+      setLoadingCharacter(false);
+      return;
+    }
+
+    setCharacterError(null);
+    setLoadingCharacter(true);
+    api
+      .listCharacters()
+      .then((list) => {
+        const found = list.find((c) => c.id === selectedId) ?? null;
+        setSelectedCharacter(found);
+        if (!found) {
+          setCharacterError("Selected character not found. Choose one on the Characters page.");
+        }
+      })
+      .catch((err) => {
+        const message = err instanceof Error ? err.message : "Failed to load character.";
+        setCharacterError(message);
+      })
+      .finally(() => setLoadingCharacter(false));
+  }, [selectedId]);
+
+  const spentPsi = React.useMemo(
+    () => Array.from(state.purchased).reduce((sum, id) => sum + (abilityCostMap.get(id) ?? 0), 0),
+    [abilityCostMap, state.purchased]
+  );
+
+  const remainingPsi = Math.max(0, state.psiPool - spentPsi);
 
   const trees = React.useMemo(() => {
     const map = new Map<string, Map<number, PsionicAbility[]>>();
@@ -165,33 +224,117 @@ export const PsionicsPage: React.FC = () => {
       if (prev.purchased.has(ability.id)) return prev;
       if (!isAbilityUnlocked(ability, prev.purchased)) return prev;
       const psiCost = ability.tier;
-      if (prev.remaining < psiCost) return prev;
+      const spent = Array.from(prev.purchased).reduce((sum, id) => sum + (abilityCostMap.get(id) ?? 0), 0);
+      const available = prev.psiPool - spent;
+      if (available < psiCost) return prev;
 
       const nextPurchased = new Set(prev.purchased);
       nextPurchased.add(ability.id);
-      return { remaining: prev.remaining - psiCost, purchased: nextPurchased };
+      return { ...prev, purchased: nextPurchased };
     });
   };
 
+  const updatePsiPool = (value: number) => {
+    setState((prev) => ({ ...prev, psiPool: Math.max(0, value) }));
+  };
+
+  const updateMental = (value: number) => {
+    setState((prev) => ({ ...prev, mental: Math.max(0, value) }));
+  };
+
+  if (!selectedId) {
+    return <p>Please select a character on the Characters page to view psionics.</p>;
+  }
+
+  if (loadingCharacter) {
+    return <p>Loading character...</p>;
+  }
+
+  if (characterError) {
+    return <p style={{ color: "#f55" }}>{characterError}</p>;
+  }
+
+  if (!selectedCharacter) {
+    return <p>Selected character could not be found.</p>;
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
         <div>
           <h1 style={{ margin: 0 }}>Psionics</h1>
-          <p style={{ margin: "0.2rem 0", color: "#c5ccd9" }}>Mental attribute: {mentalStat}</p>
+          <p style={{ margin: "0.2rem 0", color: "#c5ccd9" }}>Character: {selectedCharacter.name}</p>
         </div>
-        <div
-          style={{
-            background: "#131a24",
-            border: "1px solid #2b3747",
-            borderRadius: 10,
-            padding: "0.75rem 1rem",
-            minWidth: 180,
-            textAlign: "center"
-          }}
-        >
-          <div style={{ fontSize: 13, color: "#9aa3b5" }}>Psi Points Remaining</div>
-          <div style={{ fontSize: 26, fontWeight: 700, color: "#9ae6b4" }}>{state.remaining}</div>
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <label
+            style={{
+              background: "#131a24",
+              border: "1px solid #2b3747",
+              borderRadius: 10,
+              padding: "0.75rem 1rem",
+              minWidth: 180,
+              color: "#c5ccd9",
+              display: "flex",
+              flexDirection: "column",
+              gap: 6
+            }}
+          >
+            <span style={{ fontSize: 13 }}>Psi Pool</span>
+            <input
+              type="number"
+              value={state.psiPool}
+              onChange={(e) => updatePsiPool(Number(e.target.value) || 0)}
+              min={0}
+              style={{
+                background: "#0f141d",
+                border: "1px solid #2b3747",
+                borderRadius: 6,
+                padding: "0.35rem 0.5rem",
+                color: "#e6edf7"
+              }}
+            />
+          </label>
+          <label
+            style={{
+              background: "#131a24",
+              border: "1px solid #2b3747",
+              borderRadius: 10,
+              padding: "0.75rem 1rem",
+              minWidth: 180,
+              color: "#c5ccd9",
+              display: "flex",
+              flexDirection: "column",
+              gap: 6
+            }}
+          >
+            <span style={{ fontSize: 13 }}>Mental Attribute</span>
+            <input
+              type="number"
+              value={state.mental}
+              onChange={(e) => updateMental(Number(e.target.value) || 0)}
+              min={0}
+              style={{
+                background: "#0f141d",
+                border: "1px solid #2b3747",
+                borderRadius: 6,
+                padding: "0.35rem 0.5rem",
+                color: "#e6edf7"
+              }}
+            />
+          </label>
+          <div
+            style={{
+              background: "#131a24",
+              border: "1px solid #2b3747",
+              borderRadius: 10,
+              padding: "0.75rem 1rem",
+              minWidth: 200,
+              textAlign: "center"
+            }}
+          >
+            <div style={{ fontSize: 13, color: "#9aa3b5" }}>Psi Points Remaining</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: "#9ae6b4" }}>{remainingPsi}</div>
+          </div>
         </div>
       </header>
 
@@ -225,7 +368,8 @@ export const PsionicsPage: React.FC = () => {
                           ability={ability}
                           purchased={purchased}
                           unlocked={unlocked}
-                          remainingPsi={state.remaining}
+                          remainingPsi={remainingPsi}
+                          mentalStat={state.mental}
                           onPurchase={handlePurchase}
                         />
                       );

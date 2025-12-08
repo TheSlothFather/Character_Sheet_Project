@@ -2,6 +2,7 @@ import React from "react";
 import { api, Character, ApiError, ModifierWithSource, NamedDefinition } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { applyModifiers } from "@shared/rules/modifiers";
+import { useSelectedCharacter } from "./SelectedCharacterContext";
 
 const DEFAULT_SKILL_POINT_POOL = 100;
 
@@ -252,11 +253,12 @@ export const CharactersPage: React.FC = () => {
   const [name, setName] = React.useState("");
   const [raceKey, setRaceKey] = React.useState<string>("");
   const [subraceKey, setSubraceKey] = React.useState<string>("");
-  const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [allocationSavingId, setAllocationSavingId] = React.useState<string | null>(null);
+
+  const { selectedId, setSelectedId } = useSelectedCharacter();
 
   const {
     data: definitions,
@@ -277,9 +279,6 @@ export const CharactersPage: React.FC = () => {
           throw new Error("Unexpected response when loading characters");
         }
         setCharacters(data);
-        if (!selectedId && data.length) {
-          setSelectedId(data[0].id);
-        }
       })
       .catch((err) => {
         if (!isMounted) return;
@@ -295,6 +294,17 @@ export const CharactersPage: React.FC = () => {
       isMounted = false;
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!characters.length) {
+      if (selectedId) setSelectedId(null);
+      return;
+    }
+
+    if (!selectedId || !characters.some((c) => c.id === selectedId)) {
+      setSelectedId(characters[0].id);
+    }
+  }, [characters, selectedId, setSelectedId]);
 
   const onCreate = async () => {
     if (!name.trim() || isSubmitting) return;

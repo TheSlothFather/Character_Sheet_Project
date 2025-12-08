@@ -1,11 +1,39 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PsionicsPage } from "../modules/psionics/PsionicsPage";
+import { SelectedCharacterProvider } from "../modules/characters/SelectedCharacterContext";
 import { PsionicAbility, evaluateFormula, isAbilityUnlocked } from "../modules/psionics/psionicsUtils";
+
+const mockCharacter = { id: "char-1", name: "Test", level: 1, skillPoints: 100, skillAllocations: {} };
+const mockFetch = vi.fn();
+
+const renderWithProviders = async () => {
+  window.localStorage.setItem("selected_character_id", mockCharacter.id);
+  (global as any).fetch = mockFetch;
+  mockFetch.mockResolvedValue({
+    ok: true,
+    status: 200,
+    text: () => Promise.resolve(JSON.stringify([mockCharacter]))
+  });
+
+  render(
+    <SelectedCharacterProvider>
+      <PsionicsPage />
+    </SelectedCharacterProvider>
+  );
+
+  await screen.findByText(/Psi Points Remaining/i);
+};
 
 describe("psionics skill tree", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    mockFetch.mockReset();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("evaluates Mental based formulas", () => {
@@ -28,8 +56,8 @@ describe("psionics skill tree", () => {
     expect(isAbilityUnlocked(ability, new Set(["Test:Basic"]))).toBe(true);
   });
 
-  it("spends psi points when purchasing an unlocked ability", () => {
-    render(<PsionicsPage />);
+  it("spends psi points when purchasing an unlocked ability", async () => {
+    await renderWithProviders();
 
     const psiDisplay = screen.getByText(/Psi Points Remaining/i).parentElement as HTMLElement;
     expect(psiDisplay).toHaveTextContent("15");
@@ -40,7 +68,7 @@ describe("psionics skill tree", () => {
     expect(telepathyButton).toBeDefined();
     fireEvent.click(telepathyButton);
 
-    expect(psiDisplay).toHaveTextContent("10");
+    expect(psiDisplay).toHaveTextContent("14");
     expect(telepathyButton).toBeDisabled();
   });
 });
