@@ -6,12 +6,33 @@ export interface Character {
   subraceKey?: string;
 }
 
+import type { Expr } from "@shared/rules/expressions";
+import type { Modifier } from "@shared/rules/modifiers";
+
 export interface NamedDefinition {
   id: string;
   code?: string;
   parentId?: string;
   name: string;
   description?: string;
+}
+
+export type ContentModifierSourceType =
+  | "race"
+  | "subrace"
+  | "feat"
+  | "item"
+  | "status_effect"
+  | "background"
+  | "other";
+
+export interface ModifierWithSource extends Modifier {
+  sourceType: ContentModifierSourceType;
+  sourceKey: string;
+}
+
+export interface DerivedStatDefinition extends NamedDefinition {
+  expression: Expr;
 }
 
 export interface DefinitionsResponse {
@@ -23,8 +44,9 @@ export interface DefinitionsResponse {
   feats: NamedDefinition[];
   items: NamedDefinition[];
   statusEffects: NamedDefinition[];
-  derivedStats: NamedDefinition[];
-  modifiers: unknown[];
+  derivedStats: DerivedStatDefinition[];
+  derivedStatValues?: Record<string, number>;
+  modifiers: ModifierWithSource[];
 }
 
 export class ApiError extends Error {

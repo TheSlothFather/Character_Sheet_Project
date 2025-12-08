@@ -1,5 +1,5 @@
 import React from "react";
-import { api, DefinitionsResponse, NamedDefinition } from "../../api/client";
+import { api, DefinitionsResponse, DerivedStatDefinition, ModifierWithSource, NamedDefinition } from "../../api/client";
 
 interface DefinitionsContextValue {
   data: DefinitionsResponse | null;
@@ -35,11 +35,52 @@ const ensureNamedList = (value: unknown, field: string): NamedDefinition[] => {
   });
 };
 
-const ensureArray = (value: unknown, field: string): unknown[] => {
+const isModifierWithSource = (value: unknown): value is ModifierWithSource => {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<ModifierWithSource>;
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.targetPath === "string" &&
+    typeof candidate.operation === "string" &&
+    typeof candidate.sourceType === "string" &&
+    typeof candidate.sourceKey === "string" &&
+    candidate.valueExpression !== undefined
+  );
+};
+
+const ensureModifiers = (value: unknown, field: string): ModifierWithSource[] => {
   if (!Array.isArray(value)) {
     throw new Error(`Expected ${field} to be an array`);
   }
-  return value;
+  return value.map((item, idx) => {
+    if (!isModifierWithSource(item)) {
+      throw new Error(`Invalid ${field} entry at index ${idx}`);
+    }
+    return item;
+  });
+};
+
+const isDerivedStat = (value: unknown): value is DerivedStatDefinition => {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<DerivedStatDefinition>;
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.name === "string" &&
+    !!candidate.expression &&
+    typeof (candidate as any).expression === "object"
+  );
+};
+
+const ensureDerivedList = (value: unknown, field: string): DerivedStatDefinition[] => {
+  if (!Array.isArray(value)) {
+    throw new Error(`Expected ${field} to be an array`);
+  }
+  return value.map((item, idx) => {
+    if (!isDerivedStat(item)) {
+      throw new Error(`Invalid ${field} entry at index ${idx}`);
+    }
+    return item;
+  });
 };
 
 const normalizeDefinitions = (data: unknown): DefinitionsResponse => {
@@ -58,8 +99,11 @@ const normalizeDefinitions = (data: unknown): DefinitionsResponse => {
     feats: ensureNamedList(raw.feats, "feats"),
     items: ensureNamedList(raw.items, "items"),
     statusEffects: ensureNamedList(raw.statusEffects, "statusEffects"),
-    derivedStats: ensureNamedList(raw.derivedStats, "derivedStats"),
-    modifiers: ensureArray(raw.modifiers, "modifiers")
+    derivedStats: ensureDerivedList(raw.derivedStats, "derivedStats"),
+    derivedStatValues: raw.derivedStatValues && typeof raw.derivedStatValues === "object"
+      ? (raw.derivedStatValues as Record<string, number>)
+      : undefined,
+    modifiers: ensureModifiers(raw.modifiers, "modifiers")
   };
 };
 

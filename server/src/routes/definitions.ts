@@ -1,130 +1,117 @@
 import { Router, Request, Response } from "express";
-import fs from "fs";
 import path from "path";
 
-// In a real implementation this would query Postgres for all definitions.
-// For now, load the generated JSON under docs/races_output so the client
-// can render meaningful data without a DB.
+import type { ContentModifier, ContentPack } from "../content/content-types";
+import { loadContentPackFromFile } from "../content/import";
+import type { Expr } from "@shared/rules/expressions";
+import { evalExpr } from "@shared/rules/expressions";
+import type { Modifier } from "@shared/rules/modifiers";
+import { applyModifiers } from "@shared/rules/modifiers";
 
-type RawDefinition = {
+type ContentModifierWithId = ContentModifier & { id: string };
+
+type DerivedStatWithExpression = {
+  id: string;
+  name: string;
+  description?: string;
+  expression: Expr;
+};
+
+type NamedDefinition = {
   id: string;
   code?: string;
   name: string;
   description?: string;
+  parentId?: string;
 };
 
-type RawEffect = {
-  id: string;
-  feature_id: string;
-  effect_type: string;
-  target?: { type?: string; code?: string; id?: string };
-  magnitude?: { flat?: number };
-  applies_automatically?: boolean;
+const contentPackPath =
+  process.env.CONTENT_PACK_PATH ?? path.join(__dirname, "../../../docs/races_output/content-pack.json");
+
+const contentPack = loadContentPackFromFile(contentPackPath);
+
+const mapDefinition = ({ key, name, description }: { key: string; name: string; description?: string }): NamedDefinition => ({
+  id: key,
+  code: key,
+  name,
+  description
+});
+
+const mapSubrace = ({ key, raceKey, name, description }: { key: string; raceKey: string; name: string; description?: string }): NamedDefinition => ({
+  id: key,
+  code: key,
+  parentId: raceKey,
+  name,
+  description
+});
+
+const mapDerivedStat = ({ key, name, description, expression }: { key: string; name: string; description?: string; expression: Expr }): DerivedStatWithExpression => ({
+  id: key,
+  name,
+  description,
+  expression
+});
+
+const ensureModifierId = (modifier: ContentModifier): ContentModifierWithId => ({
+  id: modifier.id ?? `${modifier.sourceType}:${modifier.sourceKey}:${modifier.targetPath}:${modifier.operation}`,
+  ...modifier
+});
+
+const collectModifiers = (pack: ContentPack): ContentModifierWithId[] => {
+  const list: ContentModifierWithId[] = [];
+  const add = (mods?: ContentModifier[]) => {
+    mods?.forEach((m) => list.push(ensureModifierId(m)));
+  };
+
+  add(pack.modifiers);
+  pack.feats.forEach((f) => add(f.modifiers));
+  pack.items.forEach((i) => add(i.modifiers));
+  pack.statusEffects.forEach((s) => add(s.modifiers));
+
+  return list;
 };
 
-type RawFeature = {
-  id: string;
-  code: string;
-  source_type: "lineage" | "culture" | string;
-  source_id: string;
-  name: string;
+const buildBaseState = (pack: ContentPack): Record<string, unknown> => {
+  const attributes = Object.fromEntries(pack.attributes.map((a) => [a.key, { score: 0 }]));
+  const skills = Object.fromEntries(pack.skills.map((s) => [s.key, { score: 0, racialBonus: 0 }]));
+  const derived = Object.fromEntries(pack.derivedStats.map((d) => [d.key, 0]));
+
+  return { attributes, skills, derived };
 };
 
-const loadJson = <T>(filename: string): T => {
-  const filePath = path.join(__dirname, "../../../docs/races_output", filename);
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(raw) as T;
-};
+const computeDerivedStats = (
+  pack: ContentPack,
+  modifiers: Modifier[]
+): Record<string, number> => {
+  const baseState = buildBaseState(pack);
+  const stateWithModifiers = applyModifiers({ baseState, modifiers });
+  const values: Record<string, number> = {};
 
-// These are read once at module load so the route stays lightweight.
-const attributes = loadJson<RawDefinition[]>("attributes.json");
-const skills = loadJson<RawDefinition[]>("skills.json");
-const races = loadJson<RawDefinition[]>("lineages.json");
-const subraces = loadJson<RawDefinition[]>("cultures.json");
-const features = loadJson<RawFeature[]>("features.json");
-const effects = loadJson<RawEffect[]>("effects.json");
-
-const featureById = new Map(features.map((f) => [f.id, f]));
-const raceCodeById = new Map(races.map((r) => [r.id, r.code ?? r.id]));
-const subraceCodeById = new Map(subraces.map((s) => [s.id, s.code ?? s.id]));
-
-interface ModifierLike {
-  id: string;
-  sourceType: "race" | "subrace" | "feat" | "item" | "status_effect" | "background" | "other";
-  sourceKey: string;
-  targetPath: string;
-  operation: "add" | "mul" | "set" | "max" | "min";
-  stackingKey?: string;
-  priority?: number;
-  valueExpression: unknown;
-  conditionExpression?: unknown;
-}
-
-// Only expose simple, unconditional flat skill bonuses for now.
-const modifiers: ModifierLike[] = effects.reduce<ModifierLike[]>((acc, effect) => {
-  if (effect.effect_type !== "skill_bonus") return acc;
-  if (!effect.applies_automatically) return acc;
-  const flat = effect.magnitude?.flat;
-  if (typeof flat !== "number") return acc;
-  const skillCode = effect.target?.code;
-  if (!skillCode) return acc;
-
-  const feature = featureById.get(effect.feature_id);
-  if (!feature) return acc;
-
-  let sourceType: ModifierLike["sourceType"];
-  let sourceKey: string | undefined;
-  if (feature.source_type === "lineage") {
-    sourceType = "race";
-    sourceKey = raceCodeById.get(feature.source_id);
-  } else if (feature.source_type === "culture") {
-    sourceType = "subrace";
-    sourceKey = subraceCodeById.get(feature.source_id);
-  } else {
-    return acc;
+  for (const derived of pack.derivedStats) {
+    const value = evalExpr(derived.expression, { state: stateWithModifiers });
+    values[derived.key] = typeof value === "number" ? value : 0;
   }
-  if (!sourceKey) return acc;
 
-  acc.push({
-    id: effect.id,
-    sourceType,
-    sourceKey,
-    targetPath: `skills.${skillCode}.racialBonus`,
-    operation: "add",
-    stackingKey: `${sourceType}-${sourceKey}-skill-bonus`,
-    valueExpression: { type: "number", value: flat }
-  });
-  return acc;
-}, []);
-
-const mapDefinition = (d: RawDefinition) => ({
-  id: d.code ?? d.id,
-  code: d.code,
-  name: d.name,
-  description: d.description
-});
-
-const mapSubrace = (d: RawDefinition & { lineage_id?: string }) => ({
-  id: d.code ?? d.id,
-  code: d.code,
-  name: d.name,
-  description: d.description,
-  parentId: typeof d.lineage_id === "string" ? raceCodeById.get(d.lineage_id) ?? d.lineage_id : undefined
-});
+  return values;
+};
 
 export const definitionsRouter = Router();
 
 definitionsRouter.get("/", async (_req: Request, res: Response) => {
+  const modifiers = collectModifiers(contentPack);
+  const derivedStatValues = computeDerivedStats(contentPack, modifiers);
+
   res.json({
-    ruleset: "adurun-core",
-    attributes: attributes.map(mapDefinition),
-    skills: skills.map(mapDefinition),
-    races: races.map(mapDefinition),
-    subraces: subraces.map((s) => mapSubrace(s as RawDefinition & { lineage_id?: string })),
-    feats: [],
-    items: [],
-    statusEffects: [],
-    derivedStats: [],
+    ruleset: contentPack.ruleset.key,
+    attributes: contentPack.attributes.map(mapDefinition),
+    skills: contentPack.skills.map(mapDefinition),
+    races: contentPack.races.map(mapDefinition),
+    subraces: contentPack.subraces.map(mapSubrace),
+    feats: contentPack.feats.map(mapDefinition),
+    items: contentPack.items.map(mapDefinition),
+    statusEffects: contentPack.statusEffects.map(mapDefinition),
+    derivedStats: contentPack.derivedStats.map(mapDerivedStat),
+    derivedStatValues,
     modifiers
   });
 });

@@ -1,17 +1,11 @@
 import React from "react";
-import { api, Character, ApiError, NamedDefinition } from "../../api/client";
+import { api, Character, ApiError, ModifierWithSource, NamedDefinition } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
+import { applyModifiers } from "@shared/rules/modifiers";
 
 const SKILL_POINT_POOL = 100;
 
 type SkillAllocationMap = Record<string, Record<string, number>>;
-
-interface RacialModifier {
-  skillCode: string;
-  amount: number;
-  sourceType: "race" | "subrace";
-  sourceKey: string;
-}
 
 const isCharacter = (value: unknown): value is Character => {
   if (!value || typeof value !== "object") return false;
@@ -30,41 +24,6 @@ const getSkillCode = (skill: NamedDefinition): string => skill.code ?? skill.id;
 
 const sumAllocations = (allocations: Record<string, number>): number =>
   Object.values(allocations).reduce((acc, v) => acc + v, 0);
-
-const parseRacialModifiers = (mods: unknown[]): RacialModifier[] => {
-  if (!Array.isArray(mods)) return [];
-  const results: RacialModifier[] = [];
-  for (const m of mods) {
-    if (!m || typeof m !== "object") continue;
-    const obj = m as any;
-    if (obj.sourceType !== "race" && obj.sourceType !== "subrace") continue;
-    const sourceKey = typeof obj.sourceKey === "string" ? obj.sourceKey : undefined;
-    const targetPath = typeof obj.targetPath === "string" ? obj.targetPath : undefined;
-    if (!sourceKey || !targetPath || obj.operation !== "add") continue;
-    const parts = targetPath.split(".");
-    if (parts.length < 2 || parts[0] !== "skills") continue;
-    const skillCode = parts[1];
-    if (!skillCode) continue;
-    let amount = 0;
-    const ve = obj.valueExpression;
-    if (typeof ve === "number") {
-      amount = ve;
-    } else if (ve && typeof ve === "object") {
-      const veObj = ve as any;
-      if (veObj.type === "number" && typeof veObj.value === "number") {
-        amount = veObj.value;
-      }
-    }
-    if (!amount) continue;
-    results.push({
-      skillCode,
-      amount,
-      sourceType: obj.sourceType,
-      sourceKey
-    });
-  }
-  return results;
-};
 
 interface CharacterSheetProps {
   character: Character;
@@ -298,11 +257,6 @@ export const CharactersPage: React.FC = () => {
     error: definitionsError
   } = useDefinitions();
 
-  const racialModifiers = React.useMemo(
-    () => (definitions ? parseRacialModifiers(definitions.modifiers) : []),
-    [definitions]
-  );
-
   React.useEffect(() => {
     let isMounted = true;
     setLoading(true);
@@ -407,17 +361,27 @@ export const CharactersPage: React.FC = () => {
   );
 
   const racialBonuses = React.useMemo(() => {
-    if (!selectedCharacter) return {};
-    const bonuses: Record<string, number> = {};
-    const raceKeyForChar = selectedCharacter.raceKey;
-    const subraceKeyForChar = selectedCharacter.subraceKey;
-    for (const mod of racialModifiers) {
-      if (mod.sourceType === "race" && mod.sourceKey !== raceKeyForChar) continue;
-      if (mod.sourceType === "subrace" && mod.sourceKey !== subraceKeyForChar) continue;
-      bonuses[mod.skillCode] = (bonuses[mod.skillCode] ?? 0) + mod.amount;
+    if (!definitions || !selectedCharacter) return {} as Record<string, number>;
+    const baseSkills = Object.fromEntries(
+      definitions.skills.map((skill) => [getSkillCode(skill), { score: 0, racialBonus: 0 }])
+    );
+    const baseState = { skills: baseSkills } as Record<string, unknown>;
+
+    const applicable = (definitions.modifiers as ModifierWithSource[]).filter((m) => {
+      if (m.sourceType === "race") return m.sourceKey === selectedCharacter.raceKey;
+      if (m.sourceType === "subrace") return m.sourceKey === selectedCharacter.subraceKey;
+      return false;
+    });
+
+    const state = applyModifiers({ baseState, modifiers: applicable });
+    const result: Record<string, number> = {};
+    for (const skill of definitions.skills) {
+      const code = getSkillCode(skill);
+      const entry = (state.skills as Record<string, any> | undefined)?.[code];
+      result[code] = typeof entry?.racialBonus === "number" ? entry.racialBonus : 0;
     }
-    return bonuses;
-  }, [racialModifiers, selectedCharacter]);
+    return result;
+  }, [definitions, selectedCharacter]);
 
   const loadingAny = loading || definitionsLoading;
 
