@@ -1,0 +1,1862 @@
+{
+  "ruleset": {
+    "key": "adurun-core",
+    "name": "Adûrun Core"
+  },
+  "attributes": [
+    {
+      "key": "PHYSICAL",
+      "name": "PHYSICAL",
+      "description": ""
+    },
+    {
+      "key": "MENTAL",
+      "name": "MENTAL",
+      "description": ""
+    },
+    {
+      "key": "WILL",
+      "name": "WILL",
+      "description": ""
+    },
+    {
+      "key": "SPIRITUAL",
+      "name": "SPIRITUAL",
+      "description": ""
+    }
+  ],
+  "skills": [
+    {
+      "key": "MARTIAL_PROWESS",
+      "name": "MARTIAL_PROWESS",
+      "description": ""
+    },
+    {
+      "key": "ILDAKAR_FACULTY",
+      "name": "ILDAKAR_FACULTY",
+      "description": ""
+    },
+    {
+      "key": "PSIONIC_TECHNIQUE",
+      "name": "PSIONIC_TECHNIQUE",
+      "description": ""
+    },
+    {
+      "key": "RESIST_PSIONICS",
+      "name": "RESIST_PSIONICS",
+      "description": ""
+    },
+    {
+      "key": "BATTLE",
+      "name": "BATTLE",
+      "description": ""
+    },
+    {
+      "key": "CONCEAL",
+      "name": "CONCEAL",
+      "description": ""
+    },
+    {
+      "key": "FORAGE",
+      "name": "FORAGE",
+      "description": ""
+    },
+    {
+      "key": "NAVIGATE",
+      "name": "NAVIGATE",
+      "description": ""
+    },
+    {
+      "key": "RESIST_TOXINS",
+      "name": "RESIST_TOXINS",
+      "description": ""
+    },
+    {
+      "key": "SENSE_SUPERNATURAL",
+      "name": "SENSE_SUPERNATURAL",
+      "description": ""
+    },
+    {
+      "key": "SEDUCE",
+      "name": "SEDUCE",
+      "description": ""
+    },
+    {
+      "key": "FEAT_OF_AUSTERITY",
+      "name": "FEAT_OF_AUSTERITY",
+      "description": ""
+    },
+    {
+      "key": "RESIST_SUPERNATURAL",
+      "name": "RESIST_SUPERNATURAL",
+      "description": ""
+    },
+    {
+      "key": "FEAT_OF_STRENGTH",
+      "name": "FEAT_OF_STRENGTH",
+      "description": ""
+    },
+    {
+      "key": "FEAT_OF_AGILITY",
+      "name": "FEAT_OF_AGILITY",
+      "description": ""
+    },
+    {
+      "key": "SEARCH",
+      "name": "SEARCH",
+      "description": ""
+    },
+    {
+      "key": "IDENTIFY",
+      "name": "IDENTIFY",
+      "description": ""
+    },
+    {
+      "key": "DECEIVE",
+      "name": "DECEIVE",
+      "description": ""
+    },
+    {
+      "key": "TRACK",
+      "name": "TRACK",
+      "description": ""
+    },
+    {
+      "key": "INTIMIDATE",
+      "name": "INTIMIDATE",
+      "description": ""
+    },
+    {
+      "key": "WILL_DAKAR",
+      "name": "WILL_DAKAR",
+      "description": ""
+    },
+    {
+      "key": "ACADEMIC_RECALL",
+      "name": "ACADEMIC_RECALL",
+      "description": ""
+    },
+    {
+      "key": "INTERPRET",
+      "name": "INTERPRET",
+      "description": ""
+    },
+    {
+      "key": "ENDURE",
+      "name": "ENDURE",
+      "description": ""
+    },
+    {
+      "key": "CRAFT",
+      "name": "CRAFT",
+      "description": ""
+    },
+    {
+      "key": "ANIMAL_HUSBANDRY",
+      "name": "ANIMAL_HUSBANDRY",
+      "description": ""
+    },
+    {
+      "key": "FEAT_OF_DEFIANCE",
+      "name": "FEAT_OF_DEFIANCE",
+      "description": ""
+    }
+  ],
+  "races": [
+    {
+      "key": "ININ",
+      "name": "Inin",
+      "description": "Roll d100.\n|Roll       |Result             |\n|1-2        |Ecthvasin          |\n|3-4        |Georothin          |\n|5-6        |Kaindorin          |\n|7-9        |Jiinin             |\n|10-12      |Thairin            |\n|13-17      |Grazin             |\n|18-22      |Rodonin            |\n|23-29      |Bryonin            |\n|30-36      |Ganzenonin         |\n|37-43      |Rivanonin          |\n|44-60      |Melfarionin        |\n|61-80      |Letelin            |\n|81-100     |Thuilin            |\nInin Features:\nInin stand at about 5-6 ft tall, weighing approximately 120-200 lbs on average.\nInin have standard length pointed ears.\nInin are the most numerous species by far on Adûrun, and thus the most varied in their appearances, cultures, and\ndemeanors.\nInin typically live 80-120 years.\nInin seemingly have less survival instincts than average, and are oftentimes more warlike, but on the other side of that\ncoin, are far more spirited and willing to endure hardship."
+    },
+    {
+      "key": "ANZ",
+      "name": "Anz",
+      "description": "Roll d100.\n|Roll      |Result            |\n|1-70      |West Anzar        |\n|71-100    |East Anzar        |\nAnz Features:\nAnz stand at about 12-15 ft tall, and weigh approximately 600-700 lbs on average.\nAnz have long saber-like ears about the length of one’s forearm and white eyes with no irises or pupils\nAnz have a naturally low fat content, broad features, coarse woolly black hair, caramel, coffee, or umber brown skin, and\nput on muscle faster than the other species.\nAnz value tranquility and are stoic in demeanor due to a quickness to anger that plagues them.\nAnz live about 60-100 years on average.\nAnz are a large creature."
+    },
+    {
+      "key": "PHI_ILIN",
+      "name": "Phi'ilin",
+      "description": ""
+    },
+    {
+      "key": "CEREVU",
+      "name": "Cerevu",
+      "description": "Roll d100.\n|Roll      |Result     |\n|1-55      |Darii      |\n|56-100    |Cerii      |\nCerevu Features:\nCerevu typically stand at about 4-5 ft tall, weighing about 200-300 lbs on average.\nCerevu have rounded ears and are hairier than the other species, but are otherwise androgynous, as the other species are\nunsure of how Cerevu reproduce.\nCerevu tend to be rounder and squatter in shape.\nCerevu live around 150-200 years on average.\nCerevu tend to have a very calm and tranquil disposition, and value quiet and industriousness above all else."
+    },
+    {
+      "key": "VENII",
+      "name": "Venii",
+      "description": "Roll d100.\n|Roll      |Result     |\n|1-40      |Agunic     |\n|41-100    |Unfaic     |\nVenii Features:\nVenii usually stand at 6-8 ft tall, weighing approximately 120-200 lbs on average.\nVenii have jet black smooth chitinous skin, fine stark white hair, and glossy reflective eyes with arachnoid faces and\npedipalps, which they almost always keep veiled or hidden from non-Venii.\nVenii have stringy, scrawny, tall, and slender builds, who otherwise seem like Phi’ilin.\nVenii typically live 150-200 years on average.\nVenii maintains an attempted pleasant attitude but suffers from a terribly awkward disposition."
+    },
+    {
+      "key": "FREININ",
+      "name": "Freinin",
+      "description": ""
+    }
+  ],
+  "subraces": [
+    {
+      "key": "ECTHVASIN",
+      "raceKey": "ININ",
+      "name": "Ecthvasin",
+      "description": "Wavy bright red hair, bright green eyes, pale skin."
+    },
+    {
+      "key": "GEOROTHIN",
+      "raceKey": "ININ",
+      "name": "Georothin",
+      "description": "Black hair, green eyes, pale skin."
+    },
+    {
+      "key": "KAINDORIN",
+      "raceKey": "ININ",
+      "name": "Kaindorin",
+      "description": "Thick black hair, brown eyes, taller than average, olive skin."
+    },
+    {
+      "key": "JIININ",
+      "raceKey": "ININ",
+      "name": "Jiinin",
+      "description": "Fine black hair, almond-shaped brown eyes, less hairy than average, shorter and thinner on average, pale or olive skin"
+    },
+    {
+      "key": "THAIRIN",
+      "raceKey": "ININ",
+      "name": "Thairin",
+      "description": "Black curly hair, shorter and hairier than average, dark brown eyes, olive skin"
+    },
+    {
+      "key": "GRAZIN",
+      "raceKey": "ININ",
+      "name": "Grazin",
+      "description": "Fine blonde hair, broader and taller than average, blue eyes, pale skin"
+    },
+    {
+      "key": "RODONIN",
+      "raceKey": "ININ",
+      "name": "Rodonin",
+      "description": "Dark stringy greenish-black hair, smooth and round facial features, almond-shaped dark green eyes, olive skin"
+    },
+    {
+      "key": "BRYONIN",
+      "raceKey": "ININ",
+      "name": "Bryonin",
+      "description": "Black hair, red eyes, pale skin"
+    },
+    {
+      "key": "GANZENONIN",
+      "raceKey": "ININ",
+      "name": "Ganzenonin",
+      "description": "Fine black hair, blue eyes, pale skin"
+    },
+    {
+      "key": "RIVANONIN",
+      "raceKey": "ININ",
+      "name": "Rivanonin",
+      "description": "Pale brown hair, pale brown eyes, pale skin"
+    },
+    {
+      "key": "MELFARIONIN",
+      "raceKey": "ININ",
+      "name": "Melfarionin",
+      "description": "Dirty blonde hair, bright golden eyes, pale or bronze skin"
+    },
+    {
+      "key": "LETELIN",
+      "raceKey": "ININ",
+      "name": "Letelin",
+      "description": "Thick dark brown hair, dark brown eyes, pale skin"
+    },
+    {
+      "key": "THUILIN",
+      "raceKey": "ININ",
+      "name": "Thuilin",
+      "description": "Black hair, bright silver-rimmed irises in eyes, pale skin"
+    },
+    {
+      "key": "WEST_ANZAR",
+      "raceKey": "ANZ",
+      "name": "West Anzar",
+      "description": ""
+    },
+    {
+      "key": "EAST_ANZAR",
+      "raceKey": "ANZ",
+      "name": "East Anzar",
+      "description": ""
+    },
+    {
+      "key": "ELARI",
+      "raceKey": "PHI_ILIN",
+      "name": "Elari",
+      "description": ""
+    },
+    {
+      "key": "LAIGONI",
+      "raceKey": "PHI_ILIN",
+      "name": "Laigoni",
+      "description": ""
+    },
+    {
+      "key": "RODINI",
+      "raceKey": "PHI_ILIN",
+      "name": "Rodini",
+      "description": ""
+    },
+    {
+      "key": "DARII",
+      "raceKey": "CEREVU",
+      "name": "Darii",
+      "description": "Black hair, dark brown eyes"
+    },
+    {
+      "key": "CERII",
+      "raceKey": "CEREVU",
+      "name": "Cerii",
+      "description": "Grey hair, dark grey eyes"
+    },
+    {
+      "key": "FREININ",
+      "raceKey": "FREININ",
+      "name": "Freinin",
+      "description": "Freinin usually stand at about half an Inin’s height, weighing approximately a quarter as much on average as well.\nFreinin come in all shapes and sizes, but are considered small creatures.\nFreinin have a variety of skin, hair, and eye colors.\nFreinin typically live 60-80 years on average.\nFreinin, called “humans” or “mankind” in their own tongues and native to Adûrun, maintain a variety of demeanors, but\ngenerally speaking, tend to be characterized as frail and craven, or at least, quite risk-averse compared to the other\nspecies.\nFreinin cannot use Dakar or Psionics, including Links.\nFreinin does not have any subspecies."
+    }
+  ],
+  "feats": [
+    {
+      "key": "ACCURATE_STRIKES",
+      "name": "Accurate Strikes",
+      "description": "Carefully measured blows improve martial prowess.",
+      "modifiers": [
+        {
+          "id": "feat-accurate-strikes-1",
+          "sourceType": "feat",
+          "sourceKey": "ACCURATE_STRIKES",
+          "targetPath": "skills.MARTIAL_PROWESS.score",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "HARDENED_BODY",
+      "name": "Hardened Body",
+      "description": "Scar tissue and calloused skin make you tougher.",
+      "modifiers": [
+        {
+          "id": "feat-hardened-body-1",
+          "sourceType": "feat",
+          "sourceKey": "HARDENED_BODY",
+          "targetPath": "derived.DEFENSE",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": 1
+          }
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "key": "IRON_RING",
+      "name": "Iron Ring",
+      "slot": "finger",
+      "description": "A simple iron ring that grounds your stance.",
+      "modifiers": [
+        {
+          "id": "item-iron-ring-1",
+          "sourceType": "item",
+          "sourceKey": "IRON_RING",
+          "targetPath": "derived.DEFENSE",
+          "operation": "add",
+          "stackingKey": "defense-item",
+          "valueExpression": {
+            "type": "number",
+            "value": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "SCHOLARS_JOURNAL",
+      "name": "Scholar's Journal",
+      "slot": "hands",
+      "description": "Reference notes that inspire deft thinking.",
+      "modifiers": [
+        {
+          "id": "item-scholars-journal-1",
+          "sourceType": "item",
+          "sourceKey": "SCHOLARS_JOURNAL",
+          "targetPath": "skills.ACADEMICS.score",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": 1
+          }
+        }
+      ]
+    }
+  ],
+  "statusEffects": [
+    {
+      "key": "BLESSED",
+      "name": "Blessed",
+      "description": "A calm blessing steadies your hand.",
+      "defaultDurationType": "scene",
+      "modifiers": [
+        {
+          "id": "status-blessed-1",
+          "sourceType": "status_effect",
+          "sourceKey": "BLESSED",
+          "targetPath": "skills.MARTIAL_PROWESS.score",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "WEAKENED",
+      "name": "Weakened",
+      "description": "Fatigue reduces your defensive focus.",
+      "defaultDurationType": "rounds",
+      "modifiers": [
+        {
+          "id": "status-weakened-1",
+          "sourceType": "status_effect",
+          "sourceKey": "WEAKENED",
+          "targetPath": "derived.DEFENSE",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -1
+          }
+        }
+      ]
+    }
+  ],
+  "derivedStats": [
+    {
+      "key": "DEFENSE",
+      "name": "Defense",
+      "description": "Represents how difficult you are to harm when alert.",
+      "expression": {
+        "type": "op",
+        "op": "add",
+        "left": {
+          "type": "ref",
+          "path": "attributes.PHYSICAL.score"
+        },
+        "right": {
+          "type": "number",
+          "value": 10
+        }
+      }
+    },
+    {
+      "key": "MARTIAL_BONUS",
+      "name": "Martial Bonus",
+      "description": "Your martial prowess and any training bonuses.",
+      "expression": {
+        "type": "op",
+        "op": "add",
+        "left": {
+          "type": "ref",
+          "path": "skills.MARTIAL_PROWESS.score"
+        },
+        "right": {
+          "type": "ref",
+          "path": "skills.MARTIAL_PROWESS.racialBonus"
+        }
+      }
+    }
+  ],
+  "modifiers": [
+    {
+      "id": "FEAT_ECTHVASIN_ECTHVASIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "ECTHVASIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ECTHVASIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_ECTHVASIN_ECTHVASIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "ECTHVASIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ECTHVASIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_ECTHVASIN_MAGICALLY_INCLINED_E01",
+      "sourceType": "subrace",
+      "sourceKey": "ECTHVASIN",
+      "targetPath": "skills.PSIONIC_TECHNIQUE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ECTHVASIN-skill-bonus-PSIONIC_TECHNIQUE",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_ECTHVASIN_MAGICALLY_INCLINED_E03",
+      "sourceType": "subrace",
+      "sourceKey": "ECTHVASIN",
+      "targetPath": "skills.RESIST_PSIONICS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ECTHVASIN-skill-bonus-RESIST_PSIONICS",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_ECTHVASIN_PRONE_TO_IRE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "ECTHVASIN",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ECTHVASIN-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": -5
+      }
+    },
+    {
+      "id": "FEAT_ECTHVASIN_PRONE_TO_IRE_E03",
+      "sourceType": "subrace",
+      "sourceKey": "ECTHVASIN",
+      "targetPath": "skills.CONCEAL.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ECTHVASIN-skill-bonus-CONCEAL",
+      "valueExpression": {
+        "type": "number",
+        "value": -10
+      }
+    },
+    {
+      "id": "FEAT_ECTHVASIN_PRONE_TO_IRE_E04",
+      "sourceType": "subrace",
+      "sourceKey": "ECTHVASIN",
+      "targetPath": "skills.RESIST_PSIONICS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ECTHVASIN-skill-bonus-RESIST_PSIONICS",
+      "valueExpression": {
+        "type": "number",
+        "value": -10
+      }
+    },
+    {
+      "id": "FEAT_GEOROTHIN_GEOROTHIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "GEOROTHIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GEOROTHIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_GEOROTHIN_GEOROTHIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "GEOROTHIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GEOROTHIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING_E01",
+      "sourceType": "subrace",
+      "sourceKey": "GEOROTHIN",
+      "targetPath": "skills.FORAGE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GEOROTHIN-skill-bonus-FORAGE",
+      "valueExpression": {
+        "type": "number",
+        "value": 7
+      }
+    },
+    {
+      "id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING_E02",
+      "sourceType": "subrace",
+      "sourceKey": "GEOROTHIN",
+      "targetPath": "skills.NAVIGATE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GEOROTHIN-skill-bonus-NAVIGATE",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_GEOROTHIN_SWAMPER_UPBRINGING_E03",
+      "sourceType": "subrace",
+      "sourceKey": "GEOROTHIN",
+      "targetPath": "skills.RESIST_TOXINS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GEOROTHIN-skill-bonus-RESIST_TOXINS",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_GEOROTHIN_PURIFIERS_OF_THE_DEAD_E01",
+      "sourceType": "subrace",
+      "sourceKey": "GEOROTHIN",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GEOROTHIN-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_GEOROTHIN_PURIFIERS_OF_THE_DEAD_E02",
+      "sourceType": "subrace",
+      "sourceKey": "GEOROTHIN",
+      "targetPath": "skills.SENSE_SUPERNATURAL.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GEOROTHIN-skill-bonus-SENSE_SUPERNATURAL",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_KAINDORIN_KAINDORIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "KAINDORIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-KAINDORIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_KAINDORIN_KAINDORIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "KAINDORIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-KAINDORIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_KAINDORIN_SWAMPER_UPBRINGING_E01",
+      "sourceType": "subrace",
+      "sourceKey": "KAINDORIN",
+      "targetPath": "skills.FORAGE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-KAINDORIN-skill-bonus-FORAGE",
+      "valueExpression": {
+        "type": "number",
+        "value": 7
+      }
+    },
+    {
+      "id": "FEAT_KAINDORIN_SWAMPER_UPBRINGING_E02",
+      "sourceType": "subrace",
+      "sourceKey": "KAINDORIN",
+      "targetPath": "skills.RESIST_TOXINS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-KAINDORIN-skill-bonus-RESIST_TOXINS",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_KAINDORIN_SMOOTH_TALKER_E02",
+      "sourceType": "subrace",
+      "sourceKey": "KAINDORIN",
+      "targetPath": "skills.SEDUCE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-KAINDORIN-skill-bonus-SEDUCE",
+      "valueExpression": {
+        "type": "number",
+        "value": 14
+      }
+    },
+    {
+      "id": "FEAT_KAINDORIN_COOL_HEAD_E01",
+      "sourceType": "subrace",
+      "sourceKey": "KAINDORIN",
+      "targetPath": "skills.RESIST_PSIONICS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-KAINDORIN-skill-bonus-RESIST_PSIONICS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_KAINDORIN_COOL_HEAD_E02",
+      "sourceType": "subrace",
+      "sourceKey": "KAINDORIN",
+      "targetPath": "skills.FEAT_OF_AUSTERITY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-KAINDORIN-skill-bonus-FEAT_OF_AUSTERITY",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_JIININ_JIININ_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "JIININ",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-JIININ-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_JIININ_JIININ_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "JIININ",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-JIININ-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_JIININ_MULTI_E01",
+      "sourceType": "subrace",
+      "sourceKey": "JIININ",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-JIININ-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_JIININ_MULTI_E02",
+      "sourceType": "subrace",
+      "sourceKey": "JIININ",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-JIININ-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_JIININ_MULTI_E03",
+      "sourceType": "subrace",
+      "sourceKey": "JIININ",
+      "targetPath": "skills.RESIST_SUPERNATURAL.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-JIININ-skill-bonus-RESIST_SUPERNATURAL",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_THAIRIN_THAIRIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "THAIRIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-THAIRIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_THAIRIN_THAIRIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "THAIRIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-THAIRIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_THAIRIN_ATHLETIC_UPBRINGING_E01",
+      "sourceType": "subrace",
+      "sourceKey": "THAIRIN",
+      "targetPath": "skills.FEAT_OF_STRENGTH.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-THAIRIN-skill-bonus-FEAT_OF_STRENGTH",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_GRAZIN_GRAZIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "GRAZIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GRAZIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_GRAZIN_GRAZIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "GRAZIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GRAZIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_GRAZIN_RUGGED_LIVING_E01",
+      "sourceType": "subrace",
+      "sourceKey": "GRAZIN",
+      "targetPath": "skills.RESIST_TOXINS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GRAZIN-skill-bonus-RESIST_TOXINS",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_RODONIN_RODONIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "RODONIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RODONIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_RODONIN_RODONIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "RODONIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RODONIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_RODONIN_SWIFT_OF_FOOT_E01",
+      "sourceType": "subrace",
+      "sourceKey": "RODONIN",
+      "targetPath": "skills.FEAT_OF_AGILITY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RODONIN-skill-bonus-FEAT_OF_AGILITY",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_RODONIN_SHADOW_BLENDER_E01",
+      "sourceType": "subrace",
+      "sourceKey": "RODONIN",
+      "targetPath": "skills.CONCEAL.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RODONIN-skill-bonus-CONCEAL",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_BRYONIN_BRYONIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "BRYONIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-BRYONIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_BRYONIN_BRYONIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "BRYONIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-BRYONIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_BRYONIN_SUPERIOR_EYES_E01",
+      "sourceType": "subrace",
+      "sourceKey": "BRYONIN",
+      "targetPath": "skills.SEARCH.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-BRYONIN-skill-bonus-SEARCH",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_BRYONIN_SUPERIOR_EYES_E02",
+      "sourceType": "subrace",
+      "sourceKey": "BRYONIN",
+      "targetPath": "skills.IDENTIFY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-BRYONIN-skill-bonus-IDENTIFY",
+      "valueExpression": {
+        "type": "number",
+        "value": 7
+      }
+    },
+    {
+      "id": "FEAT_BRYONIN_BRYONIN_ARROGANCE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "BRYONIN",
+      "targetPath": "skills.SEDUCE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-BRYONIN-skill-bonus-SEDUCE",
+      "valueExpression": {
+        "type": "number",
+        "value": -5
+      }
+    },
+    {
+      "id": "FEAT_GANZENONIN_GANZENONIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "GANZENONIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GANZENONIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 60
+      }
+    },
+    {
+      "id": "FEAT_GANZENONIN_WAR_E03",
+      "sourceType": "subrace",
+      "sourceKey": "GANZENONIN",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GANZENONIN-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_GANZENONIN_WAR_E04",
+      "sourceType": "subrace",
+      "sourceKey": "GANZENONIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-GANZENONIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_RIVANONIN_RIVANONIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "RIVANONIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RIVANONIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_RIVANONIN_RIVANONIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "RIVANONIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RIVANONIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_RIVANONIN_DEEP_MIND_E01",
+      "sourceType": "subrace",
+      "sourceKey": "RIVANONIN",
+      "targetPath": "skills.PSIONIC_TECHNIQUE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RIVANONIN-skill-bonus-PSIONIC_TECHNIQUE",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_RIVANONIN_DEEP_MIND_E02",
+      "sourceType": "subrace",
+      "sourceKey": "RIVANONIN",
+      "targetPath": "skills.RESIST_PSIONICS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RIVANONIN-skill-bonus-RESIST_PSIONICS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_RIVANONIN_ISOLATED_RIVERMEN_E01",
+      "sourceType": "subrace",
+      "sourceKey": "RIVANONIN",
+      "targetPath": "skills.FEAT_OF_STRENGTH.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RIVANONIN-skill-bonus-FEAT_OF_STRENGTH",
+      "valueExpression": {
+        "type": "number",
+        "value": 7
+      }
+    },
+    {
+      "id": "FEAT_RIVANONIN_ISOLATED_RIVERMEN_E02",
+      "sourceType": "subrace",
+      "sourceKey": "RIVANONIN",
+      "targetPath": "skills.IDENTIFY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RIVANONIN-skill-bonus-IDENTIFY",
+      "valueExpression": {
+        "type": "number",
+        "value": -10
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_MELFARIONIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_MELFARIONIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E01",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E02",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.DECEIVE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-DECEIVE",
+      "valueExpression": {
+        "type": "number",
+        "value": 7
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E03",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.FEAT_OF_STRENGTH.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-FEAT_OF_STRENGTH",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E04",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.PSIONIC_TECHNIQUE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-PSIONIC_TECHNIQUE",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_MELFARIC_UNITY_E05",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": 7
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_FAR_TRAVELED_E01",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.IDENTIFY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-IDENTIFY",
+      "valueExpression": {
+        "type": "number",
+        "value": 3
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_FAR_TRAVELED_E02",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.IDENTIFY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-IDENTIFY",
+      "valueExpression": {
+        "type": "number",
+        "value": -3
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS_E01",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.NAVIGATE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-NAVIGATE",
+      "valueExpression": {
+        "type": "number",
+        "value": 8
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS_E02",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.RESIST_PSIONICS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-RESIST_PSIONICS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_MELFARIONIN_CHILD_OF_THE_TWIN_STARS_E03",
+      "sourceType": "subrace",
+      "sourceKey": "MELFARIONIN",
+      "targetPath": "skills.RESIST_PSIONICS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-MELFARIONIN-skill-bonus-RESIST_PSIONICS",
+      "valueExpression": {
+        "type": "number",
+        "value": -10
+      }
+    },
+    {
+      "id": "FEAT_LETELIN_LETELIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "LETELIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-LETELIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_THUILIN_THUILIN_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "THUILIN",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-THUILIN-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_THUILIN_THUILIN_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "THUILIN",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-THUILIN-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_ANZ_REGENERATIVE_E01",
+      "sourceType": "race",
+      "sourceKey": "ANZ",
+      "targetPath": "skills.FEAT_OF_STRENGTH.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-ANZ-skill-bonus-FEAT_OF_STRENGTH",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_ANZ_REGENERATIVE_E02",
+      "sourceType": "race",
+      "sourceKey": "ANZ",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-ANZ-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_WEST_ANZAR_WEST_ANZAR_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "WEST_ANZAR",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-WEST_ANZAR-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_WEST_ANZAR_ADURIC_LANDS_E01",
+      "sourceType": "subrace",
+      "sourceKey": "WEST_ANZAR",
+      "targetPath": "skills.TRACK.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-WEST_ANZAR-skill-bonus-TRACK",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_EAST_ANZAR_EAST_ANZAR_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "EAST_ANZAR",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-EAST_ANZAR-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_EAST_ANZAR_UNFAIC_LANDS_E02",
+      "sourceType": "subrace",
+      "sourceKey": "EAST_ANZAR",
+      "targetPath": "skills.RESIST_PSIONICS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-EAST_ANZAR-skill-bonus-RESIST_PSIONICS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_EAST_ANZAR_UNFAIC_LANDS_E03",
+      "sourceType": "subrace",
+      "sourceKey": "EAST_ANZAR",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-EAST_ANZAR-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_ELARI_ELARI_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "ELARI",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ELARI-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_ELARI_ELARI_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "ELARI",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ELARI-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS_E01",
+      "sourceType": "subrace",
+      "sourceKey": "ELARI",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ELARI-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": -10
+      }
+    },
+    {
+      "id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS_E02",
+      "sourceType": "subrace",
+      "sourceKey": "ELARI",
+      "targetPath": "skills.SEDUCE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ELARI-skill-bonus-SEDUCE",
+      "valueExpression": {
+        "type": "number",
+        "value": -7
+      }
+    },
+    {
+      "id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS_E03",
+      "sourceType": "subrace",
+      "sourceKey": "ELARI",
+      "targetPath": "skills.INTIMIDATE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ELARI-skill-bonus-INTIMIDATE",
+      "valueExpression": {
+        "type": "number",
+        "value": 7
+      }
+    },
+    {
+      "id": "FEAT_ELARI_FANATICAL_ENVIRONMENTALISTS_E04",
+      "sourceType": "subrace",
+      "sourceKey": "ELARI",
+      "targetPath": "skills.WILL_DAKAR.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ELARI-skill-bonus-WILL_DAKAR",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_ELARI_SPELLBLADE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "ELARI",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-ELARI-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_LAIGONI_LAIGONI_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "LAIGONI",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-LAIGONI-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 50
+      }
+    },
+    {
+      "id": "FEAT_LAIGONI_LAIGONI_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "LAIGONI",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-LAIGONI-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_LAIGONI_SCHOLARLY_DRILLING_E01",
+      "sourceType": "subrace",
+      "sourceKey": "LAIGONI",
+      "targetPath": "skills.ACADEMIC_RECALL.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-LAIGONI-skill-bonus-ACADEMIC_RECALL",
+      "valueExpression": {
+        "type": "number",
+        "value": 7
+      }
+    },
+    {
+      "id": "FEAT_RODINI_RODINI_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "RODINI",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RODINI-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_RODINI_RODINI_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "RODINI",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RODINI-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 50
+      }
+    },
+    {
+      "id": "FEAT_RODINI_PHI_ILIN_RESILIANCE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "RODINI",
+      "targetPath": "skills.RESIST_TOXINS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-RODINI-skill-bonus-RESIST_TOXINS",
+      "valueExpression": {
+        "type": "number",
+        "value": 8
+      }
+    },
+    {
+      "id": "FEAT_CEREVU_CAVERNOUS_MANSIONS_E01",
+      "sourceType": "race",
+      "sourceKey": "CEREVU",
+      "targetPath": "skills.SEARCH.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-CEREVU-skill-bonus-SEARCH",
+      "valueExpression": {
+        "type": "number",
+        "value": 8
+      }
+    },
+    {
+      "id": "FEAT_CEREVU_CAVERNOUS_MANSIONS_E02",
+      "sourceType": "race",
+      "sourceKey": "CEREVU",
+      "targetPath": "skills.NAVIGATE.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-CEREVU-skill-bonus-NAVIGATE",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_CEREVU_CAVERNOUS_MANSIONS_E03",
+      "sourceType": "race",
+      "sourceKey": "CEREVU",
+      "targetPath": "skills.INTERPRET.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-CEREVU-skill-bonus-INTERPRET",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_CEREVU_CAVERNOUS_MANSIONS_E04",
+      "sourceType": "race",
+      "sourceKey": "CEREVU",
+      "targetPath": "skills.ACADEMIC_RECALL.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-CEREVU-skill-bonus-ACADEMIC_RECALL",
+      "valueExpression": {
+        "type": "number",
+        "value": 12
+      }
+    },
+    {
+      "id": "FEAT_CEREVU_COOL_HEAD_E01",
+      "sourceType": "race",
+      "sourceKey": "CEREVU",
+      "targetPath": "skills.RESIST_PSIONICS.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-CEREVU-skill-bonus-RESIST_PSIONICS",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_CEREVU_COOL_HEAD_E02",
+      "sourceType": "race",
+      "sourceKey": "CEREVU",
+      "targetPath": "skills.FEAT_OF_AUSTERITY.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-CEREVU-skill-bonus-FEAT_OF_AUSTERITY",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_DARII_DARII_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "DARII",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-DARII-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_DARII_DARII_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "DARII",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-DARII-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_DARII_MOUNTAIN_CLEANSERS_E02",
+      "sourceType": "subrace",
+      "sourceKey": "DARII",
+      "targetPath": "skills.ENDURE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-DARII-skill-bonus-ENDURE",
+      "valueExpression": {
+        "type": "number",
+        "value": 3
+      }
+    },
+    {
+      "id": "FEAT_DARII_MOUNTAIN_CLEANSERS_E04",
+      "sourceType": "subrace",
+      "sourceKey": "DARII",
+      "targetPath": "skills.CRAFT.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-DARII-skill-bonus-CRAFT",
+      "valueExpression": {
+        "type": "number",
+        "value": 12
+      }
+    },
+    {
+      "id": "FEAT_DARII_ANCESTRAL_FEUDS_E01",
+      "sourceType": "subrace",
+      "sourceKey": "DARII",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-DARII-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_DARII_ANCESTRAL_FEUDS_E02",
+      "sourceType": "subrace",
+      "sourceKey": "DARII",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-DARII-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": 10
+      }
+    },
+    {
+      "id": "FEAT_CERII_CERII_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "CERII",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-CERII-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 30
+      }
+    },
+    {
+      "id": "FEAT_CERII_CERII_BASELINE_E02",
+      "sourceType": "subrace",
+      "sourceKey": "CERII",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-CERII-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_CERII_TUNNEL_CLEANSERS_E02",
+      "sourceType": "subrace",
+      "sourceKey": "CERII",
+      "targetPath": "skills.ENDURE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-CERII-skill-bonus-ENDURE",
+      "valueExpression": {
+        "type": "number",
+        "value": 3
+      }
+    },
+    {
+      "id": "FEAT_CERII_TUNNEL_CLEANSERS_E03",
+      "sourceType": "subrace",
+      "sourceKey": "CERII",
+      "targetPath": "skills.ANIMAL_HUSBANDRY.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-CERII-skill-bonus-ANIMAL_HUSBANDRY",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_CERII_DEEP_DELVERS_E01",
+      "sourceType": "subrace",
+      "sourceKey": "CERII",
+      "targetPath": "skills.FEAT_OF_DEFIANCE.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-CERII-skill-bonus-FEAT_OF_DEFIANCE",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_CERII_DEEP_DELVERS_E02",
+      "sourceType": "subrace",
+      "sourceKey": "CERII",
+      "targetPath": "skills.FEAT_OF_STRENGTH.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-CERII-skill-bonus-FEAT_OF_STRENGTH",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_VENII_DEPTH_STRIDER_E03",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": 5
+      }
+    },
+    {
+      "id": "FEAT_VENII_DEPTH_STRIDER_E04",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.BATTLE.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-BATTLE",
+      "valueExpression": {
+        "type": "number",
+        "value": -5
+      }
+    },
+    {
+      "id": "FEAT_VENII_DEPTH_STRIDER_E05",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.CONCEAL.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-CONCEAL",
+      "valueExpression": {
+        "type": "number",
+        "value": 6
+      }
+    },
+    {
+      "id": "FEAT_VENII_DEPTH_STRIDER_E06",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.NAVIGATE.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-NAVIGATE",
+      "valueExpression": {
+        "type": "number",
+        "value": 15
+      }
+    },
+    {
+      "id": "FEAT_VENII_DEPTH_STRIDER_E07",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.SEDUCE.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-SEDUCE",
+      "valueExpression": {
+        "type": "number",
+        "value": -8
+      }
+    },
+    {
+      "id": "FEAT_VENII_AGUNIC_E01",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_VENII_AGUNIC_E02",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_VENII_ESTRANGED_FRIENDS_E01",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.INTIMIDATE.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-INTIMIDATE",
+      "valueExpression": {
+        "type": "number",
+        "value": 7
+      }
+    },
+    {
+      "id": "FEAT_VENII_ESTRANGED_FRIENDS_E02",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.RESIST_TOXINS.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-RESIST_TOXINS",
+      "valueExpression": {
+        "type": "number",
+        "value": 12
+      }
+    },
+    {
+      "id": "FEAT_VENII_UNFAIC_E01",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_VENII_UNFAIC_E02",
+      "sourceType": "race",
+      "sourceKey": "VENII",
+      "targetPath": "skills.ILDAKAR_FACULTY.racialBonus",
+      "operation": "add",
+      "stackingKey": "race-VENII-skill-bonus-ILDAKAR_FACULTY",
+      "valueExpression": {
+        "type": "number",
+        "value": 20
+      }
+    },
+    {
+      "id": "FEAT_FREININ_FREININ_BASELINE_E01",
+      "sourceType": "subrace",
+      "sourceKey": "FREININ",
+      "targetPath": "skills.MARTIAL_PROWESS.racialBonus",
+      "operation": "add",
+      "stackingKey": "subrace-FREININ-skill-bonus-MARTIAL_PROWESS",
+      "valueExpression": {
+        "type": "number",
+        "value": 50
+      }
+    }
+  ]
+}

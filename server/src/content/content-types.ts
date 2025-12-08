@@ -3,6 +3,7 @@
 // for authoring by hand.
 
 import type { Expr } from "@shared/rules/expressions";
+import type { Modifier } from "@shared/rules/modifiers";
 
 export interface ContentRuleset {
   key: string;
@@ -76,15 +77,9 @@ export type ContentModifierSourceType =
   | "background"
   | "other";
 
-export interface ContentModifier {
+export interface ContentModifier extends Modifier {
   sourceType: ContentModifierSourceType;
   sourceKey: string;
-  targetPath: string;
-  operation: "add" | "mul" | "set" | "max" | "min";
-  stackingKey?: string;
-  priority?: number;
-  valueExpression: Expr;
-  conditionExpression?: Expr;
 }
 
 export interface ContentPack {
