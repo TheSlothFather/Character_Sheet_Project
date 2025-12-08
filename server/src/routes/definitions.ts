@@ -25,10 +25,16 @@ type NamedDefinition = {
   parentId?: string;
 };
 
-const contentPackPath =
+const getContentPackPath = () =>
   process.env.CONTENT_PACK_PATH ?? path.join(__dirname, "../../../docs/races_output/content-pack.json");
 
-const contentPack = loadContentPackFromFile(contentPackPath);
+let cachedContentPack: ContentPack | null = null;
+const getContentPack = (): ContentPack => {
+  if (!cachedContentPack) {
+    cachedContentPack = loadContentPackFromFile(getContentPackPath());
+  }
+  return cachedContentPack;
+};
 
 const mapDefinition = ({ key, name, description }: { key: string; name: string; description?: string }): NamedDefinition => ({
   id: key,
@@ -102,19 +108,20 @@ const computeDerivedStats = (
 export const definitionsRouter = Router();
 
 definitionsRouter.get("/", async (_req: Request, res: Response) => {
-  const modifiers = collectModifiers(contentPack);
-  const derivedStatValues = computeDerivedStats(contentPack, modifiers);
+  const pack = getContentPack();
+  const modifiers = collectModifiers(pack);
+  const derivedStatValues = computeDerivedStats(pack, modifiers);
 
   res.json({
-    ruleset: contentPack.ruleset.key,
-    attributes: contentPack.attributes.map(mapDefinition),
-    skills: contentPack.skills.map(mapDefinition),
-    races: contentPack.races.map(mapDefinition),
-    subraces: contentPack.subraces.map(mapSubrace),
-    feats: contentPack.feats.map(mapDefinition),
-    items: contentPack.items.map(mapDefinition),
-    statusEffects: contentPack.statusEffects.map(mapDefinition),
-    derivedStats: contentPack.derivedStats.map(mapDerivedStat),
+    ruleset: pack.ruleset.key,
+    attributes: pack.attributes.map(mapDefinition),
+    skills: pack.skills.map(mapDefinition),
+    races: pack.races.map(mapDefinition),
+    subraces: pack.subraces.map(mapSubrace),
+    feats: pack.feats.map(mapDefinition),
+    items: pack.items.map(mapDefinition),
+    statusEffects: pack.statusEffects.map(mapDefinition),
+    derivedStats: pack.derivedStats.map(mapDerivedStat),
     derivedStatValues,
     modifiers
   });

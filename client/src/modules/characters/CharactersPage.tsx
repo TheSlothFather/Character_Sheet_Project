@@ -1,7 +1,8 @@
 import React from "react";
-import { api, Character, ApiError, ModifierWithSource, NamedDefinition } from "../../api/client";
-import { useDefinitions } from "../definitions/DefinitionsContext";
 import { applyModifiers } from "@shared/rules/modifiers";
+import type { ModifierWithSource } from "../../api/client";
+import { api, Character, ApiError, NamedDefinition } from "../../api/client";
+import { useDefinitions } from "../definitions/DefinitionsContext";
 
 const SKILL_POINT_POOL = 100;
 
