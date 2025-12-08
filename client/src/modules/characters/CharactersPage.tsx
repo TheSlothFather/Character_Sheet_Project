@@ -36,6 +36,7 @@ interface CharacterSheetProps {
   raceName?: string;
   subraceName?: string;
   remaining: number;
+  skillPointPool: number;
   allocations: Record<string, number>;
   racialBonuses: Record<string, number>;
   onChangeAllocation: (skillCode: string, delta: number) => void;
@@ -48,6 +49,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   raceName,
   subraceName,
   remaining,
+  skillPointPool,
   allocations,
   racialBonuses,
   onChangeAllocation,
@@ -527,6 +529,7 @@ export const CharactersPage: React.FC = () => {
               raceName={raceMap.get(selectedCharacter.raceKey || "")}
               subraceName={subraceMap.get(selectedCharacter.subraceKey || "")?.name}
               remaining={remaining}
+              skillPointPool={skillPointPool}
               allocations={currentAllocations}
               racialBonuses={racialBonuses}
               onChangeAllocation={onChangeAllocation}
