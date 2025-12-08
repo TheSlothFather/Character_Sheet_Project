@@ -27,6 +27,8 @@ const ensureNamedList = (value: unknown, field: string): NamedDefinition[] => {
     }
     return {
       id: item.id,
+      code: typeof (item as any).code === "string" ? (item as any).code : undefined,
+      parentId: typeof (item as any).parentId === "string" ? (item as any).parentId : undefined,
       name: item.name,
       description: typeof item.description === "string" ? item.description : undefined
     };
@@ -100,4 +102,3 @@ export const useDefinitions = (): DefinitionsContextValue => {
   }
   return ctx;
 };
-

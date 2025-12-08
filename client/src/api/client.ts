@@ -2,6 +2,8 @@ export interface Character {
   id: string;
   name: string;
   level: number;
+  raceKey?: string;
+  subraceKey?: string;
 }
 
 export interface Campaign {
@@ -12,6 +14,8 @@ export interface Campaign {
 
 export interface NamedDefinition {
   id: string;
+  code?: string;
+  parentId?: string;
   name: string;
   description?: string;
 }
@@ -99,7 +103,7 @@ export async function apiRequest<T>(
 
 export const api = {
   listCharacters: () => apiRequest<Character[]>("/characters"),
-  createCharacter: (payload: { name: string; level: number }) =>
+  createCharacter: (payload: { name: string; level: number; raceKey?: string; subraceKey?: string }) =>
     apiRequest<Character>("/characters", {
       method: "POST",
       body: JSON.stringify(payload)
