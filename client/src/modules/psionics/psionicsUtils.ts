@@ -128,3 +128,12 @@ export const parsePsionicsCsv = (csvText: string): PsionicAbility[] => {
 
 export const isAbilityUnlocked = (ability: PsionicAbility, purchased: Set<string>): boolean =>
   ability.prerequisiteIds.every((id) => purchased.has(id));
+
+export const replaceMentalAttributePlaceholders = (text: string, mental: number): string => {
+  const withMultipliers = text.replace(/mental attribute\s*x\s*(\d+)/gi, (_, multiplier: string) => {
+    const parsedMultiplier = Number(multiplier);
+    return Number.isFinite(parsedMultiplier) ? String(mental * parsedMultiplier) : String(mental);
+  });
+
+  return withMultipliers.replace(/mental attribute/gi, String(mental));
+};
