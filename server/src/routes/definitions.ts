@@ -61,42 +61,41 @@ interface ModifierLike {
 }
 
 // Only expose simple, unconditional flat skill bonuses for now.
-const modifiers: ModifierLike[] = effects
-  .map((effect) => {
-    if (effect.effect_type !== "skill_bonus") return null;
-    if (!effect.applies_automatically) return null;
-    const flat = effect.magnitude?.flat;
-    if (typeof flat !== "number") return null;
-    const skillCode = effect.target?.code;
-    if (!skillCode) return null;
+const modifiers: ModifierLike[] = effects.reduce<ModifierLike[]>((acc, effect) => {
+  if (effect.effect_type !== "skill_bonus") return acc;
+  if (!effect.applies_automatically) return acc;
+  const flat = effect.magnitude?.flat;
+  if (typeof flat !== "number") return acc;
+  const skillCode = effect.target?.code;
+  if (!skillCode) return acc;
 
-    const feature = featureById.get(effect.feature_id);
-    if (!feature) return null;
+  const feature = featureById.get(effect.feature_id);
+  if (!feature) return acc;
 
-    let sourceType: ModifierLike["sourceType"];
-    let sourceKey: string | undefined;
-    if (feature.source_type === "lineage") {
-      sourceType = "race";
-      sourceKey = raceCodeById.get(feature.source_id);
-    } else if (feature.source_type === "culture") {
-      sourceType = "subrace";
-      sourceKey = subraceCodeById.get(feature.source_id);
-    } else {
-      return null;
-    }
-    if (!sourceKey) return null;
+  let sourceType: ModifierLike["sourceType"];
+  let sourceKey: string | undefined;
+  if (feature.source_type === "lineage") {
+    sourceType = "race";
+    sourceKey = raceCodeById.get(feature.source_id);
+  } else if (feature.source_type === "culture") {
+    sourceType = "subrace";
+    sourceKey = subraceCodeById.get(feature.source_id);
+  } else {
+    return acc;
+  }
+  if (!sourceKey) return acc;
 
-    return {
-      id: effect.id,
-      sourceType,
-      sourceKey,
-      targetPath: `skills.${skillCode}.racialBonus`,
-      operation: "add",
-      stackingKey: `${sourceType}-${sourceKey}-skill-bonus`,
-      valueExpression: { type: "number", value: flat }
-    } satisfies ModifierLike;
-  })
-  .filter((m): m is ModifierLike => Boolean(m));
+  acc.push({
+    id: effect.id,
+    sourceType,
+    sourceKey,
+    targetPath: `skills.${skillCode}.racialBonus`,
+    operation: "add",
+    stackingKey: `${sourceType}-${sourceKey}-skill-bonus`,
+    valueExpression: { type: "number", value: flat }
+  });
+  return acc;
+}, []);
 
 const mapDefinition = (d: RawDefinition) => ({
   id: d.code ?? d.id,
