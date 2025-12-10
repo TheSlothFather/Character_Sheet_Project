@@ -58,36 +58,45 @@ const AbilityCard: React.FC<{
       style={{
         width: "100%",
         textAlign: "left",
-        background: purchased ? "#1c2118" : "#0f131a",
-        border: purchased ? "1px solid #6bbf62" : "1px solid #1f2935",
-        borderRadius: 8,
-        padding: "0.6rem 0.7rem",
+        background: purchased ? "linear-gradient(135deg, #142015, #0f171b)" : "#0f141c",
+        border: purchased ? "1px solid #7bdc70" : "1px solid #1f2b39",
+        borderRadius: 12,
+        padding: "0.75rem 0.85rem",
         color: "#e6edf7",
         cursor: purchased || !canAfford ? "not-allowed" : "pointer",
-        opacity: purchased ? 1 : canAfford ? 1 : 0.75,
-        transition: "border-color 0.2s ease, transform 0.15s ease",
-        boxShadow: purchased ? "0 0 0 1px rgba(107,191,98,0.2)" : "none",
-        minHeight: 110,
+        opacity: purchased ? 1 : canAfford ? 1 : 0.7,
+        transition: "border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease",
+        boxShadow: purchased
+          ? "0 6px 18px rgba(82, 255, 168, 0.12), 0 0 0 1px rgba(123, 220, 112, 0.25)"
+          : "0 10px 30px rgba(0,0,0,0.35)",
+        minHeight: 126,
         alignItems: "stretch",
         display: "flex"
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 12
+          }}
+        >
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>{ability.name}</div>
-            <div style={{ fontSize: 11, color: "#9aa3b5" }}>{ability.abilityType}</div>
+            <div style={{ fontWeight: 800, fontSize: 15, letterSpacing: 0.2 }}>{ability.name}</div>
+            <div style={{ fontSize: 11, color: "#9aa3b5", textTransform: "uppercase" }}>{ability.abilityType}</div>
           </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
             {ability.twoHanded && (
               <span
                 style={{
-                  background: "#151a22",
-                  border: "1px solid #293342",
-                  borderRadius: 6,
-                  padding: "0.15rem 0.45rem",
+                  background: "#151d2a",
+                  border: "1px solid #293546",
+                  borderRadius: 999,
+                  padding: "0.2rem 0.55rem",
                   fontSize: 11,
-                  color: "#f4b563",
+                  color: "#f6c177",
                   whiteSpace: "nowrap"
                 }}
               >
@@ -96,10 +105,10 @@ const AbilityCard: React.FC<{
             )}
             <span
               style={{
-                background: "#0a1118",
-                border: "1px solid #273442",
-                borderRadius: 6,
-                padding: "0.15rem 0.45rem",
+                background: "linear-gradient(135deg, #10322c, #124257)",
+                border: "1px solid #1f4e5f",
+                borderRadius: 999,
+                padding: "0.2rem 0.55rem",
                 fontSize: 11,
                 color: "#9ae6b4",
                 whiteSpace: "nowrap"
@@ -109,15 +118,30 @@ const AbilityCard: React.FC<{
             </span>
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 6 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
+            gap: 8
+          }}
+        >
           <StatPill label="Energy" value={ability.energyCost} />
           <StatPill label="Action" value={ability.actionPointCost} />
           <StatPill label="Damage" value={ability.damage} />
           <StatPill label="Type" value={ability.damageType} />
           <StatPill label="Range" value={ability.range} />
         </div>
-        <div style={{ fontSize: 13, color: "#c5ccd9", lineHeight: 1.4 }}>{ability.description}</div>
-        <div style={{ fontSize: 11, color: purchased ? "#9ae6b4" : "#c5ccd9", textTransform: "uppercase" }}>{statusLabel}</div>
+        <div style={{ fontSize: 13, color: "#d8deea", lineHeight: 1.5 }}>{ability.description}</div>
+        <div
+          style={{
+            fontSize: 11,
+            color: purchased ? "#8ee59f" : canAfford ? "#9aa3b5" : "#f09483",
+            textTransform: "uppercase",
+            letterSpacing: 0.4
+          }}
+        >
+          {statusLabel}
+        </div>
       </div>
     </button>
   );
@@ -126,21 +150,22 @@ const AbilityCard: React.FC<{
 const StatPill: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div
     style={{
-      background: "#0d121a",
-      border: "1px solid #1e2834",
-      borderRadius: 6,
-      padding: "0.3rem 0.45rem",
+      background: "#0c121a",
+      border: "1px solid #1c2735",
+      borderRadius: 8,
+      padding: "0.4rem 0.55rem",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
       gap: 6,
       color: "#c5ccd9",
       fontSize: 11,
-      lineHeight: 1.2
+      lineHeight: 1.2,
+      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)"
     }}
   >
-    <span style={{ color: "#8d96a7" }}>{label}</span>
-    <span style={{ fontWeight: 600 }}>{value}</span>
+    <span style={{ color: "#8d96a7", textTransform: "uppercase", letterSpacing: 0.3 }}>{label}</span>
+    <span style={{ fontWeight: 700 }}>{value}</span>
   </div>
 );
 
@@ -175,10 +200,21 @@ export const MartialProwessPage: React.FC = () => {
     return map;
   }, [abilities]);
 
+  const categoryKeys = React.useMemo(() => {
+    const keys: string[] = [];
+    grouped.forEach((categories, kind) => {
+      categories.forEach((_, category) => {
+        keys.push(`${kind}:${category}`);
+      });
+    });
+    return keys.sort();
+  }, [grouped]);
+
   const { selectedId } = useSelectedCharacter();
   const [selectedCharacter, setSelectedCharacter] = React.useState<Character | null>(null);
   const [characterError, setCharacterError] = React.useState<string | null>(null);
   const [loadingCharacter, setLoadingCharacter] = React.useState(false);
+  const [collapsedCategories, setCollapsedCategories] = React.useState<Record<string, boolean>>({});
 
   const storageKey = React.useMemo(() => (selectedId ? `${STORAGE_KEY}:${selectedId}` : null), [selectedId]);
 
@@ -191,6 +227,20 @@ export const MartialProwessPage: React.FC = () => {
   React.useEffect(() => {
     persistState(storageKey, state);
   }, [state, storageKey]);
+
+  React.useEffect(() => {
+    setCollapsedCategories((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const key of categoryKeys) {
+        if (!(key in next)) {
+          next[key] = false;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [categoryKeys]);
 
   React.useEffect(() => {
     setSelectedCharacter(null);
@@ -224,6 +274,24 @@ export const MartialProwessPage: React.FC = () => {
   );
 
   const remainingMp = Math.max(0, state.mpPool - spentMp);
+
+  const toggleCategory = (key: string) => {
+    setCollapsedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const setAllCategoriesCollapsed = (value: boolean) => {
+    setCollapsedCategories((prev) => {
+      const next: Record<string, boolean> = { ...prev };
+      let changed = false;
+      for (const key of categoryKeys) {
+        if (next[key] !== value) {
+          next[key] = value;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  };
 
   const handlePurchase = (ability: MartialAbility) => {
     setState((prev) => {
@@ -268,103 +336,223 @@ export const MartialProwessPage: React.FC = () => {
       <section
         key={kind}
         style={{
-          background: "#0f131a",
-          border: "1px solid #1f2935",
-          borderRadius: 12,
-          padding: "0.9rem 1rem 1rem"
+          background: "linear-gradient(160deg, rgba(16,20,27,0.94), rgba(11,16,23,0.96))",
+          border: "1px solid #18212d",
+          borderRadius: 14,
+          padding: "1rem 1.05rem 1.1rem",
+          boxShadow: "0 14px 40px rgba(0,0,0,0.35)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.8rem"
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
-          <h2 style={{ margin: 0, color: "#e6edf7", fontSize: 18 }}>{title}</h2>
-          <span style={{ color: "#9aa3b5", fontSize: 12 }}>{categories.size} categories</span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "0.85rem" }}>
-          {orderedCategories.map((category) => (
-            <div
-              key={category}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap"
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <h2 style={{ margin: 0, color: "#e6edf7", fontSize: 18, letterSpacing: 0.3 }}>{title}</h2>
+            <span style={{ color: "#9aa3b5", fontSize: 12 }}>{categories.size} categories</span>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button
+              onClick={() => setAllCategoriesCollapsed(false)}
               style={{
-                border: "1px solid #1c2430",
+                background: "#142231",
+                color: "#d8deea",
+                border: "1px solid #223447",
                 borderRadius: 10,
-                padding: "0.65rem 0.7rem",
-                background: "#0c1017",
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.55rem"
+                padding: "0.4rem 0.7rem",
+                cursor: "pointer"
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ fontWeight: 700, color: "#c5ccd9", fontSize: 14 }}>{category}</div>
-                <span style={{ fontSize: 11, color: "#7f8898" }}>{categories.get(category)?.length ?? 0} abilities</span>
+              Expand all
+            </button>
+            <button
+              onClick={() => setAllCategoriesCollapsed(true)}
+              style={{
+                background: "#0f1721",
+                color: "#d8deea",
+                border: "1px solid #223447",
+                borderRadius: 10,
+                padding: "0.4rem 0.7rem",
+                cursor: "pointer"
+              }}
+            >
+              Collapse all
+            </button>
+          </div>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: "0.85rem"
+          }}
+        >
+          {orderedCategories.map((category) => {
+            const key = `${kind}:${category}`;
+            const collapsed = collapsedCategories[key] ?? false;
+            const abilitiesInCategory = categories.get(category) ?? [];
+            const purchasedCount = abilitiesInCategory.filter((ability) =>
+              state.purchased.has(ability.id)
+            ).length;
+
+            return (
+              <div
+                key={category}
+                style={{
+                  border: "1px solid #1b2634",
+                  borderRadius: 12,
+                  padding: "0.75rem 0.85rem",
+                  background: "#0b1018",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.65rem",
+                  boxShadow: "0 10px 24px rgba(0,0,0,0.28)"
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ fontWeight: 800, color: "#e0e5ef", fontSize: 14 }}>{category}</div>
+                    <div style={{ display: "flex", gap: 8, color: "#7f8898", fontSize: 12 }}>
+                      <span>{abilitiesInCategory.length} abilities</span>
+                      <span style={{ color: "#8ee59f" }}>{purchasedCount} purchased</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => toggleCategory(key)}
+                    style={{
+                      background: collapsed ? "#101722" : "#152234",
+                      color: "#d8deea",
+                      border: "1px solid #243548",
+                      borderRadius: 10,
+                      padding: "0.35rem 0.65rem",
+                      cursor: "pointer",
+                      fontSize: 12
+                    }}
+                  >
+                    {collapsed ? "Expand" : "Collapse"}
+                  </button>
+                </div>
+                {!collapsed && (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                      gap: "0.75rem",
+                      paddingTop: 4
+                    }}
+                  >
+                    {abilitiesInCategory.map((ability) => {
+                      const purchased = state.purchased.has(ability.id);
+                      return (
+                        <AbilityCard
+                          key={ability.id}
+                          ability={ability}
+                          purchased={purchased}
+                          remainingMp={remainingMp}
+                          onPurchase={handlePurchase}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.65rem" }}>
-                {categories.get(category)?.map((ability) => {
-                  const purchased = state.purchased.has(ability.id);
-                  return (
-                    <AbilityCard
-                      key={ability.id}
-                      ability={ability}
-                      purchased={purchased}
-                      remainingMp={remainingMp}
-                      onPurchase={handlePurchase}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     );
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
-        <div>
-          <h1 style={{ margin: 0 }}>Martial Prowess</h1>
-          <p style={{ margin: "0.2rem 0", color: "#c5ccd9" }}>Character: {selectedCharacter.name}</p>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "stretch",
+          gap: "1rem",
+          flexWrap: "wrap",
+          background: "linear-gradient(120deg, #0f141d, #0b1222)",
+          border: "1px solid #1d2634",
+          padding: "1rem 1.1rem",
+          borderRadius: 14,
+          boxShadow: "0 16px 42px rgba(0,0,0,0.35)"
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <h1 style={{ margin: 0, letterSpacing: 0.4 }}>Martial Prowess</h1>
+          <p style={{ margin: 0, color: "#c5ccd9", fontSize: 14 }}>Character: {selectedCharacter.name}</p>
+          <p style={{ margin: 0, color: "#7f8898", fontSize: 12 }}>
+            Manage weapons and armor techniques, collapse groups you are not actively tuning.
+          </p>
         </div>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
           <label
             style={{
-              background: "#131a24",
-              border: "1px solid #2b3747",
+              background: "#0f1723",
+              border: "1px solid #223447",
               borderRadius: 10,
-              padding: "0.75rem 1rem",
-              minWidth: 180,
+              padding: "0.8rem 1rem",
+              minWidth: 200,
               color: "#c5ccd9",
               display: "flex",
               flexDirection: "column",
-              gap: 6
+              gap: 8,
+              boxShadow: "0 10px 28px rgba(0,0,0,0.25)"
             }}
           >
-            <span style={{ fontSize: 13 }}>MP Pool</span>
+            <span style={{ fontSize: 13, letterSpacing: 0.2 }}>MP Pool</span>
             <input
               type="number"
               value={state.mpPool}
               onChange={(e) => updateMpPool(Number(e.target.value) || 0)}
               min={0}
               style={{
-                background: "#0f141d",
+                background: "#0c121a",
                 border: "1px solid #2b3747",
-                borderRadius: 6,
-                padding: "0.35rem 0.5rem",
-                color: "#e6edf7"
+                borderRadius: 8,
+                padding: "0.45rem 0.55rem",
+                color: "#e6edf7",
+                fontSize: 15,
+                fontWeight: 600
               }}
             />
           </label>
           <div
             style={{
-              background: "#131a24",
-              border: "1px solid #2b3747",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
+              background: "linear-gradient(135deg, #0d1f27, #0f2f36)",
+              border: "1px solid #1d3a43",
+              borderRadius: 12,
+              padding: "0.9rem 1.1rem",
               minWidth: 200,
-              textAlign: "center"
+              textAlign: "center",
+              color: "#d8deea",
+              boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: 4
             }}
           >
-            <div style={{ fontSize: 13, color: "#9aa3b5" }}>MP Remaining</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: "#9ae6b4" }}>{remainingMp}</div>
+            <div style={{ fontSize: 13, color: "#9aa3b5", textTransform: "uppercase", letterSpacing: 1.2 }}>
+              MP Remaining
+            </div>
+            <div style={{ fontSize: 30, fontWeight: 800, color: "#9ae6b4" }}>{remainingMp}</div>
           </div>
         </div>
       </header>
