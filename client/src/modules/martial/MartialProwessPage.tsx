@@ -58,60 +58,67 @@ const AbilityCard: React.FC<{
       style={{
         width: "100%",
         textAlign: "left",
-        background: purchased ? "#24291f" : "#14181f",
-        border: purchased ? "1px solid #7bc96f" : "1px solid #202a34",
-        borderRadius: 10,
-        padding: "0.75rem",
+        background: purchased ? "#1c2118" : "#0f131a",
+        border: purchased ? "1px solid #6bbf62" : "1px solid #1f2935",
+        borderRadius: 8,
+        padding: "0.6rem 0.7rem",
         color: "#e6edf7",
         cursor: purchased || !canAfford ? "not-allowed" : "pointer",
-        opacity: purchased ? 1 : canAfford ? 1 : 0.7,
-        transition: "border-color 0.2s ease",
-        boxShadow: purchased ? "0 0 0 1px rgba(123,201,111,0.2)" : "none"
+        opacity: purchased ? 1 : canAfford ? 1 : 0.75,
+        transition: "border-color 0.2s ease, transform 0.15s ease",
+        boxShadow: purchased ? "0 0 0 1px rgba(107,191,98,0.2)" : "none",
+        minHeight: 110,
+        alignItems: "stretch",
+        display: "flex"
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6 }}>
-        <div>
-          <div style={{ fontWeight: 700 }}>{ability.name}</div>
-          <div style={{ fontSize: 12, color: "#9aa3b5" }}>{ability.abilityType}</div>
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {ability.twoHanded && (
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>{ability.name}</div>
+            <div style={{ fontSize: 11, color: "#9aa3b5" }}>{ability.abilityType}</div>
+          </div>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {ability.twoHanded && (
+              <span
+                style={{
+                  background: "#151a22",
+                  border: "1px solid #293342",
+                  borderRadius: 6,
+                  padding: "0.15rem 0.45rem",
+                  fontSize: 11,
+                  color: "#f4b563",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                Two-Handed
+              </span>
+            )}
             <span
               style={{
-                background: "#1c1f26",
-                border: "1px solid #2f3845",
+                background: "#0a1118",
+                border: "1px solid #273442",
                 borderRadius: 6,
-                padding: "0.2rem 0.5rem",
-                fontSize: 12,
-                color: "#f4b563"
+                padding: "0.15rem 0.45rem",
+                fontSize: 11,
+                color: "#9ae6b4",
+                whiteSpace: "nowrap"
               }}
             >
-              Two-Handed
+              {ability.mpCost} MP
             </span>
-          )}
-          <span
-            style={{
-              background: "#0e141b",
-              border: "1px solid #273442",
-              borderRadius: 6,
-              padding: "0.2rem 0.5rem",
-              fontSize: 12,
-              color: "#9ae6b4"
-            }}
-          >
-            {ability.mpCost} MP
-          </span>
+          </div>
         </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 6 }}>
+          <StatPill label="Energy" value={ability.energyCost} />
+          <StatPill label="Action" value={ability.actionPointCost} />
+          <StatPill label="Damage" value={ability.damage} />
+          <StatPill label="Type" value={ability.damageType} />
+          <StatPill label="Range" value={ability.range} />
+        </div>
+        <div style={{ fontSize: 13, color: "#c5ccd9", lineHeight: 1.4 }}>{ability.description}</div>
+        <div style={{ fontSize: 11, color: purchased ? "#9ae6b4" : "#c5ccd9", textTransform: "uppercase" }}>{statusLabel}</div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 6, marginBottom: 8 }}>
-        <StatPill label="Energy" value={ability.energyCost} />
-        <StatPill label="Action Points" value={ability.actionPointCost} />
-        <StatPill label="Damage" value={ability.damage} />
-        <StatPill label="Type" value={ability.damageType} />
-        <StatPill label="Range" value={ability.range} />
-      </div>
-      <div style={{ fontSize: 14, color: "#c5ccd9", marginBottom: 6 }}>{ability.description}</div>
-      <div style={{ fontSize: 12, color: purchased ? "#9ae6b4" : "#c5ccd9" }}>{statusLabel}</div>
     </button>
   );
 };
@@ -119,17 +126,21 @@ const AbilityCard: React.FC<{
 const StatPill: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div
     style={{
-      background: "#0f141d",
-      border: "1px solid #1f2935",
-      borderRadius: 8,
-      padding: "0.35rem 0.5rem",
+      background: "#0d121a",
+      border: "1px solid #1e2834",
+      borderRadius: 6,
+      padding: "0.3rem 0.45rem",
       display: "flex",
-      flexDirection: "column",
-      gap: 2
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 6,
+      color: "#c5ccd9",
+      fontSize: 11,
+      lineHeight: 1.2
     }}
   >
-    <span style={{ fontSize: 11, color: "#9aa3b5" }}>{label}</span>
-    <span style={{ fontSize: 13, color: "#e6edf7" }}>{value}</span>
+    <span style={{ color: "#8d96a7" }}>{label}</span>
+    <span style={{ fontWeight: 600 }}>{value}</span>
   </div>
 );
 
@@ -254,16 +265,38 @@ export const MartialProwessPage: React.FC = () => {
     const orderedCategories = Array.from(categories.keys()).sort((a, b) => a.localeCompare(b));
 
     return (
-      <section key={kind} style={{ background: "#0f131a", border: "1px solid #1f2935", borderRadius: 12, padding: "1rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-          <h2 style={{ margin: 0, color: "#e6edf7" }}>{title}</h2>
-          <span style={{ color: "#9aa3b5", fontSize: 13 }}>{categories.size} categories</span>
+      <section
+        key={kind}
+        style={{
+          background: "#0f131a",
+          border: "1px solid #1f2935",
+          borderRadius: 12,
+          padding: "0.9rem 1rem 1rem"
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
+          <h2 style={{ margin: 0, color: "#e6edf7", fontSize: 18 }}>{title}</h2>
+          <span style={{ color: "#9aa3b5", fontSize: 12 }}>{categories.size} categories</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "0.85rem" }}>
           {orderedCategories.map((category) => (
-            <div key={category} style={{ border: "1px solid #1f2935", borderRadius: 10, padding: "0.75rem", background: "#0c1017" }}>
-              <div style={{ fontWeight: 700, color: "#c5ccd9", marginBottom: 8 }}>{category}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            <div
+              key={category}
+              style={{
+                border: "1px solid #1c2430",
+                borderRadius: 10,
+                padding: "0.65rem 0.7rem",
+                background: "#0c1017",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.55rem"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ fontWeight: 700, color: "#c5ccd9", fontSize: 14 }}>{category}</div>
+                <span style={{ fontSize: 11, color: "#7f8898" }}>{categories.get(category)?.length ?? 0} abilities</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.65rem" }}>
                 {categories.get(category)?.map((ability) => {
                   const purchased = state.purchased.has(ability.id);
                   return (
