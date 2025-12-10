@@ -1,0 +1,86 @@
+Category,Energy Cost,Action Point Cost,Damage,Type,Range,MP,Two-Handed?,Ability Name,Ability Type,Description
+Small Blades,1,1,3,Sharp,0–1,5,No,Slit,Active,1 Bleed at 0 range
+Small Blades,1,1,3,Sharp,0–1,5,No,Bypass Armor,Active,Bypass all armor at 0 range
+Small Blades,1,1,3,Sharp,0–1,5,No,Thrust,Passive,Move 1 with no AP or energy cost as part of attack
+Small Blades,1,1,3,Sharp,0–1,5,No,Parry,Reaction,"+3 to Battle when defending, +6 while dual wielding"
+Small Blades,1,1,3,Sharp,0–1,5,No,Drawcut,"Reaction, Once/Round","Enemy moves within range, attack with 50% damage"
+Small Blades,1,1,3,Sharp,0–1,5,No,Counter,Reaction,Attack when battle roll is higher while defending
+,,,,Sharp,,,,,,
+Medium Blades,2,2,7,Sharp,1,8,No,Slash,Active,2 Bleed at 1 range
+Medium Blades,2,2,7,Sharp,1,8,No,Pommel,Active,Use blunt damage instead of sharp damage
+Medium Blades,2,2,7,Sharp,1,8,No,Thrust,Passive,Move 1 with no AP or energy cost as part of attack
+Medium Blades,2,2,7,Sharp,1,8,No,Riposte,Reaction,Automatic hit at 50% damage when defense roll exceeds enemy attack
+Medium Blades,2,2,7,Sharp,1,8,No,Drawcut,"Reaction, Once/Round","Enemy moves within range, attack with 50% damage"
+Medium Blades,2,2,7,Sharp,1,8,No,Parry,Reaction,+7 to Battle when defending
+,,,,Sharp,,,,,,
+Large Blades,3,3,12,Sharp,1–2,10,Yes,Ward,"Stationary, Once/Round",All enemies entering range take 50% damage if they fail to beat your defense; does not work at 0–1 range
+Large Blades,3,3,12,Sharp,1–2,10,Yes,Devastate,Reaction,Deal 100% more damage on critical hit
+Large Blades,3,3,12,Sharp,1–2,10,Yes,Slash,Active,4 Bleed at 1–2 range
+Large Blades,3,3,12,Sharp,1–2,10,Yes,Brace,Reaction,+12 defense when enemy moves or charges to attack you
+Large Blades,3,3,12,Sharp,1–2,10,Yes,Departing Blow,Reaction,"Attack when enemy moves out of range, 50% damage"
+Large Blades,3,3,12,Sharp,1–2,10,Yes,Shield,Reaction,+12 defense to adjacent ally when they are attacked
+,,,,,,,,,,
+Thrown,1,1,5,"Sharp, Blunt",1,5,No,Devastate,Reaction,Deal 100% more damage on critical hit
+Thrown,1,1,5,"Sharp, Blunt",1,5,No,Wind-Up,"Active, Once/Round",Gain 3 free movement before attack
+Thrown,1,1,5,"Sharp, Blunt",1,5,No,Pin,Reaction,Immobilize/pin target on critical hit
+Thrown,1,1,5,"Sharp, Blunt",1,5,No,Kite,Reaction,Move 1 when foe enters range
+Thrown,1,1,5,"Sharp, Blunt",1,5,No,Volley,Passive,May throw over walls and obstacles
+Thrown,1,1,5,"Sharp, Blunt",1,5,No,Desperate Counter,Reaction,Melee counter 50% damage when opponent fails to overcome defense
+,,,,,,,,,,
+Small Bearded,1,1,3,Sharp,1,3,No,Sever,Reaction,Sever extremity and cause 50% more bleed damage on critical hit
+Small Bearded,1,1,3,Sharp,1,3,No,Slash,Active,1 Bleed at 1 range
+Small Bearded,1,1,3,Sharp,1,3,No,Disarm,"Active, Once/Round",Cause foe to drop weapon or item instead of dealing damage
+Small Bearded,1,1,3,Sharp,1,3,No,Parry,Reaction,+3 to Battle when defending
+Small Bearded,1,1,3,Sharp,1,3,No,Furious Counter,Reaction,Attack for 50% damage when critically hit
+Small Bearded,1,1,3,Sharp,1,3,No,Split,Reaction,Critical hit gives foe Dazed status until next turn
+,,,,Sharp,,,,,,
+Large Bearded,3,3,12,Sharp,1–2,10,Yes,Sever,Reaction,"Sever limb, tail, or head on critical hit; double bleed damage"
+Large Bearded,3,3,12,Sharp,1–2,10,Yes,Slash,Active,4 Bleed at 1–2 range
+Large Bearded,3,3,12,Sharp,1–2,10,Yes,Cleave,Stationary,Strike multiple foes in range following an arc until blocked
+Large Bearded,3,3,12,Sharp,1–2,10,Yes,Brace,Reaction,+12 defense when enemy moves or charges to attack
+Large Bearded,3,3,12,Sharp,1–2,10,Yes,Departing Blow,Reaction,"Attack when enemy leaves range, 50% damage"
+Large Bearded,3,3,12,Sharp,1–2,10,Yes,Sweep,Reaction,Knock foe prone if they fail to overcome your defense
+,,,,,,,,,,
+Polearms,3,3,15,Sharp,2–3,3,Yes,Hammer,Active,-1 armor durability if you overcome defense
+Polearms,3,3,15,Sharp,2–3,3,Yes,Disarm,"Active, Once/Round",Cause foe to drop weapon or item instead of dealing damage
+Polearms,3,3,15,Sharp,2–3,3,Yes,Stand Fast,"Stationary, Once/Round",Foes entering range take 50% damage if they fail defense roll
+Polearms,3,3,15,Sharp,2–3,3,Yes,Pincer,Reaction,Immobilize charging foe at 3 range if you overcome defense
+Polearms,3,3,15,Sharp,2–3,3,Yes,Hook,Reaction,Immobilize foe moving out of 2–3 range if you overcome defense
+Polearms,3,3,15,Sharp,2–3,3,Yes,Sweep,Reaction,Knock enemy prone instead of dealing damage if you overcome defense
+,,,,,,,,,,
+Long Ranged,3,3,15,Sharp,1–30,10,Yes,Loose,Active,Sharp damage at 1–30 range
+Long Ranged,3,3,15,Sharp,1–30,10,Yes,Pin,Reaction,Immobilize/pin on critical hit
+Long Ranged,3,3,15,Sharp,1–30,10,Yes,Volley,Passive,May shoot over walls and obstacles (up to 300 ft)
+Long Ranged,3,3,15,Sharp,1–30,10,Yes,Long-Shot,Active,May shoot up to 60 range for 50% damage
+Long Ranged,3,3,15,Sharp,1–30,10,Yes,Patient Shot,"Reaction, Once/Round",Attack foe who breaks cover for 50% damage if you overcome defense
+Long Ranged,3,3,15,Sharp,1–30,10,Yes,Countershot,"Reaction, Once/Round",Counter ranged attack with your own if enemy misses
+,,,,,,,,,,
+Small Blunt,2,2,7,Blunt,0–1,3,No,Hammer,Active,-1 armor durability if you overcome defense
+Small Blunt,2,2,7,Blunt,0–1,3,No,Bludgeon,Reaction,Extra attack for 1 energy + AP after critical hit
+Small Blunt,2,2,7,Blunt,0–1,3,No,Parry,Reaction,+7 to Battle when defending
+Small Blunt,2,2,7,Blunt,0–1,3,No,Wind,Reaction,"When foe fails to overcome defense, apply Dazed instead of damage"
+Small Blunt,2,2,7,Blunt,0–1,3,No,Disarm,Reaction,Cause foe to drop weapon/item if they fail to overcome defense
+Small Blunt,2,2,7,Blunt,0–1,3,No,Counter,Reaction,Attack when battle roll is higher while defending
+,,,,,,,,,,
+Large Blunt,3,3,12,Blunt,1–2,7,Yes,Hammer,Active,-2 armor durability if you overcome defense
+Large Blunt,3,3,12,Blunt,1–2,7,Yes,Blackout,Reaction,Critical hit may knock foe unconscious (Endure vs Battle roll)
+Large Blunt,3,3,12,Blunt,1–2,7,Yes,Cripple,Reaction,Critical hit breaks bone or joint
+Large Blunt,3,3,12,Blunt,1–2,7,Yes,Brace,Reaction,+12 defense when enemy moves or charges
+Large Blunt,3,3,12,Blunt,1–2,7,Yes,Shield,Reaction,+12 defense to adjacent ally when they are attacked
+Large Blunt,3,3,12,Blunt,1–2,7,Yes,Sunder,Reaction,"Break opponent weapon, shield, or armor on critical hit"
+,,,,,,,,,,
+Flexible,2,2,5,Sharp or Blunt,1–3,8,No,Flex,Passive,"Bypasses shields, can hit around corners or over walls"
+Flexible,2,2,5,Sharp or Blunt,1–3,8,No,Sweep,Reaction,Knock foe prone instead of dealing damage if you overcome defense
+Flexible,2,2,5,Sharp or Blunt,1–3,8,No,Bind,Reaction,Immobilize foe at 1–3 range instead of dealing damage
+Flexible,2,2,5,Sharp or Blunt,1–3,8,No,Counter,Reaction,Attack when battle roll is higher while defending
+Flexible,2,2,5,Sharp or Blunt,1–3,8,No,Crack,Reaction,-1 morale to enemy when they fail to overcome defense
+Flexible,2,2,5,Sharp or Blunt,1–3,8,No,Disarm,Reaction,Disarm foe when they fail to overcome defense
+,,,,,,,,,,
+Unarmed,1,1,2,Blunt,0–1,3,No,Strike,Active,2 blunt at 0–1 range
+Unarmed,1,1,2,Blunt,0–1,3,No,Choke,Active,+1 exhaustion at 0 range if throat accessible
+Unarmed,1,1,2,Blunt,0–1,3,No,Daze,Reaction,Apply Dazed on critical hit
+Unarmed,1,1,2,Blunt,0–1,3,No,Tear and Bite,Active,1 Bleed at 0 range
+Unarmed,1,1,2,Blunt,0–1,3,No,Cripple,Reaction,Break bone or joint on critical hit
+Unarmed,1,1,2,Blunt,0–1,3,No,Gouge,Reaction,Blind or deafen foe at 0 range when defense overcomes attack
+Unarmed,1,1,2,Blunt,0–1,3,No,Sweep,Reaction,Knock enemy prone instead of dealing damage if defense succeeds
+Unarmed,1,3,2,Blunt,0–1,3,No,Grapple,Active,Enter 0 range and initiate grapple
