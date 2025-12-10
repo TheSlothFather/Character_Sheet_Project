@@ -200,21 +200,21 @@ export const MartialProwessPage: React.FC = () => {
     return map;
   }, [abilities]);
 
-  const categoryKeys = React.useMemo(() => {
-    const keys: string[] = [];
+  const categoryEntries = React.useMemo(() => {
+    const entries: { key: string; kind: EquipmentKind; category: string; abilities: MartialAbility[] }[] = [];
     grouped.forEach((categories, kind) => {
-      categories.forEach((_, category) => {
-        keys.push(`${kind}:${category}`);
+      categories.forEach((abilitiesInCategory, category) => {
+        entries.push({ key: `${kind}:${category}`, kind, category, abilities: abilitiesInCategory });
       });
     });
-    return keys.sort();
+    return entries.sort((a, b) => a.category.localeCompare(b.category));
   }, [grouped]);
 
   const { selectedId } = useSelectedCharacter();
   const [selectedCharacter, setSelectedCharacter] = React.useState<Character | null>(null);
   const [characterError, setCharacterError] = React.useState<string | null>(null);
   const [loadingCharacter, setLoadingCharacter] = React.useState(false);
-  const [collapsedCategories, setCollapsedCategories] = React.useState<Record<string, boolean>>({});
+  const [activeCategoryKey, setActiveCategoryKey] = React.useState<string | null>(null);
 
   const storageKey = React.useMemo(() => (selectedId ? `${STORAGE_KEY}:${selectedId}` : null), [selectedId]);
 
@@ -229,18 +229,11 @@ export const MartialProwessPage: React.FC = () => {
   }, [state, storageKey]);
 
   React.useEffect(() => {
-    setCollapsedCategories((prev) => {
-      let changed = false;
-      const next = { ...prev };
-      for (const key of categoryKeys) {
-        if (!(key in next)) {
-          next[key] = false;
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [categoryKeys]);
+    if (categoryEntries.length === 0) return;
+    if (!activeCategoryKey || !categoryEntries.some((entry) => entry.key === activeCategoryKey)) {
+      setActiveCategoryKey(categoryEntries[0].key);
+    }
+  }, [activeCategoryKey, categoryEntries]);
 
   React.useEffect(() => {
     setSelectedCharacter(null);
@@ -274,24 +267,6 @@ export const MartialProwessPage: React.FC = () => {
   );
 
   const remainingMp = Math.max(0, state.mpPool - spentMp);
-
-  const toggleCategory = (key: string) => {
-    setCollapsedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const setAllCategoriesCollapsed = (value: boolean) => {
-    setCollapsedCategories((prev) => {
-      const next: Record<string, boolean> = { ...prev };
-      let changed = false;
-      for (const key of categoryKeys) {
-        if (next[key] !== value) {
-          next[key] = value;
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  };
 
   const handlePurchase = (ability: MartialAbility) => {
     setState((prev) => {
@@ -327,156 +302,22 @@ export const MartialProwessPage: React.FC = () => {
     return <p>Selected character could not be found.</p>;
   }
 
-  const renderSection = (kind: EquipmentKind, title: string) => {
-    const categories = grouped.get(kind);
-    if (!categories || categories.size === 0) return null;
-    const orderedCategories = Array.from(categories.keys()).sort((a, b) => a.localeCompare(b));
+  const categoriesByKind = React.useMemo(() => {
+    const map = new Map<EquipmentKind, typeof categoryEntries>();
+    for (const entry of categoryEntries) {
+      if (!map.has(entry.kind)) {
+        map.set(entry.kind, []);
+      }
+      map.get(entry.kind)!.push(entry);
+    }
+    map.forEach((list) => list.sort((a, b) => a.category.localeCompare(b.category)));
+    return map;
+  }, [categoryEntries]);
 
-    return (
-      <section
-        key={kind}
-        style={{
-          background: "linear-gradient(160deg, rgba(16,20,27,0.94), rgba(11,16,23,0.96))",
-          border: "1px solid #18212d",
-          borderRadius: 14,
-          padding: "1rem 1.05rem 1.1rem",
-          boxShadow: "0 14px 40px rgba(0,0,0,0.35)",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.8rem"
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap"
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <h2 style={{ margin: 0, color: "#e6edf7", fontSize: 18, letterSpacing: 0.3 }}>{title}</h2>
-            <span style={{ color: "#9aa3b5", fontSize: 12 }}>{categories.size} categories</span>
-          </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <button
-              onClick={() => setAllCategoriesCollapsed(false)}
-              style={{
-                background: "#142231",
-                color: "#d8deea",
-                border: "1px solid #223447",
-                borderRadius: 10,
-                padding: "0.4rem 0.7rem",
-                cursor: "pointer"
-              }}
-            >
-              Expand all
-            </button>
-            <button
-              onClick={() => setAllCategoriesCollapsed(true)}
-              style={{
-                background: "#0f1721",
-                color: "#d8deea",
-                border: "1px solid #223447",
-                borderRadius: 10,
-                padding: "0.4rem 0.7rem",
-                cursor: "pointer"
-              }}
-            >
-              Collapse all
-            </button>
-          </div>
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "0.85rem"
-          }}
-        >
-          {orderedCategories.map((category) => {
-            const key = `${kind}:${category}`;
-            const collapsed = collapsedCategories[key] ?? false;
-            const abilitiesInCategory = categories.get(category) ?? [];
-            const purchasedCount = abilitiesInCategory.filter((ability) =>
-              state.purchased.has(ability.id)
-            ).length;
-
-            return (
-              <div
-                key={category}
-                style={{
-                  border: "1px solid #1b2634",
-                  borderRadius: 12,
-                  padding: "0.75rem 0.85rem",
-                  background: "#0b1018",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.65rem",
-                  boxShadow: "0 10px 24px rgba(0,0,0,0.28)"
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 12
-                  }}
-                >
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    <div style={{ fontWeight: 800, color: "#e0e5ef", fontSize: 14 }}>{category}</div>
-                    <div style={{ display: "flex", gap: 8, color: "#7f8898", fontSize: 12 }}>
-                      <span>{abilitiesInCategory.length} abilities</span>
-                      <span style={{ color: "#8ee59f" }}>{purchasedCount} purchased</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => toggleCategory(key)}
-                    style={{
-                      background: collapsed ? "#101722" : "#152234",
-                      color: "#d8deea",
-                      border: "1px solid #243548",
-                      borderRadius: 10,
-                      padding: "0.35rem 0.65rem",
-                      cursor: "pointer",
-                      fontSize: 12
-                    }}
-                  >
-                    {collapsed ? "Expand" : "Collapse"}
-                  </button>
-                </div>
-                {!collapsed && (
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                      gap: "0.75rem",
-                      paddingTop: 4
-                    }}
-                  >
-                    {abilitiesInCategory.map((ability) => {
-                      const purchased = state.purchased.has(ability.id);
-                      return (
-                        <AbilityCard
-                          key={ability.id}
-                          ability={ability}
-                          purchased={purchased}
-                          remainingMp={remainingMp}
-                          onPurchase={handlePurchase}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-    );
-  };
+  const activeCategory = React.useMemo(
+    () => categoryEntries.find((entry) => entry.key === activeCategoryKey) ?? null,
+    [activeCategoryKey, categoryEntries]
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -498,7 +339,7 @@ export const MartialProwessPage: React.FC = () => {
           <h1 style={{ margin: 0, letterSpacing: 0.4 }}>Martial Prowess</h1>
           <p style={{ margin: 0, color: "#c5ccd9", fontSize: 14 }}>Character: {selectedCharacter.name}</p>
           <p style={{ margin: 0, color: "#7f8898", fontSize: 12 }}>
-            Manage weapons and armor techniques, collapse groups you are not actively tuning.
+            Pick a category on the left to review and unlock martial abilities.
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -557,9 +398,189 @@ export const MartialProwessPage: React.FC = () => {
         </div>
       </header>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-        {renderSection("Weapon", "Weapons")}
-        {renderSection("Armor", "Armor")}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(240px, 280px) 1fr",
+          gap: "1rem",
+          alignItems: "start"
+        }}
+      >
+        <aside
+          style={{
+            background: "#0b1018",
+            border: "1px solid #1b2634",
+            borderRadius: 14,
+            padding: "0.85rem 0.75rem 1rem",
+            boxShadow: "0 12px 32px rgba(0,0,0,0.28)",
+            position: "sticky",
+            top: 12,
+            alignSelf: "start",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5rem"
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ color: "#e6edf7", fontWeight: 700, letterSpacing: 0.2 }}>Categories</div>
+            <div style={{ color: "#7f8898", fontSize: 12 }}>{categoryEntries.length} total</div>
+          </div>
+
+          {(["Weapon", "Armor"] as EquipmentKind[]).map((kind) => {
+            const options = categoriesByKind.get(kind) ?? [];
+            if (options.length === 0) return null;
+
+            return (
+              <div key={kind} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ color: "#9aa3b5", fontSize: 12, letterSpacing: 0.3, textTransform: "uppercase" }}>
+                  {kind}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {options.map((entry) => {
+                    const purchasedCount = entry.abilities.filter((ability) => state.purchased.has(ability.id)).length;
+                    const isActive = activeCategoryKey === entry.key;
+
+                    return (
+                      <button
+                        key={entry.key}
+                        onClick={() => setActiveCategoryKey(entry.key)}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          background: isActive
+                            ? "linear-gradient(135deg, #123140, #0f2234)"
+                            : "#0f151f",
+                          border: isActive ? "1px solid #2b495b" : "1px solid #1d2837",
+                          color: "#d8deea",
+                          borderRadius: 10,
+                          padding: "0.55rem 0.65rem",
+                          cursor: "pointer",
+                          boxShadow: isActive ? "0 10px 24px rgba(0,0,0,0.28)" : "none",
+                          textAlign: "left",
+                          transition: "border-color 0.2s ease, background 0.2s ease"
+                        }}
+                      >
+                        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                          <div style={{ fontWeight: 700, fontSize: 14 }}>{entry.category}</div>
+                          <div style={{ color: "#9aa3b5", fontSize: 12 }}>
+                            {entry.abilities.length} abilities
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            background: "#12202c",
+                            border: "1px solid #243547",
+                            borderRadius: 999,
+                            padding: "0.2rem 0.55rem",
+                            color: "#8ee59f",
+                            fontSize: 11
+                          }}
+                        >
+                          {purchasedCount} owned
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </aside>
+
+        <main style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {activeCategory ? (
+            <section
+              style={{
+                background: "linear-gradient(160deg, rgba(16,20,27,0.94), rgba(11,16,23,0.96))",
+                border: "1px solid #18212d",
+                borderRadius: 14,
+                padding: "1rem 1.05rem 1.1rem",
+                boxShadow: "0 14px 40px rgba(0,0,0,0.35)",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.9rem"
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 12,
+                  flexWrap: "wrap"
+                }}
+              >
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    <h2 style={{ margin: 0, color: "#e6edf7", fontSize: 18, letterSpacing: 0.3 }}>
+                      {activeCategory.category}
+                    </h2>
+                    <span
+                      style={{
+                        background: "#152234",
+                        border: "1px solid #1f3042",
+                        color: "#9aa3b5",
+                        borderRadius: 999,
+                        padding: "0.2rem 0.6rem",
+                        fontSize: 12,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.4
+                      }}
+                    >
+                      {activeCategory.kind}
+                    </span>
+                  </div>
+                  <span style={{ color: "#9aa3b5", fontSize: 13 }}>
+                    Review abilities in this discipline and spend your MP on the ones you want to master.
+                  </span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8 }}>
+                  <StatPill label="Abilities" value={`${activeCategory.abilities.length}`} />
+                  <StatPill
+                    label="Purchased"
+                    value={`${activeCategory.abilities.filter((ability) => state.purchased.has(ability.id)).length}`}
+                  />
+                  <StatPill label="MP Remaining" value={`${remainingMp}`} />
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                  gap: "0.75rem",
+                  paddingTop: 4
+                }}
+              >
+                {activeCategory.abilities.map((ability) => {
+                  const purchased = state.purchased.has(ability.id);
+                  return (
+                    <AbilityCard
+                      key={ability.id}
+                      ability={ability}
+                      purchased={purchased}
+                      remainingMp={remainingMp}
+                      onPurchase={handlePurchase}
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          ) : (
+            <div
+              style={{
+                background: "#0b1018",
+                border: "1px solid #1b2634",
+                borderRadius: 12,
+                padding: "1rem",
+                color: "#9aa3b5"
+              }}
+            >
+              Choose a category on the left to view its abilities.
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
