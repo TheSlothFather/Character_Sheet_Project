@@ -1144,19 +1144,21 @@
   },
   {
     "stage": "Adulthood",
-    "category": "You are part of a navy that you report to and will provide supplies for you in coastal or maritime areas if you are performing relevant tasks.",
+    "category": "Sailor",
     "name": "Navigator",
     "details": "[+30 Navigate, +17 Incite Fate, +8 Search]",
     "startingWealth": "Insignificant",
-    "startingEquipment": "Navigation tools, 10 region maps"
+    "startingEquipment": "Navigation tools, 10 region maps",
+    "feature": "You cannot become lost at sea. +1 Fate Point."
   },
   {
     "stage": "Adulthood",
-    "category": "You cannot become lost at sea. +1 Fate Point.",
+    "category": "Sailor",
     "name": "Quartermaster",
     "details": "[+30 Identify, +17 Trade, +8 Heal]",
     "startingWealth": "Moderate",
-    "startingEquipment": "Tool set of choice, rope, medical kit, tinderbox, cooking utensils"
+    "startingEquipment": "Tool set of choice, rope, medical kit, tinderbox, cooking utensils",
+    "feature": "Crews and military units will perform favors for you in exchange for goods. +1 Fate Point."
   },
   {
     "stage": "Adulthood",
