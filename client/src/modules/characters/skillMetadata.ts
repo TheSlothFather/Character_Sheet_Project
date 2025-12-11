@@ -2,6 +2,8 @@ import type { NamedDefinition } from "../../api/client";
 
 export type AttributeKey = "PHYSICAL" | "MENTAL" | "SPIRITUAL" | "WILL";
 
+const ATTRIBUTE_ORDER: AttributeKey[] = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"];
+
 const ATTRIBUTE_LABELS: Record<AttributeKey, string> = {
   PHYSICAL: "Physical Skills",
   MENTAL: "Mental Skills",
@@ -32,8 +34,8 @@ export const SKILL_ATTRIBUTE_MAP: Record<string, AttributeKey[]> = {
   INCITE_FATE: ["SPIRITUAL", "WILL"],
   INTIMIDATE: ["PHYSICAL", "WILL"],
   INTERPRET: ["MENTAL", "SPIRITUAL"],
-  ILDAKAR_FACULTY: ["MENTAL", "SPIRITUAL"],
-  MARTIAL_PROWESS: ["PHYSICAL", "WILL"],
+  ILDAKAR_FACULTY: [],
+  MARTIAL_PROWESS: [],
   NAVIGATE: ["PHYSICAL", "SPIRITUAL"],
   PARLEY: ["SPIRITUAL", "WILL"],
   PERFORM: ["PHYSICAL", "WILL"],
@@ -57,12 +59,12 @@ const CATEGORY_LABELS: Record<string, string> = {
   MENTAL: "Mental Skills",
   SPIRITUAL: "Spiritual Skills",
   WILL: "Will Skills",
-  "MENTAL+PHYSICAL": "Physical + Mental Skills",
-  "PHYSICAL+SPIRITUAL": "Physical + Spiritual Skills",
-  "PHYSICAL+WILL": "Physical + Will Skills",
-  "MENTAL+SPIRITUAL": "Mental + Spiritual Skills",
-  "MENTAL+WILL": "Mental + Will Skills",
-  "SPIRITUAL+WILL": "Will + Spiritual Skills"
+  "PHYSICAL+MENTAL": "Subsistenc) Skills",
+  "PHYSICAL+SPIRITUAL": "Intuition Skills",
+  "PHYSICAL+WILL": "Presence Skills",
+  "MENTAL+WILL": "Cunning Skills",
+  "MENTAL+SPIRITUAL": "Sagacity Skills",
+  "SPIRITUAL+WILL": "Benediction Skills"
 };
 
 const CATEGORY_ORDER = [
@@ -70,7 +72,7 @@ const CATEGORY_ORDER = [
   "MENTAL",
   "SPIRITUAL",
   "WILL",
-  "MENTAL+PHYSICAL",
+  "PHYSICAL+MENTAL",
   "PHYSICAL+SPIRITUAL",
   "PHYSICAL+WILL",
   "MENTAL+WILL",
@@ -81,22 +83,29 @@ const CATEGORY_ORDER = [
 export const getSkillCode = (skill: { id: string; code?: string }): string => skill.code ?? skill.id;
 
 export const normalizeSkillCode = (skill: { id: string; code?: string; name?: string }): string =>
-  (skill.code ?? skill.id ?? skill.name ?? "").toUpperCase();
+  (skill.code ?? skill.id ?? skill.name ?? "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
 
 export const getSkillAttributes = (skill: NamedDefinition | string): AttributeKey[] => {
   const key = typeof skill === "string" ? skill : normalizeSkillCode(skill);
   return SKILL_ATTRIBUTE_MAP[key] ?? [];
 };
 
+const sortAttributes = (attributes: AttributeKey[]): AttributeKey[] => {
+  const attributeRank = new Map(ATTRIBUTE_ORDER.map((attr, index) => [attr, index]));
+  return Array.from(new Set(attributes)).sort((a, b) => (attributeRank.get(a) ?? 99) - (attributeRank.get(b) ?? 99));
+};
+
 const buildCategoryKey = (attributes: AttributeKey[]): string => {
   if (!attributes.length) return "uncategorized";
-  const unique = Array.from(new Set(attributes)).sort();
-  return unique.join("+");
+  return sortAttributes(attributes).join("+");
 };
 
 const formatCategoryLabel = (attributes: AttributeKey[]): string => {
   if (!attributes.length) return "Uncategorized";
-  const sorted = Array.from(new Set(attributes)).sort();
+  const sorted = sortAttributes(attributes);
   const key = sorted.join("+");
   if (CATEGORY_LABELS[key]) return CATEGORY_LABELS[key];
   return sorted.map((attr) => ATTRIBUTE_LABELS[attr]).join(" + ");
