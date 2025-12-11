@@ -348,7 +348,7 @@ const SkillTree: React.FC<{
 
         if (tier === 3 && parentPositions.length) {
           const anchorAngle = Math.atan2(parentPositions[0].y, parentPositions[0].x);
-          const maxOffset = 0.42;
+          const maxOffset = 0.35;
           baseAngle = Math.max(anchorAngle - maxOffset, Math.min(anchorAngle + maxOffset, baseAngle));
         }
 
