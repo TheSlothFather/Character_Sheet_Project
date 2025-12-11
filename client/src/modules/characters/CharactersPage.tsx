@@ -89,6 +89,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   const levelCards = Array.from({ length: 5 }, (_, idx) => idx + 1);
+  const energy = 100 + 10 * (character.level - 1);
+  const damageReduction = 0;
+  const fatePoints = character.fatePoints ?? 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -134,16 +137,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.5rem" }}>
             <div style={pillStyle}>
-              <span>Hero Points</span>
-              <strong>—</strong>
+              <span>Damage Reduction</span>
+              <strong>{damageReduction}</strong>
             </div>
             <div style={pillStyle}>
               <span>Fate</span>
-              <strong>—</strong>
+              <strong>{fatePoints}</strong>
             </div>
             <div style={pillStyle}>
-              <span>Defense DC</span>
-              <strong>—</strong>
+              <span>Energy</span>
+              <strong>{energy}</strong>
             </div>
           </div>
           <div style={{ ...cardStyle, padding: 0, display: "flex", flexDirection: "column", height: "100%" }}>
