@@ -181,7 +181,8 @@ const AbilityNode: React.FC<{
   isStarter: boolean;
   remainingPsi: number;
   onPurchase: (ability: PsionicAbility) => void;
-}> = ({ ability, purchased, unlocked, isStarter, remainingPsi, onPurchase }) => {
+  buttonRef?: (node: HTMLButtonElement | null) => void;
+}> = ({ ability, purchased, unlocked, isStarter, remainingPsi, onPurchase, buttonRef }) => {
   const psiCost = ability.tier;
   const canAfford = remainingPsi >= psiCost;
   const status = purchased
@@ -210,6 +211,7 @@ const AbilityNode: React.FC<{
 
   return (
     <button
+      ref={buttonRef}
       onClick={() => onPurchase(ability)}
       disabled={disabled}
       title={
@@ -304,7 +306,7 @@ const SkillTree: React.FC<{
   const tierTwo = tiers.get(2) ?? [];
   const remainingTiers = orderedTiers.filter((tier) => tier > 2);
   const orbitRadius = Math.max(170, 90 + tierTwo.length * 18);
-  const outerTierSpacing = 200;
+  const outerTierSpacing = 260;
   const starterRadius = starterTier.length > 1 ? 42 : 0;
   const tierTwoAngleStep = tierTwo.length > 0 ? (2 * Math.PI) / tierTwo.length : 0;
   const starterAngleStep = starterTier.length > 0 ? (2 * Math.PI) / starterTier.length : 0;
@@ -351,7 +353,7 @@ const SkillTree: React.FC<{
 
       grouped.forEach((entries) => {
         entries.sort((a, b) => a.baseAngle - b.baseAngle);
-        const spread = 0.28;
+        const spread = Math.max(0.65, Math.PI / Math.max(entries.length, 1));
         const offsetStart = -((entries.length - 1) / 2) * spread;
 
         entries.forEach((entry, idx) => {
@@ -405,9 +407,6 @@ const SkillTree: React.FC<{
             return (
               <div
                 key={ability.id}
-                ref={(el) => {
-                  if (el) nodeRefs.current.set(ability.id, el);
-                }}
                 style={{ position: "absolute", left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)`, transform: "translate(-50%, -50%)" }}
               >
                 <AbilityNode
@@ -417,6 +416,10 @@ const SkillTree: React.FC<{
                   isStarter={isStarter}
                   remainingPsi={remainingPsi}
                   onPurchase={onPurchase}
+                  buttonRef={(node) => {
+                    if (!node) return;
+                    nodeRefs.current.set(ability.id, node);
+                  }}
                 />
               </div>
             );
