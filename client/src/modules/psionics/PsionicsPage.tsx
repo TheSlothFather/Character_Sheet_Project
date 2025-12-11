@@ -353,7 +353,7 @@ const SkillTree: React.FC<{
 
       grouped.forEach((entries) => {
         entries.sort((a, b) => a.baseAngle - b.baseAngle);
-        const spread = Math.max(0.65, Math.PI / Math.max(entries.length, 1));
+        const spread = Math.min(0.95, Math.max(0.45, (Math.PI * 0.7) / Math.max(entries.length, 2)));
         const offsetStart = -((entries.length - 1) / 2) * spread;
 
         entries.forEach((entry, idx) => {
