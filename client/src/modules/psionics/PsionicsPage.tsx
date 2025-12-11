@@ -342,9 +342,17 @@ const SkillTree: React.FC<{
           .map((id) => positions.get(id))
           .filter((entry): entry is PositionedNode => Boolean(entry));
 
-        const baseAngle = parentPositions.length
+        let baseAngle = parentPositions.length
           ? parentPositions.reduce((sum, pos) => sum + Math.atan2(pos.y, pos.x), 0) / parentPositions.length
           : fallbackStep * index - Math.PI / 2;
+
+        if (tier === 3 && parentPositions.length) {
+          const anchorAngle = Math.atan2(parentPositions[0].y, parentPositions[0].x);
+          const maxOffset = 0.3;
+          const offsetFromAnchor = baseAngle - anchorAngle;
+          const clampedOffset = Math.max(-maxOffset, Math.min(maxOffset, offsetFromAnchor));
+          baseAngle = anchorAngle + clampedOffset;
+        }
 
         const anchorKey = parentPositions.length ? ability.prerequisiteIds[0] : `fallback-${ability.id}`;
         if (!grouped.has(anchorKey)) grouped.set(anchorKey, []);
@@ -353,8 +361,8 @@ const SkillTree: React.FC<{
 
       grouped.forEach((entries) => {
         entries.sort((a, b) => a.baseAngle - b.baseAngle);
-        const maxSpread = tier === 3 ? 0.52 : 0.65;
-        const minSpread = tier === 3 ? 0.42 : 0.35;
+        const maxSpread = tier === 3 ? 0.35 : 0.65;
+        const minSpread = tier === 3 ? 0.22 : 0.35;
         const spread = Math.min(maxSpread, Math.max(minSpread, (Math.PI * 0.5) / Math.max(entries.length, 2)));
         const offsetStart = -((entries.length - 1) / 2) * spread;
 
@@ -558,8 +566,7 @@ export const PsionicsPage: React.FC = () => {
     const grouped = new Map<string, PsionicAbility[]>();
     abilities.forEach((ability) => {
       const purchased = state.purchased.has(ability.id);
-      const unlocked = purchased || isAbilityUnlocked(ability, state.purchased, { allowTier1WithoutPrereq: false });
-      if (!unlocked) return;
+      if (!purchased) return;
       if (!grouped.has(ability.tree)) grouped.set(ability.tree, []);
       grouped.get(ability.tree)!.push(ability);
     });
