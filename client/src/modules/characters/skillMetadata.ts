@@ -2,6 +2,8 @@ import type { NamedDefinition } from "../../api/client";
 
 export type AttributeKey = "PHYSICAL" | "MENTAL" | "SPIRITUAL" | "WILL";
 
+const ATTRIBUTE_ORDER: AttributeKey[] = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"];
+
 const ATTRIBUTE_LABELS: Record<AttributeKey, string> = {
   PHYSICAL: "Physical Skills",
   MENTAL: "Mental Skills",
@@ -57,12 +59,12 @@ const CATEGORY_LABELS: Record<string, string> = {
   MENTAL: "Mental Skills",
   SPIRITUAL: "Spiritual Skills",
   WILL: "Will Skills",
-  "MENTAL+PHYSICAL": "Physical + Mental (Subsistence) Skills",
+  "PHYSICAL+MENTAL": "Physical + Mental (Subsistence) Skills",
   "PHYSICAL+SPIRITUAL": "Physical + Spiritual (Intuition) Skills",
   "PHYSICAL+WILL": "Physical + Will (Presence) Skills",
   "MENTAL+WILL": "Mental + Will (Cunning) Skills",
   "MENTAL+SPIRITUAL": "Mental + Spiritual (Sagacity) Skills",
-  "SPIRITUAL+WILL": "Will + Spiritual (Benediction) Skills"
+  "WILL+SPIRITUAL": "Will + Spiritual (Benediction) Skills"
 };
 
 const CATEGORY_ORDER = [
@@ -70,12 +72,12 @@ const CATEGORY_ORDER = [
   "MENTAL",
   "SPIRITUAL",
   "WILL",
-  "MENTAL+PHYSICAL",
+  "PHYSICAL+MENTAL",
   "PHYSICAL+SPIRITUAL",
   "PHYSICAL+WILL",
   "MENTAL+WILL",
   "MENTAL+SPIRITUAL",
-  "SPIRITUAL+WILL"
+  "WILL+SPIRITUAL"
 ];
 
 export const getSkillCode = (skill: { id: string; code?: string }): string => skill.code ?? skill.id;
@@ -88,15 +90,19 @@ export const getSkillAttributes = (skill: NamedDefinition | string): AttributeKe
   return SKILL_ATTRIBUTE_MAP[key] ?? [];
 };
 
+const sortAttributes = (attributes: AttributeKey[]): AttributeKey[] => {
+  const attributeRank = new Map(ATTRIBUTE_ORDER.map((attr, index) => [attr, index]));
+  return Array.from(new Set(attributes)).sort((a, b) => (attributeRank.get(a) ?? 99) - (attributeRank.get(b) ?? 99));
+};
+
 const buildCategoryKey = (attributes: AttributeKey[]): string => {
   if (!attributes.length) return "uncategorized";
-  const unique = Array.from(new Set(attributes)).sort();
-  return unique.join("+");
+  return sortAttributes(attributes).join("+");
 };
 
 const formatCategoryLabel = (attributes: AttributeKey[]): string => {
   if (!attributes.length) return "Uncategorized";
-  const sorted = Array.from(new Set(attributes)).sort();
+  const sorted = sortAttributes(attributes);
   const key = sorted.join("+");
   if (CATEGORY_LABELS[key]) return CATEGORY_LABELS[key];
   return sorted.map((attr) => ATTRIBUTE_LABELS[attr]).join(" + ");
