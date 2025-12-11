@@ -275,11 +275,11 @@ const SkillTree: React.FC<{
       updatedLines.push({
         from: {
           x: fromRect.left - containerRect.left + fromRect.width / 2,
-          y: fromRect.bottom - containerRect.top
+          y: fromRect.top - containerRect.top + fromRect.height / 2
         },
         to: {
           x: toRect.left - containerRect.left + toRect.width / 2,
-          y: toRect.top - containerRect.top
+          y: toRect.top - containerRect.top + toRect.height / 2
         }
       });
     });
@@ -304,6 +304,7 @@ const SkillTree: React.FC<{
   const tierTwo = tiers.get(2) ?? [];
   const remainingTiers = orderedTiers.filter((tier) => tier > 2);
   const orbitRadius = Math.max(170, 90 + tierTwo.length * 18);
+  const outerTierSpacing = 200;
   const starterRadius = starterTier.length > 1 ? 42 : 0;
   const tierTwoAngleStep = tierTwo.length > 0 ? (2 * Math.PI) / tierTwo.length : 0;
   const starterAngleStep = starterTier.length > 0 ? (2 * Math.PI) / starterTier.length : 0;
@@ -328,7 +329,7 @@ const SkillTree: React.FC<{
 
     remainingTiers.forEach((tier) => {
       const abilitiesForTier = tiers.get(tier) ?? [];
-      const tierRadius = orbitRadius + (tier - 2) * 140;
+      const tierRadius = orbitRadius + (tier - 2) * outerTierSpacing;
       maxRadius = Math.max(maxRadius, tierRadius);
 
       const fallbackStep = abilitiesForTier.length > 0 ? (2 * Math.PI) / abilitiesForTier.length : 0;
@@ -365,7 +366,7 @@ const SkillTree: React.FC<{
     return { positions: Array.from(positions.values()), maxRadius };
   }, [orbitRadius, remainingTiers, starterAngleStep, starterRadius, starterTier, tierTwo, tierTwoAngleStep, tiers]);
 
-  const centerHeight = Math.max(layout.maxRadius * 2 + 200, 420);
+  const centerHeight = Math.max(layout.maxRadius * 2 + 240, 480);
 
   return (
     <div ref={containerRef} style={{ position: "relative", padding: "1.25rem 1rem 1rem" }}>
