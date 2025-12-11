@@ -29,6 +29,12 @@ const isCharacterArray = (value: unknown): value is Character[] =>
 const sumAllocations = (allocations: Record<string, number>): number =>
   Object.values(allocations).reduce((acc, v) => acc + v, 0);
 
+const formatSkillName = (rawName: string): string =>
+  rawName
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b(\w)/g, (match) => match.toUpperCase());
+
 interface CharacterSheetProps {
   character: Character;
   skills: NamedDefinition[];
@@ -174,7 +180,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
                     gap: "0.75rem"
                   }}
                 >
@@ -207,7 +213,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                 key={code}
                                 style={{
                                   display: "grid",
-                                  gridTemplateColumns: "1fr 100px 100px 90px",
+                                  gridTemplateColumns: "minmax(0, 1.4fr) 150px 80px",
                                   alignItems: "center",
                                   gap: "0.45rem",
                                   padding: "0.4rem 0.25rem",
@@ -216,15 +222,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                   borderRadius: 6
                                 }}
                               >
-                                <div>
-                                  <div style={{ fontWeight: 600 }}>{skill.name}</div>
+                                <div style={{ wordBreak: "break-word" }}>
+                                  <div style={{ fontWeight: 600 }}>{formatSkillName(skill.name)}</div>
                                   <div style={{ fontSize: 11, color: "#79839a" }}>{code}</div>
                                 </div>
                                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                                   <button
                                     onClick={() => onChangeAllocation(code, -1)}
                                     disabled={disableDec}
-                                    style={{ padding: "0.2rem 0.4rem" }}
+                                    style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}
                                   >
                                     -
                                   </button>
@@ -232,20 +238,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                   <button
                                     onClick={() => onChangeAllocation(code, 1)}
                                     disabled={disableInc}
-                                    style={{ padding: "0.2rem 0.4rem" }}
+                                    style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}
                                   >
                                     +
                                   </button>
-                                </div>
-                                <div
-                                  style={{
-                                    color: bonus >= 0 ? "#9ae6b4" : "#f7a046",
-                                    fontSize: 12,
-                                    textAlign: "right"
-                                  }}
-                                >
-                                  Bonus {bonus >= 0 ? "+" : ""}
-                                  {bonus}
                                 </div>
                                 <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
                               </div>
