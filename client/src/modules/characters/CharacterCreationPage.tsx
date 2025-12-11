@@ -1,14 +1,13 @@
 import React from "react";
+import Papa from "papaparse";
 import { useNavigate } from "react-router-dom";
-import backgroundsData from "../../data/backgrounds.json";
+import backgroundsCsvUrl from "../../data/backgrounds.csv?url";
 import { api, BackgroundSelection, AttributeScores, ModifierWithSource } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
 import { applyModifiers } from "@shared/rules/modifiers";
 
 const getSkillCode = (skill: { id: string; code?: string }): string => skill.code ?? skill.id;
-const normalizeSkillCode = (skill: { id: string; code?: string; name: string }): string =>
-  (skill.code ?? skill.id ?? skill.name).toUpperCase();
 
 const ATTRIBUTE_KEYS = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"] as const;
 const ATTRIBUTE_POINT_POOL = 3;
@@ -25,33 +24,44 @@ const STAGE_REQUIREMENTS: Record<BackgroundStage, number> = {
 };
 
 const skillAttributeMap: Record<string, (typeof ATTRIBUTE_KEYS)[number][]> = {
-  MARTIAL_PROWESS: ["PHYSICAL", "WILL"],
-  ILDAKAR_FACULTY: ["MENTAL", "SPIRITUAL"],
-  PSIONIC_TECHNIQUE: ["MENTAL"],
-  RESIST_PSIONICS: ["MENTAL"],
-  BATTLE: ["PHYSICAL"],
-  CONCEAL: ["PHYSICAL"],
-  FORAGE: ["PHYSICAL", "MENTAL"],
-  NAVIGATE: ["PHYSICAL", "SPIRITUAL"],
-  RESIST_TOXINS: ["PHYSICAL"],
-  SENSE_SUPERNATURAL: ["SPIRITUAL"],
-  SEDUCE: ["PHYSICAL", "WILL"],
-  FEAT_OF_AUSTERITY: ["WILL"],
-  RESIST_SUPERNATURAL: ["SPIRITUAL"],
-  FEAT_OF_STRENGTH: ["PHYSICAL"],
-  FEAT_OF_AGILITY: ["PHYSICAL"],
-  SEARCH: ["MENTAL"],
-  IDENTIFY: ["MENTAL", "SPIRITUAL"],
-  DECEIVE: ["MENTAL", "WILL"],
-  TRACK: ["PHYSICAL", "MENTAL"],
-  INTIMIDATE: ["PHYSICAL", "WILL"],
-  WILL_DAKAR: ["WILL"],
-  ACADEMIC_RECALL: ["MENTAL"],
-  INTERPRET: ["MENTAL", "SPIRITUAL"],
-  ENDURE: ["WILL"],
-  CRAFT: ["PHYSICAL", "MENTAL"],
-  ANIMAL_HUSBANDRY: ["PHYSICAL", "SPIRITUAL"],
-  FEAT_OF_DEFIANCE: ["WILL"]
+  Battle: ["PHYSICAL"],
+  "Feat of Strength": ["PHYSICAL"],
+  "Feat of Agility": ["PHYSICAL"],
+  Conceal: ["PHYSICAL"],
+  "Resist Toxins": ["PHYSICAL"],
+  "Psionic Technique": ["MENTAL"],
+  "Academic Recall": ["MENTAL"],
+  Translate: ["MENTAL"],
+  Search: ["MENTAL"],
+  "Resist Psionics": ["MENTAL"],
+  Worship: ["SPIRITUAL"],
+  "Sense Supernatural": ["SPIRITUAL"],
+  "Resist Supernatural": ["SPIRITUAL"],
+  "Attune Wonderous Item": ["SPIRITUAL"],
+  "Divine Intervention": ["SPIRITUAL"],
+  "Will Dakar": ["WILL"],
+  Endure: ["WILL"],
+  Persevere: ["WILL"],
+  "Feat of Austerity": ["WILL"],
+  "Feat of Defiance": ["WILL"],
+  Track: ["PHYSICAL", "MENTAL"],
+  Craft: ["PHYSICAL", "MENTAL"],
+  Forage: ["PHYSICAL", "MENTAL"],
+  Navigate: ["PHYSICAL", "SPIRITUAL"],
+  Heal: ["PHYSICAL", "SPIRITUAL"],
+  "Animal Husbandry": ["PHYSICAL", "SPIRITUAL"],
+  Intimidate: ["PHYSICAL", "WILL"],
+  Seduce: ["PHYSICAL", "WILL"],
+  Perform: ["PHYSICAL", "WILL"],
+  Trade: ["MENTAL", "WILL"],
+  "Gather Intelligence": ["MENTAL", "WILL"],
+  Deceive: ["MENTAL", "WILL"],
+  Interpret: ["MENTAL", "SPIRITUAL"],
+  Deduce: ["MENTAL", "SPIRITUAL"],
+  Identify: ["MENTAL", "SPIRITUAL"],
+  Parley: ["WILL", "SPIRITUAL"],
+  Artistry: ["WILL", "SPIRITUAL"],
+  "Incite Fate": ["WILL", "SPIRITUAL"]
 };
 
 type BackgroundStage =
@@ -67,10 +77,6 @@ type BackgroundOption = {
   name: string;
   details: string;
   fateBonus: number;
-  category?: string;
-  startingWealth?: string;
-  startingEquipment?: string;
-  feature?: string;
 };
 
 const parseFateBonus = (details: string): number => {
@@ -93,11 +99,9 @@ const computeAttributeSkillBonuses = (
   if (!skills) return {};
   const bonuses: Record<string, number> = {};
   skills.forEach((skill) => {
-    const skillKey = normalizeSkillCode(skill);
-    const attributesForSkill = skillAttributeMap[skillKey];
+    const attributesForSkill = skillAttributeMap[skill.name];
     if (!attributesForSkill) return;
-    const code = getSkillCode(skill);
-    bonuses[code] = attributesForSkill.reduce((acc, attr) => acc + attributes[attr] * 10, 0);
+    bonuses[getSkillCode(skill)] = attributesForSkill.reduce((acc, attr) => acc + attributes[attr] * 10, 0);
   });
   return bonuses;
 };
@@ -145,15 +149,6 @@ export const CharacterCreationPage: React.FC = () => {
   const [backgroundOptions, setBackgroundOptions] = React.useState<BackgroundOption[]>([]);
   const [backgroundsError, setBackgroundsError] = React.useState<string | null>(null);
   const [loadingBackgrounds, setLoadingBackgrounds] = React.useState(true);
-  const [backgroundSearch, setBackgroundSearch] = React.useState<Record<BackgroundStage, string>>({
-    Family: "",
-    Childhood: "",
-    Adolescence: "",
-    Adulthood: "",
-    Flaws: "",
-    "Inciting Incident": ""
-  });
-  const [adulthoodCategoryFilter, setAdulthoodCategoryFilter] = React.useState<string>("");
 
   const [name, setName] = React.useState("");
   const [raceKey, setRaceKey] = React.useState<string>("");
@@ -171,37 +166,25 @@ export const CharacterCreationPage: React.FC = () => {
   React.useEffect(() => {
     setLoadingBackgrounds(true);
     setBackgroundsError(null);
-    try {
-      const options: BackgroundOption[] = (backgroundsData as BackgroundOption[]).map((row) => ({
-        stage: row.stage as BackgroundStage,
-        name: row.name,
-        details: row.details ?? "",
-        category: row.category,
-        startingWealth: row.startingWealth,
-        startingEquipment: row.startingEquipment,
-        feature: row.feature,
-        fateBonus: parseFateBonus(row.details ?? "")
-      }));
-      setBackgroundOptions(options.filter((o) => Boolean(o.stage && o.name)));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load backgrounds";
-      setBackgroundsError(message);
-    } finally {
-      setLoadingBackgrounds(false);
-    }
+    fetch(backgroundsCsvUrl)
+      .then((res) => res.text())
+      .then((text) => {
+        const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+        if (!parsed.data || !Array.isArray(parsed.data)) throw new Error("Invalid background CSV");
+        const options: BackgroundOption[] = (parsed.data as Papa.ParseResult<BackgroundOption>["data"]).map((row) => ({
+          stage: row.stage as BackgroundStage,
+          name: row.name,
+          details: row.details,
+          fateBonus: parseFateBonus(row.details)
+        }));
+        setBackgroundOptions(options.filter((o) => Boolean(o.stage && o.name)));
+      })
+      .catch((err) => {
+        const message = err instanceof Error ? err.message : "Failed to load backgrounds";
+        setBackgroundsError(message);
+      })
+      .finally(() => setLoadingBackgrounds(false));
   }, []);
-
-  const adulthoodCategories = React.useMemo(
-    () =>
-      Array.from(
-        new Set(
-          backgroundOptions
-            .filter((opt) => opt.stage === "Adulthood" && opt.category)
-            .map((opt) => opt.category as string)
-        )
-      ).sort(),
-    [backgroundOptions]
-  );
 
   const availableSubraces = React.useMemo(
     () =>
@@ -345,25 +328,6 @@ export const CharacterCreationPage: React.FC = () => {
     const options = backgroundOptions.filter((opt) => opt.stage === stage);
     const multi = stage === "Adulthood" || stage === "Flaws";
     const selected = selection[key];
-    const searchTerm = (backgroundSearch[stage] ?? "").toLowerCase().trim();
-
-    const filteredOptions = options.filter((opt) => {
-      const haystack = [
-        opt.name,
-        opt.details,
-        opt.category,
-        opt.startingEquipment,
-        opt.startingWealth,
-        opt.feature
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      const matchesSearch = !searchTerm || haystack.includes(searchTerm);
-      const matchesCategory =
-        stage !== "Adulthood" || !adulthoodCategoryFilter || opt.category === adulthoodCategoryFilter;
-      return matchesSearch && matchesCategory;
-    });
 
     return (
       <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -375,36 +339,9 @@ export const CharacterCreationPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <input
-            value={backgroundSearch[stage] ?? ""}
-            onChange={(e) =>
-              setBackgroundSearch((prev) => ({
-                ...prev,
-                [stage]: e.target.value
-              }))
-            }
-            placeholder={`Search ${stage.toLowerCase()}...`}
-            style={{ flex: 1 }}
-          />
-          {stage === "Adulthood" && (
-            <select
-              value={adulthoodCategoryFilter}
-              onChange={(e) => setAdulthoodCategoryFilter(e.target.value)}
-              style={{ minWidth: 180 }}
-            >
-              <option value="">All categories</option>
-              {adulthoodCategories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-        {filteredOptions.length === 0 && <div style={{ color: "#9aa3b5" }}>No options found.</div>}
-        <div style={{ maxHeight: 260, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
-          {filteredOptions.map((opt) => {
+        {options.length === 0 && <div style={{ color: "#9aa3b5" }}>No options found.</div>}
+        <div style={{ maxHeight: 240, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+          {options.map((opt) => {
             const checked = multi
               ? (selected as string[] | undefined)?.includes(opt.name)
               : (selected as string | undefined) === opt.name;
@@ -433,49 +370,11 @@ export const CharacterCreationPage: React.FC = () => {
                   }
                   style={{ marginTop: 4 }}
                 />
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                    <div>
-                      <div style={{ fontWeight: 700 }}>{opt.name}</div>
-                      {stage === "Adulthood" && opt.category && (
-                        <div
-                          style={{
-                            display: "inline-block",
-                            background: "#1f2a33",
-                            border: "1px solid #2d343f",
-                            borderRadius: 6,
-                            padding: "2px 6px",
-                            fontSize: 11,
-                            marginTop: 4,
-                            color: "#c8d0e0"
-                          }}
-                        >
-                          {opt.category}
-                        </div>
-                      )}
-                    </div>
-                    {opt.fateBonus > 0 && (
-                      <div style={{ color: "#9ae6b4", fontSize: 12, fontWeight: 700 }}>
-                        +{opt.fateBonus} Fate Point(s)
-                      </div>
-                    )}
-                  </div>
+                <div>
+                  <div style={{ fontWeight: 700 }}>{opt.name}</div>
                   <div style={{ fontSize: 13, color: "#b7c0d3", whiteSpace: "pre-wrap" }}>{opt.details}</div>
-                  {stage === "Adulthood" && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 6 }}>
-                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>
-                        <strong style={{ color: "#e8edf7" }}>Starting Wealth: </strong>
-                        {opt.startingWealth || "Not specified"}
-                      </div>
-                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>
-                        <strong style={{ color: "#e8edf7" }}>Starting Equipment: </strong>
-                        {opt.startingEquipment || "Not specified"}
-                      </div>
-                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>
-                        <strong style={{ color: "#e8edf7" }}>Feature: </strong>
-                        {opt.feature || "Not specified"}
-                      </div>
-                    </div>
+                  {opt.fateBonus > 0 && (
+                    <div style={{ color: "#9ae6b4", fontSize: 12, marginTop: 4 }}>+{opt.fateBonus} Fate Point(s)</div>
                   )}
                 </div>
               </label>
