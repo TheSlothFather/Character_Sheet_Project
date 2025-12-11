@@ -48,6 +48,8 @@ interface CharacterSheetProps {
   disableAllocation: boolean;
 }
 
+const SPECIAL_SKILL_CODES = ["MARTIAL_PROWESS", "ILDAKAR_FACULTY"];
+
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
   character,
   skills,
@@ -61,7 +63,20 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   disableAllocation
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>("Weapons");
-  const groupedSkills = React.useMemo(() => groupSkillsByCategory(skills), [skills]);
+  const regularSkills = React.useMemo(
+    () => skills.filter((skill) => !SPECIAL_SKILL_CODES.includes(getSkillCode(skill).toUpperCase())),
+    [skills]
+  );
+  const groupedSkills = React.useMemo(() => groupSkillsByCategory(regularSkills), [regularSkills]);
+  const specialSkills = React.useMemo(
+    () =>
+      SPECIAL_SKILL_CODES.map((code) => {
+        const match = skills.find((skill) => getSkillCode(skill).toUpperCase() === code);
+        if (match) return match;
+        return { id: code, name: formatSkillName(code) } as NamedDefinition;
+      }),
+    [skills]
+  );
 
   const summaryBarStyle: React.CSSProperties = {
     background: "#1a1d24",
@@ -98,6 +113,45 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const energy = 100 + 10 * (character.level - 1);
   const damageReduction = 0;
   const fatePoints = character.fatePoints ?? 0;
+
+  const renderSkillAllocationRow = (skill: NamedDefinition, showDivider = true) => {
+    const code = getSkillCode(skill);
+    const allocated = allocations[code] ?? 0;
+    const bonus = skillBonuses[code] ?? 0;
+    const total = allocated + bonus;
+    const disableInc = disableAllocation || remaining <= 0;
+    const disableDec = disableAllocation || allocated <= 0;
+
+    return (
+      <div
+        key={code}
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1.4fr) 150px 80px",
+          alignItems: "center",
+          gap: "0.45rem",
+          padding: "0.4rem 0.25rem",
+          borderBottom: showDivider ? "1px solid #161b23" : "none",
+          background: "#0c0f14",
+          borderRadius: 6
+        }}
+      >
+        <div style={{ wordBreak: "break-word" }}>
+          <div style={{ fontWeight: 600 }}>{formatSkillName(skill.name)}</div>
+        </div>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <button onClick={() => onChangeAllocation(code, -1)} disabled={disableDec} style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}>
+            -
+          </button>
+          <div style={{ width: 28, textAlign: "center" }}>{allocated}</div>
+          <button onClick={() => onChangeAllocation(code, 1)} disabled={disableInc} style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}>
+            +
+          </button>
+        </div>
+        <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
+      </div>
+    );
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -204,6 +258,22 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   >
                     Ildakar Faculty
                   </div>
+                  {specialSkills.map((skill) => (
+                    <div
+                      key={getSkillCode(skill)}
+                      style={{
+                        border: "1px solid #1f242d",
+                        borderRadius: 8,
+                        padding: "0.5rem 0.6rem",
+                        background: "#0e1118",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6
+                      }}
+                    >
+                      {renderSkillAllocationRow(skill, false)}
+                    </div>
+                  ))}
                   {groupedSkills.map((group) => (
                     <div
                       key={group.key}
@@ -221,51 +291,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         {[...group.skills]
                           .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((skill) => {
-                            const code = getSkillCode(skill);
-                            const allocated = allocations[code] ?? 0;
-                            const bonus = skillBonuses[code] ?? 0;
-                            const total = allocated + bonus;
-                            const disableInc = disableAllocation || remaining <= 0;
-                            const disableDec = disableAllocation || allocated <= 0;
-                            return (
-                              <div
-                                key={code}
-                                style={{
-                                  display: "grid",
-                                  gridTemplateColumns: "minmax(0, 1.4fr) 150px 80px",
-                                  alignItems: "center",
-                                  gap: "0.45rem",
-                                  padding: "0.4rem 0.25rem",
-                                  borderBottom: "1px solid #161b23",
-                                  background: "#0c0f14",
-                                  borderRadius: 6
-                                }}
-                              >
-                                <div style={{ wordBreak: "break-word" }}>
-                                  <div style={{ fontWeight: 600 }}>{formatSkillName(skill.name)}</div>
-                                </div>
-                                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                                  <button
-                                    onClick={() => onChangeAllocation(code, -1)}
-                                    disabled={disableDec}
-                                    style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}
-                                  >
-                                    -
-                                  </button>
-                                  <div style={{ width: 28, textAlign: "center" }}>{allocated}</div>
-                                  <button
-                                    onClick={() => onChangeAllocation(code, 1)}
-                                    disabled={disableInc}
-                                    style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                                <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
-                              </div>
-                            );
-                          })}
+                          .map((skill, idx, arr) => renderSkillAllocationRow(skill, idx < arr.length - 1))}
                       </div>
                     </div>
                   ))}
