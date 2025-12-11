@@ -1,0 +1,1469 @@
+[
+  {
+    "stage": "Family",
+    "name": "Orphanage",
+    "details": "[+4 Feat of Defiance]"
+  },
+  {
+    "stage": "Family",
+    "name": "Farm",
+    "details": "[+4 Animal Husbandry]"
+  },
+  {
+    "stage": "Family",
+    "name": "Frontier",
+    "details": "[+4 Forage]"
+  },
+  {
+    "stage": "Family",
+    "name": "Ship",
+    "details": "[+4 Navigate]"
+  },
+  {
+    "stage": "Family",
+    "name": "Travelling Caravan",
+    "details": "[+4 Identify]"
+  },
+  {
+    "stage": "Family",
+    "name": "Guild Hall",
+    "details": "[+4 Trade]"
+  },
+  {
+    "stage": "Family",
+    "name": "Workshop",
+    "details": "[+4 Craft]"
+  },
+  {
+    "stage": "Family",
+    "name": "Cloth",
+    "details": "[+4 Divine Intervention]"
+  },
+  {
+    "stage": "Family",
+    "name": "Congregation",
+    "details": "[+4 Worship]"
+  },
+  {
+    "stage": "Family",
+    "name": "Streets",
+    "details": "[+4 Conceal]"
+  },
+  {
+    "stage": "Family",
+    "name": "Stage",
+    "details": "[+4 Perform]"
+  },
+  {
+    "stage": "Family",
+    "name": "Warehouse",
+    "details": "[+4 Interpret]"
+  },
+  {
+    "stage": "Family",
+    "name": "Battlefield",
+    "details": "[+4 Battle]"
+  },
+  {
+    "stage": "Family",
+    "name": "University",
+    "details": "[+4 Academic Recall]"
+  },
+  {
+    "stage": "Family",
+    "name": "Palace",
+    "details": "[+4 Deceive]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Kidnapped",
+    "details": "[+4 Persevere, -4 Interpret]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Apprenticed",
+    "details": "[+4 Craft, -4 Deceive]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Bullied",
+    "details": "[+4 Endure, -4 Parley]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Bad Habits",
+    "details": "[+4 Conceal, -4 Feat of Austerity]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Served Priest",
+    "details": "[+4 Worship, -4 deceive]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Pet",
+    "details": "[+4 Animal Husbandry, -4 Conceal]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Explored",
+    "details": "[+4 Navigate, -4 Interpret]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Fought",
+    "details": "[+4 Battle, -4 Parley]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Petty Crime",
+    "details": "[+4 Feat of Agility, -4 academic recall]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Worked",
+    "details": "[+4 Endure, -4 Deceive]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Easy Money",
+    "details": "[+4 Trade, -4 Divine Intervention]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Cursed",
+    "details": "[+4 Sense Supernatural, -4 Resist Supernatural]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Blessed",
+    "details": "[+4 Worship, -4 Incite Fate]"
+  },
+  {
+    "stage": "Childhood",
+    "name": "Revelatory Secret",
+    "details": "[+4 Interpret, -4 Deduce]"
+  },
+  {
+    "stage": "Adolescence",
+    "name": "Got Away With It",
+    "details": "[+8 Deceive, -4 Worship]"
+  },
+  {
+    "stage": "Adolescence",
+    "name": "Learned a Trade",
+    "details": "[+8 Craft, -4 Deceive]"
+  },
+  {
+    "stage": "Adolescence",
+    "name": "Fell in Love",
+    "details": "[+8 Feat of Defiance, -4 Seduce]"
+  },
+  {
+    "stage": "Adolescence",
+    "name": "Witnessed Battles",
+    "details": "[+8 Battle, -4 Academic Recall]"
+  },
+  {
+    "stage": "Adolescence",
+    "name": "Athlete",
+    "details": "[+8 Feat of Strength, -4 Academic Recall]"
+  },
+  {
+    "stage": "Adolescence",
+    "name": "Studied",
+    "details": "[+8 Academic Recall, -4 Seduce]"
+  },
+  {
+    "stage": "Adolescence",
+    "name": "Picked Up A Hobby",
+    "details": "[+8 Perform, -4 Academic Recall]"
+  },
+  {
+    "stage": "Adolescence",
+    "name": "Journeyed",
+    "details": "[+8 Translate, -4 Interpret]"
+  },
+  {
+    "stage": "Adolescence",
+    "name": "Contacted Supernatural",
+    "details": "[+8 Worship, -4 Incite Fate]"
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Academic",
+    "name": "Historian",
+    "details": "[+30 Academic Recall, +17 Identify, +8 Translate]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "10 historical tomes, 5 region maps, 3 city maps, 2 site maps, organization signifier",
+    "feature": "Your character has access to various private libraries and museums that allow you to study or temporarily borrow ancient books and relics."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Academic",
+    "name": "Scientist",
+    "details": "[+30 Academic Recall, +17 Interpret, +8 Craft]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "10 natural sciences tomes, a magnifying glass, chemistry tools, and an organization signifier",
+    "feature": "Your character has access to private libraries and laboratories that allow you to study or create various curiosities, substances, and anomalies. Starting Wealth"
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Academic",
+    "name": "Litigator",
+    "details": "[+30 Academic Recall, +17 Perform, +8 Interpret]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "10 legal tomes, a set of fine clothes, organization signifier",
+    "feature": "Your character has access to higher-ups and records in courts."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Academic",
+    "name": "Philosopher",
+    "details": "[+30 Interpret, +17 Academic Recall, +8 Perform]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "2 friends, organization signifier",
+    "feature": "You have numerous adherents in many settlements and regions who may offer shelter or help."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Academic",
+    "name": "Doctor",
+    "details": "[+30 Heal, +17 Academic Recall, +8 Resist Toxins]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Medical tools, 10 medical tomes, 10 antidotes, 1 poison, organization signifier",
+    "feature": "Your character has access to hospitals and clinics, and their records. May perform surgeries."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Academic",
+    "name": "Rhetorician",
+    "details": "[+30 Perform, +17 Parley, +8 Interpret]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Set of fine clothes, organization signifier",
+    "feature": "When debating in public, large crowds gather around."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Agent",
+    "name": "Courtier",
+    "details": "[+30 Interpret, +17 Deceive, +8 Perform]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Carriage, 2 horses, 2 bodyguards, 2 servants, writ, organization signifier, 3 sets of fine clothes, 1 poison, 1 antidote",
+    "feature": "You have private access to individuals who are higher-ups in politics."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Agent",
+    "name": "Spy",
+    "details": "[+30 Gather Intelligence, +17 Identify, +8 Conceal]",
+    "startingWealth": "Significant",
+    "startingEquipment": "Disguise tools, small weapon of choice, spyglass, lockpicking tools, horse, 3 forged organization signifiers, 3 forged writs, cloak, set of fine clothes",
+    "feature": "You belong to a network of spies and informants that you may access for information."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Agent",
+    "name": "Order Representative",
+    "details": "[+30 Identify, +17 Interpret, +8 Navigate]",
+    "startingWealth": "Significant",
+    "startingEquipment": "Horse or pack mule, weapon of choice, light armor, set of fine clothes, 1 potion, organization signifier",
+    "feature": "You belong to an organization that will lend you supplies if you are in significant peril."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Agent",
+    "name": "Assassin",
+    "details": "[+30 Identify, +17 Conceal, +8 Feat of Agility]",
+    "startingWealth": "Significant",
+    "startingEquipment": "Disguise tools, spyglass, poison tools, 3 poisons, 1 antidote, 2 small weapons of choice, 1 ranged weapon of choice, forged writ, forged organization signifier, cloak",
+    "feature": "You have access to secret safehouses in various cities and regions where law enforcement will not find you."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Agent",
+    "name": "Diplomat",
+    "details": "[+30 Parley, +17 Deceive, +8 Interpret]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Carriage, 2 horses, 1 servant, 2 bodyguards, small or medium weapon of choice, writ, organization signifier, set of fine clothes",
+    "feature": "You have the ability to gain public access to political rulers and powerful leaders."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Agent",
+    "name": "Strategist",
+    "details": "[+30 Interpret, +17 Deduce, +8 Identify]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Horse, 2 bodyguards, weapon of choice, era and race appropriate armor, organization signifier",
+    "feature": "You have the ability to gain public access to military leaders."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Artisan",
+    "name": "Smith",
+    "details": "[+30 Craft, +17 Feat of Strength, +8 Trade]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Smithing tools, a small blunt weapon",
+    "feature": "You can produce metal goods."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Artisan",
+    "name": "Carpenter",
+    "details": "[+30 Craft, +17 Feat of Strength, +8 Endure]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Carpentry tools, measuring tools",
+    "feature": "You can produce wood goods."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Artisan",
+    "name": "Tinkerer",
+    "details": "[+30 Craft, +17 Feat of Agility, +8 Conceal]",
+    "startingWealth": "Significant",
+    "startingEquipment": "Tinkering tools, 3 precious gems, magnifying glass",
+    "feature": "You can produce intricate goods."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Artisan",
+    "name": "Engineer",
+    "details": "[+30 Craft, +17 Academic Recall, +8 Identify]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Tool set of choice, measuring tools",
+    "feature": "You can design and construct large crafts and items."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Artisan",
+    "name": "Mason",
+    "details": "[+30 Craft, +17 Feat of Strength, +8 Identify]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Masonry tools, measuring tools",
+    "feature": "You can produce stone goods."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Artisan",
+    "name": "Lightkeeper",
+    "details": "[+30 Craft, +17 Academic Recall, +8 Resist Toxins]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Chemistry tools, 10 lights of choice, packmule",
+    "feature": "You can produce lights and basic potions."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Celebrity",
+    "name": "Troubadour",
+    "details": "[+30 Perform, +17 Deceive, +8 Interpret]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "2 instruments of choice, a horse, 1 region map, 1 friend, weapon of choice, a set of fine clothes",
+    "feature": "You may entertain and network at high-end parties you are not affiliated with."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Celebrity",
+    "name": "War Hero",
+    "details": "[+30 Battle, +17 Feat of Defiance, +8 Endure]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "2 weapons of choice, era and race appropriate armor, organization signifier",
+    "feature": "There are military organizations that will aid you if you are in peril."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Celebrity",
+    "name": "Folk Hero",
+    "details": "[+30 Feat of Defiance, +17 Persevere, +8 Endure]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "1 weapon of choice, packmule, 1 friend",
+    "feature": "Common people will offer you shelter and supplies as you travel."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Celebrity",
+    "name": "Saint",
+    "details": "[+30 Worship, +17 Resist Supernatural, +8 Parley]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Organization signifier, clergy robes, staff, 1 artifact, religious or ideological tome, 2 servants, 3 antidotes",
+    "feature": "Religious organizations will aid you if you are in peril. +30 Deity Relationship Points."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Celebrity",
+    "name": "Relative",
+    "details": "[+30 Parley, +17 Perform, +8 Deceive]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Tent, horse, packmule, 1 servant, 1 bodyguard, set of fine clothes",
+    "feature": "You have a powerful relative who you can obtain money or aid from."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Celebrity",
+    "name": "Debutante/Suitor",
+    "details": "[+30 Seduce, +17 Interpret, +8 Perform]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Carriage, 2 horses, 2 servants, 1 bodyguard, 3 sets of fine clothes",
+    "feature": "You have private and public access to higher echelons of society for the purpose of courting."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Cheat",
+    "name": "Con Artist",
+    "details": "[+30 Deceive, +17 Trade, +8 Identify]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Set of fine clothes, 3 joke items, 3 forged organization signifiers",
+    "feature": "There are many people who are convinced that your products are real."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Cheat",
+    "name": "Gambler",
+    "details": "[+30 Incite Fate, +17 Interpret, +8 Conceal]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "2 games of choice",
+    "feature": "You can find a place to gamble in any settlement, ship, or region. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Cheat",
+    "name": "Snakeoil Seller",
+    "details": "[+30 Deceive, +17 Perform, +8 Craft]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "10 fake potions, 10 fake antidotes, packmule",
+    "feature": "You can produce fake potions, poisons, and antidotes, etc."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Cheat",
+    "name": "Rake",
+    "details": "[+30 Seduce, +17 Deceive, +8 Small Blades]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Small or medium blade of choice, set of fine clothes, game or instrument of choice",
+    "feature": "You have lovers in various settlements and regions who will offer you food and shelter."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Cheat",
+    "name": "Poser",
+    "details": "[+30 Identify, +17 Deceive, +8 Perform]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Disguise tools, 10 forged organization signifiers",
+    "feature": "There are numerous people who believe you are a part of several different organizations or represent powerful people."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Cheat",
+    "name": "Accuser",
+    "details": "[+30 Deceive, +17 Search, +8 Endure]",
+    "startingWealth": "Significant",
+    "startingEquipment": "1 legal tome",
+    "feature": "When you are injured, you may claim money from the local authorities and courts."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Clergy",
+    "name": "Priest",
+    "details": "[+30 Worship, +17 Divine Intervention, +8 Resist Supernatural]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Organization signifier, writ, religious or ideological tome, clergy robes, 1 servant",
+    "feature": "You may conduct services within your religion, and gain access to relevant places of worship. +30 Deity Relationship Points."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Clergy",
+    "name": "Monk",
+    "details": "[+30 Feat of Austerity, +17 Persevere, +8 Resist Supernatural]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Organization signifier, writ, religious or ideological tome, clergy robes",
+    "feature": "You have private access to monasteries of your order in various settlements and regions. +30 Deity Relationship Points."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Clergy",
+    "name": "Exorcist",
+    "details": "[+30 Divine Intervention, +17 Sense Supernatural, +8 Resist Supernatural]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Organization signifier, writ, religious or ideological tome, exorcism aids, clergy robes, 1 servant, 3 antidotes",
+    "feature": "You may conduct exorcisms in various settlements, ruins, and places of worship in order to exert your religion’s influence in the area. +30 Deity Relationship Points."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Clergy",
+    "name": "Missionary",
+    "details": "[+30 Perform, +17 Parley, +8 Resist Supernatural]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Organization signifier, religious or ideological tome, staff, horse, or clergy robes",
+    "feature": "Your religious organization will send aid or supplies if you are in peril. +30 Deity Relationship Points."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Clergy",
+    "name": "Paladin",
+    "details": "[+30 Battle, +17 Sense Supernatural, +8 Resist Supernatural]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Organization signifier, writ, religious or ideological tome, horse, era and race-appropriate armor, 2 weapons of choice, clergy robes",
+    "feature": "Supernatural beings and cultists of opposing religions generally flee from you outside of combat. +30 Deity Relationship Points."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Clergy",
+    "name": "Cultist",
+    "details": "[+30 Conceal, +17 Deceive, +8 Worship]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Organization signifier, religious or ideological tome, small weapon of choice, light armor, clergy robes, 1 friend, 1 poison",
+    "feature": "You have private access to safehouses among your cult that will aid you if you are able to carry out a goal of your deity. +30 Deity Relationship Points."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Creative",
+    "name": "Musician",
+    "details": "[+30 Perform, +17 Artistry, +8 Feat of Agility]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Instrument of choice, a set of fine clothes",
+    "feature": "You may perform music for a patron who will fund your endeavors."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Creative",
+    "name": "Painter",
+    "details": "[+30 Artistry, +17 Identify, +8 Feat of Agility]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Painting tools, 1 artpiece",
+    "feature": "You may paint for a patron who will fund your endeavors."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Creative",
+    "name": "Novelist",
+    "details": "[+30 Artistry, +17 Translate, +8 Gather Intelligence]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Unwritten book, 3 tomes of choice",
+    "feature": "You write anonymous letters or stories that make the rounds in a certain settlement or region."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Creative",
+    "name": "Poet",
+    "details": "[+30 Deduce, +17 Artistry, +8 Seduce]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "3 tomes of Poetry",
+    "feature": "You may write poetry for a patron who will fund your endeavors."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Creative",
+    "name": "Sculptor",
+    "details": "[+30 Artistry, +17 Craft, +8 Feat of Agility]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Sculpting tools",
+    "feature": "You may sculpt for a patron who will fund your endeavors."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Creative",
+    "name": "Architect",
+    "details": "[+30 Navigate, +17 Identify, +8 Deduce]",
+    "startingWealth": "Significant",
+    "startingEquipment": "10 site maps, measuring tools, set of fine clothes",
+    "feature": "You generally have a decent understanding of a building or dungeon’s layout, even if you’ve never been there before."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Criminal",
+    "name": "Professional Thief",
+    "details": "[+30 Feat of Agility, +17 Conceal, +8 Gather Intelligence]",
+    "startingWealth": "Significant",
+    "startingEquipment": "2 small weapons of choice, light armor, lockpicking kit, 3 site maps, 3 forged organization signifiers, disguise tools",
+    "feature": "You are part of a thieves' guild that will aid you if you find places to rob."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Criminal",
+    "name": "Serial Killer",
+    "details": "[+30 Track, +17 Battle, +8 Intimidate]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Small weapon of choice, 1 poison. +1 Fate Point.",
+    "feature": "When you are trying to kill someone, you automatically succeed at tracking them in settlements."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Criminal",
+    "name": "Organized Crime Boss",
+    "details": "[+30 Intimidate, +17 Deceive, +8 Interpret]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Weapon of choice, light armor, 1 artifact, 3 precious gems, 3 henchmen, set of fine clothes, organization signifier",
+    "feature": "You command an organized crime syndicate."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Criminal",
+    "name": "Raider/Pirate",
+    "details": "[+30 Battle, +17 Track, +8 Search]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Weapon of choice, light armor, organization signifier",
+    "feature": "You are part of a pirate or bandit organization that will aid you if you find settlements or ships to pillage. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Criminal",
+    "name": "Saboteur",
+    "details": "[+30 Gather Intelligence, +17 Search, +8 Craft]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Tinderbox, trap kit, 3 forged organization signifiers, disguise tools",
+    "feature": "You are part of an organization or are hired by someone who will give supplies if you find important or infrastructural/military efforts to sabotage."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Criminal",
+    "name": "Anarchist/Revolutionary",
+    "details": "[+30 Feat of Defiance, +17 Battle, +8 Intimidate]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Religious or ideological tome, organization signifier, 1 friend",
+    "feature": "You have safehouses in a region that will offer aid if you have committed crimes in the area. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Entertainer",
+    "name": "Bard",
+    "details": "[+30 Perform, +17 Deceive, +8 Seduce]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "2 Instruments of choice, 1 friend",
+    "feature": "You may perform at local inns, taverns, events for money."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Entertainer",
+    "name": "Tumbler",
+    "details": "[+30 Feat of Agility, +17 Perform, +8 Feat of Strength]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Rope",
+    "feature": "You may perform at local inns, taverns, events for money."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Entertainer",
+    "name": "Magician",
+    "details": "[+30 Feat of Agility, +17 Will Dakar, +8 Incite Fate]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Cloak, game of choice, 2 joke items, 1 servant",
+    "feature": "There are many people who believe your magic tricks are real. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Entertainer",
+    "name": "Trickster",
+    "details": "[+30 Deceive, +17 Feat of Agility, +8 Conceal]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Game of choice, string, 1 joke item",
+    "feature": "You may use perform in place of feat of agility and conceal."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Entertainer",
+    "name": "Puppeteer",
+    "details": "[+30 Perform, +17 Feat of Agility, +8 Craft]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Puppets, string",
+    "feature": "You may use perform in place of feat of agility and conceal."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Entertainer",
+    "name": "Jester",
+    "details": "[+30 Parley, +17 Perform, +8 Feat of Agility]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "3 joke items, 1 friend, set of fine clothes",
+    "feature": "You may make jokes at the expense of or belittle powerful figures without suffering organization consequences. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Farmer",
+    "name": "Harvester",
+    "details": "[+30 Feat of Strength, +17 Forage, +8 Small Blades]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Small blade or large bearded weapon of choice, farming tools",
+    "feature": "You can work for farmers or artisans for money."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Farmer",
+    "name": "Herder",
+    "details": "[+30 Animal Husbandry, +17 Track, +8 Long Ranged]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Long ranged weapon of choice, whistle, 1 antidote, tinderbox",
+    "feature": "You can automatically find lost domestic animals."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Farmer",
+    "name": "Serf",
+    "details": "[+30 Endure, +17 Persevere, +8 Polearms]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Tinderbox, farming tools",
+    "feature": "When you commit crimes, you can blend into crowds in order to conceal."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Farmer",
+    "name": "Animal Trainer",
+    "details": "[+30 Animal Husbandry, +17 Heal, +8 Flexible]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "1 horse, 6 trained dogs, 1 trained bird, or 1 exotic pet, 1 antidote",
+    "feature": "Animals tend to trust you far more quickly and easily than is typical."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Farmer",
+    "name": "Miller",
+    "details": "[+30 Feat of Strength, +17 Craft, +8 Trade]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "",
+    "feature": "You own a mill that produces steady income."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Farmer",
+    "name": "Butcher",
+    "details": "[+30 Heal, +17 Small Blades, +8 Trade]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Butcher tools",
+    "feature": "Meat you hunted does not spoil or go to waste, and you obtain maximum meat from hunted animals."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Homeless",
+    "name": "Hermit",
+    "details": "[+30 Forage, +17 Search, +8 Feat of Defiance]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Tinderbox, hunting trap",
+    "feature": "You know of secret public hiding spots in the wilderness. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Homeless",
+    "name": "Alley",
+    "details": "[+30 Conceal, +17 Unarmed, +8 Feat of Defiance]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "1 friend, tinderbox",
+    "feature": "You know of secret public hiding spots in settlements. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Homeless",
+    "name": "Poorhouse",
+    "details": "[+30 Interpret, +17 Interpret, +8 Parley]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "",
+    "feature": "You have connections to informants in poor areas of settlements. +10 Deity Relationship Points. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Homeless",
+    "name": "Petty Thief",
+    "details": "[+30 Feat of Agility, +17 Conceal, +8 Deceive]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "1 precious gem, lockpicking tools, 1 friend",
+    "feature": "You have connections to petty criminals in settlements. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Homeless",
+    "name": "Sewer",
+    "details": "[+30 Resist Toxins, +17 Persevere, +8 Endure]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "",
+    "feature": "You know the layouts of sewers in settlements. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Homeless",
+    "name": "Squatter",
+    "details": "[+30 Search, +17 Forage, +8 Conceal]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Tinderbox",
+    "feature": "You know of abandoned buildings in settlements. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Hunter",
+    "name": "Forester",
+    "details": "[+30 Forage, +17 Track, +8 Navigate]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Ranged weapon of choice, forested region map, appropriate scavenging tools, 3 hunting traps, tinderbox, 1 poison, 1 antidote",
+    "feature": "You are unable to become lost in forested areas."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Hunter",
+    "name": "Fisher",
+    "details": "[+30 Forage, +17 Incite Fate, +8 Trade]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Fishing tools, bait",
+    "feature": "You are always successful at and catch maximum weight fish when fishing."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Hunter",
+    "name": "Plains",
+    "details": "[+30 Navigate, +17 Forage, +8 Track]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Horse or bird, spyglass, ranged weapon of choice, tinderbox, plains region map",
+    "feature": "You are unable to become lost in plains areas."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Hunter",
+    "name": "Ratcatcher",
+    "details": "[+30 Track, +17 Search, +8 Resist Toxins]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "3 hunting traps, 3 poisons, poison tools",
+    "feature": "You automatically find pests and small animals."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Hunter",
+    "name": "Monster Hunter",
+    "details": "[+30 Battle, +17 Sense Supernatural, +8 Track]",
+    "startingWealth": "Significant",
+    "startingEquipment": "1 artifact, 1 potion, weapon of choice, era and race appropriate armor, 1 antidote",
+    "feature": "Your criticals are automatically 1 tier higher when fighting against creatures larger than yourself."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Hunter",
+    "name": "Bounty Hunter",
+    "details": "[+30 Battle, +17 Track, +8 Gather Intelligence]",
+    "startingWealth": "Significant",
+    "startingEquipment": "Bounty, site map, weapon of choice, light armor, horse, tinderbox",
+    "feature": "You may always choose to deal nonlethal damage instead of lethal damage, regardless of how the damage is dealt."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Ildakar",
+    "name": "Thermomancer",
+    "details": "[+30 Will Dakar, +17 Academic Recall, +8 Search]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ",
+    "feature": "Ildakar Faculties Unlocked: Thermomancy. This faculty costs you -20% energy and action points to use."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Ildakar",
+    "name": "Vivomancer",
+    "details": "[+30 Will Dakar, +17 Heal, +8 Resist Toxins]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ",
+    "feature": "Ildakar Faculties Unlocked: Vivomancy. This faculty costs you -20% energy and action points to use."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Ildakar",
+    "name": "Photomancer",
+    "details": "[+30 Will Dakar, +17 Conceal, +8 Interpret]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ",
+    "feature": "Ildakar Faculties Unlocked: Photomancy. This faculty costs you -20% energy and action points to use."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Ildakar",
+    "name": "Pneumancer",
+    "details": "[+30 Will Dakar, +17 Navigate, +8 Academic Recall]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ",
+    "feature": "Ildakar Faculties Unlocked: Pneumancy. This faculty costs you -20% energy and action points to use."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Ildakar",
+    "name": "Electromancer",
+    "details": "[+30 Will Dakar, +17 Endure, +8 Feat of Agility]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ",
+    "feature": "Ildakar Faculties Unlocked: Electromancy. This faculty costs you -20% energy and action points to use."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Ildakar",
+    "name": "Graviturgist",
+    "details": "[+30 Will Dakar, +17 Academic Recall, +8 Feat of Agility]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "3 precious gems, 1 potion, 1 spell scroll, 1 friend or exotic pet, magical robe or hat, staff or wand, organization signifier, writ",
+    "feature": "Ildakar Faculties Unlocked: Graviturgy. This faculty costs you -20% energy and action points to use."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Laborer",
+    "name": "Dock Worker",
+    "details": "[+30 Feat of Strength, +17 Small Bearded, +8 Forage]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Rope",
+    "feature": "You may perform labor for pay in coastal areas."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Laborer",
+    "name": "Processor",
+    "details": "[+30 Craft, +17 Endure, +8 Feat of Agility]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "",
+    "feature": "You may perform labor for pay for farmers and artisans, and you can create textile goods."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Laborer",
+    "name": "Warehouse Worker",
+    "details": "[+30 Feat of Strength, +17 Endure, +8 Unarmed]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "",
+    "feature": "You may perform labor for pay in settlements."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Laborer",
+    "name": "Builder",
+    "details": "[+30 Feat of Strength, +17 Small Blunt, +8 Endure]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Appropriate builder tools, small blunt weapon",
+    "feature": "You may construct buildings and structures."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Laborer",
+    "name": "Plowhand",
+    "details": "[+30 Feat of Strength, +17 Animal Husbandry, +8 Endure]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Farming tools, tinderbox",
+    "feature": "You may perform labor for pay for farmers."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Laborer",
+    "name": "Raker",
+    "details": "[+30 Resist Toxins, +17 Search, +8 Navigate]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Cloak, settlement map, tinderbox",
+    "feature": "You may perform labor for pay in sewers."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Merchant",
+    "name": "Guild Master",
+    "details": "[+30 Trade, +17 Perform, +8 Interpret]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "1 horse, 1 pack mule, 2 servants, 2 bodyguards, organization signifier, 3 sets of fine clothes",
+    "feature": "You command a mercantile or trade guild."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Merchant",
+    "name": "Black Market Dealer",
+    "details": "[+30 Conceal, +17 Trade, +8 Deceive]",
+    "startingWealth": "Significant",
+    "startingEquipment": "1 artifact, 1 potion, 1 spell scroll, 1 bodyguard, forged organization signifier",
+    "feature": "You have private access to black markets in settlements and regions."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Merchant",
+    "name": "Innkeeper",
+    "details": "[+30 Interpret, +17 Parley, +8 Trade]",
+    "startingWealth": "Significant",
+    "startingEquipment": "1 servant, 1 bodyguard",
+    "feature": "You own an inn that provides steady income."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Merchant",
+    "name": "Peddler",
+    "details": "[+30 Trade, +17 Identify, +8 Navigate]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Carriage, 2 horses, region map, tinderbox",
+    "feature": "You know the overland routes between all settlements."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Merchant",
+    "name": "Bookkeeper",
+    "details": "[+30 Search, +17 Translate, +8 Academic Recall]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "10 tomes of subject choice, 1 spell scroll",
+    "feature": "You have private access to various organizations’ records and private offices."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Merchant",
+    "name": "Hawker",
+    "details": "[+30 Perform, +17 Trade, +8 Perform]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Tent",
+    "feature": "You may perform labor for pay in markets."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Noble",
+    "name": "Knight",
+    "details": "[+30 Battle, +17 Endure, +8 Parley]",
+    "startingWealth": "Significant",
+    "startingEquipment": "Era and race appropriate armor, 2 weapons of choice, horse, religious or ideological tome, squire, organization signifier, set of fine clothes, writ",
+    "feature": "You may perform quests for a higher noble than yourself to gain titles and land."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Noble",
+    "name": "Baron",
+    "details": "[+30 Perform, +17 Battle, +8 Parley]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Era and race appropriate armor, weapon of choice, tent, horse, packmule, 2 servants, 2 bodyguards, organization signifier, 3 sets of fine clothes, writ",
+    "feature": "You command a barony and serve a higher noble than yourself to gain titles and land."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Noble",
+    "name": "Landed Gentry",
+    "details": "[+30 Parley, +17 Perform, +8 Seduce]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Small or medium weapon of choice, tent, packmule, 1 servant, organization signifier, 3 sets of fine clothes, writ",
+    "feature": "You command an estate."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Noble",
+    "name": "Squire",
+    "details": "[+30 Persevere, +17 Feat of Defiance, +8 Endure]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Light armor, weapon of choice, religious or ideological tome, organization signifier, set of fine clothes, tinderbox",
+    "feature": "You serve under a knight or party member to gain titles and land (knighthood). +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Noble",
+    "name": "Thuil",
+    "details": "[+30 Incite Fate, +17 Deduce, +8 Resist Supernatural]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "organization signifier",
+    "feature": "You have access to narrative ancillaries relating to Fireborn. You can see during Har'Rheunen without Ozoar. +30 Deity Relationship Points. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Noble",
+    "name": "Inheritor",
+    "details": "[+30 Parley, +17 Deceive, +8 Perform]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Packmule, 1 servant, organization signifier, 3 sets of fine clothes",
+    "feature": "You are related to someone very powerful or rich who you will eventually take over for during some part of the campaign."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Psion",
+    "name": "Psychometrist",
+    "details": "[+30 Psionic Technique, +17 Resist Psionics, +8 Track]",
+    "startingWealth": "Significant",
+    "startingEquipment": "None",
+    "feature": "Psionic Technique Tree, Unlocked: Psychometry, and 2 of the following: Claircognizance, Clairvoyance, Identify, Psychoscopy, or Track, and 1 additional psi-point. Automatic Psionic unlocks and +1 Psi Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Psion",
+    "name": "Telekineticist",
+    "details": "[+30 Psionic Technique, +17 Resist Psionics, +8 Feat of Strength]",
+    "startingWealth": "Significant",
+    "startingEquipment": "None",
+    "feature": "Psionic Technique Tree, Unlocked: Telekinesis, and 2 of the following: Levitation, Psychokinesis, Dynakinesis, Psychometabolism, or Density, and 1 additional psi-point. Automatic Psionic unlocks and +1 Psi Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Psion",
+    "name": "Telepath",
+    "details": "[+30 Psionic Technique, +17 Resist Psionics, +8 Identify]",
+    "startingWealth": "Significant",
+    "startingEquipment": "None",
+    "feature": "Psionic Technique Tree, Unlocked: Telepathy, and 2 of the following: Pry, Sense Presence, Communicate, Interfere, or Interconnect, and 1 additional psi-point. Automatic Psionic unlocks and +1 Psi Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Psion",
+    "name": "Hypnotist",
+    "details": "[+30 Psionic Technique, +17 Resist Psionics, +8 Perform]",
+    "startingWealth": "Significant",
+    "startingEquipment": "None",
+    "feature": "Psionic Technique Tree, Unlocked: Hypnosis, and 2 of the following: Pathokinesis, Illusion, Possession, Mnokinesis, or Override, and 1 additional psi-point. Automatic Psionic unlocks and +1 Psi Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Psion",
+    "name": "Dynakineticist",
+    "details": "[+30 Psionic Technique, +17 Resist Psionics, +8 Interpret]",
+    "startingWealth": "Significant",
+    "startingEquipment": "None",
+    "feature": "Psionic Technique Tree, Unlocked: Telekinesis, Dynakinesis, and 1 of the following: Shield, Field, or Force. Automatic Psionic unlocks and +1 Psi Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Psion",
+    "name": "Illusionist",
+    "details": "[+30 Psionic Technique, +17 Resist Psionics, +8 Deceive]",
+    "startingWealth": "Significant",
+    "startingEquipment": "None",
+    "feature": "Psionic Technique Tree, Unlocked: Hypnosis, Illusion, and one of the following: Amplify I, Dampen, or Alter Illusion. Automatic Psionic unlocks and +1 Psi Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Sailor",
+    "name": "Rigger",
+    "details": "[+30 Feat of Agility, +17 Feat of Strength, +8 Feat of Defiance]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Small or medium weapon of choice, game of choice, rope",
+    "feature": "Climbing does not cost extra action or energy. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Sailor",
+    "name": "Boatswain",
+    "details": "[+30 Craft, +17 Forage, +8 Search]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Carpentry tools, textile tools, rope making tools, measuring tools",
+    "feature": "You may perform labor for pay aboard ships. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Sailor",
+    "name": "Captain",
+    "details": "[+30 intimidate, +17 Battle, +8 Parley]",
+    "startingWealth": "Significant",
+    "startingEquipment": "Spyglass, exotic pet, small or medium weapon of choice, 1 artifact, game of choice, 1 friend, set of fine clothes, organization signifier",
+    "feature": "You command a crewed ship. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Sailor",
+    "name": "Navy",
+    "details": "[+30 Battle, +17 Endure, +8 Parley]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Weapon of choice, light armor, writ, organization signifier",
+    "feature": "You are part of a navy that you report to and will provide supplies for you in coastal or maritime areas if you are performing relevant tasks."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Sailor",
+    "name": "Navigator",
+    "details": "[+30 Navigate, +17 Incite Fate, +8 Search]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Navigation tools, 10 region maps",
+    "feature": "You cannot become lost at sea. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Sailor",
+    "name": "Quartermaster",
+    "details": "[+30 Identify, +17 Trade, +8 Heal]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Tool set of choice, rope, medical kit, tinderbox, cooking utensils",
+    "feature": "Crews and military units will perform favors for you in exchange for goods. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Wanderer",
+    "name": "Rheunen Walker",
+    "details": "[+30 Navigate, +17 Forage, +8 Battle]",
+    "startingWealth": "Wealthy",
+    "startingEquipment": "Weapon of choice, cloak, 10 region maps, 1 potion, organization signifier, writ, tinderbox",
+    "feature": "You know of a secret passage in every region. You can see during Har'Rheunen without Ozoar."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Wanderer",
+    "name": "Explorer",
+    "details": "[+30 Navigate, +17 Search, +8 Identify]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Navigation tools, pack mule, exotic pet, rope, 10 region maps, tinderbox",
+    "feature": "You know of a secret passage in every region."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Wanderer",
+    "name": "Archaeologist",
+    "details": "[+30 Search, +17 Academic Recall, +8 Navigate]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Archaeologist tools, pack mule, artifact, rope, 10 site maps",
+    "feature": "You know of a hidden ruin in every region."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Wanderer",
+    "name": "Vagabond",
+    "details": "[+30 Endure, +17 Persevere, +8 Battle]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "None",
+    "feature": "You have a friend who can give aid and shelter in every region."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Wanderer",
+    "name": "Exile",
+    "details": "[+30 Intimidate, +17 Battle, +8 Forage]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "None",
+    "feature": "You have a particular people or organization you can perfectly replicate and that cannot be seen through (disguise-wise etc) by magic or other means. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Wanderer",
+    "name": "Pilgrim",
+    "details": "[+30 Deduce, +17 Incite Fate, +8 Feat of Austerity]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Religious or ideological tome, staff, tinderbox",
+    "feature": "You may visit places of worship to vastly increase your relationship with a deity(s)."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Warrior",
+    "name": "Soldier",
+    "details": "[+30 Battle, +17 Persevere, +8 Feat of Strength]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Weapon of choice, shield, era and race appropriate armor, organization signifier",
+    "feature": "You are part of an army that you report to and will give aid and supplies if you are performing relevant tasks."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Warrior",
+    "name": "Guard",
+    "details": "[+30 Interpret, +17 identify, +8 Battle]",
+    "startingWealth": "Insignificant",
+    "startingEquipment": "Small, medium, or ranged weapon of choice, shield, era and race appropriate armor, organization signifier",
+    "feature": "Criminal elements will generally flee from you outside of combat."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Warrior",
+    "name": "Barbarian",
+    "details": "[+30 Endure, +17 Battle, +8 Feat of Strength]",
+    "startingWealth": "Pauper",
+    "startingEquipment": "Weapon of choice, light armor of choice, tinderbox, organization signifier",
+    "feature": "You may use intimidate in place of perform and parley."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Warrior",
+    "name": "Gladiator",
+    "details": "[+30 Perform, +17 endure, +8 Intimidate]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Weapon of choice, light armor of choice",
+    "feature": "You may use perform in place of battle. +1 Fate Point."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Warrior",
+    "name": "Officer",
+    "details": "[+30 Intimidate, +17 Parley, +8 Battle]",
+    "startingWealth": "Significant",
+    "startingEquipment": "Weapon of choice, era and race-appropriate armor, horse, writ, organization signifier",
+    "feature": "You command a military unit and serve in a military to obtain a higher rank."
+  },
+  {
+    "stage": "Adulthood",
+    "category": "Warrior",
+    "name": "Scout",
+    "details": "[+30 Gather Intelligence, +17 Search, +8 Conceal]",
+    "startingWealth": "Moderate",
+    "startingEquipment": "Small or ranged weapon of choice, horse, spyglass, region map, organization signifier, tinderbox",
+    "feature": "You have private access to military leaders and military informants relating to the movements of armies and raiders/pirates."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Addicted",
+    "details": "You have an itch that cannot be scratched. A vice of yours or a substance you use controls your thoughts and emotions more than you do."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Aggressive",
+    "details": "Fight first and ask questions later! You find it difficult to resist battle, and often, it seems like the best or only solution to a problem."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Arrogant",
+    "details": "You are better than everyone else because of your status or talents. Those who belittle or slight you had better watch out."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Broken",
+    "details": "Tough living ground you down. The life you’ve lived thus far has given you a serious physical or mental condition."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Cloistered",
+    "details": "You don’t remember the last time you saw someone else. Your lifestyle has led you to be an awkward loner when out of your element."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Cold",
+    "details": "Keep your friends close and your enemies closer. In your life, you’ve learned to trust your mind more than your heart."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Corrupt",
+    "details": "It’s good to be the King! When in a position of power or authority, you cannot resist abusing or taking advantage of it to enrich yourself."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Craven",
+    "details": "Life is too short. You avoid pain, danger, and confrontation whenever possible."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Cruel",
+    "details": "If they wanted you to stop, they’d have asked. You go far and beyond what’s necessary when it comes to fights, disputes, and vengeance."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Eccentric",
+    "details": "Nobody gets you, and that’s fine. You’re a strange person whom people find difficult to engage with, whether because of your demeanor or your interests."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Extravagant",
+    "details": "You like nice things, and that’s just because you have high standards. You have lived a life of luxury and plenty that has led to your inability to cope with a substandard lifestyle."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Greedy",
+    "details": "Enough is never enough! You always want more, whether it’s money, sex, status, or respect."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Guilty",
+    "details": "What have you done? You’ve lived a life where you’ve had to do some nasty things, and they still haunt you."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Impatient",
+    "details": "What are you waiting for? Time is of the essence, and you cannot stand it when people waste it."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Impulsive",
+    "details": "Why not? If you want to do something, you have a tough time stopping yourself."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Incurious",
+    "details": "Who cares? You keep your nose to the grindstone, and any attempt to sway you from your path is just an inane distraction."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Indecisive",
+    "details": "Left or right? Any time you have to make a decision, it’s a tough decision, and you always overthink it."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Jealous",
+    "details": "You are green with envy. Any time someone has more than you or is better at something you’re good at, you cannot stand it."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Lazy",
+    "details": "Why bother? You avoid work and hard things at all costs."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Oblivious",
+    "details": "Nothing ever happens. You have a terrible sense of self-awareness and situational awareness."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Out of Touch",
+    "details": "The little people are back. Your lifestyle has either led to you being so far removed from people due to wealth and fame, or so far away that you don’t understand normal people."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Overzealous",
+    "details": "You’re very enthusiastic, and that’s good! You believe in a cause, ideology, or organization so much, it’s caused you to hate your enemies with an unquenchable burning passion."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Paranoid",
+    "details": "They’re watching you! You’ve made so many enemies throughout your life, they’re bound to come for you, and for all you know, they may be around the next corner."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Perfectionist",
+    "details": "Practice makes perfect! You cannot settle for subpar work, and as such, take way too long to do things, and oftentimes throw out your work altogether to restart."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Power Hungry",
+    "details": "Adûrun is ripe for the taking! You aspire to gain power, influence, and might at all costs."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Procrastinator",
+    "details": "You can do it later. You always put things off until the consequences of ignoring them cannot be ignored."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Simple",
+    "details": "What’re they even talking about? Things ought not be complicated, and so if it is, you refuse to or cannot understand complex issues or situations."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Stubborn",
+    "details": "When you’re right, you’re right. Nobody else knows what they’re talking about, and you have to prove that to them."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Unhealthy",
+    "details": "You hurt all over. Your lifestyle has led to a generally warped body, mind, social life, or spirit, and you refuse to do anything about it."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Unwise",
+    "details": "You can just read about it. You are so wrapped up in your intellect or ideology, you’ve become unable to cope with the worldly."
+  },
+  {
+    "stage": "Flaws",
+    "name": "Weak-Willed",
+    "details": "You go with the flow. Anytime you are confronted with something difficult, you fold under the pressure.",
+    "feature": "For flaws, roleplaying them out should allow your GM to allot you more Fate in relation to your Incite Fate skill. Flaws may also be rolled for or picked from if your GM allows it."
+  },
+  {
+    "stage": "Inciting Incident",
+    "name": "Exiled",
+    "details": "[+5 Forage]"
+  },
+  {
+    "stage": "Inciting Incident",
+    "name": "Debts",
+    "details": "[+5 Trade]"
+  },
+  {
+    "stage": "Inciting Incident",
+    "name": "Rumors",
+    "details": "[+5 Gather Intelligence]"
+  },
+  {
+    "stage": "Inciting Incident",
+    "name": "Destroyed Home",
+    "details": "[+5 Persevere]"
+  },
+  {
+    "stage": "Inciting Incident",
+    "name": "Revenge",
+    "details": "[+5 Track]"
+  },
+  {
+    "stage": "Inciting Incident",
+    "name": "Following Dreams",
+    "details": "[+5 Incite Fate]"
+  },
+  {
+    "stage": "Inciting Incident",
+    "name": "Accomplished Feat",
+    "details": "[+5 Endure]"
+  },
+  {
+    "stage": "Inciting Incident",
+    "name": "Vision",
+    "details": "[+5 Deduce]",
+    "feature": "For Inciting Incidents, you should have short-term, intermediate, and campaign-spanning goals related to the reason for why you are adventuring. Work with your GM to determine these goals. Whenever they are accomplished, your Incite Fate skill will determine how much Fate you have accrued for completing a goal. Fate will be revisited later. Starting Wealth Your starting wealth is determined by your adulthood choices, using the higher of the two you choose. These determine your starting net worth, supplies, and starting items in your inventory. Pauper,0 cp,1 supplies,3 items Insignificant,Will+Mental x1 (min 1) pp,3 supplies,4 items Moderate,Will+Mental x25 (min 25) gp,10 supplies,5 items Significant,Will+Mental x5 (min 5) pp,30 supplies,6 items Wealthy,Will+Mental x10 (min 10) pp,100 supplies,10 items Your highest wealth level generates passive income as you travel through different areas and during character tier advancements. Pauper [2 cp/phase passive] = Saint, Priest, Monk, Exorcist, Missionary, Serial Killer, Anarchist/Revolutionary, Hermit, Alley, Poorhouse, Petty Thief, Sewer, Squatter, Vagabond, Exile, Pilgrim, Barbarian Insignificant [2 sp/phase passive] = Philosopher, Carpenter, Troubadour, Folk Hero, Gambler, Poser, Paladin, Cultist, Raider/Pirate, Saboteur, Bard, Tumbler, Magician, Trickster, Puppeteer, Harvester, Herder, Serf, Animal Trainer, Forester, Fisher, Plains, Ratcatcher, Dock Worker, Processor, Warehouse Worker, Builder, Plowhand, Squire, Rigger, Boatswain, Navigator, Guard Moderate [2 gp/phase passive] = Historian, Scientist, Litigator, Doctor, Rhetorician, Smith, Carpenter, Engineer, Mason, War Hero, Con Artist, Snakeoil Seller, Rake, Musician, Painter, Moderate, Poet, Sculptor, Jester, Miller, Butcher, Raker, Peddler, Bookkeeper, Hawker, Navy, Quartermaster, Explorer, Archaeologist, Soldier, Gladiator, Scout Significant [2 pp/phase passive] = Spy, Order Representative, Assassin, Tinkerer, Accuser, Architect, Professional Thief, Monster Hunter, Bounty Hunter, Black Market Dealer, Innkeeper, Knight, Psychometrist, Telekineticist, Telepath, Hypnotist, Dynakineticist, Illusionist, Captain, Officer Wealthy [20 pp/phase passive] = Courtier, Diplomat, Strategist, Lightkeeper, Relative, Debutante/Suitor, Organized Crime Boss, Thermomancer, Vivomancer, Photomancer, Pneumancer, Electromancer, Graviturgist, Guild Master, Baron, Landed Gentry, Thuil, Inheritor, Rheunen Walker"
+  }
+]
