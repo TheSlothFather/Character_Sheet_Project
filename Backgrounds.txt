@@ -558,27 +558,27 @@ Sailor
 * Rigger: [+30 Feat of Agility, +17 Feat of Strength, +8 Feat of Defiance]
 Starting Wealth: Insignificant
 Starting Equipment: Small or medium weapon of choice, game of choice, rope
-Climbing does not cost extra action or energy. +1 Fate Point.
+Feature: Climbing does not cost extra action or energy. +1 Fate Point.
 * Boatswain: [+30 Craft, +17 Forage, +8 Search]
 Starting Wealth: Insignificant
 Starting Equipment: Carpentry tools, textile tools, rope making tools, measuring tools
-You may perform labor for pay aboard ships. +1 Fate Point.
+Feature: You may perform labor for pay aboard ships. +1 Fate Point.
 * Captain: [+30 intimidate, +17 Battle, +8 Parley]
 Starting Wealth: Significant
 Starting Equipment: Spyglass, exotic pet, small or medium weapon of choice, 1 artifact, game of choice, 1 friend, set of fine clothes, organization signifier
-You command a crewed ship. +1 Fate Point.
+Feature: You command a crewed ship. +1 Fate Point.
 * Navy: [+30 Battle, +17 Endure, +8 Parley]
 Starting Wealth: Moderate
 Starting Equipment: Weapon of choice, light armor, writ, organization signifier
-You are part of a navy that you report to and will provide supplies for you in coastal or maritime areas if you are performing relevant tasks.  
+Feature: You are part of a navy that you report to and will provide supplies for you in coastal or maritime areas if you are performing relevant tasks.  
 * Navigator: [+30 Navigate, +17 Incite Fate, +8 Search]
 Starting Wealth: Insignificant
 Starting Equipment: Navigation tools, 10 region maps 
-You cannot become lost at sea. +1 Fate Point.
+Feature: You cannot become lost at sea. +1 Fate Point.
 * Quartermaster: [+30 Identify, +17 Trade, +8 Heal]
 Starting Wealth: Moderate
 Starting Equipment: Tool set of choice, rope, medical kit, tinderbox, cooking utensils 
-Crews and military units will perform favors for you in exchange for goods. +1 Fate Point. 
+Feature: Crews and military units will perform favors for you in exchange for goods. +1 Fate Point. 
 
 
 Wanderer
@@ -717,6 +717,7 @@ Moderate [2 gp/phase passive] = Historian, Scientist, Litigator, Doctor, Rhetori
 
 
 Significant [2 pp/phase passive] = Spy, Order Representative, Assassin, Tinkerer, Accuser, Architect, Professional Thief, Monster Hunter, Bounty Hunter, Black Market Dealer, Innkeeper, Knight, Psychometrist, Telekineticist, Telepath, Hypnotist, Dynakineticist, Illusionist, Captain, Officer
+
 
 
 Wealthy [20 pp/phase passive] = Courtier, Diplomat, Strategist, Lightkeeper, Relative, Debutante/Suitor, Organized Crime Boss, Thermomancer, Vivomancer, Photomancer, Pneumancer, Electromancer, Graviturgist, Guild Master, Baron, Landed Gentry, Thuil, Inheritor, Rheunen Walker
