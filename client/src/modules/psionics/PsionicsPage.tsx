@@ -306,7 +306,7 @@ const SkillTree: React.FC<{
   const tierTwo = tiers.get(2) ?? [];
   const remainingTiers = orderedTiers.filter((tier) => tier > 2);
   const orbitRadius = Math.max(170, 90 + tierTwo.length * 18);
-  const outerTierSpacing = 260;
+  const outerTierSpacing = 300;
   const starterRadius = starterTier.length > 1 ? 42 : 0;
   const tierTwoAngleStep = tierTwo.length > 0 ? (2 * Math.PI) / tierTwo.length : 0;
   const starterAngleStep = starterTier.length > 0 ? (2 * Math.PI) / starterTier.length : 0;
@@ -353,8 +353,9 @@ const SkillTree: React.FC<{
 
       grouped.forEach((entries) => {
         entries.sort((a, b) => a.baseAngle - b.baseAngle);
-        const maxSpread = tier === 3 ? 0.55 : 0.65;
-        const spread = Math.min(maxSpread, Math.max(0.35, (Math.PI * 0.5) / Math.max(entries.length, 2)));
+        const maxSpread = tier === 3 ? 0.52 : 0.65;
+        const minSpread = tier === 3 ? 0.42 : 0.35;
+        const spread = Math.min(maxSpread, Math.max(minSpread, (Math.PI * 0.5) / Math.max(entries.length, 2)));
         const offsetStart = -((entries.length - 1) / 2) * spread;
 
         entries.forEach((entry, idx) => {

@@ -87,4 +87,24 @@ describe("psionics skill tree", () => {
     expect(psiDisplay).toHaveTextContent("14");
     expect(telepathyButton).toBeDisabled();
   });
+
+  it("keeps Interfere locked until Telepathy is purchased", async () => {
+    await renderWithProviders();
+
+    const telepathyButton = screen
+      .getAllByRole("button")
+      .find((button) => button.textContent?.trim().startsWith("Telepathy")) as HTMLButtonElement;
+
+    const interfereButton = screen
+      .getAllByRole("button")
+      .find((button) => button.textContent?.trim().startsWith("Interfere")) as HTMLButtonElement;
+
+    expect(telepathyButton).toBeDefined();
+    expect(interfereButton).toBeDefined();
+    expect(interfereButton).toBeDisabled();
+
+    fireEvent.click(telepathyButton);
+
+    expect(interfereButton).not.toBeDisabled();
+  });
 });
