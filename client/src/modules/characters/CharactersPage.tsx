@@ -207,7 +207,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                 key={code}
                                 style={{
                                   display: "grid",
-                                  gridTemplateColumns: "1fr 100px 100px 90px",
+                                  gridTemplateColumns: "1fr 140px 70px",
                                   alignItems: "center",
                                   gap: "0.45rem",
                                   padding: "0.4rem 0.25rem",
@@ -224,7 +224,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                   <button
                                     onClick={() => onChangeAllocation(code, -1)}
                                     disabled={disableDec}
-                                    style={{ padding: "0.2rem 0.4rem" }}
+                                    style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}
                                   >
                                     -
                                   </button>
@@ -232,20 +232,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                   <button
                                     onClick={() => onChangeAllocation(code, 1)}
                                     disabled={disableInc}
-                                    style={{ padding: "0.2rem 0.4rem" }}
+                                    style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}
                                   >
                                     +
                                   </button>
-                                </div>
-                                <div
-                                  style={{
-                                    color: bonus >= 0 ? "#9ae6b4" : "#f7a046",
-                                    fontSize: 12,
-                                    textAlign: "right"
-                                  }}
-                                >
-                                  Bonus {bonus >= 0 ? "+" : ""}
-                                  {bonus}
                                 </div>
                                 <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
                               </div>
