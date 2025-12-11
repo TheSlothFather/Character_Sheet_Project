@@ -10,39 +10,16 @@ import {
   parsePsionicsCsv,
   replaceMentalAttributePlaceholders
 } from "./psionicsUtils";
+import { PSION_BACKGROUND_CONFIG, PSIONICS_STORAGE_KEY } from "./psionBackgrounds";
 
 interface PsiState {
   psiPool: number;
   purchased: Set<string>;
   mental: number;
+  backgroundPicks: Set<string>;
 }
 
-const STORAGE_KEY = "psionics_skill_tree_v1";
 const DEFAULT_MENTAL_ATTRIBUTE = 3;
-
-const PSION_BACKGROUND_UNLOCKS: Record<
-  string,
-  { psiBonus: number; abilities: { tree: string; name: string }[] }
-> = {
-  psychometrist: { psiBonus: 1, abilities: [{ tree: "Psychometry", name: "Psychometry" }] },
-  telekineticist: { psiBonus: 1, abilities: [{ tree: "Telekinesis", name: "Telekinesis" }] },
-  telepath: { psiBonus: 1, abilities: [{ tree: "Telepathy", name: "Telepathy" }] },
-  hypnotist: { psiBonus: 1, abilities: [{ tree: "Hypnosis", name: "Hypnosis" }] },
-  dynakineticist: {
-    psiBonus: 1,
-    abilities: [
-      { tree: "Telekinesis", name: "Telekinesis" },
-      { tree: "Telekinesis", name: "Dynakinesis" }
-    ]
-  },
-  illusionist: {
-    psiBonus: 1,
-    abilities: [
-      { tree: "Hypnosis", name: "Hypnosis" },
-      { tree: "Hypnosis", name: "Illusion" }
-    ]
-  }
-};
 
 const loadPersistedState = (
   storageKey: string | null,
@@ -51,22 +28,32 @@ const loadPersistedState = (
   abilityIds: Set<string>
 ): PsiState => {
   if (typeof window === "undefined" || !storageKey) {
-    return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental };
+    return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental, backgroundPicks: new Set() };
   }
 
   try {
     const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental };
-    const parsed = JSON.parse(raw) as { psiPool?: number; purchased?: string[]; mental?: number };
+    if (!raw) {
+      return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental, backgroundPicks: new Set() };
+    }
+    const parsed = JSON.parse(raw) as {
+      psiPool?: number;
+      purchased?: string[];
+      mental?: number;
+      backgroundPicks?: string[];
+    };
     const psiPool = typeof parsed.psiPool === "number" && parsed.psiPool >= 0 ? parsed.psiPool : defaultPsi;
     const mental = typeof parsed.mental === "number" && parsed.mental >= 0 ? parsed.mental : defaultMental;
     const purchased = Array.isArray(parsed.purchased)
       ? parsed.purchased.filter((id) => abilityIds.has(id))
       : [];
-    return { psiPool, mental, purchased: new Set(purchased) };
+    const backgroundPicks = Array.isArray(parsed.backgroundPicks)
+      ? parsed.backgroundPicks.filter((id) => abilityIds.has(id))
+      : [];
+    return { psiPool, mental, purchased: new Set(purchased), backgroundPicks: new Set(backgroundPicks) };
   } catch (err) {
     console.warn("Unable to parse psionics state", err);
-    return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental };
+    return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental, backgroundPicks: new Set() };
   }
 };
 
@@ -76,7 +63,8 @@ const persistState = (storageKey: string | null, state: PsiState) => {
     const payload = JSON.stringify({
       psiPool: state.psiPool,
       mental: state.mental,
-      purchased: Array.from(state.purchased)
+      purchased: Array.from(state.purchased),
+      backgroundPicks: Array.from(state.backgroundPicks)
     });
     window.localStorage.setItem(storageKey, payload);
   } catch (err) {
@@ -177,17 +165,17 @@ export const PsionicsPage: React.FC = () => {
   const [characterError, setCharacterError] = React.useState<string | null>(null);
   const [loadingCharacter, setLoadingCharacter] = React.useState(false);
 
-  const storageKey = React.useMemo(() => (selectedId ? `${STORAGE_KEY}:${selectedId}` : null), [selectedId]);
+  const storageKey = React.useMemo(() => (selectedId ? `${PSIONICS_STORAGE_KEY}:${selectedId}` : null), [selectedId]);
   const backgroundBenefits = React.useMemo(() => {
     const adulthoodBackgrounds = selectedCharacter?.backgrounds?.adulthood ?? [];
     const granted = new Set<string>();
     let psiBonus = 0;
 
     adulthoodBackgrounds.forEach((name) => {
-      const config = PSION_BACKGROUND_UNLOCKS[name.toLowerCase()];
+      const config = PSION_BACKGROUND_CONFIG[name.toLowerCase() as keyof typeof PSION_BACKGROUND_CONFIG];
       if (!config) return;
       psiBonus += config.psiBonus;
-      config.abilities.forEach(({ tree, name: abilityName }) => {
+      config.granted.forEach(({ tree, name: abilityName }) => {
         const id = abilityKeyToId.get(`${tree}:${abilityName}`);
         if (id) granted.add(id);
       });
@@ -210,13 +198,14 @@ export const PsionicsPage: React.FC = () => {
 
   React.useEffect(() => {
     const nextState = loadPersistedState(storageKey, defaultPsiPool, defaultMentalAttribute, abilityIds);
-    const purchased = new Set(nextState.purchased);
+    const purchased = new Set([...nextState.purchased, ...nextState.backgroundPicks]);
     backgroundBenefits.grantedIds.forEach((id) => purchased.add(id));
 
     setState({
       psiPool: Math.max(defaultPsiPool, nextState.psiPool),
       mental: nextState.mental,
-      purchased
+      purchased,
+      backgroundPicks: nextState.backgroundPicks
     });
   }, [abilityIds, backgroundGrantKey, defaultMentalAttribute, defaultPsiPool, storageKey]);
 
