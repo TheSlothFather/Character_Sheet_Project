@@ -59,12 +59,12 @@ const CATEGORY_LABELS: Record<string, string> = {
   MENTAL: "Mental Skills",
   SPIRITUAL: "Spiritual Skills",
   WILL: "Will Skills",
-  "PHYSICAL+MENTAL": "Physical + Mental (Subsistence) Skills",
-  "PHYSICAL+SPIRITUAL": "Physical + Spiritual (Intuition) Skills",
-  "PHYSICAL+WILL": "Physical + Will (Presence) Skills",
-  "MENTAL+WILL": "Mental + Will (Cunning) Skills",
-  "MENTAL+SPIRITUAL": "Mental + Spiritual (Sagacity) Skills",
-  "SPIRITUAL+WILL": "Will + Spiritual (Benediction) Skills"
+  "PHYSICAL+MENTAL": "Subsistenc) Skills",
+  "PHYSICAL+SPIRITUAL": "Intuition Skills",
+  "PHYSICAL+WILL": "Presence Skills",
+  "MENTAL+WILL": "Cunning Skills",
+  "MENTAL+SPIRITUAL": "Sagacity Skills",
+  "SPIRITUAL+WILL": "Benediction Skills"
 };
 
 const CATEGORY_ORDER = [
