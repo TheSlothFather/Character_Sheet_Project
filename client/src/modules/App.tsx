@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { CharactersPage } from "./characters/CharactersPage";
+import { CharacterCreationPage } from "./characters/CharacterCreationPage";
 import { SelectedCharacterProvider } from "./characters/SelectedCharacterContext";
 import { DefinitionsProvider } from "./definitions/DefinitionsContext";
 import { MartialProwessPage } from "./martial/MartialProwessPage";
@@ -42,6 +43,12 @@ export const App: React.FC = () => {
             <NavLink to="/characters" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
               Characters
             </NavLink>
+            <NavLink
+              to="/character-creation"
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              Character Creation
+            </NavLink>
             <NavLink to="/martial" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
               Martial Prowess
             </NavLink>
@@ -53,6 +60,7 @@ export const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Navigate to="/characters" replace />} />
               <Route path="/characters" element={<CharactersPage />} />
+              <Route path="/character-creation" element={<CharacterCreationPage />} />
               <Route path="/martial" element={<MartialProwessPage />} />
               <Route path="/psionics" element={<PsionicsPage />} />
               <Route path="*" element={<NotFound />} />
