@@ -128,7 +128,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "280px 480px 1fr", gap: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "280px 960px 1fr", gap: "1rem" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {levelCards.map((lvl) => (
             <div key={lvl} style={cardStyle}>
@@ -180,10 +180,30 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
+                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                     gap: "0.75rem"
                   }}
                 >
+                  <div
+                    style={{
+                      textAlign: "center",
+                      fontWeight: 700,
+                      fontSize: 16,
+                      padding: "0.25rem 0"
+                    }}
+                  >
+                    Martial Prowess
+                  </div>
+                  <div
+                    style={{
+                      textAlign: "center",
+                      fontWeight: 700,
+                      fontSize: 16,
+                      padding: "0.25rem 0"
+                    }}
+                  >
+                    Ildakar Faculty
+                  </div>
                   {groupedSkills.map((group) => (
                     <div
                       key={group.key}
@@ -224,7 +244,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                               >
                                 <div style={{ wordBreak: "break-word" }}>
                                   <div style={{ fontWeight: 600 }}>{formatSkillName(skill.name)}</div>
-                                  <div style={{ fontSize: 11, color: "#79839a" }}>{code}</div>
                                 </div>
                                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                                   <button
