@@ -7,6 +7,7 @@ export interface Character {
   notes?: string;
   skillPoints: number;
   skillAllocations: Record<string, number>;
+  skillBonuses?: Record<string, number>;
   backgrounds?: BackgroundSelection;
   attributes?: AttributeScores;
   fatePoints?: number;
@@ -146,6 +147,7 @@ export const api = {
     notes?: string;
     skillPoints?: number;
     skillAllocations?: Record<string, number>;
+    skillBonuses?: Record<string, number>;
     backgrounds?: BackgroundSelection;
     attributes?: AttributeScores;
     fatePoints?: number;
@@ -164,6 +166,7 @@ export const api = {
       notes?: string;
       skillPoints?: number;
       skillAllocations?: Record<string, number>;
+      skillBonuses?: Record<string, number>;
       backgrounds?: BackgroundSelection;
       attributes?: AttributeScores;
       fatePoints?: number;

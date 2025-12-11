@@ -1,7 +1,6 @@
 import React from "react";
-import { api, Character, ApiError, ModifierWithSource, NamedDefinition } from "../../api/client";
+import { api, Character, ApiError, NamedDefinition } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
-import { applyModifiers } from "@shared/rules/modifiers";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
 
 const DEFAULT_SKILL_POINT_POOL = 100;
@@ -39,7 +38,7 @@ interface CharacterSheetProps {
   remaining: number;
   skillPointPool: number;
   allocations: Record<string, number>;
-  racialBonuses: Record<string, number>;
+  skillBonuses: Record<string, number>;
   onChangeAllocation: (skillCode: string, delta: number) => void;
   disableAllocation: boolean;
 }
@@ -52,7 +51,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   remaining,
   skillPointPool,
   allocations,
-  racialBonuses,
+  skillBonuses,
   onChangeAllocation,
   disableAllocation
 }) => {
@@ -172,8 +171,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 skills.map((skill) => {
                   const code = getSkillCode(skill);
                   const allocated = allocations[code] ?? 0;
-                  const racial = racialBonuses[code] ?? 0;
-                  const total = allocated + racial;
+                  const bonus = skillBonuses[code] ?? 0;
+                  const total = allocated + bonus;
                   const disableInc = disableAllocation || remaining <= 0;
                   const disableDec = disableAllocation || allocated <= 0;
                   return (
@@ -209,9 +208,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                           +
                         </button>
                       </div>
-                      <div style={{ color: racial >= 0 ? "#9ae6b4" : "#f7a046", fontSize: 12 }}>
-                        Racial {racial >= 0 ? "+" : ""}
-                        {racial}
+                      <div style={{ color: bonus >= 0 ? "#9ae6b4" : "#f7a046", fontSize: 12 }}>
+                        Bonus {bonus >= 0 ? "+" : ""}
+                        {bonus}
                       </div>
                       <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
                     </div>
@@ -250,12 +249,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
 export const CharactersPage: React.FC = () => {
   const [characters, setCharacters] = React.useState<Character[]>([]);
-  const [name, setName] = React.useState("");
-  const [raceKey, setRaceKey] = React.useState<string>("");
-  const [subraceKey, setSubraceKey] = React.useState<string>("");
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [allocationSavingId, setAllocationSavingId] = React.useState<string | null>(null);
 
   const { selectedId, setSelectedId } = useSelectedCharacter();
@@ -297,43 +292,14 @@ export const CharactersPage: React.FC = () => {
 
   React.useEffect(() => {
     if (!characters.length) {
-      if (selectedId) setSelectedId(null);
+      if (!loading && selectedId) setSelectedId(null);
       return;
     }
 
     if (!selectedId || !characters.some((c) => c.id === selectedId)) {
       setSelectedId(characters[0].id);
     }
-  }, [characters, selectedId, setSelectedId]);
-
-  const onCreate = async () => {
-    if (!name.trim() || isSubmitting) return;
-
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      const created = await api.createCharacter({
-        name: name.trim(),
-        level: 1,
-        raceKey: raceKey || undefined,
-        subraceKey: subraceKey || undefined,
-        skillPoints: DEFAULT_SKILL_POINT_POOL,
-        skillAllocations: {}
-      });
-      if (!created || !isCharacter(created)) {
-        setError("Unexpected response when creating character.");
-        return;
-      }
-      setCharacters((prev) => [...prev, created]);
-      setName("");
-      setSelectedId(created.id);
-    } catch (err) {
-      const message = err instanceof ApiError ? err.message : "Failed to create character";
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  }, [characters, loading, selectedId, setSelectedId]);
 
   const onChangeAllocation = async (skillCode: string, delta: number) => {
     if (!selectedId) return;
@@ -376,6 +342,7 @@ export const CharactersPage: React.FC = () => {
   const skillPointPool = selectedCharacter?.skillPoints ?? DEFAULT_SKILL_POINT_POOL;
   const totalAllocated = sumAllocations(currentAllocations);
   const remaining = skillPointPool - totalAllocated;
+  const skillBonuses = selectedCharacter?.skillBonuses ?? {};
 
   const raceMap = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -388,37 +355,6 @@ export const CharactersPage: React.FC = () => {
     (definitions?.subraces ?? []).forEach((s) => map.set(s.id, { name: s.name, parentId: s.parentId }));
     return map;
   }, [definitions]);
-
-  const availableSubraces = React.useMemo(
-    () =>
-      (definitions?.subraces ?? []).filter(
-        (s) => !raceKey || (s.parentId ? s.parentId === raceKey : true)
-      ),
-    [definitions, raceKey]
-  );
-
-  const racialBonuses = React.useMemo(() => {
-    if (!definitions || !selectedCharacter) return {} as Record<string, number>;
-    const baseSkills = Object.fromEntries(
-      definitions.skills.map((skill) => [getSkillCode(skill), { score: 0, racialBonus: 0 }])
-    );
-    const baseState = { skills: baseSkills } as Record<string, unknown>;
-
-    const applicable = (definitions.modifiers as ModifierWithSource[]).filter((m) => {
-      if (m.sourceType === "race") return m.sourceKey === selectedCharacter.raceKey;
-      if (m.sourceType === "subrace") return m.sourceKey === selectedCharacter.subraceKey;
-      return false;
-    });
-
-    const state = applyModifiers({ baseState, modifiers: applicable });
-    const result: Record<string, number> = {};
-    for (const skill of definitions.skills) {
-      const code = getSkillCode(skill);
-      const entry = (state.skills as Record<string, any> | undefined)?.[code];
-      result[code] = typeof entry?.racialBonus === "number" ? entry.racialBonus : 0;
-    }
-    return result;
-  }, [definitions, selectedCharacter]);
 
   const loadingAny = loading || definitionsLoading;
 
@@ -440,52 +376,6 @@ export const CharactersPage: React.FC = () => {
             gap: "0.75rem"
           }}
         >
-          <div>
-            <div style={{ fontSize: 14, color: "#9aa3b5", marginBottom: 6 }}>Create Character</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Name"
-                disabled={isSubmitting}
-              />
-              <select
-                value={raceKey}
-                onChange={(e) => {
-                  setRaceKey(e.target.value);
-                  setSubraceKey("");
-                }}
-                disabled={isSubmitting || definitionsLoading}
-              >
-                <option value="">Select race</option>
-                {(definitions?.races ?? []).map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={subraceKey}
-                onChange={(e) => setSubraceKey(e.target.value)}
-                disabled={isSubmitting || definitionsLoading}
-              >
-                <option value="">Select subrace</option>
-                {availableSubraces.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={onCreate}
-                disabled={isSubmitting || !name.trim()}
-                style={{ padding: "0.4rem 0.6rem" }}
-              >
-                {isSubmitting ? "Creating..." : "Create"}
-              </button>
-            </div>
-          </div>
-
           <div>
             <div style={{ fontSize: 14, color: "#9aa3b5", marginBottom: 6 }}>Characters</div>
             {loading && <p style={{ margin: 0 }}>Loading characters...</p>}
@@ -557,7 +447,7 @@ export const CharactersPage: React.FC = () => {
               remaining={remaining}
               skillPointPool={skillPointPool}
               allocations={currentAllocations}
-              racialBonuses={racialBonuses}
+              skillBonuses={skillBonuses}
               onChangeAllocation={onChangeAllocation}
               disableAllocation={loadingAny || allocationSavingId === selectedCharacter.id}
             />

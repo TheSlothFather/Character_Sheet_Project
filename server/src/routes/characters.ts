@@ -11,6 +11,7 @@ export interface StoredCharacter {
   notes?: string;
   skillPoints: number;
   skillAllocations: Record<string, number>;
+  skillBonuses?: Record<string, number>;
   backgrounds?: BackgroundSelection;
   attributes?: Record<string, number>;
   fatePoints?: number;
@@ -67,6 +68,17 @@ function sanitizeSkillAllocations(input: unknown): Record<string, number> {
     }
   }
   return result;
+}
+
+function sanitizeSkillBonuses(input: unknown): Record<string, number> | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const result: Record<string, number> = {};
+  for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      result[key] = value;
+    }
+  }
+  return Object.keys(result).length ? result : undefined;
 }
 
 function sanitizeBackgrounds(input: unknown): BackgroundSelection | undefined {
@@ -134,7 +146,7 @@ charactersRouter.get("/", async (_req: Request, res: Response) => {
 });
 
 charactersRouter.post("/", async (req: Request, res: Response) => {
-  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations, backgrounds, attributes, fatePoints } =
+  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations, skillBonuses, backgrounds, attributes, fatePoints } =
     req.body ?? {};
   if (typeof name !== "string" || !name.trim()) {
     return res.status(400).json({ error: "name is required" });
@@ -145,6 +157,7 @@ charactersRouter.post("/", async (req: Request, res: Response) => {
   const sanitizedAllocations = sanitizeSkillAllocations(skillAllocations);
   const sanitizedBackgrounds = sanitizeBackgrounds(backgrounds);
   const sanitizedAttributes = sanitizeAttributes(attributes);
+  const sanitizedSkillBonuses = sanitizeSkillBonuses(skillBonuses);
   const numericFatePoints = typeof fatePoints === "number" && Number.isFinite(fatePoints) ? fatePoints : undefined;
 
   try {
@@ -161,6 +174,7 @@ charactersRouter.post("/", async (req: Request, res: Response) => {
       skillAllocations: sanitizedAllocations,
       backgrounds: sanitizedBackgrounds,
       attributes: sanitizedAttributes,
+      skillBonuses: sanitizedSkillBonuses,
       fatePoints: numericFatePoints,
       createdAt: now,
       updatedAt: now
@@ -187,7 +201,7 @@ charactersRouter.get("/:id", async (req: Request, res: Response) => {
 });
 
 charactersRouter.put("/:id", async (req: Request, res: Response) => {
-  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations, backgrounds, attributes, fatePoints } =
+  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations, skillBonuses, backgrounds, attributes, fatePoints } =
     req.body ?? {};
 
   try {
@@ -202,6 +216,7 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
       typeof skillPoints === "number" && Number.isFinite(skillPoints) ? skillPoints : existing.skillPoints;
     const nextBackgrounds = backgrounds !== undefined ? sanitizeBackgrounds(backgrounds) : existing.backgrounds;
     const nextAttributes = attributes !== undefined ? sanitizeAttributes(attributes) : existing.attributes;
+    const nextSkillBonuses = skillBonuses !== undefined ? sanitizeSkillBonuses(skillBonuses) : existing.skillBonuses;
     const nextFatePoints =
       typeof fatePoints === "number" && Number.isFinite(fatePoints) ? fatePoints : existing.fatePoints;
 
@@ -216,6 +231,7 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
       skillAllocations: nextSkillAllocations,
       backgrounds: nextBackgrounds,
       attributes: nextAttributes,
+      skillBonuses: nextSkillBonuses,
       fatePoints: nextFatePoints,
       updatedAt: new Date().toISOString()
     };
