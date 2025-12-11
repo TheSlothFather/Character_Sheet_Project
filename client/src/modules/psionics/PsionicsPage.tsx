@@ -348,8 +348,10 @@ const SkillTree: React.FC<{
 
         if (tier === 3 && parentPositions.length) {
           const anchorAngle = Math.atan2(parentPositions[0].y, parentPositions[0].x);
-          const maxOffset = 0.35;
-          baseAngle = Math.max(anchorAngle - maxOffset, Math.min(anchorAngle + maxOffset, baseAngle));
+          const maxOffset = 0.3;
+          const offsetFromAnchor = baseAngle - anchorAngle;
+          const clampedOffset = Math.max(-maxOffset, Math.min(maxOffset, offsetFromAnchor));
+          baseAngle = anchorAngle + clampedOffset;
         }
 
         const anchorKey = parentPositions.length ? ability.prerequisiteIds[0] : `fallback-${ability.id}`;
@@ -359,8 +361,8 @@ const SkillTree: React.FC<{
 
       grouped.forEach((entries) => {
         entries.sort((a, b) => a.baseAngle - b.baseAngle);
-        const maxSpread = tier === 3 ? 0.52 : 0.65;
-        const minSpread = tier === 3 ? 0.42 : 0.35;
+        const maxSpread = tier === 3 ? 0.35 : 0.65;
+        const minSpread = tier === 3 ? 0.22 : 0.35;
         const spread = Math.min(maxSpread, Math.max(minSpread, (Math.PI * 0.5) / Math.max(entries.length, 2)));
         const offsetStart = -((entries.length - 1) / 2) * spread;
 
