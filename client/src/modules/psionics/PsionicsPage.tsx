@@ -35,6 +35,12 @@ type TreeOverride = {
   blockedEdges?: Array<{ from: string; to: string }>;
 };
 
+type PositionedNode = {
+  ability: PsionicAbility;
+  x: number;
+  y: number;
+};
+
 const DEFAULT_MENTAL_ATTRIBUTE = 3;
 
 const loadPersistedState = (
@@ -298,10 +304,68 @@ const SkillTree: React.FC<{
   const tierTwo = tiers.get(2) ?? [];
   const remainingTiers = orderedTiers.filter((tier) => tier > 2);
   const orbitRadius = Math.max(170, 90 + tierTwo.length * 18);
-  const centerHeight = Math.max(orbitRadius * 2 + 120, 380);
   const starterRadius = starterTier.length > 1 ? 42 : 0;
   const tierTwoAngleStep = tierTwo.length > 0 ? (2 * Math.PI) / tierTwo.length : 0;
   const starterAngleStep = starterTier.length > 0 ? (2 * Math.PI) / starterTier.length : 0;
+
+  const layout = React.useMemo(() => {
+    const positions = new Map<string, PositionedNode>();
+    let maxRadius = Math.max(orbitRadius, starterRadius);
+
+    starterTier.forEach((ability, index) => {
+      const angle = starterAngleStep * index - Math.PI / 2;
+      const x = Math.cos(angle) * starterRadius;
+      const y = Math.sin(angle) * starterRadius;
+      positions.set(ability.id, { ability, x, y });
+    });
+
+    tierTwo.forEach((ability, index) => {
+      const angle = tierTwoAngleStep * index - Math.PI / 2;
+      const x = Math.cos(angle) * orbitRadius;
+      const y = Math.sin(angle) * orbitRadius;
+      positions.set(ability.id, { ability, x, y });
+    });
+
+    remainingTiers.forEach((tier) => {
+      const abilitiesForTier = tiers.get(tier) ?? [];
+      const tierRadius = orbitRadius + (tier - 2) * 140;
+      maxRadius = Math.max(maxRadius, tierRadius);
+
+      const fallbackStep = abilitiesForTier.length > 0 ? (2 * Math.PI) / abilitiesForTier.length : 0;
+      const grouped = new Map<string, Array<{ ability: PsionicAbility; baseAngle: number }>>();
+
+      abilitiesForTier.forEach((ability, index) => {
+        const parentPositions = ability.prerequisiteIds
+          .map((id) => positions.get(id))
+          .filter((entry): entry is PositionedNode => Boolean(entry));
+
+        const baseAngle = parentPositions.length
+          ? parentPositions.reduce((sum, pos) => sum + Math.atan2(pos.y, pos.x), 0) / parentPositions.length
+          : fallbackStep * index - Math.PI / 2;
+
+        const anchorKey = parentPositions.length ? ability.prerequisiteIds[0] : `fallback-${ability.id}`;
+        if (!grouped.has(anchorKey)) grouped.set(anchorKey, []);
+        grouped.get(anchorKey)!.push({ ability, baseAngle });
+      });
+
+      grouped.forEach((entries) => {
+        entries.sort((a, b) => a.baseAngle - b.baseAngle);
+        const spread = 0.28;
+        const offsetStart = -((entries.length - 1) / 2) * spread;
+
+        entries.forEach((entry, idx) => {
+          const angle = entry.baseAngle + offsetStart + idx * spread;
+          const x = Math.cos(angle) * tierRadius;
+          const y = Math.sin(angle) * tierRadius;
+          positions.set(entry.ability.id, { ability: entry.ability, x, y });
+        });
+      });
+    });
+
+    return { positions: Array.from(positions.values()), maxRadius };
+  }, [orbitRadius, remainingTiers, starterAngleStep, starterRadius, starterTier, tierTwo, tierTwoAngleStep, tiers]);
+
+  const centerHeight = Math.max(layout.maxRadius * 2 + 200, 420);
 
   return (
     <div ref={containerRef} style={{ position: "relative", padding: "1.25rem 1rem 1rem" }}>
@@ -333,10 +397,7 @@ const SkillTree: React.FC<{
             marginBottom: "0.25rem"
           }}
         >
-          {starterTier.map((ability, index) => {
-            const angle = starterAngleStep * index - Math.PI / 2;
-            const x = Math.cos(angle) * starterRadius;
-            const y = Math.sin(angle) * starterRadius;
+          {layout.positions.map(({ ability, x, y }) => {
             const unlocked = isAbilityUnlocked(ability, purchased, { allowTier1WithoutPrereq: false });
             const isPurchased = purchased.has(ability.id);
             const isStarter = ability.tier === 1 && ability.prerequisiteIds.length === 0;
@@ -359,75 +420,7 @@ const SkillTree: React.FC<{
               </div>
             );
           })}
-
-          {tierTwo.map((ability, index) => {
-            const angle = tierTwoAngleStep * index - Math.PI / 2;
-            const x = Math.cos(angle) * orbitRadius;
-            const y = Math.sin(angle) * orbitRadius;
-            const unlocked = isAbilityUnlocked(ability, purchased, { allowTier1WithoutPrereq: false });
-            const isPurchased = purchased.has(ability.id);
-            const isStarter = ability.tier === 1 && ability.prerequisiteIds.length === 0;
-
-            return (
-              <div
-                key={ability.id}
-                ref={(el) => {
-                  if (el) nodeRefs.current.set(ability.id, el);
-                }}
-                style={{
-                  position: "absolute",
-                  left: `calc(50% + ${x}px)`,
-                  top: `calc(50% + ${y}px)`,
-                  transform: "translate(-50%, -50%)"
-                }}
-              >
-                <AbilityNode
-                  ability={ability}
-                  purchased={isPurchased}
-                  unlocked={unlocked}
-                  isStarter={isStarter}
-                  remainingPsi={remainingPsi}
-                  onPurchase={onPurchase}
-                />
-              </div>
-            );
-          })}
         </div>
-
-        {remainingTiers.map((tier) => (
-          <div
-            key={`${treeName}-tier-${tier}`}
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              flexWrap: "wrap",
-              gap: "1.25rem"
-            }}
-          >
-            {tiers.get(tier)?.map((ability) => {
-              const unlocked = isAbilityUnlocked(ability, purchased, { allowTier1WithoutPrereq: false });
-              const isPurchased = purchased.has(ability.id);
-              const isStarter = ability.tier === 1 && ability.prerequisiteIds.length === 0;
-              return (
-                <div
-                  key={ability.id}
-                  ref={(el) => {
-                    if (el) nodeRefs.current.set(ability.id, el);
-                  }}
-                >
-                  <AbilityNode
-                    ability={ability}
-                    purchased={isPurchased}
-                    unlocked={unlocked}
-                    isStarter={isStarter}
-                    remainingPsi={remainingPsi}
-                    onPurchase={onPurchase}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        ))}
       </div>
     </div>
   );
