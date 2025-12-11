@@ -122,7 +122,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "260px 300px 1fr", gap: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "260px 380px 1fr", gap: "1rem" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {levelCards.map((lvl) => (
             <div key={lvl} style={cardStyle}>
