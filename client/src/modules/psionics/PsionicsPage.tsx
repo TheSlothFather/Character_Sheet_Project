@@ -20,6 +20,30 @@ interface PsiState {
 const STORAGE_KEY = "psionics_skill_tree_v1";
 const DEFAULT_MENTAL_ATTRIBUTE = 3;
 
+const PSION_BACKGROUND_UNLOCKS: Record<
+  string,
+  { psiBonus: number; abilities: { tree: string; name: string }[] }
+> = {
+  psychometrist: { psiBonus: 1, abilities: [{ tree: "Psychometry", name: "Psychometry" }] },
+  telekineticist: { psiBonus: 1, abilities: [{ tree: "Telekinesis", name: "Telekinesis" }] },
+  telepath: { psiBonus: 1, abilities: [{ tree: "Telepathy", name: "Telepathy" }] },
+  hypnotist: { psiBonus: 1, abilities: [{ tree: "Hypnosis", name: "Hypnosis" }] },
+  dynakineticist: {
+    psiBonus: 1,
+    abilities: [
+      { tree: "Telekinesis", name: "Telekinesis" },
+      { tree: "Telekinesis", name: "Dynakinesis" }
+    ]
+  },
+  illusionist: {
+    psiBonus: 1,
+    abilities: [
+      { tree: "Hypnosis", name: "Hypnosis" },
+      { tree: "Hypnosis", name: "Illusion" }
+    ]
+  }
+};
+
 const loadPersistedState = (
   storageKey: string | null,
   defaultPsi: number,
@@ -143,6 +167,10 @@ export const PsionicsPage: React.FC = () => {
   const abilities = React.useMemo(() => parsePsionicsCsv(psionicsCsv), []);
   const abilityIds = React.useMemo(() => new Set(abilities.map((a) => a.id)), [abilities]);
   const abilityCostMap = React.useMemo(() => new Map(abilities.map((a) => [a.id, a.tier])), [abilities]);
+  const abilityKeyToId = React.useMemo(
+    () => new Map(abilities.map((a) => [`${a.tree}:${a.name}`, a.id])),
+    [abilities]
+  );
 
   const { selectedId } = useSelectedCharacter();
   const [selectedCharacter, setSelectedCharacter] = React.useState<Character | null>(null);
@@ -150,14 +178,47 @@ export const PsionicsPage: React.FC = () => {
   const [loadingCharacter, setLoadingCharacter] = React.useState(false);
 
   const storageKey = React.useMemo(() => (selectedId ? `${STORAGE_KEY}:${selectedId}` : null), [selectedId]);
+  const backgroundBenefits = React.useMemo(() => {
+    const adulthoodBackgrounds = selectedCharacter?.backgrounds?.adulthood ?? [];
+    const granted = new Set<string>();
+    let psiBonus = 0;
+
+    adulthoodBackgrounds.forEach((name) => {
+      const config = PSION_BACKGROUND_UNLOCKS[name.toLowerCase()];
+      if (!config) return;
+      psiBonus += config.psiBonus;
+      config.abilities.forEach(({ tree, name: abilityName }) => {
+        const id = abilityKeyToId.get(`${tree}:${abilityName}`);
+        if (id) granted.add(id);
+      });
+    });
+
+    return { psiBonus, grantedIds: Array.from(granted) };
+  }, [abilityKeyToId, selectedCharacter?.backgrounds?.adulthood]);
+
+  const backgroundGrantKey = React.useMemo(
+    () => backgroundBenefits.grantedIds.slice().sort().join("|"),
+    [backgroundBenefits.grantedIds]
+  );
+
+  const defaultPsiPool = DEFAULT_PSI_POINTS + backgroundBenefits.psiBonus;
+  const defaultMentalAttribute = selectedCharacter?.attributes?.MENTAL ?? DEFAULT_MENTAL_ATTRIBUTE;
 
   const [state, setState] = React.useState<PsiState>(() =>
-    loadPersistedState(storageKey, DEFAULT_PSI_POINTS, DEFAULT_MENTAL_ATTRIBUTE, abilityIds)
+    loadPersistedState(storageKey, defaultPsiPool, defaultMentalAttribute, abilityIds)
   );
 
   React.useEffect(() => {
-    setState(loadPersistedState(storageKey, DEFAULT_PSI_POINTS, DEFAULT_MENTAL_ATTRIBUTE, abilityIds));
-  }, [abilityIds, storageKey]);
+    const nextState = loadPersistedState(storageKey, defaultPsiPool, defaultMentalAttribute, abilityIds);
+    const purchased = new Set(nextState.purchased);
+    backgroundBenefits.grantedIds.forEach((id) => purchased.add(id));
+
+    setState({
+      psiPool: Math.max(defaultPsiPool, nextState.psiPool),
+      mental: nextState.mental,
+      purchased
+    });
+  }, [abilityIds, backgroundGrantKey, defaultMentalAttribute, defaultPsiPool, storageKey]);
 
   React.useEffect(() => {
     persistState(storageKey, state);

@@ -1117,27 +1117,30 @@
   },
   {
     "stage": "Adulthood",
-    "category": "Climbing does not cost extra action or energy. +1 Fate Point.",
+    "category": "Sailor",
     "name": "Boatswain",
     "details": "[+30 Craft, +17 Forage, +8 Search]",
     "startingWealth": "Insignificant",
-    "startingEquipment": "Carpentry tools, textile tools, rope making tools, measuring tools"
+    "startingEquipment": "Carpentry tools, textile tools, rope making tools, measuring tools",
+    "feature": "Climbing does not cost extra action or energy. +1 Fate Point."
   },
   {
     "stage": "Adulthood",
-    "category": "You may perform labor for pay aboard ships. +1 Fate Point.",
+    "category": "Sailor",
     "name": "Captain",
     "details": "[+30 intimidate, +17 Battle, +8 Parley]",
     "startingWealth": "Significant",
-    "startingEquipment": "Spyglass, exotic pet, small or medium weapon of choice, 1 artifact, game of choice, 1 friend, set of fine clothes, organization signifier"
+    "startingEquipment": "Spyglass, exotic pet, small or medium weapon of choice, 1 artifact, game of choice, 1 friend, set of fine clothes, organization signifier",
+    "feature": "You may perform labor for pay aboard ships. +1 Fate Point."
   },
   {
     "stage": "Adulthood",
-    "category": "You command a crewed ship. +1 Fate Point.",
+    "category": "Sailor",
     "name": "Navy",
     "details": "[+30 Battle, +17 Endure, +8 Parley]",
     "startingWealth": "Moderate",
-    "startingEquipment": "Weapon of choice, light armor, writ, organization signifier"
+    "startingEquipment": "Weapon of choice, light armor, writ, organization signifier",
+    "feature": "You command a crewed ship. +1 Fate Point."
   },
   {
     "stage": "Adulthood",
