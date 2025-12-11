@@ -7,9 +7,23 @@ export interface Character {
   notes?: string;
   skillPoints: number;
   skillAllocations: Record<string, number>;
+  backgrounds?: BackgroundSelection;
+  attributes?: AttributeScores;
+  fatePoints?: number;
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface BackgroundSelection {
+  family?: string;
+  childhood?: string;
+  adolescence?: string;
+  adulthood?: string[];
+  flaws?: string[];
+  incitingIncident?: string;
+}
+
+export type AttributeScores = Record<string, number>;
 
 import type { Expr } from "@shared/rules/expressions";
 import type { Modifier } from "@shared/rules/modifiers";
@@ -132,6 +146,9 @@ export const api = {
     notes?: string;
     skillPoints?: number;
     skillAllocations?: Record<string, number>;
+    backgrounds?: BackgroundSelection;
+    attributes?: AttributeScores;
+    fatePoints?: number;
   }) =>
     apiRequest<Character>("/characters", {
       method: "POST",
@@ -147,6 +164,9 @@ export const api = {
       notes?: string;
       skillPoints?: number;
       skillAllocations?: Record<string, number>;
+      backgrounds?: BackgroundSelection;
+      attributes?: AttributeScores;
+      fatePoints?: number;
     }>
   ) =>
     apiRequest<Character>(`/characters/${id}`, {

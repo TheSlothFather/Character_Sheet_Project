@@ -528,6 +528,22 @@ export const CharactersPage: React.FC = () => {
             minHeight: 600
           }}
         >
+          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
+            <div style={{ fontWeight: 700 }}>Selected character</div>
+            <select
+              value={selectedId ?? ""}
+              onChange={(e) => setSelectedId(e.target.value || null)}
+              disabled={loadingAny || characters.length === 0}
+              style={{ minWidth: 200 }}
+            >
+              {characters.length === 0 && <option value="">No characters</option>}
+              {characters.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
           {loadingAny && <p style={{ margin: 0 }}>Loading sheet...</p>}
           {!loadingAny && !selectedCharacter && (
             <p style={{ margin: 0 }}>Select a character to view the sheet.</p>

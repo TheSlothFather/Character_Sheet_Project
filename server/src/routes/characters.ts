@@ -11,8 +11,20 @@ export interface StoredCharacter {
   notes?: string;
   skillPoints: number;
   skillAllocations: Record<string, number>;
+  backgrounds?: BackgroundSelection;
+  attributes?: Record<string, number>;
+  fatePoints?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface BackgroundSelection {
+  family?: string;
+  childhood?: string;
+  adolescence?: string;
+  adulthood?: string[];
+  flaws?: string[];
+  incitingIncident?: string;
 }
 
 const DEFAULT_SKILL_POINTS = 100;
@@ -57,6 +69,54 @@ function sanitizeSkillAllocations(input: unknown): Record<string, number> {
   return result;
 }
 
+function sanitizeBackgrounds(input: unknown): BackgroundSelection | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const value = input as Record<string, unknown>;
+
+  const normalizeString = (key: string): string | undefined =>
+    typeof value[key] === "string" && value[key] ? (value[key] as string) : undefined;
+
+  const normalizeStringArray = (key: string): string[] | undefined => {
+    const raw = value[key];
+    if (!Array.isArray(raw)) return undefined;
+    const cleaned = raw.filter((v): v is string => typeof v === "string" && v.trim().length > 0);
+    return cleaned.length ? cleaned : undefined;
+  };
+
+  const selection: BackgroundSelection = {
+    family: normalizeString("family"),
+    childhood: normalizeString("childhood"),
+    adolescence: normalizeString("adolescence"),
+    adulthood: normalizeStringArray("adulthood"),
+    flaws: normalizeStringArray("flaws"),
+    incitingIncident: normalizeString("incitingIncident"),
+  };
+
+  if (
+    !selection.family &&
+    !selection.childhood &&
+    !selection.adolescence &&
+    !selection.adulthood &&
+    !selection.flaws &&
+    !selection.incitingIncident
+  ) {
+    return undefined;
+  }
+
+  return selection;
+}
+
+function sanitizeAttributes(input: unknown): Record<string, number> | undefined {
+  if (!input || typeof input !== "object") return undefined;
+  const result: Record<string, number> = {};
+  for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      result[key] = value;
+    }
+  }
+  return Object.keys(result).length ? result : undefined;
+}
+
 function createCharacterId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -74,7 +134,8 @@ charactersRouter.get("/", async (_req: Request, res: Response) => {
 });
 
 charactersRouter.post("/", async (req: Request, res: Response) => {
-  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations } = req.body ?? {};
+  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations, backgrounds, attributes, fatePoints } =
+    req.body ?? {};
   if (typeof name !== "string" || !name.trim()) {
     return res.status(400).json({ error: "name is required" });
   }
@@ -82,6 +143,9 @@ charactersRouter.post("/", async (req: Request, res: Response) => {
   const numericSkillPoints =
     typeof skillPoints === "number" && Number.isFinite(skillPoints) ? skillPoints : DEFAULT_SKILL_POINTS;
   const sanitizedAllocations = sanitizeSkillAllocations(skillAllocations);
+  const sanitizedBackgrounds = sanitizeBackgrounds(backgrounds);
+  const sanitizedAttributes = sanitizeAttributes(attributes);
+  const numericFatePoints = typeof fatePoints === "number" && Number.isFinite(fatePoints) ? fatePoints : undefined;
 
   try {
     const characters = await readCharacters();
@@ -95,6 +159,9 @@ charactersRouter.post("/", async (req: Request, res: Response) => {
       notes: typeof notes === "string" ? notes : undefined,
       skillPoints: numericSkillPoints,
       skillAllocations: sanitizedAllocations,
+      backgrounds: sanitizedBackgrounds,
+      attributes: sanitizedAttributes,
+      fatePoints: numericFatePoints,
       createdAt: now,
       updatedAt: now
     };
@@ -120,7 +187,8 @@ charactersRouter.get("/:id", async (req: Request, res: Response) => {
 });
 
 charactersRouter.put("/:id", async (req: Request, res: Response) => {
-  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations } = req.body ?? {};
+  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations, backgrounds, attributes, fatePoints } =
+    req.body ?? {};
 
   try {
     const characters = await readCharacters();
@@ -132,6 +200,10 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
       skillAllocations !== undefined ? sanitizeSkillAllocations(skillAllocations) : existing.skillAllocations;
     const nextSkillPoints =
       typeof skillPoints === "number" && Number.isFinite(skillPoints) ? skillPoints : existing.skillPoints;
+    const nextBackgrounds = backgrounds !== undefined ? sanitizeBackgrounds(backgrounds) : existing.backgrounds;
+    const nextAttributes = attributes !== undefined ? sanitizeAttributes(attributes) : existing.attributes;
+    const nextFatePoints =
+      typeof fatePoints === "number" && Number.isFinite(fatePoints) ? fatePoints : existing.fatePoints;
 
     const updated: StoredCharacter = {
       ...existing,
@@ -142,6 +214,9 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
       notes: typeof notes === "string" ? notes : existing.notes,
       skillPoints: nextSkillPoints,
       skillAllocations: nextSkillAllocations,
+      backgrounds: nextBackgrounds,
+      attributes: nextAttributes,
+      fatePoints: nextFatePoints,
       updatedAt: new Date().toISOString()
     };
 
