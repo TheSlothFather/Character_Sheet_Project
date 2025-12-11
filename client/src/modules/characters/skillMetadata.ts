@@ -59,7 +59,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   MENTAL: "Mental Skills",
   SPIRITUAL: "Spiritual Skills",
   WILL: "Will Skills",
-  "PHYSICAL+MENTAL": "Subsistenc) Skills",
+  "PHYSICAL+MENTAL": "Subsistence Skills",
   "PHYSICAL+SPIRITUAL": "Intuition Skills",
   "PHYSICAL+WILL": "Presence Skills",
   "MENTAL+WILL": "Cunning Skills",
