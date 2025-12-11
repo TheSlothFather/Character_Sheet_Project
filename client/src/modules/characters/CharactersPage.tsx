@@ -122,7 +122,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "260px 380px 1fr", gap: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "280px 480px 1fr", gap: "1rem" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {levelCards.map((lvl) => (
             <div key={lvl} style={cardStyle}>
@@ -174,7 +174,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
                     gap: "0.75rem"
                   }}
                 >
@@ -207,10 +207,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                 key={code}
                                 style={{
                                   display: "grid",
-                                  gridTemplateColumns: "1fr 74px 72px 70px",
+                                  gridTemplateColumns: "1fr 100px 100px 90px",
                                   alignItems: "center",
-                                  gap: "0.35rem",
-                                  padding: "0.35rem 0.2rem",
+                                  gap: "0.45rem",
+                                  padding: "0.4rem 0.25rem",
                                   borderBottom: "1px solid #161b23",
                                   background: "#0c0f14",
                                   borderRadius: 6
@@ -237,7 +237,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                     +
                                   </button>
                                 </div>
-                                <div style={{ color: bonus >= 0 ? "#9ae6b4" : "#f7a046", fontSize: 12 }}>
+                                <div
+                                  style={{
+                                    color: bonus >= 0 ? "#9ae6b4" : "#f7a046",
+                                    fontSize: 12,
+                                    textAlign: "right"
+                                  }}
+                                >
                                   Bonus {bonus >= 0 ? "+" : ""}
                                   {bonus}
                                 </div>
