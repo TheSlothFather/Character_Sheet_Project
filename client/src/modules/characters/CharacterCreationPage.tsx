@@ -394,6 +394,24 @@ export const CharacterCreationPage: React.FC = () => {
   const attributeTotal = Object.values(attributes).reduce((acc, v) => acc + v, 0);
   const attributeRemaining = ATTRIBUTE_POINT_POOL - attributeTotal;
 
+  const selectedBackgrounds = React.useMemo(() => {
+    const lookup = new Map<string, BackgroundOption>();
+    backgroundOptions.forEach((opt) => lookup.set(`${opt.stage}:${opt.name}`, opt));
+    const picks: BackgroundOption[] = [];
+    const pushIf = (stage: BackgroundStage, value?: string | null) => {
+      if (!value) return;
+      const found = lookup.get(`${stage}:${value}`);
+      if (found) picks.push(found);
+    };
+    pushIf("Family", selection.family);
+    pushIf("Childhood", selection.childhood);
+    pushIf("Adolescence", selection.adolescence);
+    (selection.adulthood ?? []).forEach((v) => pushIf("Adulthood", v));
+    (selection.flaws ?? []).forEach((v) => pushIf("Flaws", v));
+    pushIf("Inciting Incident", selection.incitingIncident);
+    return picks;
+  }, [backgroundOptions, selection]);
+
   const attributeSkillBonuses = React.useMemo(
     () => computeAttributeSkillBonuses(attributes, definitions?.skills),
     [attributes, definitions]
@@ -424,24 +442,6 @@ export const CharacterCreationPage: React.FC = () => {
     () => [...(definitions?.skills ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
     [definitions]
   );
-
-  const selectedBackgrounds = React.useMemo(() => {
-    const lookup = new Map<string, BackgroundOption>();
-    backgroundOptions.forEach((opt) => lookup.set(`${opt.stage}:${opt.name}`, opt));
-    const picks: BackgroundOption[] = [];
-    const pushIf = (stage: BackgroundStage, value?: string | null) => {
-      if (!value) return;
-      const found = lookup.get(`${stage}:${value}`);
-      if (found) picks.push(found);
-    };
-    pushIf("Family", selection.family);
-    pushIf("Childhood", selection.childhood);
-    pushIf("Adolescence", selection.adolescence);
-    (selection.adulthood ?? []).forEach((v) => pushIf("Adulthood", v));
-    (selection.flaws ?? []).forEach((v) => pushIf("Flaws", v));
-    pushIf("Inciting Incident", selection.incitingIncident);
-    return picks;
-  }, [backgroundOptions, selection]);
 
   const bonusFatePoints = selectedBackgrounds.reduce((acc, b) => acc + b.fateBonus, 0);
   const totalFatePoints = 3 + bonusFatePoints;
