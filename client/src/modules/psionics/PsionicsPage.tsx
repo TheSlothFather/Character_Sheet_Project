@@ -172,28 +172,51 @@ const AbilityNode: React.FC<{
   ability: PsionicAbility;
   purchased: boolean;
   unlocked: boolean;
+  isStarter: boolean;
   remainingPsi: number;
   onPurchase: (ability: PsionicAbility) => void;
-}> = ({ ability, purchased, unlocked, remainingPsi, onPurchase }) => {
+}> = ({ ability, purchased, unlocked, isStarter, remainingPsi, onPurchase }) => {
   const psiCost = ability.tier;
   const canAfford = remainingPsi >= psiCost;
-  const status = purchased ? "purchased" : unlocked && canAfford ? "available" : unlocked ? "locked-cost" : "locked";
+  const status = purchased
+    ? "purchased"
+    : unlocked
+      ? canAfford
+        ? "available"
+        : "locked-cost"
+      : isStarter
+        ? canAfford
+          ? "starter"
+          : "starter-cost"
+        : "locked";
 
   const colors: Record<string, { bg: string; border: string; text: string }> = {
     purchased: { bg: "#1f352a", border: "#3ca66a", text: "#b5f5c8" },
     available: { bg: "#18202c", border: "#3b82f6", text: "#dce7ff" },
+    starter: { bg: "#1f1631", border: "#a855f7", text: "#e9d5ff" },
+    "starter-cost": { bg: "#181027", border: "#6b21a8", text: "#c7b5ec" },
     "locked-cost": { bg: "#141924", border: "#334155", text: "#9aa3b5" },
     locked: { bg: "#0f141d", border: "#1f2935", text: "#6b7280" }
   };
 
   const palette = colors[status];
-  const disabled = !unlocked || purchased || !canAfford;
+  const disabled = purchased || (!unlocked && !isStarter) || !canAfford;
 
   return (
     <button
       onClick={() => onPurchase(ability)}
       disabled={disabled}
-      title={purchased ? "Already purchased" : unlocked ? (canAfford ? "Purchase ability" : "Not enough Psi") : "Locked"}
+      title={
+        purchased
+          ? "Already purchased"
+          : unlocked
+            ? canAfford
+              ? "Purchase ability"
+              : "Not enough Psi"
+            : isStarter
+              ? "Spend Psi to unlock this tree"
+              : "Locked"
+      }
       style={{
         minWidth: 120,
         minHeight: 52,
@@ -271,9 +294,17 @@ const SkillTree: React.FC<{
   }, [refreshLines]);
 
   const orderedTiers = Array.from(tiers.keys()).sort((a, b) => a - b);
+  const starterTier = tiers.get(1) ?? [];
+  const tierTwo = tiers.get(2) ?? [];
+  const remainingTiers = orderedTiers.filter((tier) => tier > 2);
+  const orbitRadius = Math.max(170, 90 + tierTwo.length * 18);
+  const centerHeight = Math.max(orbitRadius * 2 + 120, 380);
+  const starterRadius = starterTier.length > 1 ? 42 : 0;
+  const tierTwoAngleStep = tierTwo.length > 0 ? (2 * Math.PI) / tierTwo.length : 0;
+  const starterAngleStep = starterTier.length > 0 ? (2 * Math.PI) / starterTier.length : 0;
 
   return (
-    <div ref={containerRef} style={{ position: "relative" }}>
+    <div ref={containerRef} style={{ position: "relative", padding: "1.25rem 1rem 1rem" }}>
       <svg
         width="100%"
         height={containerHeight}
@@ -294,20 +325,89 @@ const SkillTree: React.FC<{
         ))}
       </svg>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        {orderedTiers.map((tier) => (
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        <div
+          style={{
+            position: "relative",
+            minHeight: centerHeight,
+            marginBottom: "0.25rem"
+          }}
+        >
+          {starterTier.map((ability, index) => {
+            const angle = starterAngleStep * index - Math.PI / 2;
+            const x = Math.cos(angle) * starterRadius;
+            const y = Math.sin(angle) * starterRadius;
+            const unlocked = isAbilityUnlocked(ability, purchased, { allowTier1WithoutPrereq: false });
+            const isPurchased = purchased.has(ability.id);
+            const isStarter = ability.tier === 1 && ability.prerequisiteIds.length === 0;
+            return (
+              <div
+                key={ability.id}
+                ref={(el) => {
+                  if (el) nodeRefs.current.set(ability.id, el);
+                }}
+                style={{ position: "absolute", left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)`, transform: "translate(-50%, -50%)" }}
+              >
+                <AbilityNode
+                  ability={ability}
+                  purchased={isPurchased}
+                  unlocked={unlocked}
+                  isStarter={isStarter}
+                  remainingPsi={remainingPsi}
+                  onPurchase={onPurchase}
+                />
+              </div>
+            );
+          })}
+
+          {tierTwo.map((ability, index) => {
+            const angle = tierTwoAngleStep * index - Math.PI / 2;
+            const x = Math.cos(angle) * orbitRadius;
+            const y = Math.sin(angle) * orbitRadius;
+            const unlocked = isAbilityUnlocked(ability, purchased, { allowTier1WithoutPrereq: false });
+            const isPurchased = purchased.has(ability.id);
+            const isStarter = ability.tier === 1 && ability.prerequisiteIds.length === 0;
+
+            return (
+              <div
+                key={ability.id}
+                ref={(el) => {
+                  if (el) nodeRefs.current.set(ability.id, el);
+                }}
+                style={{
+                  position: "absolute",
+                  left: `calc(50% + ${x}px)`,
+                  top: `calc(50% + ${y}px)`,
+                  transform: "translate(-50%, -50%)"
+                }}
+              >
+                <AbilityNode
+                  ability={ability}
+                  purchased={isPurchased}
+                  unlocked={unlocked}
+                  isStarter={isStarter}
+                  remainingPsi={remainingPsi}
+                  onPurchase={onPurchase}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {remainingTiers.map((tier) => (
           <div
             key={`${treeName}-tier-${tier}`}
             style={{
               display: "flex",
               justifyContent: "center",
               flexWrap: "wrap",
-              gap: "0.75rem"
+              gap: "1.25rem"
             }}
           >
             {tiers.get(tier)?.map((ability) => {
-              const unlocked = isAbilityUnlocked(ability, purchased);
+              const unlocked = isAbilityUnlocked(ability, purchased, { allowTier1WithoutPrereq: false });
               const isPurchased = purchased.has(ability.id);
+              const isStarter = ability.tier === 1 && ability.prerequisiteIds.length === 0;
               return (
                 <div
                   key={ability.id}
@@ -319,6 +419,7 @@ const SkillTree: React.FC<{
                     ability={ability}
                     purchased={isPurchased}
                     unlocked={unlocked}
+                    isStarter={isStarter}
                     remainingPsi={remainingPsi}
                     onPurchase={onPurchase}
                   />
@@ -458,7 +559,7 @@ export const PsionicsPage: React.FC = () => {
     const grouped = new Map<string, PsionicAbility[]>();
     abilities.forEach((ability) => {
       const purchased = state.purchased.has(ability.id);
-      const unlocked = purchased || isAbilityUnlocked(ability, state.purchased);
+      const unlocked = purchased || isAbilityUnlocked(ability, state.purchased, { allowTier1WithoutPrereq: false });
       if (!unlocked) return;
       if (!grouped.has(ability.tree)) grouped.set(ability.tree, []);
       grouped.get(ability.tree)!.push(ability);
@@ -474,7 +575,8 @@ export const PsionicsPage: React.FC = () => {
   const handlePurchase = (ability: PsionicAbility) => {
     setState((prev) => {
       if (prev.purchased.has(ability.id)) return prev;
-      if (!isAbilityUnlocked(ability, prev.purchased)) return prev;
+      const starterAbility = ability.tier === 1 && ability.prerequisiteIds.length === 0;
+      if (!starterAbility && !isAbilityUnlocked(ability, prev.purchased, { allowTier1WithoutPrereq: false })) return prev;
       const psiCost = ability.tier;
       const spent = Array.from(prev.purchased).reduce((sum, id) => sum + (abilityCostMap.get(id) ?? 0), 0);
       const available = prev.psiPool - spent;
