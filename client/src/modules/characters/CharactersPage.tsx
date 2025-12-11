@@ -2,6 +2,7 @@ import React from "react";
 import { api, Character, ApiError, NamedDefinition } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
+import { getSkillCode, groupSkillsByCategory } from "./skillMetadata";
 
 const DEFAULT_SKILL_POINT_POOL = 100;
 
@@ -24,8 +25,6 @@ const isCharacter = (value: unknown): value is Character => {
 
 const isCharacterArray = (value: unknown): value is Character[] =>
   Array.isArray(value) && value.every(isCharacter);
-
-const getSkillCode = (skill: NamedDefinition): string => skill.code ?? skill.id;
 
 const sumAllocations = (allocations: Record<string, number>): number =>
   Object.values(allocations).reduce((acc, v) => acc + v, 0);
@@ -56,6 +55,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   disableAllocation
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>("Weapons");
+  const groupedSkills = React.useMemo(() => groupSkillsByCategory(skills), [skills]);
 
   const summaryBarStyle: React.CSSProperties = {
     background: "#1a1d24",
@@ -167,58 +167,88 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               </div>
               <div style={{ fontSize: 12, color: "#9aa3b5" }}>Pool: {skillPointPool}</div>
             </div>
-            <div style={{ overflowY: "auto", padding: "0.5rem 0.75rem", flex: 1 }}>
+            <div style={{ overflowY: "auto", padding: "0.75rem", flex: 1 }}>
               {skills.length === 0 ? (
                 <div style={{ padding: "0.5rem 0.25rem", color: "#9aa3b5" }}>No skills defined yet.</div>
               ) : (
-                skills.map((skill) => {
-                  const code = getSkillCode(skill);
-                  const allocated = allocations[code] ?? 0;
-                  const bonus = skillBonuses[code] ?? 0;
-                  const total = allocated + bonus;
-                  const disableInc = disableAllocation || remaining <= 0;
-                  const disableDec = disableAllocation || allocated <= 0;
-                  return (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                    gap: "0.75rem"
+                  }}
+                >
+                  {groupedSkills.map((group) => (
                     <div
-                      key={code}
+                      key={group.key}
                       style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 70px 70px 80px",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        padding: "0.4rem 0.25rem",
-                        borderBottom: "1px solid #1f242d"
+                        border: "1px solid #1f242d",
+                        borderRadius: 8,
+                        padding: "0.5rem 0.6rem",
+                        background: "#0e1118",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6
                       }}
                     >
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{skill.name}</div>
-                        <div style={{ fontSize: 11, color: "#79839a" }}>{code}</div>
+                      <div style={{ fontWeight: 700, color: "#e8edf7" }}>{group.label}</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        {[...group.skills]
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map((skill) => {
+                            const code = getSkillCode(skill);
+                            const allocated = allocations[code] ?? 0;
+                            const bonus = skillBonuses[code] ?? 0;
+                            const total = allocated + bonus;
+                            const disableInc = disableAllocation || remaining <= 0;
+                            const disableDec = disableAllocation || allocated <= 0;
+                            return (
+                              <div
+                                key={code}
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "1fr 74px 72px 70px",
+                                  alignItems: "center",
+                                  gap: "0.35rem",
+                                  padding: "0.35rem 0.2rem",
+                                  borderBottom: "1px solid #161b23",
+                                  background: "#0c0f14",
+                                  borderRadius: 6
+                                }}
+                              >
+                                <div>
+                                  <div style={{ fontWeight: 600 }}>{skill.name}</div>
+                                  <div style={{ fontSize: 11, color: "#79839a" }}>{code}</div>
+                                </div>
+                                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                  <button
+                                    onClick={() => onChangeAllocation(code, -1)}
+                                    disabled={disableDec}
+                                    style={{ padding: "0.2rem 0.4rem" }}
+                                  >
+                                    -
+                                  </button>
+                                  <div style={{ width: 28, textAlign: "center" }}>{allocated}</div>
+                                  <button
+                                    onClick={() => onChangeAllocation(code, 1)}
+                                    disabled={disableInc}
+                                    style={{ padding: "0.2rem 0.4rem" }}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <div style={{ color: bonus >= 0 ? "#9ae6b4" : "#f7a046", fontSize: 12 }}>
+                                  Bonus {bonus >= 0 ? "+" : ""}
+                                  {bonus}
+                                </div>
+                                <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
+                              </div>
+                            );
+                          })}
                       </div>
-                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                        <button
-                          onClick={() => onChangeAllocation(code, -1)}
-                          disabled={disableDec}
-                          style={{ padding: "0.2rem 0.4rem" }}
-                        >
-                          -
-                        </button>
-                        <div style={{ width: 28, textAlign: "center" }}>{allocated}</div>
-                        <button
-                          onClick={() => onChangeAllocation(code, 1)}
-                          disabled={disableInc}
-                          style={{ padding: "0.2rem 0.4rem" }}
-                        >
-                          +
-                        </button>
-                      </div>
-                      <div style={{ color: bonus >= 0 ? "#9ae6b4" : "#f7a046", fontSize: 12 }}>
-                        Bonus {bonus >= 0 ? "+" : ""}
-                        {bonus}
-                      </div>
-                      <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
                     </div>
-                  );
-                })
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -255,6 +285,7 @@ export const CharactersPage: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [allocationSavingId, setAllocationSavingId] = React.useState<string | null>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
   const { selectedId, setSelectedId } = useSelectedCharacter();
 
@@ -303,6 +334,29 @@ export const CharactersPage: React.FC = () => {
       setSelectedId(characters[0].id);
     }
   }, [characters, loading, selectedId, setSelectedId]);
+
+  const handleDeleteCharacter = async (id: string) => {
+    const character = characters.find((c) => c.id === id);
+    if (!character) return;
+    if (!window.confirm(`Delete ${character.name}? This cannot be undone.`)) return;
+
+    setError(null);
+    setDeletingId(id);
+    try {
+      await api.deleteCharacter(id);
+      setCharacters((prev) => {
+        const next = prev.filter((c) => c.id !== id);
+        const nextSelected = selectedId === id ? next[0]?.id ?? null : selectedId;
+        setSelectedId(nextSelected ?? null);
+        return next;
+      });
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Failed to delete character";
+      setError(message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const onChangeAllocation = async (skillCode: string, delta: number) => {
     if (!selectedId) return;
@@ -387,25 +441,44 @@ export const CharactersPage: React.FC = () => {
               {characters.map((c) => {
                 const selected = c.id === selectedId;
                 return (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedId(c.id)}
-                    style={{
-                      textAlign: "left",
-                      padding: "0.5rem 0.6rem",
-                      borderRadius: 8,
-                      border: selected ? "1px solid #f38b2f" : "1px solid #2d343f",
-                      background: selected ? "#1f2a33" : "#14171d",
-                      color: "#e8edf7",
-                      cursor: "pointer"
-                    }}
-                  >
-                    <div style={{ fontWeight: 700 }}>{c.name}</div>
-                    <div style={{ fontSize: 12, color: "#9aa3b5" }}>
-                      Lv {c.level} • {raceMap.get(c.raceKey || "") ?? "No race"} /{" "}
-                      {subraceMap.get(c.subraceKey || "")?.name ?? "No subrace"}
-                    </div>
-                  </button>
+                  <div key={c.id} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <button
+                      onClick={() => setSelectedId(c.id)}
+                      style={{
+                        flex: 1,
+                        textAlign: "left",
+                        padding: "0.5rem 0.6rem",
+                        borderRadius: 8,
+                        border: selected ? "1px solid #f38b2f" : "1px solid #2d343f",
+                        background: selected ? "#1f2a33" : "#14171d",
+                        color: "#e8edf7",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <div style={{ fontWeight: 700 }}>{c.name}</div>
+                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                        Lv {c.level} • {raceMap.get(c.raceKey || "") ?? "No race"} /{" "}
+                        {subraceMap.get(c.subraceKey || "")?.name ?? "No subrace"}
+                      </div>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCharacter(c.id);
+                      }}
+                      disabled={deletingId === c.id || loadingAny}
+                      style={{
+                        padding: "0.45rem 0.55rem",
+                        borderRadius: 8,
+                        border: "1px solid #402b2b",
+                        background: deletingId === c.id ? "#2b1c1c" : "#1b1111",
+                        color: "#f7a046",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {deletingId === c.id ? "Deleting" : "Delete"}
+                    </button>
+                  </div>
                 );
               })}
             </div>

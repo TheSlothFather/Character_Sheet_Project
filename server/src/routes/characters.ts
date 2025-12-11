@@ -244,3 +244,18 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
     res.status(500).json({ error: message });
   }
 });
+
+charactersRouter.delete("/:id", async (req: Request, res: Response) => {
+  try {
+    const characters = await readCharacters();
+    const idx = characters.findIndex((c) => c.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ error: "not found" });
+
+    characters.splice(idx, 1);
+    await writeCharacters(characters);
+    res.status(204).end();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unable to delete character";
+    res.status(500).json({ error: message });
+  }
+});

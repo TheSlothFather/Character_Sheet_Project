@@ -176,5 +176,9 @@ export const api = {
       method: "PUT",
       body: JSON.stringify(payload)
     }),
+  deleteCharacter: (id: string) =>
+    apiRequest<void>(`/characters/${id}`, {
+      method: "DELETE"
+    }),
   getDefinitions: () => apiRequest<DefinitionsResponse>("/definitions")
 };
