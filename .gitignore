@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 *.pyo
 *.swp
+
+# Legacy background data (replaced by backgrounds.json)
+client/src/data/backgrounds.csv
