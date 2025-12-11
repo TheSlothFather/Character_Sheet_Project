@@ -19,6 +19,22 @@ interface PsiState {
   backgroundPicks: Set<string>;
 }
 
+type LineSegment = {
+  fromId: string;
+  toId: string;
+};
+
+type PositionedLine = {
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+};
+
+type TreeOverride = {
+  tierOrder?: Record<number, string[]>;
+  extraEdges?: Array<{ from: string; to: string }>;
+  blockedEdges?: Array<{ from: string; to: string }>;
+};
+
 const DEFAULT_MENTAL_ATTRIBUTE = 3;
 
 const loadPersistedState = (
@@ -69,6 +85,86 @@ const persistState = (storageKey: string | null, state: PsiState) => {
     window.localStorage.setItem(storageKey, payload);
   } catch (err) {
     console.warn("Unable to persist psionics state", err);
+  }
+};
+
+const groupAbilitiesByTier = (abilities: PsionicAbility[], override?: TreeOverride) => {
+  const tiers = new Map<number, PsionicAbility[]>();
+
+  for (const ability of abilities) {
+    if (!tiers.has(ability.tier)) tiers.set(ability.tier, []);
+    tiers.get(ability.tier)!.push(ability);
+  }
+
+  for (const [tier, list] of tiers.entries()) {
+    const orderedNames = override?.tierOrder?.[tier];
+    if (orderedNames?.length) {
+      const ordered: PsionicAbility[] = [];
+      orderedNames.forEach((name) => {
+        const found = list.find((ability) => ability.name === name);
+        if (found) ordered.push(found);
+      });
+      list
+        .filter((ability) => !ordered.includes(ability))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach((remaining) => ordered.push(remaining));
+      tiers.set(tier, ordered);
+    } else {
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      tiers.set(tier, list);
+    }
+  }
+
+  return tiers;
+};
+
+const buildLineSegments = (
+  abilities: PsionicAbility[],
+  abilityById: Map<string, PsionicAbility>,
+  abilityByName: Map<string, PsionicAbility>,
+  override?: TreeOverride
+): LineSegment[] => {
+  const blocked = new Set<string>();
+  override?.blockedEdges?.forEach(({ from, to }) => blocked.add(`${from}->${to}`));
+  const lines: LineSegment[] = [];
+
+  for (const ability of abilities) {
+    ability.prerequisiteIds.forEach((prereqId) => {
+      const prereqAbility = abilityById.get(prereqId);
+      if (!prereqAbility) return;
+      const key = `${prereqAbility.name}->${ability.name}`;
+      if (blocked.has(key)) return;
+      lines.push({ fromId: prereqAbility.id, toId: ability.id });
+    });
+  }
+
+  override?.extraEdges?.forEach(({ from, to }) => {
+    const fromAbility = abilityByName.get(from);
+    const toAbility = abilityByName.get(to);
+    if (!fromAbility || !toAbility) return;
+    lines.push({ fromId: fromAbility.id, toId: toAbility.id });
+  });
+
+  return lines;
+};
+
+const TREE_OVERRIDES: Record<string, TreeOverride> = {
+  Telepathy: {
+    tierOrder: {
+      2: ["Pry", "Sense Presence", "Interfere", "Interconnect", "Communicate"],
+      3: ["Higher Conscious", "Read Memory", "Interlink"],
+      4: ["Read Genome"],
+      5: ["Read Link"]
+    },
+    extraEdges: [
+      { from: "Telepathy", to: "Interconnect" },
+      { from: "Read Memory", to: "Read Genome" },
+      { from: "Read Genome", to: "Read Link" }
+    ],
+    blockedEdges: [
+      { from: "Read Memory", to: "Read Link" },
+      { from: "Read Link", to: "Read Genome" }
+    ]
   }
 };
 
@@ -151,10 +247,131 @@ const AbilityCard: React.FC<{
   );
 };
 
+const SkillTree: React.FC<{
+  treeName: string;
+  tiers: Map<number, PsionicAbility[]>;
+  lines: LineSegment[];
+  purchased: Set<string>;
+  remainingPsi: number;
+  mental: number;
+  onPurchase: (ability: PsionicAbility) => void;
+}> = ({ treeName, tiers, lines, purchased, remainingPsi, mental, onPurchase }) => {
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const nodeRefs = React.useRef(new Map<string, HTMLDivElement>());
+  const [linePositions, setLinePositions] = React.useState<PositionedLine[]>([]);
+  const [containerHeight, setContainerHeight] = React.useState(0);
+
+  const refreshLines = React.useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const updatedLines: PositionedLine[] = [];
+
+    lines.forEach(({ fromId, toId }) => {
+      const fromEl = nodeRefs.current.get(fromId);
+      const toEl = nodeRefs.current.get(toId);
+      if (!fromEl || !toEl) return;
+
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect = toEl.getBoundingClientRect();
+
+      updatedLines.push({
+        from: {
+          x: fromRect.left - containerRect.left + fromRect.width / 2,
+          y: fromRect.bottom - containerRect.top
+        },
+        to: {
+          x: toRect.left - containerRect.left + toRect.width / 2,
+          y: toRect.top - containerRect.top
+        }
+      });
+    });
+
+    setContainerHeight(containerRect.height);
+    setLinePositions(updatedLines);
+  }, [lines]);
+
+  React.useLayoutEffect(() => {
+    const frame = requestAnimationFrame(refreshLines);
+    return () => cancelAnimationFrame(frame);
+  }, [refreshLines, tiers]);
+
+  React.useEffect(() => {
+    const handleResize = () => refreshLines();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [refreshLines]);
+
+  const orderedTiers = Array.from(tiers.keys()).sort((a, b) => a - b);
+
+  return (
+    <div ref={containerRef} style={{ position: "relative" }}>
+      <svg
+        width="100%"
+        height={containerHeight}
+        style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+      >
+        {linePositions.map((line, idx) => (
+          <line
+            key={`${treeName}-line-${idx}`}
+            x1={line.from.x}
+            y1={line.from.y}
+            x2={line.to.x}
+            y2={line.to.y}
+            stroke="#345678"
+            strokeWidth={2}
+            strokeLinecap="round"
+            opacity={0.7}
+          />
+        ))}
+      </svg>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {orderedTiers.map((tier) => (
+          <div
+            key={`${treeName}-tier-${tier}`}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: "0.75rem"
+            }}
+          >
+            {tiers.get(tier)?.map((ability) => {
+              const unlocked = isAbilityUnlocked(ability, purchased);
+              const isPurchased = purchased.has(ability.id);
+              return (
+                <div
+                  key={ability.id}
+                  ref={(el) => {
+                    if (el) nodeRefs.current.set(ability.id, el);
+                  }}
+                  style={{ minWidth: 240, maxWidth: 320 }}
+                >
+                  <AbilityCard
+                    ability={ability}
+                    purchased={isPurchased}
+                    unlocked={unlocked}
+                    remainingPsi={remainingPsi}
+                    mentalStat={mental}
+                    onPurchase={onPurchase}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export const PsionicsPage: React.FC = () => {
   const abilities = React.useMemo(() => parsePsionicsCsv(psionicsCsv), []);
   const abilityIds = React.useMemo(() => new Set(abilities.map((a) => a.id)), [abilities]);
   const abilityCostMap = React.useMemo(() => new Map(abilities.map((a) => [a.id, a.tier])), [abilities]);
+  const abilityById = React.useMemo(() => new Map(abilities.map((a) => [a.id, a])), [abilities]);
   const abilityKeyToId = React.useMemo(
     () => new Map(abilities.map((a) => [`${a.tree}:${a.name}`, a.id])),
     [abilities]
@@ -247,27 +464,30 @@ export const PsionicsPage: React.FC = () => {
   const remainingPsi = Math.max(0, state.psiPool - spentPsi);
 
   const trees = React.useMemo(() => {
-    const map = new Map<string, Map<number, PsionicAbility[]>>();
+    const byTree = new Map<string, PsionicAbility[]>();
+    const byTreeAndName = new Map<string, Map<string, PsionicAbility>>();
 
-    for (const ability of abilities) {
-      if (!map.has(ability.tree)) {
-        map.set(ability.tree, new Map());
+    abilities.forEach((ability) => {
+      if (!byTree.has(ability.tree)) {
+        byTree.set(ability.tree, []);
+        byTreeAndName.set(ability.tree, new Map());
       }
-      const tierMap = map.get(ability.tree)!;
-      if (!tierMap.has(ability.tier)) {
-        tierMap.set(ability.tier, []);
-      }
-      tierMap.get(ability.tier)!.push(ability);
-    }
+      byTree.get(ability.tree)!.push(ability);
+      byTreeAndName.get(ability.tree)!.set(ability.name, ability);
+    });
 
-    for (const tierMap of map.values()) {
-      for (const abilityList of tierMap.values()) {
-        abilityList.sort((a, b) => a.name.localeCompare(b.name));
-      }
-    }
+    const layouts = new Map<string, { tiers: Map<number, PsionicAbility[]>; lines: LineSegment[] }>();
 
-    return map;
-  }, [abilities]);
+    byTree.forEach((list, treeName) => {
+      const override = TREE_OVERRIDES[treeName];
+      const tiers = groupAbilitiesByTier(list, override);
+      const abilityByName = byTreeAndName.get(treeName)!;
+      const lines = buildLineSegments(list, abilityById, abilityByName, override);
+      layouts.set(treeName, { tiers, lines });
+    });
+
+    return layouts;
+  }, [abilities, abilityById]);
 
   const handlePurchase = (ability: PsionicAbility) => {
     setState((prev) => {
@@ -389,47 +609,23 @@ export const PsionicsPage: React.FC = () => {
       </header>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-        {Array.from(trees.entries()).map(([treeName, tiers]) => {
-          const orderedTiers = Array.from(tiers.keys()).sort((a, b) => a - b);
-          return (
-            <section key={treeName} style={{ background: "#0f131a", border: "1px solid #1f2935", borderRadius: 12, padding: "1rem" }}>
-              <h2 style={{ marginTop: 0, marginBottom: "0.75rem", color: "#e6edf7" }}>{treeName}</h2>
-              <div style={{ display: "grid", gridTemplateColumns: `repeat(${orderedTiers.length}, minmax(0, 1fr))`, gap: "1rem" }}>
-                {orderedTiers.map((tier) => (
-                  <div key={tier} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: "#9aa3b5",
-                        borderBottom: "1px solid #1f2935",
-                        paddingBottom: 6,
-                        marginBottom: 4
-                      }}
-                    >
-                      Tier {tier}
-                    </div>
-                    {tiers.get(tier)?.map((ability) => {
-                      const unlocked = isAbilityUnlocked(ability, state.purchased);
-                      const purchased = state.purchased.has(ability.id);
-                      return (
-                        <AbilityCard
-                          key={ability.id}
-                          ability={ability}
-                          purchased={purchased}
-                          unlocked={unlocked}
-                          remainingPsi={remainingPsi}
-                          mentalStat={state.mental}
-                          onPurchase={handlePurchase}
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </section>
-          );
-        })}
+        {Array.from(trees.entries()).map(([treeName, layout]) => (
+          <section
+            key={treeName}
+            style={{ background: "#0f131a", border: "1px solid #1f2935", borderRadius: 12, padding: "1rem" }}
+          >
+            <h2 style={{ marginTop: 0, marginBottom: "0.75rem", color: "#e6edf7" }}>{treeName}</h2>
+            <SkillTree
+              treeName={treeName}
+              tiers={layout.tiers}
+              lines={layout.lines}
+              purchased={state.purchased}
+              remainingPsi={remainingPsi}
+              mental={state.mental}
+              onPurchase={handlePurchase}
+            />
+          </section>
+        ))}
       </div>
     </div>
   );
