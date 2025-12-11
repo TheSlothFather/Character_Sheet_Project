@@ -118,6 +118,48 @@ const computeRaceSkillBonuses = (
   return result;
 };
 
+const computeBackgroundSkillBonuses = (
+  backgrounds: BackgroundOption[],
+  skills: { id: string; code?: string; name: string }[] | undefined
+): Record<string, number> => {
+  if (!skills?.length) return {};
+
+  const bonuses: Record<string, number> = {};
+  const skillLookup = new Map<string, string>();
+
+  skills.forEach((skill) => {
+    const key = normalizeSkillCode(skill);
+    skillLookup.set(key, getSkillCode(skill));
+  });
+
+  const parseDetails = (details: string): { code: string; value: number }[] => {
+    const cleaned = details.replace(/[\[\]]/g, "");
+    return cleaned
+      .split(/[,;]/)
+      .map((part) => part.trim())
+      .map((part) => {
+        const match = part.match(/([+-]?\d+)\s+(.+)/);
+        if (!match) return null;
+        const value = parseInt(match[1], 10);
+        const skillName = match[2].trim();
+        const normalized = normalizeSkillCode({ id: "", name: skillName });
+        const code = skillLookup.get(normalized);
+        if (!code || Number.isNaN(value)) return null;
+        return { code, value };
+      })
+      .filter(Boolean) as { code: string; value: number }[];
+  };
+
+  backgrounds.forEach((background) => {
+    const entries = parseDetails(background.details ?? "");
+    entries.forEach(({ code, value }) => {
+      bonuses[code] = (bonuses[code] ?? 0) + value;
+    });
+  });
+
+  return bonuses;
+};
+
 const cardStyle: React.CSSProperties = {
   background: "#12141a",
   border: "1px solid #2d343f",
@@ -362,13 +404,21 @@ export const CharacterCreationPage: React.FC = () => {
     [definitions, raceKey, subraceKey]
   );
 
+  const backgroundSkillBonuses = React.useMemo(
+    () => computeBackgroundSkillBonuses(selectedBackgrounds, definitions?.skills),
+    [definitions?.skills, selectedBackgrounds]
+  );
+
   const skillBonuses = React.useMemo(() => {
     const bonuses: Record<string, number> = { ...racialSkillBonuses };
+    Object.entries(backgroundSkillBonuses).forEach(([code, bonus]) => {
+      bonuses[code] = (bonuses[code] ?? 0) + bonus;
+    });
     Object.entries(attributeSkillBonuses).forEach(([code, bonus]) => {
       bonuses[code] = (bonuses[code] ?? 0) + bonus;
     });
     return bonuses;
-  }, [attributeSkillBonuses, racialSkillBonuses]);
+  }, [attributeSkillBonuses, backgroundSkillBonuses, racialSkillBonuses]);
 
   const sortedSkills = React.useMemo(
     () => [...(definitions?.skills ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
