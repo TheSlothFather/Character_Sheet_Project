@@ -56,6 +56,22 @@ describe("psionics skill tree", () => {
     expect(isAbilityUnlocked(ability, new Set(["Test:Basic"]))).toBe(true);
   });
 
+  it("keeps tier 1 locked until purchased when configured", () => {
+    const starter: PsionicAbility = {
+      id: "Psi:Awaken",
+      tree: "Psi",
+      name: "Awaken",
+      tier: 1,
+      prerequisiteNames: [],
+      prerequisiteIds: [],
+      description: "",
+      energyCost: 5
+    };
+
+    expect(isAbilityUnlocked(starter, new Set(), { allowTier1WithoutPrereq: false })).toBe(false);
+    expect(isAbilityUnlocked(starter, new Set([starter.id]), { allowTier1WithoutPrereq: false })).toBe(true);
+  });
+
   it("spends psi points when purchasing an unlocked ability", async () => {
     await renderWithProviders();
 
@@ -70,5 +86,25 @@ describe("psionics skill tree", () => {
 
     expect(psiDisplay).toHaveTextContent("14");
     expect(telepathyButton).toBeDisabled();
+  });
+
+  it("keeps Interfere locked until Telepathy is purchased", async () => {
+    await renderWithProviders();
+
+    const telepathyButton = screen
+      .getAllByRole("button")
+      .find((button) => button.textContent?.trim().startsWith("Telepathy")) as HTMLButtonElement;
+
+    const interfereButton = screen
+      .getAllByRole("button")
+      .find((button) => button.textContent?.trim().startsWith("Interfere")) as HTMLButtonElement;
+
+    expect(telepathyButton).toBeDefined();
+    expect(interfereButton).toBeDefined();
+    expect(interfereButton).toBeDisabled();
+
+    fireEvent.click(telepathyButton);
+
+    expect(interfereButton).not.toBeDisabled();
   });
 });
