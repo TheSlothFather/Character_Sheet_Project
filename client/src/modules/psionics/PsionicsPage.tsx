@@ -19,6 +19,22 @@ interface PsiState {
   backgroundPicks: Set<string>;
 }
 
+type LineSegment = {
+  fromId: string;
+  toId: string;
+};
+
+type PositionedLine = {
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+};
+
+type TreeOverride = {
+  tierOrder?: Record<number, string[]>;
+  extraEdges?: Array<{ from: string; to: string }>;
+  blockedEdges?: Array<{ from: string; to: string }>;
+};
+
 const DEFAULT_MENTAL_ATTRIBUTE = 3;
 
 const loadPersistedState = (
@@ -72,82 +88,247 @@ const persistState = (storageKey: string | null, state: PsiState) => {
   }
 };
 
-const AbilityCard: React.FC<{
+const groupAbilitiesByTier = (abilities: PsionicAbility[], override?: TreeOverride) => {
+  const tiers = new Map<number, PsionicAbility[]>();
+
+  for (const ability of abilities) {
+    if (!tiers.has(ability.tier)) tiers.set(ability.tier, []);
+    tiers.get(ability.tier)!.push(ability);
+  }
+
+  for (const [tier, list] of tiers.entries()) {
+    const orderedNames = override?.tierOrder?.[tier];
+    if (orderedNames?.length) {
+      const ordered: PsionicAbility[] = [];
+      orderedNames.forEach((name) => {
+        const found = list.find((ability) => ability.name === name);
+        if (found) ordered.push(found);
+      });
+      list
+        .filter((ability) => !ordered.includes(ability))
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach((remaining) => ordered.push(remaining));
+      tiers.set(tier, ordered);
+    } else {
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      tiers.set(tier, list);
+    }
+  }
+
+  return tiers;
+};
+
+const buildLineSegments = (
+  abilities: PsionicAbility[],
+  abilityById: Map<string, PsionicAbility>,
+  abilityByName: Map<string, PsionicAbility>,
+  override?: TreeOverride
+): LineSegment[] => {
+  const blocked = new Set<string>();
+  override?.blockedEdges?.forEach(({ from, to }) => blocked.add(`${from}->${to}`));
+  const lines: LineSegment[] = [];
+
+  for (const ability of abilities) {
+    ability.prerequisiteIds.forEach((prereqId) => {
+      const prereqAbility = abilityById.get(prereqId);
+      if (!prereqAbility) return;
+      const key = `${prereqAbility.name}->${ability.name}`;
+      if (blocked.has(key)) return;
+      lines.push({ fromId: prereqAbility.id, toId: ability.id });
+    });
+  }
+
+  override?.extraEdges?.forEach(({ from, to }) => {
+    const fromAbility = abilityByName.get(from);
+    const toAbility = abilityByName.get(to);
+    if (!fromAbility || !toAbility) return;
+    lines.push({ fromId: fromAbility.id, toId: toAbility.id });
+  });
+
+  return lines;
+};
+
+const TREE_OVERRIDES: Record<string, TreeOverride> = {
+  Telepathy: {
+    tierOrder: {
+      2: ["Pry", "Sense Presence", "Interfere", "Interconnect", "Communicate"],
+      3: ["Higher Conscious", "Read Memory", "Interlink"],
+      4: ["Read Genome"],
+      5: ["Read Link"]
+    },
+    extraEdges: [
+      { from: "Telepathy", to: "Interconnect" },
+      { from: "Read Memory", to: "Read Genome" },
+      { from: "Read Genome", to: "Read Link" }
+    ],
+    blockedEdges: [
+      { from: "Read Memory", to: "Read Link" },
+      { from: "Read Link", to: "Read Genome" }
+    ]
+  }
+};
+
+const AbilityNode: React.FC<{
   ability: PsionicAbility;
   purchased: boolean;
   unlocked: boolean;
   remainingPsi: number;
-  mentalStat: number;
   onPurchase: (ability: PsionicAbility) => void;
-}> = ({ ability, purchased, unlocked, remainingPsi, mentalStat, onPurchase }) => {
-  const derived = ability.formula ? evaluateFormula(ability.formula, mentalStat) : null;
+}> = ({ ability, purchased, unlocked, remainingPsi, onPurchase }) => {
   const psiCost = ability.tier;
   const canAfford = remainingPsi >= psiCost;
-  const statusLabel = purchased ? "Purchased" : unlocked ? (canAfford ? "Unlocked" : "Insufficient Psi") : "Locked";
-  const formattedDescription = replaceMentalAttributePlaceholders(ability.description, mentalStat);
+  const status = purchased ? "purchased" : unlocked && canAfford ? "available" : unlocked ? "locked-cost" : "locked";
+
+  const colors: Record<string, { bg: string; border: string; text: string }> = {
+    purchased: { bg: "#1f352a", border: "#3ca66a", text: "#b5f5c8" },
+    available: { bg: "#18202c", border: "#3b82f6", text: "#dce7ff" },
+    "locked-cost": { bg: "#141924", border: "#334155", text: "#9aa3b5" },
+    locked: { bg: "#0f141d", border: "#1f2935", text: "#6b7280" }
+  };
+
+  const palette = colors[status];
+  const disabled = !unlocked || purchased || !canAfford;
 
   return (
     <button
       onClick={() => onPurchase(ability)}
-      disabled={!unlocked || purchased || !canAfford}
+      disabled={disabled}
+      title={purchased ? "Already purchased" : unlocked ? (canAfford ? "Purchase ability" : "Not enough Psi") : "Locked"}
       style={{
-        width: "100%",
-        textAlign: "left",
-        background: purchased ? "#21312b" : unlocked ? "#18202c" : "#11141a",
-        border: purchased ? "1px solid #3ca66a" : unlocked ? "1px solid #2d3c4e" : "1px solid #222",
-        borderRadius: 10,
-        padding: "0.75rem",
-        color: "#e6edf7",
-        cursor: unlocked && !purchased && canAfford ? "pointer" : "not-allowed",
-        opacity: unlocked ? 1 : 0.6,
-        transition: "border-color 0.2s ease",
-        boxShadow: purchased ? "0 0 0 1px rgba(60,166,106,0.2)" : "none"
+        minWidth: 120,
+        minHeight: 52,
+        padding: "0.6rem 0.8rem",
+        borderRadius: 999,
+        border: `2px solid ${palette.border}`,
+        background: palette.bg,
+        color: palette.text,
+        fontWeight: 700,
+        fontSize: 14,
+        cursor: disabled ? "not-allowed" : "pointer",
+        transition: "transform 0.1s ease, box-shadow 0.1s ease",
+        boxShadow: purchased ? "0 0 0 2px rgba(60,166,106,0.2)" : "none"
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-        <div>
-          <div style={{ fontWeight: 700 }}>{ability.name}</div>
-          <div style={{ fontSize: 12, color: "#9aa3b5" }}>Tier {ability.tier}</div>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <div
-            style={{
-              background: "#0e141b",
-              border: "1px solid #273442",
-              borderRadius: 6,
-              padding: "0.2rem 0.5rem",
-              fontSize: 12,
-              color: "#9ae6b4"
-            }}
-          >
-            {psiCost} Psi
-          </div>
-          <div
-            style={{
-              background: "#121926",
-              border: "1px solid #2b3747",
-              borderRadius: 6,
-              padding: "0.2rem 0.5rem",
-              fontSize: 12,
-              color: "#c5ccd9"
-            }}
-          >
-            Energy: {ability.energyCost}
-          </div>
-        </div>
-      </div>
-      <p style={{ margin: "0 0 0.5rem", fontSize: 14, lineHeight: 1.4 }}>{formattedDescription}</p>
-      <div style={{ fontSize: 13, color: "#c5ccd9", marginBottom: 4 }}>
-        <strong>Prerequisites:</strong> {ability.prerequisiteNames.length ? ability.prerequisiteNames.join(", ") : "None"}
-      </div>
-      {ability.formula && (
-        <div style={{ fontSize: 13, color: "#c5ccd9", marginBottom: 4 }}>
-          <strong>Formula:</strong> {ability.formula.replace(/\*/g, " × ")}
-          {derived !== null && ` = ${derived}`}
-        </div>
-      )}
-      <div style={{ fontSize: 12, color: purchased ? "#9ae6b4" : unlocked ? "#c5ccd9" : "#77808f" }}>{statusLabel}</div>
+      <div style={{ lineHeight: 1.2 }}>{ability.name}</div>
+      <div style={{ fontSize: 11, opacity: 0.8 }}>Tier {ability.tier}</div>
     </button>
+  );
+};
+
+const SkillTree: React.FC<{
+  treeName: string;
+  tiers: Map<number, PsionicAbility[]>;
+  lines: LineSegment[];
+  purchased: Set<string>;
+  remainingPsi: number;
+  onPurchase: (ability: PsionicAbility) => void;
+}> = ({ treeName, tiers, lines, purchased, remainingPsi, onPurchase }) => {
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const nodeRefs = React.useRef(new Map<string, HTMLDivElement>());
+  const [linePositions, setLinePositions] = React.useState<PositionedLine[]>([]);
+  const [containerHeight, setContainerHeight] = React.useState(0);
+
+  const refreshLines = React.useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const updatedLines: PositionedLine[] = [];
+
+    lines.forEach(({ fromId, toId }) => {
+      const fromEl = nodeRefs.current.get(fromId);
+      const toEl = nodeRefs.current.get(toId);
+      if (!fromEl || !toEl) return;
+
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect = toEl.getBoundingClientRect();
+
+      updatedLines.push({
+        from: {
+          x: fromRect.left - containerRect.left + fromRect.width / 2,
+          y: fromRect.bottom - containerRect.top
+        },
+        to: {
+          x: toRect.left - containerRect.left + toRect.width / 2,
+          y: toRect.top - containerRect.top
+        }
+      });
+    });
+
+    setContainerHeight(containerRect.height);
+    setLinePositions(updatedLines);
+  }, [lines]);
+
+  React.useLayoutEffect(() => {
+    const frame = requestAnimationFrame(refreshLines);
+    return () => cancelAnimationFrame(frame);
+  }, [refreshLines, tiers]);
+
+  React.useEffect(() => {
+    const handleResize = () => refreshLines();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [refreshLines]);
+
+  const orderedTiers = Array.from(tiers.keys()).sort((a, b) => a - b);
+
+  return (
+    <div ref={containerRef} style={{ position: "relative" }}>
+      <svg
+        width="100%"
+        height={containerHeight}
+        style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+      >
+        {linePositions.map((line, idx) => (
+          <line
+            key={`${treeName}-line-${idx}`}
+            x1={line.from.x}
+            y1={line.from.y}
+            x2={line.to.x}
+            y2={line.to.y}
+            stroke="#345678"
+            strokeWidth={2}
+            strokeLinecap="round"
+            opacity={0.7}
+          />
+        ))}
+      </svg>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {orderedTiers.map((tier) => (
+          <div
+            key={`${treeName}-tier-${tier}`}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: "0.75rem"
+            }}
+          >
+            {tiers.get(tier)?.map((ability) => {
+              const unlocked = isAbilityUnlocked(ability, purchased);
+              const isPurchased = purchased.has(ability.id);
+              return (
+                <div
+                  key={ability.id}
+                  ref={(el) => {
+                    if (el) nodeRefs.current.set(ability.id, el);
+                  }}
+                >
+                  <AbilityNode
+                    ability={ability}
+                    purchased={isPurchased}
+                    unlocked={unlocked}
+                    remainingPsi={remainingPsi}
+                    onPurchase={onPurchase}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 
@@ -155,6 +336,7 @@ export const PsionicsPage: React.FC = () => {
   const abilities = React.useMemo(() => parsePsionicsCsv(psionicsCsv), []);
   const abilityIds = React.useMemo(() => new Set(abilities.map((a) => a.id)), [abilities]);
   const abilityCostMap = React.useMemo(() => new Map(abilities.map((a) => [a.id, a.tier])), [abilities]);
+  const abilityById = React.useMemo(() => new Map(abilities.map((a) => [a.id, a])), [abilities]);
   const abilityKeyToId = React.useMemo(
     () => new Map(abilities.map((a) => [`${a.tree}:${a.name}`, a.id])),
     [abilities]
@@ -247,27 +429,47 @@ export const PsionicsPage: React.FC = () => {
   const remainingPsi = Math.max(0, state.psiPool - spentPsi);
 
   const trees = React.useMemo(() => {
-    const map = new Map<string, Map<number, PsionicAbility[]>>();
+    const byTree = new Map<string, PsionicAbility[]>();
+    const byTreeAndName = new Map<string, Map<string, PsionicAbility>>();
 
-    for (const ability of abilities) {
-      if (!map.has(ability.tree)) {
-        map.set(ability.tree, new Map());
+    abilities.forEach((ability) => {
+      if (!byTree.has(ability.tree)) {
+        byTree.set(ability.tree, []);
+        byTreeAndName.set(ability.tree, new Map());
       }
-      const tierMap = map.get(ability.tree)!;
-      if (!tierMap.has(ability.tier)) {
-        tierMap.set(ability.tier, []);
-      }
-      tierMap.get(ability.tier)!.push(ability);
-    }
+      byTree.get(ability.tree)!.push(ability);
+      byTreeAndName.get(ability.tree)!.set(ability.name, ability);
+    });
 
-    for (const tierMap of map.values()) {
-      for (const abilityList of tierMap.values()) {
-        abilityList.sort((a, b) => a.name.localeCompare(b.name));
-      }
-    }
+    const layouts = new Map<string, { tiers: Map<number, PsionicAbility[]>; lines: LineSegment[] }>();
 
-    return map;
-  }, [abilities]);
+    byTree.forEach((list, treeName) => {
+      const override = TREE_OVERRIDES[treeName];
+      const tiers = groupAbilitiesByTier(list, override);
+      const abilityByName = byTreeAndName.get(treeName)!;
+      const lines = buildLineSegments(list, abilityById, abilityByName, override);
+      layouts.set(treeName, { tiers, lines });
+    });
+
+    return layouts;
+  }, [abilities, abilityById]);
+
+  const unlockedByTree = React.useMemo(() => {
+    const grouped = new Map<string, PsionicAbility[]>();
+    abilities.forEach((ability) => {
+      const purchased = state.purchased.has(ability.id);
+      const unlocked = purchased || isAbilityUnlocked(ability, state.purchased);
+      if (!unlocked) return;
+      if (!grouped.has(ability.tree)) grouped.set(ability.tree, []);
+      grouped.get(ability.tree)!.push(ability);
+    });
+
+    grouped.forEach((list) => {
+      list.sort((a, b) => (a.tier === b.tier ? a.name.localeCompare(b.name) : a.tier - b.tier));
+    });
+
+    return grouped;
+  }, [abilities, state.purchased]);
 
   const handlePurchase = (ability: PsionicAbility) => {
     setState((prev) => {
@@ -389,48 +591,120 @@ export const PsionicsPage: React.FC = () => {
       </header>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-        {Array.from(trees.entries()).map(([treeName, tiers]) => {
-          const orderedTiers = Array.from(tiers.keys()).sort((a, b) => a - b);
-          return (
-            <section key={treeName} style={{ background: "#0f131a", border: "1px solid #1f2935", borderRadius: 12, padding: "1rem" }}>
-              <h2 style={{ marginTop: 0, marginBottom: "0.75rem", color: "#e6edf7" }}>{treeName}</h2>
-              <div style={{ display: "grid", gridTemplateColumns: `repeat(${orderedTiers.length}, minmax(0, 1fr))`, gap: "1rem" }}>
-                {orderedTiers.map((tier) => (
-                  <div key={tier} style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: "#9aa3b5",
-                        borderBottom: "1px solid #1f2935",
-                        paddingBottom: 6,
-                        marginBottom: 4
-                      }}
-                    >
-                      Tier {tier}
-                    </div>
-                    {tiers.get(tier)?.map((ability) => {
-                      const unlocked = isAbilityUnlocked(ability, state.purchased);
-                      const purchased = state.purchased.has(ability.id);
-                      return (
-                        <AbilityCard
-                          key={ability.id}
-                          ability={ability}
-                          purchased={purchased}
-                          unlocked={unlocked}
-                          remainingPsi={remainingPsi}
-                          mentalStat={state.mental}
-                          onPurchase={handlePurchase}
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </section>
-          );
-        })}
+        {Array.from(trees.entries()).map(([treeName, layout]) => (
+          <section
+            key={treeName}
+            style={{ background: "#0f131a", border: "1px solid #1f2935", borderRadius: 12, padding: "1rem" }}
+          >
+            <h2 style={{ marginTop: 0, marginBottom: "0.75rem", color: "#e6edf7" }}>{treeName}</h2>
+            <SkillTree
+              treeName={treeName}
+              tiers={layout.tiers}
+              lines={layout.lines}
+              purchased={state.purchased}
+              remainingPsi={remainingPsi}
+              onPurchase={handlePurchase}
+            />
+          </section>
+        ))}
       </div>
+
+      <section style={{ background: "#0f131a", border: "1px solid #1f2935", borderRadius: 12, padding: "1rem" }}>
+        <h2 style={{ marginTop: 0, marginBottom: "0.75rem", color: "#e6edf7" }}>Unlocked Abilities</h2>
+        {Array.from(unlockedByTree.entries()).length === 0 ? (
+          <p style={{ color: "#9aa3b5", margin: 0 }}>No abilities unlocked yet.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {Array.from(unlockedByTree.entries()).map(([treeName, list]) => (
+              <div
+                key={`unlocked-${treeName}`}
+                style={{
+                  border: "1px solid #1f2935",
+                  borderRadius: 10,
+                  padding: "0.75rem",
+                  background: "#0c111a"
+                }}
+              >
+                <h3 style={{ margin: "0 0 0.5rem", color: "#dce7ff" }}>{treeName}</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  {list.map((ability) => {
+                    const derived = ability.formula ? evaluateFormula(ability.formula, state.mental) : null;
+                    const formattedDescription = replaceMentalAttributePlaceholders(
+                      ability.description,
+                      state.mental
+                    );
+
+                    return (
+                      <div
+                        key={`unlocked-${treeName}-${ability.id}`}
+                        style={{
+                          border: "1px solid #1f2935",
+                          borderRadius: 8,
+                          padding: "0.75rem",
+                          background: "#0f1621"
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 4,
+                            gap: 8
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: 700, color: "#e6edf7" }}>{ability.name}</div>
+                            <div style={{ fontSize: 12, color: "#9aa3b5" }}>Tier {ability.tier}</div>
+                          </div>
+                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                            <span
+                              style={{
+                                padding: "0.2rem 0.5rem",
+                                borderRadius: 6,
+                                border: "1px solid #273442",
+                                background: "#111927",
+                                color: "#9ae6b4",
+                                fontSize: 12
+                              }}
+                            >
+                              {ability.tier} Psi
+                            </span>
+                            <span
+                              style={{
+                                padding: "0.2rem 0.5rem",
+                                borderRadius: 6,
+                                border: "1px solid #273442",
+                                background: "#0f141d",
+                                color: "#c5ccd9",
+                                fontSize: 12
+                              }}
+                            >
+                              Energy: {ability.energyCost}
+                            </span>
+                          </div>
+                        </div>
+                        <p style={{ margin: "0 0 0.5rem", color: "#c5ccd9", lineHeight: 1.4 }}>
+                          {formattedDescription}
+                        </p>
+                        <div style={{ fontSize: 13, color: "#c5ccd9", marginBottom: 4 }}>
+                          <strong>Prerequisites:</strong> {ability.prerequisiteNames.length ? ability.prerequisiteNames.join(", ") : "None"}
+                        </div>
+                        {ability.formula && (
+                          <div style={{ fontSize: 13, color: "#c5ccd9" }}>
+                            <strong>Formula:</strong> {ability.formula.replace(/\*/g, " × ")}
+                            {derived !== null && ` = ${derived}`}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };
