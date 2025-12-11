@@ -27,23 +27,23 @@
   ],
   "skills": [
     {
-      "key": "MARTIAL_PROWESS",
-      "name": "MARTIAL_PROWESS",
+      "key": "ACADEMIC_RECALL",
+      "name": "ACADEMIC_RECALL",
       "description": ""
     },
     {
-      "key": "ILDAKAR_FACULTY",
-      "name": "ILDAKAR_FACULTY",
+      "key": "ANIMAL_HUSBANDRY",
+      "name": "ANIMAL_HUSBANDRY",
       "description": ""
     },
     {
-      "key": "PSIONIC_TECHNIQUE",
-      "name": "PSIONIC_TECHNIQUE",
+      "key": "ARTISTRY",
+      "name": "ARTISTRY",
       "description": ""
     },
     {
-      "key": "RESIST_PSIONICS",
-      "name": "RESIST_PSIONICS",
+      "key": "ATTUNE_WONDEROUS_ITEM",
+      "name": "ATTUNE_WONDEROUS_ITEM",
       "description": ""
     },
     {
@@ -57,58 +57,8 @@
       "description": ""
     },
     {
-      "key": "FORAGE",
-      "name": "FORAGE",
-      "description": ""
-    },
-    {
-      "key": "NAVIGATE",
-      "name": "NAVIGATE",
-      "description": ""
-    },
-    {
-      "key": "RESIST_TOXINS",
-      "name": "RESIST_TOXINS",
-      "description": ""
-    },
-    {
-      "key": "SENSE_SUPERNATURAL",
-      "name": "SENSE_SUPERNATURAL",
-      "description": ""
-    },
-    {
-      "key": "SEDUCE",
-      "name": "SEDUCE",
-      "description": ""
-    },
-    {
-      "key": "FEAT_OF_AUSTERITY",
-      "name": "FEAT_OF_AUSTERITY",
-      "description": ""
-    },
-    {
-      "key": "RESIST_SUPERNATURAL",
-      "name": "RESIST_SUPERNATURAL",
-      "description": ""
-    },
-    {
-      "key": "FEAT_OF_STRENGTH",
-      "name": "FEAT_OF_STRENGTH",
-      "description": ""
-    },
-    {
-      "key": "FEAT_OF_AGILITY",
-      "name": "FEAT_OF_AGILITY",
-      "description": ""
-    },
-    {
-      "key": "SEARCH",
-      "name": "SEARCH",
-      "description": ""
-    },
-    {
-      "key": "IDENTIFY",
-      "name": "IDENTIFY",
+      "key": "CRAFT",
+      "name": "CRAFT",
       "description": ""
     },
     {
@@ -117,28 +67,13 @@
       "description": ""
     },
     {
-      "key": "TRACK",
-      "name": "TRACK",
+      "key": "DEDUCE",
+      "name": "DEDUCE",
       "description": ""
     },
     {
-      "key": "INTIMIDATE",
-      "name": "INTIMIDATE",
-      "description": ""
-    },
-    {
-      "key": "WILL_DAKAR",
-      "name": "WILL_DAKAR",
-      "description": ""
-    },
-    {
-      "key": "ACADEMIC_RECALL",
-      "name": "ACADEMIC_RECALL",
-      "description": ""
-    },
-    {
-      "key": "INTERPRET",
-      "name": "INTERPRET",
+      "key": "DIVINE_INTERVENTION",
+      "name": "DIVINE_INTERVENTION",
       "description": ""
     },
     {
@@ -147,18 +82,148 @@
       "description": ""
     },
     {
-      "key": "CRAFT",
-      "name": "CRAFT",
+      "key": "FEAT_OF_AGILITY",
+      "name": "FEAT_OF_AGILITY",
       "description": ""
     },
     {
-      "key": "ANIMAL_HUSBANDRY",
-      "name": "ANIMAL_HUSBANDRY",
+      "key": "FEAT_OF_AUSTERITY",
+      "name": "FEAT_OF_AUSTERITY",
       "description": ""
     },
     {
       "key": "FEAT_OF_DEFIANCE",
       "name": "FEAT_OF_DEFIANCE",
+      "description": ""
+    },
+    {
+      "key": "FEAT_OF_STRENGTH",
+      "name": "FEAT_OF_STRENGTH",
+      "description": ""
+    },
+    {
+      "key": "FORAGE",
+      "name": "FORAGE",
+      "description": ""
+    },
+    {
+      "key": "GATHER_INTELLIGENCE",
+      "name": "GATHER_INTELLIGENCE",
+      "description": ""
+    },
+    {
+      "key": "HEAL",
+      "name": "HEAL",
+      "description": ""
+    },
+    {
+      "key": "IDENTIFY",
+      "name": "IDENTIFY",
+      "description": ""
+    },
+    {
+      "key": "ILDAKAR_FACULTY",
+      "name": "ILDAKAR_FACULTY",
+      "description": ""
+    },
+    {
+      "key": "INCITE_FATE",
+      "name": "INCITE_FATE",
+      "description": ""
+    },
+    {
+      "key": "INTERPRET",
+      "name": "INTERPRET",
+      "description": ""
+    },
+    {
+      "key": "INTIMIDATE",
+      "name": "INTIMIDATE",
+      "description": ""
+    },
+    {
+      "key": "MARTIAL_PROWESS",
+      "name": "MARTIAL_PROWESS",
+      "description": ""
+    },
+    {
+      "key": "NAVIGATE",
+      "name": "NAVIGATE",
+      "description": ""
+    },
+    {
+      "key": "PARLEY",
+      "name": "PARLEY",
+      "description": ""
+    },
+    {
+      "key": "PERFORM",
+      "name": "PERFORM",
+      "description": ""
+    },
+    {
+      "key": "PERSEVERE",
+      "name": "PERSEVERE",
+      "description": ""
+    },
+    {
+      "key": "PSIONIC_TECHNIQUE",
+      "name": "PSIONIC_TECHNIQUE",
+      "description": ""
+    },
+    {
+      "key": "RESIST_PSIONICS",
+      "name": "RESIST_PSIONICS",
+      "description": ""
+    },
+    {
+      "key": "RESIST_SUPERNATURAL",
+      "name": "RESIST_SUPERNATURAL",
+      "description": ""
+    },
+    {
+      "key": "RESIST_TOXINS",
+      "name": "RESIST_TOXINS",
+      "description": ""
+    },
+    {
+      "key": "SEARCH",
+      "name": "SEARCH",
+      "description": ""
+    },
+    {
+      "key": "SEDUCE",
+      "name": "SEDUCE",
+      "description": ""
+    },
+    {
+      "key": "SENSE_SUPERNATURAL",
+      "name": "SENSE_SUPERNATURAL",
+      "description": ""
+    },
+    {
+      "key": "TRACK",
+      "name": "TRACK",
+      "description": ""
+    },
+    {
+      "key": "TRADE",
+      "name": "TRADE",
+      "description": ""
+    },
+    {
+      "key": "TRANSLATE",
+      "name": "TRANSLATE",
+      "description": ""
+    },
+    {
+      "key": "WILL_DAKAR",
+      "name": "WILL_DAKAR",
+      "description": ""
+    },
+    {
+      "key": "WORSHIP",
+      "name": "WORSHIP",
       "description": ""
     }
   ],

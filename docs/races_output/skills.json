@@ -1,26 +1,26 @@
 [
   {
-    "id": "SKILL_MARTIAL_PROWESS",
-    "code": "MARTIAL_PROWESS",
-    "name": "MARTIAL_PROWESS",
+    "id": "SKILL_ACADEMIC_RECALL",
+    "code": "ACADEMIC_RECALL",
+    "name": "ACADEMIC_RECALL",
     "description": ""
   },
   {
-    "id": "SKILL_ILDAKAR_FACULTY",
-    "code": "ILDAKAR_FACULTY",
-    "name": "ILDAKAR_FACULTY",
+    "id": "SKILL_ANIMAL_HUSBANDRY",
+    "code": "ANIMAL_HUSBANDRY",
+    "name": "ANIMAL_HUSBANDRY",
     "description": ""
   },
   {
-    "id": "SKILL_PSIONIC_TECHNIQUE",
-    "code": "PSIONIC_TECHNIQUE",
-    "name": "PSIONIC_TECHNIQUE",
+    "id": "SKILL_ARTISTRY",
+    "code": "ARTISTRY",
+    "name": "ARTISTRY",
     "description": ""
   },
   {
-    "id": "SKILL_RESIST_PSIONICS",
-    "code": "RESIST_PSIONICS",
-    "name": "RESIST_PSIONICS",
+    "id": "SKILL_ATTUNE_WONDEROUS_ITEM",
+    "code": "ATTUNE_WONDEROUS_ITEM",
+    "name": "ATTUNE_WONDEROUS_ITEM",
     "description": ""
   },
   {
@@ -36,69 +36,9 @@
     "description": ""
   },
   {
-    "id": "SKILL_FORAGE",
-    "code": "FORAGE",
-    "name": "FORAGE",
-    "description": ""
-  },
-  {
-    "id": "SKILL_NAVIGATE",
-    "code": "NAVIGATE",
-    "name": "NAVIGATE",
-    "description": ""
-  },
-  {
-    "id": "SKILL_RESIST_TOXINS",
-    "code": "RESIST_TOXINS",
-    "name": "RESIST_TOXINS",
-    "description": ""
-  },
-  {
-    "id": "SKILL_SENSE_SUPERNATURAL",
-    "code": "SENSE_SUPERNATURAL",
-    "name": "SENSE_SUPERNATURAL",
-    "description": ""
-  },
-  {
-    "id": "SKILL_SEDUCE",
-    "code": "SEDUCE",
-    "name": "SEDUCE",
-    "description": ""
-  },
-  {
-    "id": "SKILL_FEAT_OF_AUSTERITY",
-    "code": "FEAT_OF_AUSTERITY",
-    "name": "FEAT_OF_AUSTERITY",
-    "description": ""
-  },
-  {
-    "id": "SKILL_RESIST_SUPERNATURAL",
-    "code": "RESIST_SUPERNATURAL",
-    "name": "RESIST_SUPERNATURAL",
-    "description": ""
-  },
-  {
-    "id": "SKILL_FEAT_OF_STRENGTH",
-    "code": "FEAT_OF_STRENGTH",
-    "name": "FEAT_OF_STRENGTH",
-    "description": ""
-  },
-  {
-    "id": "SKILL_FEAT_OF_AGILITY",
-    "code": "FEAT_OF_AGILITY",
-    "name": "FEAT_OF_AGILITY",
-    "description": ""
-  },
-  {
-    "id": "SKILL_SEARCH",
-    "code": "SEARCH",
-    "name": "SEARCH",
-    "description": ""
-  },
-  {
-    "id": "SKILL_IDENTIFY",
-    "code": "IDENTIFY",
-    "name": "IDENTIFY",
+    "id": "SKILL_CRAFT",
+    "code": "CRAFT",
+    "name": "CRAFT",
     "description": ""
   },
   {
@@ -108,33 +48,15 @@
     "description": ""
   },
   {
-    "id": "SKILL_TRACK",
-    "code": "TRACK",
-    "name": "TRACK",
+    "id": "SKILL_DEDUCE",
+    "code": "DEDUCE",
+    "name": "DEDUCE",
     "description": ""
   },
   {
-    "id": "SKILL_INTIMIDATE",
-    "code": "INTIMIDATE",
-    "name": "INTIMIDATE",
-    "description": ""
-  },
-  {
-    "id": "SKILL_WILL_DAKAR",
-    "code": "WILL_DAKAR",
-    "name": "WILL_DAKAR",
-    "description": ""
-  },
-  {
-    "id": "SKILL_ACADEMIC_RECALL",
-    "code": "ACADEMIC_RECALL",
-    "name": "ACADEMIC_RECALL",
-    "description": ""
-  },
-  {
-    "id": "SKILL_INTERPRET",
-    "code": "INTERPRET",
-    "name": "INTERPRET",
+    "id": "SKILL_DIVINE_INTERVENTION",
+    "code": "DIVINE_INTERVENTION",
+    "name": "DIVINE_INTERVENTION",
     "description": ""
   },
   {
@@ -144,21 +66,177 @@
     "description": ""
   },
   {
-    "id": "SKILL_CRAFT",
-    "code": "CRAFT",
-    "name": "CRAFT",
+    "id": "SKILL_FEAT_OF_AGILITY",
+    "code": "FEAT_OF_AGILITY",
+    "name": "FEAT_OF_AGILITY",
     "description": ""
   },
   {
-    "id": "SKILL_ANIMAL_HUSBANDRY",
-    "code": "ANIMAL_HUSBANDRY",
-    "name": "ANIMAL_HUSBANDRY",
+    "id": "SKILL_FEAT_OF_AUSTERITY",
+    "code": "FEAT_OF_AUSTERITY",
+    "name": "FEAT_OF_AUSTERITY",
     "description": ""
   },
   {
     "id": "SKILL_FEAT_OF_DEFIANCE",
     "code": "FEAT_OF_DEFIANCE",
     "name": "FEAT_OF_DEFIANCE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_FEAT_OF_STRENGTH",
+    "code": "FEAT_OF_STRENGTH",
+    "name": "FEAT_OF_STRENGTH",
+    "description": ""
+  },
+  {
+    "id": "SKILL_FORAGE",
+    "code": "FORAGE",
+    "name": "FORAGE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_GATHER_INTELLIGENCE",
+    "code": "GATHER_INTELLIGENCE",
+    "name": "GATHER_INTELLIGENCE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_HEAL",
+    "code": "HEAL",
+    "name": "HEAL",
+    "description": ""
+  },
+  {
+    "id": "SKILL_IDENTIFY",
+    "code": "IDENTIFY",
+    "name": "IDENTIFY",
+    "description": ""
+  },
+  {
+    "id": "SKILL_ILDAKAR_FACULTY",
+    "code": "ILDAKAR_FACULTY",
+    "name": "ILDAKAR_FACULTY",
+    "description": ""
+  },
+  {
+    "id": "SKILL_INCITE_FATE",
+    "code": "INCITE_FATE",
+    "name": "INCITE_FATE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_INTERPRET",
+    "code": "INTERPRET",
+    "name": "INTERPRET",
+    "description": ""
+  },
+  {
+    "id": "SKILL_INTIMIDATE",
+    "code": "INTIMIDATE",
+    "name": "INTIMIDATE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_MARTIAL_PROWESS",
+    "code": "MARTIAL_PROWESS",
+    "name": "MARTIAL_PROWESS",
+    "description": ""
+  },
+  {
+    "id": "SKILL_NAVIGATE",
+    "code": "NAVIGATE",
+    "name": "NAVIGATE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_PARLEY",
+    "code": "PARLEY",
+    "name": "PARLEY",
+    "description": ""
+  },
+  {
+    "id": "SKILL_PERFORM",
+    "code": "PERFORM",
+    "name": "PERFORM",
+    "description": ""
+  },
+  {
+    "id": "SKILL_PERSEVERE",
+    "code": "PERSEVERE",
+    "name": "PERSEVERE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_PSIONIC_TECHNIQUE",
+    "code": "PSIONIC_TECHNIQUE",
+    "name": "PSIONIC_TECHNIQUE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_RESIST_PSIONICS",
+    "code": "RESIST_PSIONICS",
+    "name": "RESIST_PSIONICS",
+    "description": ""
+  },
+  {
+    "id": "SKILL_RESIST_SUPERNATURAL",
+    "code": "RESIST_SUPERNATURAL",
+    "name": "RESIST_SUPERNATURAL",
+    "description": ""
+  },
+  {
+    "id": "SKILL_RESIST_TOXINS",
+    "code": "RESIST_TOXINS",
+    "name": "RESIST_TOXINS",
+    "description": ""
+  },
+  {
+    "id": "SKILL_SEARCH",
+    "code": "SEARCH",
+    "name": "SEARCH",
+    "description": ""
+  },
+  {
+    "id": "SKILL_SEDUCE",
+    "code": "SEDUCE",
+    "name": "SEDUCE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_SENSE_SUPERNATURAL",
+    "code": "SENSE_SUPERNATURAL",
+    "name": "SENSE_SUPERNATURAL",
+    "description": ""
+  },
+  {
+    "id": "SKILL_TRACK",
+    "code": "TRACK",
+    "name": "TRACK",
+    "description": ""
+  },
+  {
+    "id": "SKILL_TRADE",
+    "code": "TRADE",
+    "name": "TRADE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_TRANSLATE",
+    "code": "TRANSLATE",
+    "name": "TRANSLATE",
+    "description": ""
+  },
+  {
+    "id": "SKILL_WILL_DAKAR",
+    "code": "WILL_DAKAR",
+    "name": "WILL_DAKAR",
+    "description": ""
+  },
+  {
+    "id": "SKILL_WORSHIP",
+    "code": "WORSHIP",
+    "name": "WORSHIP",
     "description": ""
   }
 ]
