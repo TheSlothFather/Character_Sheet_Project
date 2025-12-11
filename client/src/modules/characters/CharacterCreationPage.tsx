@@ -8,12 +8,13 @@ import { DEFAULT_PSI_POINTS, parsePsionicsCsv } from "../psionics/psionicsUtils"
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
 import { applyModifiers } from "@shared/rules/modifiers";
-
-const getSkillCode = (skill: { id: string; code?: string }): string => skill.code ?? skill.id;
-const normalizeSkillCode = (skill: { id: string; code?: string; name: string }): string =>
-  (skill.code ?? skill.id ?? skill.name).toUpperCase();
-
-const ATTRIBUTE_KEYS = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"] as const;
+import {
+  AttributeKey,
+  SKILL_ATTRIBUTE_MAP,
+  getSkillCode,
+  normalizeSkillCode
+} from "./skillMetadata";
+const ATTRIBUTE_KEYS: AttributeKey[] = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"] as const;
 const ATTRIBUTE_POINT_POOL = 3;
 const ATTRIBUTE_MIN = -1;
 const ATTRIBUTE_MAX = 3;
@@ -25,36 +26,6 @@ const STAGE_REQUIREMENTS: Record<BackgroundStage, number> = {
   Adulthood: 2,
   Flaws: 2,
   "Inciting Incident": 1
-};
-
-const skillAttributeMap: Record<string, (typeof ATTRIBUTE_KEYS)[number][]> = {
-  MARTIAL_PROWESS: ["PHYSICAL", "WILL"],
-  ILDAKAR_FACULTY: ["MENTAL", "SPIRITUAL"],
-  PSIONIC_TECHNIQUE: ["MENTAL"],
-  RESIST_PSIONICS: ["MENTAL"],
-  BATTLE: ["PHYSICAL"],
-  CONCEAL: ["PHYSICAL"],
-  FORAGE: ["PHYSICAL", "MENTAL"],
-  NAVIGATE: ["PHYSICAL", "SPIRITUAL"],
-  RESIST_TOXINS: ["PHYSICAL"],
-  SENSE_SUPERNATURAL: ["SPIRITUAL"],
-  SEDUCE: ["PHYSICAL", "WILL"],
-  FEAT_OF_AUSTERITY: ["WILL"],
-  RESIST_SUPERNATURAL: ["SPIRITUAL"],
-  FEAT_OF_STRENGTH: ["PHYSICAL"],
-  FEAT_OF_AGILITY: ["PHYSICAL"],
-  SEARCH: ["MENTAL"],
-  IDENTIFY: ["MENTAL", "SPIRITUAL"],
-  DECEIVE: ["MENTAL", "WILL"],
-  TRACK: ["PHYSICAL", "MENTAL"],
-  INTIMIDATE: ["PHYSICAL", "WILL"],
-  WILL_DAKAR: ["WILL"],
-  ACADEMIC_RECALL: ["MENTAL"],
-  INTERPRET: ["MENTAL", "SPIRITUAL"],
-  ENDURE: ["WILL"],
-  CRAFT: ["PHYSICAL", "MENTAL"],
-  ANIMAL_HUSBANDRY: ["PHYSICAL", "SPIRITUAL"],
-  FEAT_OF_DEFIANCE: ["WILL"]
 };
 
 type BackgroundStage =
@@ -96,7 +67,7 @@ const parseFateBonus = (details: string): number => {
   return match ? parseInt(match[2], 10) : 0;
 };
 
-const buildAttributeScores = (values: Record<(typeof ATTRIBUTE_KEYS)[number], number>): AttributeScores => {
+const buildAttributeScores = (values: Record<AttributeKey, number>): AttributeScores => {
   const scores: AttributeScores = {};
   ATTRIBUTE_KEYS.forEach((key) => {
     scores[key] = values[key];
@@ -105,14 +76,14 @@ const buildAttributeScores = (values: Record<(typeof ATTRIBUTE_KEYS)[number], nu
 };
 
 const computeAttributeSkillBonuses = (
-  attributes: Record<(typeof ATTRIBUTE_KEYS)[number], number>,
+  attributes: Record<AttributeKey, number>,
   skills: { id: string; code?: string; name: string }[] | undefined
 ): Record<string, number> => {
   if (!skills) return {};
   const bonuses: Record<string, number> = {};
   skills.forEach((skill) => {
     const skillKey = normalizeSkillCode(skill);
-    const attributesForSkill = skillAttributeMap[skillKey];
+    const attributesForSkill = SKILL_ATTRIBUTE_MAP[skillKey];
     if (!attributesForSkill) return;
     const code = getSkillCode(skill);
     bonuses[code] = attributesForSkill.reduce((acc, attr) => acc + attributes[attr] * 10, 0);
@@ -398,6 +369,11 @@ export const CharacterCreationPage: React.FC = () => {
     });
     return bonuses;
   }, [attributeSkillBonuses, racialSkillBonuses]);
+
+  const sortedSkills = React.useMemo(
+    () => [...(definitions?.skills ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
+    [definitions]
+  );
 
   const selectedBackgrounds = React.useMemo(() => {
     const lookup = new Map<string, BackgroundOption>();
@@ -760,9 +736,8 @@ export const CharacterCreationPage: React.FC = () => {
             <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ fontSize: 12, color: "#9aa3b5" }}>Skill Adjustments</div>
               <div style={{ maxHeight: 300, overflowY: "auto" }}>
-                {(definitions?.skills ?? [])
+                {sortedSkills
                   .map((skill) => ({ skill, bonus: skillBonuses[getSkillCode(skill)] ?? 0 }))
-                  .sort((a, b) => a.skill.name.localeCompare(b.skill.name))
                   .map(({ skill, bonus }) => (
                     <div
                       key={skill.id}
