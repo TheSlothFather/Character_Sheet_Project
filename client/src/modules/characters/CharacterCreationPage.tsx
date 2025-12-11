@@ -2,9 +2,12 @@ import React from "react";
 import Papa from "papaparse";
 import { useNavigate } from "react-router-dom";
 import backgroundsCsvUrl from "../../data/backgrounds.csv?url";
-import { api, BackgroundSelection, AttributeScores } from "../../api/client";
+import { api, BackgroundSelection, AttributeScores, ModifierWithSource } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
+import { applyModifiers } from "@shared/rules/modifiers";
+
+const getSkillCode = (skill: { id: string; code?: string }): string => skill.code ?? skill.id;
 
 const ATTRIBUTE_KEYS = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"] as const;
 const ATTRIBUTE_POINT_POOL = 3;
@@ -89,12 +92,45 @@ const buildAttributeScores = (values: Record<(typeof ATTRIBUTE_KEYS)[number], nu
   return scores;
 };
 
-const computeSkillBonuses = (attributes: Record<(typeof ATTRIBUTE_KEYS)[number], number>): Record<string, number> => {
+const computeAttributeSkillBonuses = (
+  attributes: Record<(typeof ATTRIBUTE_KEYS)[number], number>,
+  skills: { id: string; code?: string; name: string }[] | undefined
+): Record<string, number> => {
+  if (!skills) return {};
   const bonuses: Record<string, number> = {};
-  Object.entries(skillAttributeMap).forEach(([skill, attrs]) => {
-    bonuses[skill] = attrs.reduce((acc, attr) => acc + attributes[attr] * 10, 0);
+  skills.forEach((skill) => {
+    const attributesForSkill = skillAttributeMap[skill.name];
+    if (!attributesForSkill) return;
+    bonuses[getSkillCode(skill)] = attributesForSkill.reduce((acc, attr) => acc + attributes[attr] * 10, 0);
   });
   return bonuses;
+};
+
+const computeRaceSkillBonuses = (
+  definitions: ReturnType<typeof useDefinitions>["data"] | undefined,
+  raceKey: string,
+  subraceKey: string
+): Record<string, number> => {
+  if (!definitions) return {};
+  const baseSkills = Object.fromEntries(
+    (definitions.skills ?? []).map((skill) => [getSkillCode(skill), { score: 0, racialBonus: 0 }])
+  );
+  const baseState = { skills: baseSkills } as Record<string, unknown>;
+
+  const applicable = (definitions.modifiers as ModifierWithSource[]).filter((m) => {
+    if (m.sourceType === "race") return m.sourceKey === raceKey;
+    if (m.sourceType === "subrace") return m.sourceKey === subraceKey;
+    return false;
+  });
+
+  const state = applyModifiers({ baseState, modifiers: applicable });
+  const result: Record<string, number> = {};
+  for (const skill of definitions.skills ?? []) {
+    const code = getSkillCode(skill);
+    const entry = (state.skills as Record<string, any> | undefined)?.[code];
+    result[code] = typeof entry?.racialBonus === "number" ? entry.racialBonus : 0;
+  }
+  return result;
 };
 
 const cardStyle: React.CSSProperties = {
@@ -185,7 +221,23 @@ export const CharacterCreationPage: React.FC = () => {
   const attributeTotal = Object.values(attributes).reduce((acc, v) => acc + v, 0);
   const attributeRemaining = ATTRIBUTE_POINT_POOL - attributeTotal;
 
-  const skillBonuses = React.useMemo(() => computeSkillBonuses(attributes), [attributes]);
+  const attributeSkillBonuses = React.useMemo(
+    () => computeAttributeSkillBonuses(attributes, definitions?.skills),
+    [attributes, definitions]
+  );
+
+  const racialSkillBonuses = React.useMemo(
+    () => computeRaceSkillBonuses(definitions, raceKey, subraceKey),
+    [definitions, raceKey, subraceKey]
+  );
+
+  const skillBonuses = React.useMemo(() => {
+    const bonuses: Record<string, number> = { ...racialSkillBonuses };
+    Object.entries(attributeSkillBonuses).forEach(([code, bonus]) => {
+      bonuses[code] = (bonuses[code] ?? 0) + bonus;
+    });
+    return bonuses;
+  }, [attributeSkillBonuses, racialSkillBonuses]);
 
   const selectedBackgrounds = React.useMemo(() => {
     const lookup = new Map<string, BackgroundOption>();
@@ -259,6 +311,7 @@ export const CharacterCreationPage: React.FC = () => {
         skillAllocations: {},
         backgrounds: payload,
         attributes: buildAttributeScores(attributes),
+        skillBonuses,
         fatePoints: totalFatePoints
       });
       setSelectedId(created.id);
@@ -454,11 +507,12 @@ export const CharacterCreationPage: React.FC = () => {
           <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ fontSize: 12, color: "#9aa3b5" }}>Skill Adjustments</div>
             <div style={{ maxHeight: 300, overflowY: "auto" }}>
-              {Object.entries(skillBonuses)
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([skill, bonus]) => (
+              {(definitions?.skills ?? [])
+                .map((skill) => ({ skill, bonus: skillBonuses[getSkillCode(skill)] ?? 0 }))
+                .sort((a, b) => a.skill.name.localeCompare(b.skill.name))
+                .map(({ skill, bonus }) => (
                   <div
-                    key={skill}
+                    key={skill.id}
                     style={{
                       display: "grid",
                       gridTemplateColumns: "1fr 120px",
@@ -467,7 +521,7 @@ export const CharacterCreationPage: React.FC = () => {
                       alignItems: "center"
                     }}
                   >
-                    <div style={{ fontWeight: 600 }}>{skill}</div>
+                    <div style={{ fontWeight: 600 }}>{skill.name}</div>
                     <div style={{ fontWeight: 700, color: bonus >= 0 ? "#9ae6b4" : "#f7a046", textAlign: "right" }}>
                       {bonus >= 0 ? "+" : ""}
                       {bonus}
