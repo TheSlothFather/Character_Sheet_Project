@@ -3,39 +3,70 @@ import armorCsv from "../../data/armor.csv?raw";
 import weaponsCsv from "../../data/weapons.csv?raw";
 import { api, Character } from "../../api/client";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
-import { DEFAULT_MP_POOL, EquipmentKind, MartialAbility, parseMartialCsv } from "./martialUtils";
+import { EquipmentKind, MartialAbility, parseMartialCsv } from "./martialUtils";
 
 interface MartialState {
-  mpPool: number;
+  categoryPools: Record<string, number>;
   purchased: Set<string>;
 }
 
-const STORAGE_KEY = "martial_prowess_v1";
+const STORAGE_KEY = "martial_prowess_v2";
 
-const loadPersistedState = (storageKey: string | null, defaultMp: number, abilityIds: Set<string>): MartialState => {
+const abilityKey = (ability: MartialAbility): string => `${ability.kind}:${ability.category}`;
+
+const computeSpentByCategory = (
+  purchased: Set<string>,
+  abilityMap: Map<string, MartialAbility>
+): Map<string, number> => {
+  const spent = new Map<string, number>();
+  purchased.forEach((id) => {
+    const ability = abilityMap.get(id);
+    if (!ability) return;
+    const key = abilityKey(ability);
+    spent.set(key, (spent.get(key) ?? 0) + ability.mpCost);
+  });
+  return spent;
+};
+
+const loadPersistedState = (
+  storageKey: string | null,
+  categoryEntries: { key: string }[],
+  abilityIds: Set<string>
+): MartialState => {
   if (typeof window === "undefined" || !storageKey) {
-    return { mpPool: defaultMp, purchased: new Set() };
+    return { categoryPools: {}, purchased: new Set() };
   }
 
   try {
     const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return { mpPool: defaultMp, purchased: new Set() };
-    const parsed = JSON.parse(raw) as { mpPool?: number; purchased?: string[] };
-    const mpPool = typeof parsed.mpPool === "number" && parsed.mpPool >= 0 ? parsed.mpPool : defaultMp;
+    if (!raw) return { categoryPools: {}, purchased: new Set() };
+    const parsed = JSON.parse(raw) as { purchased?: string[]; categoryPools?: Record<string, unknown> };
     const purchased = Array.isArray(parsed.purchased)
       ? parsed.purchased.filter((id) => abilityIds.has(id))
       : [];
-    return { mpPool, purchased: new Set(purchased) };
+    const categoryKeys = new Set(categoryEntries.map((entry) => entry.key));
+    const categoryPools: Record<string, number> = {};
+    if (parsed.categoryPools && typeof parsed.categoryPools === "object") {
+      Object.entries(parsed.categoryPools).forEach(([key, value]) => {
+        if (!categoryKeys.has(key)) return;
+        const numeric = typeof value === "number" && Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+        if (numeric > 0) categoryPools[key] = numeric;
+      });
+    }
+    return { categoryPools, purchased: new Set(purchased) };
   } catch (err) {
     console.warn("Unable to parse martial prowess state", err);
-    return { mpPool: defaultMp, purchased: new Set() };
+    return { categoryPools: {}, purchased: new Set() };
   }
 };
 
 const persistState = (storageKey: string | null, state: MartialState) => {
   if (typeof window === "undefined" || !storageKey) return;
   try {
-    const payload = JSON.stringify({ mpPool: state.mpPool, purchased: Array.from(state.purchased) });
+    const payload = JSON.stringify({
+      categoryPools: state.categoryPools,
+      purchased: Array.from(state.purchased)
+    });
     window.localStorage.setItem(storageKey, payload);
   } catch (err) {
     console.warn("Unable to persist martial prowess state", err);
@@ -176,7 +207,7 @@ export const MartialProwessPage: React.FC = () => {
   );
 
   const abilityIds = React.useMemo(() => new Set(abilities.map((a) => a.id)), [abilities]);
-  const abilityCostMap = React.useMemo(() => new Map(abilities.map((a) => [a.id, a.mpCost])), [abilities]);
+  const abilityMap = React.useMemo(() => new Map(abilities.map((a) => [a.id, a])), [abilities]);
 
   const grouped = React.useMemo(() => {
     const map = new Map<EquipmentKind, Map<string, MartialAbility[]>>();
@@ -218,7 +249,9 @@ export const MartialProwessPage: React.FC = () => {
 
   const storageKey = React.useMemo(() => (selectedId ? `${STORAGE_KEY}:${selectedId}` : null), [selectedId]);
 
-  const [state, setState] = React.useState<MartialState>(() => loadPersistedState(storageKey, DEFAULT_MP_POOL, abilityIds));
+  const [state, setState] = React.useState<MartialState>(() =>
+    loadPersistedState(storageKey, categoryEntries, abilityIds)
+  );
 
   const categoriesByKind = React.useMemo(() => {
     const map = new Map<EquipmentKind, typeof categoryEntries>();
@@ -236,14 +269,6 @@ export const MartialProwessPage: React.FC = () => {
     () => categoryEntries.find((entry) => entry.key === activeCategoryKey) ?? null,
     [activeCategoryKey, categoryEntries]
   );
-
-  React.useEffect(() => {
-    setState(loadPersistedState(storageKey, DEFAULT_MP_POOL, abilityIds));
-  }, [abilityIds, storageKey]);
-
-  React.useEffect(() => {
-    persistState(storageKey, state);
-  }, [state, storageKey]);
 
   React.useEffect(() => {
     if (categoryEntries.length === 0) return;
@@ -278,20 +303,116 @@ export const MartialProwessPage: React.FC = () => {
       .finally(() => setLoadingCharacter(false));
   }, [selectedId]);
 
-  const spentMp = React.useMemo(
-    () => Array.from(state.purchased).reduce((sum, id) => sum + (abilityCostMap.get(id) ?? 0), 0),
-    [abilityCostMap, state.purchased]
+  const martialProwessPool = React.useMemo(() => {
+    const allocations = selectedCharacter?.skillAllocations ?? {};
+    const bonuses = selectedCharacter?.skillBonuses ?? {};
+    const base = allocations.MARTIAL_PROWESS ?? 0;
+    const bonus = bonuses.MARTIAL_PROWESS ?? 0;
+    return Math.max(0, base + bonus);
+  }, [selectedCharacter]);
+
+  const normalizeState = React.useCallback(
+    (input: MartialState): MartialState => {
+      const categoryKeys = categoryEntries.map((entry) => entry.key);
+      const purchased = new Set<string>();
+      input.purchased.forEach((id) => {
+        if (abilityMap.has(id)) purchased.add(id);
+      });
+
+      const spentByCategory = computeSpentByCategory(purchased, abilityMap);
+      const totalSpent = Array.from(spentByCategory.values()).reduce((sum, val) => sum + val, 0);
+
+      const categoryPools: Record<string, number> = {};
+      let totalAllocated = 0;
+      categoryKeys.forEach((key) => {
+        const min = spentByCategory.get(key) ?? 0;
+        const current = input.categoryPools[key] ?? 0;
+        const value = Math.max(min, Number.isFinite(current) ? Math.floor(current) : 0);
+        categoryPools[key] = value;
+        totalAllocated += value;
+      });
+
+      const allocationCap = Math.max(martialProwessPool, totalSpent);
+      let excess = Math.max(0, totalAllocated - allocationCap);
+      if (excess > 0) {
+        for (const key of categoryKeys) {
+          if (excess <= 0) break;
+          const min = spentByCategory.get(key) ?? 0;
+          const extra = categoryPools[key] - min;
+          if (extra <= 0) continue;
+          const deduction = Math.min(extra, excess);
+          categoryPools[key] -= deduction;
+          excess -= deduction;
+        }
+      }
+
+      const poolsChanged =
+        categoryKeys.some((key) => (input.categoryPools[key] ?? 0) !== categoryPools[key]) ||
+        Object.keys(input.categoryPools).some((key) => !categoryKeys.includes(key));
+      const purchasedChanged =
+        input.purchased.size !== purchased.size ||
+        Array.from(input.purchased).some((id) => !purchased.has(id));
+
+      if (!poolsChanged && !purchasedChanged) return input;
+      return { categoryPools, purchased };
+    },
+    [abilityMap, categoryEntries, martialProwessPool]
   );
 
-  const remainingMp = Math.max(0, state.mpPool - spentMp);
+  React.useEffect(() => {
+    const loaded = loadPersistedState(storageKey, categoryEntries, abilityIds);
+    setState(normalizeState(loaded));
+  }, [abilityIds, categoryEntries, normalizeState, storageKey]);
+
+  React.useEffect(() => {
+    setState((prev) => normalizeState(prev));
+  }, [normalizeState]);
+
+  React.useEffect(() => {
+    persistState(storageKey, state);
+  }, [state, storageKey]);
+
+  const spentByCategory = React.useMemo(
+    () => computeSpentByCategory(state.purchased, abilityMap),
+    [abilityMap, state.purchased]
+  );
+
+  const totalSpent = React.useMemo(
+    () => Array.from(spentByCategory.values()).reduce((sum, value) => sum + value, 0),
+    [spentByCategory]
+  );
+
+  const totalAllocated = React.useMemo(
+    () => categoryEntries.reduce((sum, entry) => sum + (state.categoryPools[entry.key] ?? 0), 0),
+    [categoryEntries, state.categoryPools]
+  );
+
+  const unassignedMp = Math.max(0, martialProwessPool - totalAllocated);
+  const remainingMp = Math.max(0, martialProwessPool - totalSpent);
+
+  const remainingByCategory = React.useMemo(() => {
+    const map = new Map<string, number>();
+    categoryEntries.forEach((entry) => {
+      const pool = state.categoryPools[entry.key] ?? 0;
+      const spent = spentByCategory.get(entry.key) ?? 0;
+      map.set(entry.key, Math.max(0, pool - spent));
+    });
+    return map;
+  }, [categoryEntries, spentByCategory, state.categoryPools]);
+
+  const activeCategoryAllocation = activeCategory ? state.categoryPools[activeCategory.key] ?? 0 : 0;
+  const activeCategoryRemaining = activeCategory ? remainingByCategory.get(activeCategory.key) ?? 0 : 0;
+  const activeCategorySpent = Math.max(0, activeCategoryAllocation - activeCategoryRemaining);
 
   const handlePurchase = (ability: MartialAbility) => {
+    const key = abilityKey(ability);
     setState((prev) => {
       if (prev.purchased.has(ability.id)) return prev;
-      const mpCost = ability.mpCost;
-      const spent = Array.from(prev.purchased).reduce((sum, id) => sum + (abilityCostMap.get(id) ?? 0), 0);
-      const available = prev.mpPool - spent;
-      if (available < mpCost) return prev;
+
+      const spent = computeSpentByCategory(prev.purchased, abilityMap);
+      const pool = prev.categoryPools[key] ?? 0;
+      const available = pool - (spent.get(key) ?? 0);
+      if (available < ability.mpCost) return prev;
 
       const nextPurchased = new Set(prev.purchased);
       nextPurchased.add(ability.id);
@@ -299,8 +420,30 @@ export const MartialProwessPage: React.FC = () => {
     });
   };
 
-  const updateMpPool = (value: number) => {
-    setState((prev) => ({ ...prev, mpPool: Math.max(0, value) }));
+  const updateCategoryPool = (categoryKey: string, value: number) => {
+    setState((prev) => {
+      const purchased = new Set(Array.from(prev.purchased).filter((id) => abilityMap.has(id)));
+      const spent = computeSpentByCategory(purchased, abilityMap);
+      const totalSpentLocal = Array.from(spent.values()).reduce((sum, val) => sum + val, 0);
+      const allocationCap = Math.max(martialProwessPool, totalSpentLocal);
+
+      const categoryKeys = categoryEntries.map((entry) => entry.key);
+      const pools: Record<string, number> = {};
+      categoryKeys.forEach((key) => {
+        const min = spent.get(key) ?? 0;
+        const current = prev.categoryPools[key] ?? 0;
+        pools[key] = Math.max(min, Number.isFinite(current) ? Math.floor(current) : 0);
+      });
+
+      const min = spent.get(categoryKey) ?? 0;
+      const desired = Math.max(min, Number.isFinite(value) ? Math.floor(value) : 0);
+      const totalOthers = categoryKeys.reduce((sum, key) => (key === categoryKey ? sum : sum + pools[key]), 0);
+      const maxForCategory = allocationCap - totalOthers;
+      const nextValue = Math.max(min, Math.min(desired, maxForCategory));
+
+      if (pools[categoryKey] === nextValue) return prev;
+      return { categoryPools: { ...pools, [categoryKey]: nextValue }, purchased };
+    });
   };
 
   if (!selectedId) {
@@ -339,41 +482,52 @@ export const MartialProwessPage: React.FC = () => {
           <h1 style={{ margin: 0, letterSpacing: 0.4 }}>Martial Prowess</h1>
           <p style={{ margin: 0, color: "#c5ccd9", fontSize: 14 }}>Character: {selectedCharacter.name}</p>
           <p style={{ margin: 0, color: "#7f8898", fontSize: 12 }}>
-            Pick a category on the left to review and unlock martial abilities.
+            Assign MP to a category, then buy abilities from that category's pool.
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <label
+          <div
             style={{
               background: "#0f1723",
               border: "1px solid #223447",
               borderRadius: 10,
-              padding: "0.8rem 1rem",
-              minWidth: 200,
+              padding: "0.9rem 1rem",
+              minWidth: 220,
               color: "#c5ccd9",
               display: "flex",
               flexDirection: "column",
-              gap: 8,
+              gap: 6,
               boxShadow: "0 10px 28px rgba(0,0,0,0.25)"
             }}
           >
-            <span style={{ fontSize: 13, letterSpacing: 0.2 }}>MP Pool</span>
-            <input
-              type="number"
-              value={state.mpPool}
-              onChange={(e) => updateMpPool(Number(e.target.value) || 0)}
-              min={0}
-              style={{
-                background: "#0c121a",
-                border: "1px solid #2b3747",
-                borderRadius: 8,
-                padding: "0.45rem 0.55rem",
-                color: "#e6edf7",
-                fontSize: 15,
-                fontWeight: 600
-              }}
-            />
-          </label>
+            <span style={{ fontSize: 13, letterSpacing: 0.2, color: "#9aa3b5" }}>Martial Prowess MP</span>
+            <div style={{ fontSize: 28, fontWeight: 800, color: "#9ae6b4" }}>{martialProwessPool}</div>
+            <span style={{ fontSize: 12, color: "#7f8898" }}>
+              Linked to the Martial Prowess skill on the Characters page.
+            </span>
+          </div>
+          <div
+            style={{
+              background: "linear-gradient(135deg, #0d1f27, #0f2f36)",
+              border: "1px solid #1d3a43",
+              borderRadius: 12,
+              padding: "0.9rem 1.1rem",
+              minWidth: 200,
+              textAlign: "center",
+              color: "#d8deea",
+              boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: 4
+            }}
+          >
+            <div style={{ fontSize: 13, color: "#9aa3b5", textTransform: "uppercase", letterSpacing: 1.2 }}>
+              Unassigned MP
+            </div>
+            <div style={{ fontSize: 30, fontWeight: 800, color: "#9ae6b4" }}>{unassignedMp}</div>
+            <div style={{ fontSize: 12, color: "#7f8898" }}>Allocate MP to categories before purchasing.</div>
+          </div>
           <div
             style={{
               background: "linear-gradient(135deg, #0d1f27, #0f2f36)",
@@ -439,6 +593,9 @@ export const MartialProwessPage: React.FC = () => {
                   {options.map((entry) => {
                     const purchasedCount = entry.abilities.filter((ability) => state.purchased.has(ability.id)).length;
                     const isActive = activeCategoryKey === entry.key;
+                    const allocated = state.categoryPools[entry.key] ?? 0;
+                    const remainingInCategory = remainingByCategory.get(entry.key) ?? 0;
+                    const spentInCategory = Math.max(0, allocated - remainingInCategory);
 
                     return (
                       <button
@@ -467,17 +624,27 @@ export const MartialProwessPage: React.FC = () => {
                             {entry.abilities.length} abilities
                           </div>
                         </div>
-                        <div
-                          style={{
-                            background: "#12202c",
-                            border: "1px solid #243547",
-                            borderRadius: 999,
-                            padding: "0.2rem 0.55rem",
-                            color: "#8ee59f",
-                            fontSize: 11
-                          }}
-                        >
-                          {purchasedCount} owned
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+                          <div
+                            style={{
+                              background: "#12202c",
+                              border: "1px solid #243547",
+                              borderRadius: 999,
+                              padding: "0.2rem 0.55rem",
+                              color: "#8ee59f",
+                              fontSize: 11,
+                              minWidth: 80,
+                              textAlign: "center"
+                            }}
+                          >
+                            {purchasedCount} owned
+                          </div>
+                          <div style={{ color: "#9aa3b5", fontSize: 11, textAlign: "right", lineHeight: 1.4 }}>
+                            <div>{allocated} MP allocated</div>
+                            <div style={{ color: remainingInCategory > 0 ? "#9ae6b4" : "#f09483" }}>
+                              {remainingInCategory} MP left ({spentInCategory} spent)
+                            </div>
+                          </div>
                         </div>
                       </button>
                     );
@@ -532,8 +699,41 @@ export const MartialProwessPage: React.FC = () => {
                     </span>
                   </div>
                   <span style={{ color: "#9aa3b5", fontSize: 13 }}>
-                    Review abilities in this discipline and spend your MP on the ones you want to master.
+                    Allocate MP to this discipline, then spend that pool on the abilities you want to master.
                   </span>
+                  <label
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 6,
+                      background: "#0f1723",
+                      border: "1px solid #1d2736",
+                      borderRadius: 10,
+                      padding: "0.75rem 0.85rem",
+                      maxWidth: 360
+                    }}
+                  >
+                    <div style={{ color: "#c5ccd9", fontWeight: 600, fontSize: 13 }}>Category MP Allocation</div>
+                    <input
+                      type="number"
+                      value={activeCategoryAllocation}
+                      min={activeCategorySpent}
+                      max={Math.max(activeCategoryAllocation + unassignedMp, activeCategorySpent)}
+                      onChange={(e) => updateCategoryPool(activeCategory.key, Number(e.target.value) || 0)}
+                      style={{
+                        background: "#0c121a",
+                        border: "1px solid #2b3747",
+                        borderRadius: 8,
+                        padding: "0.45rem 0.55rem",
+                        color: "#e6edf7",
+                        fontSize: 15,
+                        fontWeight: 600
+                      }}
+                    />
+                    <div style={{ fontSize: 12, color: "#7f8898" }}>
+                      Requires at least {activeCategorySpent} MP to cover purchased abilities.
+                    </div>
+                  </label>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8 }}>
                   <StatPill label="Abilities" value={`${activeCategory.abilities.length}`} />
@@ -541,7 +741,8 @@ export const MartialProwessPage: React.FC = () => {
                     label="Purchased"
                     value={`${activeCategory.abilities.filter((ability) => state.purchased.has(ability.id)).length}`}
                   />
-                  <StatPill label="MP Remaining" value={`${remainingMp}`} />
+                  <StatPill label="Allocated" value={`${activeCategoryAllocation}`} />
+                  <StatPill label="Category Remaining" value={`${activeCategoryRemaining}`} />
                 </div>
               </div>
 
@@ -560,7 +761,7 @@ export const MartialProwessPage: React.FC = () => {
                       key={ability.id}
                       ability={ability}
                       purchased={purchased}
-                      remainingMp={remainingMp}
+                      remainingMp={activeCategoryRemaining}
                       onPurchase={handlePurchase}
                     />
                   );
