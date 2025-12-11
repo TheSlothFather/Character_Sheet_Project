@@ -35,6 +35,12 @@ type TreeOverride = {
   blockedEdges?: Array<{ from: string; to: string }>;
 };
 
+type PositionedNode = {
+  ability: PsionicAbility;
+  x: number;
+  y: number;
+};
+
 const DEFAULT_MENTAL_ATTRIBUTE = 3;
 
 const loadPersistedState = (
@@ -172,28 +178,51 @@ const AbilityNode: React.FC<{
   ability: PsionicAbility;
   purchased: boolean;
   unlocked: boolean;
+  isStarter: boolean;
   remainingPsi: number;
   onPurchase: (ability: PsionicAbility) => void;
-}> = ({ ability, purchased, unlocked, remainingPsi, onPurchase }) => {
+}> = ({ ability, purchased, unlocked, isStarter, remainingPsi, onPurchase }) => {
   const psiCost = ability.tier;
   const canAfford = remainingPsi >= psiCost;
-  const status = purchased ? "purchased" : unlocked && canAfford ? "available" : unlocked ? "locked-cost" : "locked";
+  const status = purchased
+    ? "purchased"
+    : unlocked
+      ? canAfford
+        ? "available"
+        : "locked-cost"
+      : isStarter
+        ? canAfford
+          ? "starter"
+          : "starter-cost"
+        : "locked";
 
   const colors: Record<string, { bg: string; border: string; text: string }> = {
     purchased: { bg: "#1f352a", border: "#3ca66a", text: "#b5f5c8" },
     available: { bg: "#18202c", border: "#3b82f6", text: "#dce7ff" },
+    starter: { bg: "#1f1631", border: "#a855f7", text: "#e9d5ff" },
+    "starter-cost": { bg: "#181027", border: "#6b21a8", text: "#c7b5ec" },
     "locked-cost": { bg: "#141924", border: "#334155", text: "#9aa3b5" },
     locked: { bg: "#0f141d", border: "#1f2935", text: "#6b7280" }
   };
 
   const palette = colors[status];
-  const disabled = !unlocked || purchased || !canAfford;
+  const disabled = purchased || (!unlocked && !isStarter) || !canAfford;
 
   return (
     <button
       onClick={() => onPurchase(ability)}
       disabled={disabled}
-      title={purchased ? "Already purchased" : unlocked ? (canAfford ? "Purchase ability" : "Not enough Psi") : "Locked"}
+      title={
+        purchased
+          ? "Already purchased"
+          : unlocked
+            ? canAfford
+              ? "Purchase ability"
+              : "Not enough Psi"
+            : isStarter
+              ? "Spend Psi to unlock this tree"
+              : "Locked"
+      }
       style={{
         minWidth: 120,
         minHeight: 52,
@@ -246,11 +275,11 @@ const SkillTree: React.FC<{
       updatedLines.push({
         from: {
           x: fromRect.left - containerRect.left + fromRect.width / 2,
-          y: fromRect.bottom - containerRect.top
+          y: fromRect.top - containerRect.top + fromRect.height / 2
         },
         to: {
           x: toRect.left - containerRect.left + toRect.width / 2,
-          y: toRect.top - containerRect.top
+          y: toRect.top - containerRect.top + toRect.height / 2
         }
       });
     });
@@ -271,9 +300,76 @@ const SkillTree: React.FC<{
   }, [refreshLines]);
 
   const orderedTiers = Array.from(tiers.keys()).sort((a, b) => a - b);
+  const starterTier = tiers.get(1) ?? [];
+  const tierTwo = tiers.get(2) ?? [];
+  const remainingTiers = orderedTiers.filter((tier) => tier > 2);
+  const orbitRadius = Math.max(170, 90 + tierTwo.length * 18);
+  const outerTierSpacing = 200;
+  const starterRadius = starterTier.length > 1 ? 42 : 0;
+  const tierTwoAngleStep = tierTwo.length > 0 ? (2 * Math.PI) / tierTwo.length : 0;
+  const starterAngleStep = starterTier.length > 0 ? (2 * Math.PI) / starterTier.length : 0;
+
+  const layout = React.useMemo(() => {
+    const positions = new Map<string, PositionedNode>();
+    let maxRadius = Math.max(orbitRadius, starterRadius);
+
+    starterTier.forEach((ability, index) => {
+      const angle = starterAngleStep * index - Math.PI / 2;
+      const x = Math.cos(angle) * starterRadius;
+      const y = Math.sin(angle) * starterRadius;
+      positions.set(ability.id, { ability, x, y });
+    });
+
+    tierTwo.forEach((ability, index) => {
+      const angle = tierTwoAngleStep * index - Math.PI / 2;
+      const x = Math.cos(angle) * orbitRadius;
+      const y = Math.sin(angle) * orbitRadius;
+      positions.set(ability.id, { ability, x, y });
+    });
+
+    remainingTiers.forEach((tier) => {
+      const abilitiesForTier = tiers.get(tier) ?? [];
+      const tierRadius = orbitRadius + (tier - 2) * outerTierSpacing;
+      maxRadius = Math.max(maxRadius, tierRadius);
+
+      const fallbackStep = abilitiesForTier.length > 0 ? (2 * Math.PI) / abilitiesForTier.length : 0;
+      const grouped = new Map<string, Array<{ ability: PsionicAbility; baseAngle: number }>>();
+
+      abilitiesForTier.forEach((ability, index) => {
+        const parentPositions = ability.prerequisiteIds
+          .map((id) => positions.get(id))
+          .filter((entry): entry is PositionedNode => Boolean(entry));
+
+        const baseAngle = parentPositions.length
+          ? parentPositions.reduce((sum, pos) => sum + Math.atan2(pos.y, pos.x), 0) / parentPositions.length
+          : fallbackStep * index - Math.PI / 2;
+
+        const anchorKey = parentPositions.length ? ability.prerequisiteIds[0] : `fallback-${ability.id}`;
+        if (!grouped.has(anchorKey)) grouped.set(anchorKey, []);
+        grouped.get(anchorKey)!.push({ ability, baseAngle });
+      });
+
+      grouped.forEach((entries) => {
+        entries.sort((a, b) => a.baseAngle - b.baseAngle);
+        const spread = 0.28;
+        const offsetStart = -((entries.length - 1) / 2) * spread;
+
+        entries.forEach((entry, idx) => {
+          const angle = entry.baseAngle + offsetStart + idx * spread;
+          const x = Math.cos(angle) * tierRadius;
+          const y = Math.sin(angle) * tierRadius;
+          positions.set(entry.ability.id, { ability: entry.ability, x, y });
+        });
+      });
+    });
+
+    return { positions: Array.from(positions.values()), maxRadius };
+  }, [orbitRadius, remainingTiers, starterAngleStep, starterRadius, starterTier, tierTwo, tierTwoAngleStep, tiers]);
+
+  const centerHeight = Math.max(layout.maxRadius * 2 + 240, 480);
 
   return (
-    <div ref={containerRef} style={{ position: "relative" }}>
+    <div ref={containerRef} style={{ position: "relative", padding: "1.25rem 1rem 1rem" }}>
       <svg
         width="100%"
         height={containerHeight}
@@ -294,39 +390,38 @@ const SkillTree: React.FC<{
         ))}
       </svg>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        {orderedTiers.map((tier) => (
-          <div
-            key={`${treeName}-tier-${tier}`}
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              flexWrap: "wrap",
-              gap: "0.75rem"
-            }}
-          >
-            {tiers.get(tier)?.map((ability) => {
-              const unlocked = isAbilityUnlocked(ability, purchased);
-              const isPurchased = purchased.has(ability.id);
-              return (
-                <div
-                  key={ability.id}
-                  ref={(el) => {
-                    if (el) nodeRefs.current.set(ability.id, el);
-                  }}
-                >
-                  <AbilityNode
-                    ability={ability}
-                    purchased={isPurchased}
-                    unlocked={unlocked}
-                    remainingPsi={remainingPsi}
-                    onPurchase={onPurchase}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        ))}
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        <div
+          style={{
+            position: "relative",
+            minHeight: centerHeight,
+            marginBottom: "0.25rem"
+          }}
+        >
+          {layout.positions.map(({ ability, x, y }) => {
+            const unlocked = isAbilityUnlocked(ability, purchased, { allowTier1WithoutPrereq: false });
+            const isPurchased = purchased.has(ability.id);
+            const isStarter = ability.tier === 1 && ability.prerequisiteIds.length === 0;
+            return (
+              <div
+                key={ability.id}
+                ref={(el) => {
+                  if (el) nodeRefs.current.set(ability.id, el);
+                }}
+                style={{ position: "absolute", left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)`, transform: "translate(-50%, -50%)" }}
+              >
+                <AbilityNode
+                  ability={ability}
+                  purchased={isPurchased}
+                  unlocked={unlocked}
+                  isStarter={isStarter}
+                  remainingPsi={remainingPsi}
+                  onPurchase={onPurchase}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -458,7 +553,7 @@ export const PsionicsPage: React.FC = () => {
     const grouped = new Map<string, PsionicAbility[]>();
     abilities.forEach((ability) => {
       const purchased = state.purchased.has(ability.id);
-      const unlocked = purchased || isAbilityUnlocked(ability, state.purchased);
+      const unlocked = purchased || isAbilityUnlocked(ability, state.purchased, { allowTier1WithoutPrereq: false });
       if (!unlocked) return;
       if (!grouped.has(ability.tree)) grouped.set(ability.tree, []);
       grouped.get(ability.tree)!.push(ability);
@@ -474,7 +569,8 @@ export const PsionicsPage: React.FC = () => {
   const handlePurchase = (ability: PsionicAbility) => {
     setState((prev) => {
       if (prev.purchased.has(ability.id)) return prev;
-      if (!isAbilityUnlocked(ability, prev.purchased)) return prev;
+      const starterAbility = ability.tier === 1 && ability.prerequisiteIds.length === 0;
+      if (!starterAbility && !isAbilityUnlocked(ability, prev.purchased, { allowTier1WithoutPrereq: false })) return prev;
       const psiCost = ability.tier;
       const spent = Array.from(prev.purchased).reduce((sum, id) => sum + (abilityCostMap.get(id) ?? 0), 0);
       const available = prev.psiPool - spent;
