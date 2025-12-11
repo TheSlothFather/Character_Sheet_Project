@@ -342,9 +342,15 @@ const SkillTree: React.FC<{
           .map((id) => positions.get(id))
           .filter((entry): entry is PositionedNode => Boolean(entry));
 
-        const baseAngle = parentPositions.length
+        let baseAngle = parentPositions.length
           ? parentPositions.reduce((sum, pos) => sum + Math.atan2(pos.y, pos.x), 0) / parentPositions.length
           : fallbackStep * index - Math.PI / 2;
+
+        if (tier === 3 && parentPositions.length) {
+          const anchorAngle = Math.atan2(parentPositions[0].y, parentPositions[0].x);
+          const maxOffset = 0.42;
+          baseAngle = Math.max(anchorAngle - maxOffset, Math.min(anchorAngle + maxOffset, baseAngle));
+        }
 
         const anchorKey = parentPositions.length ? ability.prerequisiteIds[0] : `fallback-${ability.id}`;
         if (!grouped.has(anchorKey)) grouped.set(anchorKey, []);
@@ -558,8 +564,7 @@ export const PsionicsPage: React.FC = () => {
     const grouped = new Map<string, PsionicAbility[]>();
     abilities.forEach((ability) => {
       const purchased = state.purchased.has(ability.id);
-      const unlocked = purchased || isAbilityUnlocked(ability, state.purchased, { allowTier1WithoutPrereq: false });
-      if (!unlocked) return;
+      if (!purchased) return;
       if (!grouped.has(ability.tree)) grouped.set(ability.tree, []);
       grouped.get(ability.tree)!.push(ability);
     });
