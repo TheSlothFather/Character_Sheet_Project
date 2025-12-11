@@ -126,8 +126,19 @@ export const parsePsionicsCsv = (csvText: string): PsionicAbility[] => {
   });
 };
 
-export const isAbilityUnlocked = (ability: PsionicAbility, purchased: Set<string>): boolean =>
-  ability.prerequisiteIds.every((id) => purchased.has(id));
+export const isAbilityUnlocked = (
+  ability: PsionicAbility,
+  purchased: Set<string>,
+  options?: { allowTier1WithoutPrereq?: boolean }
+): boolean => {
+  const allowTier1WithoutPrereq = options?.allowTier1WithoutPrereq ?? true;
+
+  if (!allowTier1WithoutPrereq && ability.tier === 1 && ability.prerequisiteIds.length === 0) {
+    return purchased.has(ability.id);
+  }
+
+  return ability.prerequisiteIds.every((id) => purchased.has(id));
+};
 
 export const replaceMentalAttributePlaceholders = (text: string, mental: number): string => {
   const withMultipliers = text.replace(/mental attribute\s*x\s*(\d+)/gi, (_, multiplier: string) => {
