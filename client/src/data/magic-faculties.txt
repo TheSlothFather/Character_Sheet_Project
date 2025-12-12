@@ -1100,7 +1100,6 @@ Cities at the edge collect dense drifts of debris that glue doors and windows sh
 Statuses:
 Primary → Prone, Disarmed, Unconscious (momentum trauma)
 Ring → Slowed, Prone
-====================================
 10. ARTIFICY
 Imbuement (Dakar Infusion / Construct Creation) ↔ Disimbuement (Magic Removal / Radiation Purge)
 Artificy is uniquely tied to Dakar radiation, gemstone imbuement, magic item creation, and construct animation.
