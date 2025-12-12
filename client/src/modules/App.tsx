@@ -7,7 +7,6 @@ import { DefinitionsProvider } from "./definitions/DefinitionsContext";
 import { MartialProwessPage } from "./martial/MartialProwessPage";
 import { PsionicsPage } from "./psionics/PsionicsPage";
 import { MagicFacultiesPage } from "./magic/MagicFacultiesPage";
-import { SpellCreationPage } from "./magic/SpellCreationPage";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -63,9 +62,6 @@ export const App: React.FC = () => {
             >
               Magic Faculties
             </NavLink>
-            <NavLink to="/spell-creation" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
-              Spell Creation
-            </NavLink>
           </nav>
           <main style={{ flex: 1, padding: "1rem" }}>
             <Routes>
@@ -75,7 +71,6 @@ export const App: React.FC = () => {
               <Route path="/martial" element={<MartialProwessPage />} />
               <Route path="/psionics" element={<PsionicsPage />} />
               <Route path="/magic-faculties" element={<MagicFacultiesPage />} />
-              <Route path="/spell-creation" element={<SpellCreationPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
