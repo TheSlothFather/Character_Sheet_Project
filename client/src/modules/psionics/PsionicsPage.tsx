@@ -792,7 +792,7 @@ export const PsionicsPage: React.FC = () => {
                             </span>
                           </div>
                         </div>
-                        <p style={{ margin: "0 0 0.5rem", color: "#c5ccd9", lineHeight: 1.4 }}>
+                        <p style={{ margin: "0 0 0.5rem", color: "#c5ccd9", lineHeight: 1 }}>
                           {formattedDescription}
                         </p>
                         <div style={{ fontSize: 13, color: "#c5ccd9", marginBottom: 4 }}>
