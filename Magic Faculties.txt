@@ -996,157 +996,110 @@ Primary → Unconscious, Slowed (absolute), Stupification
 Ring → Prone, Blinded
 ====================================
 9. TRIBOMANCY
-Friction (Resistance/Heat/Binding) ↔ Lubricity (Slip/Flow/Unbinding)
-Tribomancy controls how surfaces interact: how much they grip, grind, bind, slip, or shear past each other.
-Friction increases resistance and converts motion to heat; Lubricity removes resistance and lets things slide until something stops them.
+Friction (Stiction / Grip) ↔ Inertia (Slide / Glide)
+Tribomancy governs how surfaces resist or preserve motion. It magnifies traction, drag, and shearing or strips them away to let objects slip frictionlessly.
 
 TIER 1
-Friction – Primary Effect
-Make surfaces slightly tacky or “grippy.”
-A door hinge starts to squeak; smooth tool handles become easier to hold; objects set down on a surface “stick” slightly instead of sliding.
-Environmental Consequence (Lubricity)
-A small nearby surface (a patch of floor, a tabletop, a bit of wall) becomes noticeably polished and smooth, as if lightly oiled. Items on it slide more easily and may drift if bumped.
+Stiction – Primary Effect
+Add or remove surface roughness for handheld objects or a 5 ft patch of ground. Loose gravel binds together or becomes as slick as ice.
+Environmental Consequence (Inertia)
+Air feels sluggish at the edge of the effect. Ribbons or dust hang briefly before settling.
 Statuses:
-Primary: None (maybe advantage on resisting being disarmed/knocked prone)
-Ring: Prone (minor risk if someone steps directly on it and moves quickly)
+Primary → Slowed (brief), Prone (on failed balance)
+Ring → None
 
-Lubricity – Primary Effect
-Make a small surface feel perfectly smooth and polished.
-Silence a squeaky hinge; cause knots to loosen slightly; objects feel slippery and harder to keep a grip on.
-Environmental Consequence (Friction)
-A nearby patch of ground becomes tacky, like stepping in spilled syrup. Loose debris (dust, leaves) sticks to it and resists movement.
+Inertia – Primary Effect
+Reduce friction on small tools, cloth, or weapon edges. Knots loosen; blades pass with less resistance; tossed items glide slightly farther.
+Environmental Consequence (Stiction)
+Nearby surfaces gain a faint tackiness; footsteps sound muted.
 Statuses:
-Primary: Prone (on failed balance check), item drops
-Ring: Slowed (minor, movement feels slightly “stuck”)
+Primary → None or Slowed (momentary hesitation)
+Ring → None
 
 TIER 2
-Friction – Primary Effect
-Create resistance equivalent to walking on dry sand.
-Simple mechanisms (wheels, pulleys, latches) stiffen and slow.
-Generate minor friction-heat on moving surfaces (like vigorously rubbing hands).
-Environmental Consequence (Lubricity)
-A small nearby patch of ground (about a 1-foot square or so) becomes slick like a waxed floor. Creatures stepping on it risk losing footing when changing direction or moving quickly.
+Stiction – Primary Effect
+Create sticky fields over 10–15 ft zones. Climbing walls gain purchase; foes find their boots tacky; thrown weapons embed rather than ricochet.
+Environmental Consequence (Inertia)
+Wind at the boundary seems to lag; light debris drifts in slow arcs.
 Statuses:
-Primary: Slowed, minor Burning on prolonged contact
-Ring: Prone (modest risk)
+Primary → Slowed, Prone (failed athletics)
+Ring → Slowed (minor)
 
-Lubricity – Primary Effect
-Create a patch of slipperiness equivalent to a minor oil spill.
-Cause a creature to fumble a held item or weapon.
-“Un-stick” a moderately stuck object (jammed drawer, rusted latch).
-Environmental Consequence (Friction)
-Nearby mechanisms (hinges, wheels, pulleys) become stiff, squeaky, and resistant. The air around them feels “thick,” and moving parts fight against motion.
+Inertia – Primary Effect
+Strip friction from armor joints or vehicle axles. Wheels coast freely; melee swings overextend; grapple attempts slide off.
+Environmental Consequence (Stiction)
+Dust clings to skin and metal; fabrics feel heavy.
 Statuses:
-Primary: Prone, item drop, Hastened (sliding distance increases)
-Ring: Slowed (mechanisms seize, movement feels heavy)
+Primary → Slowed, Prone (loss of footing)
+Ring → Prone (minor slips)
 
-TIER 3 
-Friction – Primary Effect
-Generate enough friction to stop a rolling barrel or sliding object abruptly.
-Cause mechanisms to seize and lock.
-Produce heat strong enough to char wood or make metal uncomfortably hot.
-Surfaces behave like sandpaper, abrading anything dragged across them.
-Environmental Consequence (Lubricity)
-A nearby area (patch of floor or slope) becomes slick as wet ice. Standing upright is difficult; loose objects slide freely; stationary items may drift if nudged.
+TIER 3
+Stiction – Primary Effect
+Lock moving objects in place through shear force: halt charging creatures, freeze doors mid-swing, glue projectiles to shields.
+Environmental Consequence (Inertia)
+Water at the perimeter ripples sluggishly, as if thickened.
 Statuses:
-Primary: Burning (from friction-heat), Laceration (abrasion), Slowed
-Ring: Prone (high risk), Hastened (for uncontrolled sliding)
+Primary → Immobilized, Prone, Stuck (cannot drop held item)
+Ring → Slowed
 
-Lubricity – Primary Effect
-Create a patch of “black ice” where gaining traction is virtually impossible.
-Thrown or pushed objects slide a long distance.
-“Un-stick” heavily jammed or rusted mechanisms by annihilating friction at joints.
-Environmental Consequence (Friction)
-A nearby surface becomes as coarse as sandpaper. Clothing snags; ropes fray; skin dragged across it is visibly abraded.
+Inertia – Primary Effect
+Create near-frictionless planes up to corridor size. Combatants slide uncontrollably; impacts deflect; thrown objects skip great distances.
+Environmental Consequence (Stiction)
+Edges of the zone gather grit and debris, forming rough berms.
 Statuses:
-Primary: Prone (near certain if you move), Dazed (hard falls), Hastened (movement overshoots)
-Ring: Laceration (abrasion), Slowed (movement resisted)
+Primary → Prone, Disarmed (items fly from grip), Slowed (regaining footing)
+Ring → Prone (on failed balance)
 
-TIER 4 
-Friction – Primary Effect
-Apply intense friction to specific objects or surfaces or create a bounded high-friction field.
-    • Lock a creature’s limbs by targeting joints.
-    • Stop a sliding or charging creature instantly by targeting ground contact.
-    • Seize complex mechanisms.
-Generates enough friction-heat to ignite cloth on moving surfaces and causes targeted materials to gall, shred, or tear themselves apart.
-Environmental Consequence (Lubricity)
-A pronounced lubricity field appears nearby.
-Any object entering with even minor momentum will slide until it exits the field or hits a barrier. The air feels “thin” and slippery; footing is treacherous.
+TIER 4
+Stiction – Primary Effect
+Amplify traction for siege engines, burrowing claws, or grappling hooks. Creatures can cling to ceilings; ramps become impassable walls of gluey drag.
+Environmental Consequence (Inertia)
+Sounds stretch and smear at the edge, as if vibrating through tar.
 Statuses:
-Primary: Burning, Laceration, Crushing (from abrupt stops), Slowed
-Ring: Prone (very high), Hastened (slide distance is large)
+Primary → Immobilized, Grappled (terrain), Suffocating (if mouth sealed by adhesive grit)
+Ring → Slowed
 
-Lubricity – Primary Effect
-Apply near-zero friction to specific objects/surfaces or create a bounded low-friction field.
-Creatures inside fall and slide helplessly; footing is nearly impossible.
-Can make a surface so slick that adhesives and even some magical bonds fail, allowing heavy objects (like boulders) to be moved with light effort.
-Environmental Consequence (Friction)
-A “locking” field forms around the perimeter:
-    • Mechanisms seize at the edges.
-    • Joints stiffen as friction spikes in narrow bands.
-    • The ground grips feet so hard that movement feels like slogging through glue.
+Inertia – Primary Effect
+Render waterways, battlements, or city streets frictionless. Armies skid uncontrollably; carts rocket forward; anchors fail to catch.
+Environmental Consequence (Stiction)
+Walls and railings ooze tacky residue that traps loose gear.
 Statuses:
-Primary: Prone, Dazed (from constant falls), Hastened (sliding), Slowed (when trying to get up)
-Ring: Slowed, Crushing (minor joint strain), Burning (joint overheating)
+Primary → Prone, Disarmed, Slowed
+Ring → Prone
 
 TIER 5
-Friction – Primary Effect
-Apply extreme friction to large surfaces or create a large bounded field.
-    • Stop large moving objects (charging horses, minecarts) dead.
-    • Generate friction-heat hot enough to melt soft metals at contact points.
-    • Cause stone surfaces to grind and pulverize each other into gravel or dust.
-Environmental Consequence (Lubricity)
-A sizable area (e.g., 10-foot radius or more) becomes near-frictionless.
-Objects and creatures slide uncontrollably toward the lowest point; piles of debris slump and skate until they settle.
+Stiction – Primary Effect
+Impose crushing shear on machinery or creatures: gears seize, armor plates fuse, and muscles tear if they force motion.
+Environmental Consequence (Inertia)
+The perimeter warps perception of pace; everything outside seems to drag.
 Statuses:
-Primary: Severe Burning, Laceration (from grinding), Slowed (moving is painful)
-Ring: Prone (almost guaranteed), Hastened (uncontrolled momentum), Dazed (collisions)
+Primary → Immobilized, Laceration (shearing), Exhausted
+Ring → Slowed, Prone
 
-Lubricity – Primary Effect
-Apply near-perfect lubricity to large objects or surfaces or create a large bounded field.
-Within it, friction cannot meaningfully stop motion.
-Objects in motion will continue until they hit something; a creature can be “injected” through tight gaps by reducing all surface resistance.
-Environmental Consequence (Friction)
-A large perimeter ring experiences intense abrasion:
-    • Loose stones grind together
-    • Surfaces heat at the edges
-    • A “hot spot” of friction-heat can manifest where sliding objects finally meet resistance
+Inertia – Primary Effect
+Erase kinetic drag across plazas or ships. Massive objects glide with ghostlike ease; collapsing buildings slump sideways instead of straight down.
+Environmental Consequence (Stiction)
+Dust, pollen, and fog bind at the boundary, forming hazy adhesive curtains.
 Statuses:
-Primary: Prone, Hastened, Unconscious (from severe impact/falls)
-Ring: Burning, Laceration, Crushing (from high-speed grinding)
+Primary → Prone, Disarmed, Stupification (momentum shock)
+Ring → Slowed
 
 TIER 6
-Friction – Primary Effect
-Apply friction at the molecular level or create a bounded “stasis” field.
-    • Instantly cold-weld two flat surfaces (metal, stone, or flesh) together.
-    • Convert all kinetic energy inside the field into heat, halting even magical motion: arrows stop midflight and burn; creatures freeze in place while cooking in their own movement-heat.
-    • Moving structures can tear themselves apart under their own attempts to shift.
-Environmental Consequence (Lubricity)
-An opposing “anti-friction” field forms nearby.
-Surfaces actively repel one another:
-    • Grains of soil unstick and crumble
-    • Rubble piles slide apart
-    • Objects struggle to stay in contact and may levitate slightly as contact forces push them away instead of holding them together
+Stiction – Primary Effect
+Create continent-scale traction shifts: mountain passes become impassable tar pits; siege walls fuse with the ground; rivers slow to syrup.
+Environmental Consequence (Inertia)
+Horizons appear to crawl; clouds smear; anything leaving the zone seems to move underwater.
 Statuses:
-Primary: Fatal Burning, Crushing (self-tearing), Unconscious
-Ring: Prone (from repelling ground), Hastened (objects fling apart), Dazed
+Primary → Immobilized (absolute), Crushing (if motion forced), Exhausted
+Ring → Slowed, Prone
 
-Lubricity – Primary Effect
-Apply “conceptual slipperiness” to a target or large bounded field.
-In the field, matter cannot meaningfully grip itself:
-    • Rubble piles and walls slide apart
-    • Structures slump into chaotic motion
-    • A single object treated this way achieves “perfect un-stoppable” motion until acted on by something other than friction (e.g., direct force, magic barriers).
-Environmental Consequence (Friction)
-A massive “stasis friction” field crystallizes around the lubricity zone’s perimeter.
-All motion there is locked:
-    • Air feels solid
-    • Dust hangs frozen
-    • Surfaces fuse unmoving, as if welded by pure resistance
-The contrast between inner infinite slip and outer total lock creates catastrophic shearing in anything crossing the boundary.
+Inertia – Primary Effect
+Remove friction from vast terrain. Seas turn glassy; storms slide past; entire armies slide across plains with minimal effort.
+Environmental Consequence (Stiction)
+Cities at the edge collect dense drifts of debris that glue doors and windows shut.
 Statuses:
-Primary: Unconscious (catastrophic falls/structural collapse), Prone, Dazed
-Ring: Crushing (locked motion tearing things apart), Laceration, Burning (from forced shear)
+Primary → Prone, Disarmed, Unconscious (momentum trauma)
+Ring → Slowed, Prone
 ====================================
 10. ARTIFICY
 Imbuement (Dakar Infusion / Construct Creation) ↔ Disimbuement (Magic Removal / Radiation Purge)

@@ -995,6 +995,111 @@ Statuses:
 Primary → Unconscious, Slowed (absolute), Stupification
 Ring → Prone, Blinded
 ====================================
+9. TRIBOMANCY
+Friction (Stiction / Grip) ↔ Inertia (Slide / Glide)
+Tribomancy governs how surfaces resist or preserve motion. It magnifies traction, drag, and shearing or strips them away to let objects slip frictionlessly.
+
+TIER 1
+Stiction – Primary Effect
+Add or remove surface roughness for handheld objects or a 5 ft patch of ground. Loose gravel binds together or becomes as slick as ice.
+Environmental Consequence (Inertia)
+Air feels sluggish at the edge of the effect. Ribbons or dust hang briefly before settling.
+Statuses:
+Primary → Slowed (brief), Prone (on failed balance)
+Ring → None
+
+Inertia – Primary Effect
+Reduce friction on small tools, cloth, or weapon edges. Knots loosen; blades pass with less resistance; tossed items glide slightly farther.
+Environmental Consequence (Stiction)
+Nearby surfaces gain a faint tackiness; footsteps sound muted.
+Statuses:
+Primary → None or Slowed (momentary hesitation)
+Ring → None
+
+TIER 2
+Stiction – Primary Effect
+Create sticky fields over 10–15 ft zones. Climbing walls gain purchase; foes find their boots tacky; thrown weapons embed rather than ricochet.
+Environmental Consequence (Inertia)
+Wind at the boundary seems to lag; light debris drifts in slow arcs.
+Statuses:
+Primary → Slowed, Prone (failed athletics)
+Ring → Slowed (minor)
+
+Inertia – Primary Effect
+Strip friction from armor joints or vehicle axles. Wheels coast freely; melee swings overextend; grapple attempts slide off.
+Environmental Consequence (Stiction)
+Dust clings to skin and metal; fabrics feel heavy.
+Statuses:
+Primary → Slowed, Prone (loss of footing)
+Ring → Prone (minor slips)
+
+TIER 3
+Stiction – Primary Effect
+Lock moving objects in place through shear force: halt charging creatures, freeze doors mid-swing, glue projectiles to shields.
+Environmental Consequence (Inertia)
+Water at the perimeter ripples sluggishly, as if thickened.
+Statuses:
+Primary → Immobilized, Prone, Stuck (cannot drop held item)
+Ring → Slowed
+
+Inertia – Primary Effect
+Create near-frictionless planes up to corridor size. Combatants slide uncontrollably; impacts deflect; thrown objects skip great distances.
+Environmental Consequence (Stiction)
+Edges of the zone gather grit and debris, forming rough berms.
+Statuses:
+Primary → Prone, Disarmed (items fly from grip), Slowed (regaining footing)
+Ring → Prone (on failed balance)
+
+TIER 4
+Stiction – Primary Effect
+Amplify traction for siege engines, burrowing claws, or grappling hooks. Creatures can cling to ceilings; ramps become impassable walls of gluey drag.
+Environmental Consequence (Inertia)
+Sounds stretch and smear at the edge, as if vibrating through tar.
+Statuses:
+Primary → Immobilized, Grappled (terrain), Suffocating (if mouth sealed by adhesive grit)
+Ring → Slowed
+
+Inertia – Primary Effect
+Render waterways, battlements, or city streets frictionless. Armies skid uncontrollably; carts rocket forward; anchors fail to catch.
+Environmental Consequence (Stiction)
+Walls and railings ooze tacky residue that traps loose gear.
+Statuses:
+Primary → Prone, Disarmed, Slowed
+Ring → Prone
+
+TIER 5
+Stiction – Primary Effect
+Impose crushing shear on machinery or creatures: gears seize, armor plates fuse, and muscles tear if they force motion.
+Environmental Consequence (Inertia)
+The perimeter warps perception of pace; everything outside seems to drag.
+Statuses:
+Primary → Immobilized, Laceration (shearing), Exhausted
+Ring → Slowed, Prone
+
+Inertia – Primary Effect
+Erase kinetic drag across plazas or ships. Massive objects glide with ghostlike ease; collapsing buildings slump sideways instead of straight down.
+Environmental Consequence (Stiction)
+Dust, pollen, and fog bind at the boundary, forming hazy adhesive curtains.
+Statuses:
+Primary → Prone, Disarmed, Stupification (momentum shock)
+Ring → Slowed
+
+TIER 6
+Stiction – Primary Effect
+Create continent-scale traction shifts: mountain passes become impassable tar pits; siege walls fuse with the ground; rivers slow to syrup.
+Environmental Consequence (Inertia)
+Horizons appear to crawl; clouds smear; anything leaving the zone seems to move underwater.
+Statuses:
+Primary → Immobilized (absolute), Crushing (if motion forced), Exhausted
+Ring → Slowed, Prone
+
+Inertia – Primary Effect
+Remove friction from vast terrain. Seas turn glassy; storms slide past; entire armies slide across plains with minimal effort.
+Environmental Consequence (Stiction)
+Cities at the edge collect dense drifts of debris that glue doors and windows shut.
+Statuses:
+Primary → Prone, Disarmed, Unconscious (momentum trauma)
+Ring → Slowed, Prone
 10. ARTIFICY
 Imbuement (Dakar Infusion / Construct Creation) ↔ Disimbuement (Magic Removal / Radiation Purge)
 Artificy is uniquely tied to Dakar radiation, gemstone imbuement, magic item creation, and construct animation.

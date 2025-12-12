@@ -16,8 +16,9 @@ describe("parseMagicFaculties", () => {
     expect((thermo?.tiers.length ?? 0)).toBeGreaterThan(0);
   });
 
-  it("flags missing faculty text", () => {
+  it("parses the previously missing Tribomancy section", () => {
     const tribo = parsed.find((f) => f.name === "Tribomancy");
-    expect(tribo?.sourceFound).toBe(false);
+    expect(tribo?.sourceFound).toBe(true);
+    expect((tribo?.tiers.length ?? 0)).toBeGreaterThan(0);
   });
 });

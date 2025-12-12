@@ -1,4 +1,6 @@
 import React from "react";
+import { api, Character } from "../../api/client";
+import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
 import facultiesText from "../../data/magic-faculties.txt?raw";
 import { ParsedFaculty, parseMagicFaculties } from "./magicParser";
 
@@ -24,6 +26,10 @@ const ASPECT_SCALE: Record<string, string[]> = {
   Origins: ["1", "2", "3", "4", "5", "6"],
   Compound: ["1", "2", "3", "4", "5", "6"]
 };
+
+const ASPECT_KEYS = Object.keys(ASPECT_SCALE);
+
+const getAspectCost = (tier: number): number => ASPECT_COSTS.find((row) => row.tier === tier)?.cost ?? 0;
 
 const cardStyle: React.CSSProperties = {
   background: "#1a202c",
@@ -58,7 +64,13 @@ const TierPanel: React.FC<{ tier: { label: string; content: string }; defaultOpe
   </details>
 );
 
-const FacultyCard: React.FC<{ faculty: ParsedFaculty }> = ({ faculty }) => {
+const FacultyCard: React.FC<{
+  faculty: ParsedFaculty;
+  unlocked: boolean;
+  onToggle: () => void;
+  canAfford: boolean;
+  disabled: boolean;
+}> = ({ faculty, unlocked, onToggle, canAfford, disabled }) => {
   const cost = COST_BY_CATEGORY[faculty.category];
   return (
     <div style={cardStyle}>
@@ -91,6 +103,22 @@ const FacultyCard: React.FC<{ faculty: ParsedFaculty }> = ({ faculty }) => {
           >
             {faculty.sourceFound ? "Loaded from source document" : "Not found in source"}
           </span>
+          <button
+            onClick={onToggle}
+            disabled={disabled || (!unlocked && !canAfford)}
+            style={{
+              padding: "0.4rem 0.75rem",
+              borderRadius: 6,
+              border: "1px solid #2d3748",
+              background: unlocked ? "#2f855a" : canAfford ? "#1a365d" : "#3c2a2a",
+              color: "#f7fafc",
+              cursor: disabled || (!unlocked && !canAfford) ? "not-allowed" : "pointer",
+              fontWeight: 700
+            }}
+            title={unlocked ? "Remove this Faculty" : canAfford ? "Unlock this Faculty" : "Not enough Ildakar points"}
+          >
+            {unlocked ? "Remove" : canAfford ? "Unlock" : "Insufficient"}
+          </button>
         </div>
       </div>
 
@@ -119,6 +147,92 @@ export const MagicFacultiesPage: React.FC = () => {
   const parsed = React.useMemo(() => parseMagicFaculties(facultiesText), []);
   const basic = parsed.filter((faculty) => faculty.category === "Basic");
   const advanced = parsed.filter((faculty) => faculty.category === "Advanced");
+  const { selectedId } = useSelectedCharacter();
+  const [characters, setCharacters] = React.useState<Character[]>([]);
+  const [characterError, setCharacterError] = React.useState<string | null>(null);
+  const [loadingCharacters, setLoadingCharacters] = React.useState<boolean>(true);
+  const [unlocked, setUnlocked] = React.useState<Record<string, boolean>>({});
+  const [aspectTiers, setAspectTiers] = React.useState<Record<string, number>>(() => {
+    const initial: Record<string, number> = {};
+    ASPECT_KEYS.forEach((key) => {
+      initial[key] = 1;
+    });
+    return initial;
+  });
+
+  React.useEffect(() => {
+    let mounted = true;
+    setCharacterError(null);
+    setLoadingCharacters(true);
+    api
+      .listCharacters()
+      .then((list) => {
+        if (!mounted) return;
+        setCharacters(Array.isArray(list) ? list : []);
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        const message = err instanceof Error ? err.message : "Failed to load characters";
+        setCharacterError(message);
+      })
+      .finally(() => {
+        if (!mounted) return;
+        setLoadingCharacters(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!selectedId) {
+      setUnlocked({});
+      return;
+    }
+    const stored = window.localStorage.getItem(`unlocked_faculties_${selectedId}`);
+    if (stored) {
+      try {
+        const parsedStorage = JSON.parse(stored) as Record<string, boolean>;
+        setUnlocked(parsedStorage);
+      } catch {
+        setUnlocked({});
+      }
+    } else {
+      setUnlocked({});
+    }
+  }, [selectedId]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || !selectedId) return;
+    window.localStorage.setItem(`unlocked_faculties_${selectedId}`, JSON.stringify(unlocked));
+  }, [selectedId, unlocked]);
+
+  const selectedCharacter = React.useMemo(
+    () => characters.find((c) => c.id === selectedId),
+    [characters, selectedId]
+  );
+
+  const availablePoints = selectedCharacter?.skillAllocations?.ILDAKAR_FACULTY ?? 0;
+
+  const spentPoints = React.useMemo(
+    () => parsed.reduce((acc, faculty) => (unlocked[faculty.name] ? acc + COST_BY_CATEGORY[faculty.category] : acc), 0),
+    [parsed, unlocked]
+  );
+
+  const remainingPoints = Math.max(0, availablePoints - spentPoints);
+
+  const toggleUnlocked = (faculty: ParsedFaculty) => {
+    const cost = COST_BY_CATEGORY[faculty.category];
+    if (!unlocked[faculty.name] && remainingPoints < cost) return;
+    setUnlocked((prev) => ({ ...prev, [faculty.name]: !prev[faculty.name] }));
+  };
+
+  const totalAspectCost = React.useMemo(
+    () => ASPECT_KEYS.reduce((sum, key) => sum + getAspectCost(aspectTiers[key]), 0),
+    [aspectTiers]
+  );
 
   return (
     <div style={{ color: "#e2e8f0" }}>
@@ -128,18 +242,32 @@ export const MagicFacultiesPage: React.FC = () => {
         Faculties cost {COST_BY_CATEGORY.Advanced}. Aspect investments are additive across all six aspects.
       </p>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem", marginBottom: "1rem" }}>
         <div style={cardStyle}>
-          <h2 style={{ marginTop: 0, marginBottom: "0.5rem" }}>Faculty Costs</h2>
-          <p style={{ margin: 0, color: "#cbd5e0" }}>Spend Ildakar Faculty points to unlock a Faculty for the caster.</p>
-          <ul style={{ marginTop: "0.5rem", paddingLeft: "1.25rem", color: "#e2e8f0" }}>
-            {basic.map((faculty) => (
-              <li key={faculty.name}>{faculty.name} — {COST_BY_CATEGORY.Basic} points</li>
-            ))}
-            {advanced.map((faculty) => (
-              <li key={faculty.name}>{faculty.name} — {COST_BY_CATEGORY.Advanced} points</li>
-            ))}
-          </ul>
+          <h2 style={{ margin: "0 0 0.5rem 0" }}>Ildakar Faculty Points</h2>
+          {characterError && <div style={{ color: "#f56565", marginBottom: 8 }}>{characterError}</div>}
+          {loadingCharacters ? (
+            <div style={{ color: "#cbd5e0" }}>Loading characters...</div>
+          ) : selectedCharacter ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
+              <div style={{ ...badgeStyle, background: "#1f2937", color: "#e2e8f0", textAlign: "center" }}>
+                <div style={{ fontSize: 12, textTransform: "none" }}>Available</div>
+                <div style={{ fontSize: 18 }}>{availablePoints}</div>
+              </div>
+              <div style={{ ...badgeStyle, background: "#1f2937", color: "#e2e8f0", textAlign: "center" }}>
+                <div style={{ fontSize: 12, textTransform: "none" }}>Spent</div>
+                <div style={{ fontSize: 18 }}>{spentPoints}</div>
+              </div>
+              <div style={{ ...badgeStyle, background: "#1f2937", color: "#e2e8f0", textAlign: "center" }}>
+                <div style={{ fontSize: 12, textTransform: "none" }}>Remaining</div>
+                <div style={{ fontSize: 18, color: remainingPoints < 0 ? "#f56565" : "#9ae6b4" }}>{remainingPoints}</div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ color: "#cbd5e0" }}>
+              Select a character on the Characters page to sync their Ildakar Faculty points here.
+            </div>
+          )}
         </div>
 
         <div style={cardStyle}>
@@ -167,38 +295,104 @@ export const MagicFacultiesPage: React.FC = () => {
         </div>
       </div>
 
-      <div style={cardStyle}>
-        <h2 style={{ marginTop: 0, marginBottom: "0.5rem" }}>Aspect Scaling</h2>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", color: "#e2e8f0" }}>
-            <thead>
-              <tr>
-                <th style={{ textAlign: "left", borderBottom: "1px solid #2d3748", padding: "6px 4px" }}>Aspect</th>
-                {ASPECT_COSTS.map((row) => (
-                  <th key={row.tier} style={{ textAlign: "left", borderBottom: "1px solid #2d3748", padding: "6px 4px" }}>
-                    Tier {row.tier}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(ASPECT_SCALE).map(([aspect, values]) => (
-                <tr key={aspect}>
-                  <td style={{ padding: "6px 4px", fontWeight: 700 }}>{aspect}</td>
-                  {values.map((value, idx) => (
-                    <td key={idx} style={{ padding: "6px 4px" }}>{value}</td>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+        <div style={cardStyle}>
+          <h2 style={{ marginTop: 0, marginBottom: "0.5rem" }}>Faculty Costs</h2>
+          <p style={{ margin: 0, color: "#cbd5e0" }}>Spend Ildakar Faculty points to unlock a Faculty for the caster.</p>
+          <ul style={{ marginTop: "0.5rem", paddingLeft: "1.25rem", color: "#e2e8f0" }}>
+            {basic.map((faculty) => (
+              <li key={faculty.name}>{faculty.name} — {COST_BY_CATEGORY.Basic} points</li>
+            ))}
+            {advanced.map((faculty) => (
+              <li key={faculty.name}>{faculty.name} — {COST_BY_CATEGORY.Advanced} points</li>
+            ))}
+          </ul>
+        </div>
+
+        <div style={cardStyle}>
+          <h2 style={{ marginTop: 0, marginBottom: "0.5rem" }}>Aspect Scaling</h2>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", color: "#e2e8f0" }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left", borderBottom: "1px solid #2d3748", padding: "6px 4px" }}>Aspect</th>
+                  {ASPECT_COSTS.map((row) => (
+                    <th key={row.tier} style={{ textAlign: "left", borderBottom: "1px solid #2d3748", padding: "6px 4px" }}>
+                      Tier {row.tier}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {Object.entries(ASPECT_SCALE).map(([aspect, values]) => (
+                  <tr key={aspect}>
+                    <td style={{ padding: "6px 4px", fontWeight: 700 }}>{aspect}</td>
+                    {values.map((value, idx) => (
+                      <td key={idx} style={{ padding: "6px 4px" }}>{value}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div style={{ marginTop: "1.5rem" }}>
-        {parsed.map((faculty) => (
-          <FacultyCard key={faculty.name} faculty={faculty} />
-        ))}
+      <div style={{ ...cardStyle, marginTop: "1rem" }}>
+        <h2 style={{ marginTop: 0, marginBottom: "0.5rem" }}>Aspect AP & Energy Calculator</h2>
+        <p style={{ margin: 0, color: "#cbd5e0" }}>
+          Choose a tier for each aspect to total the AP/Energy cost. Values add together exactly as described: six Tier 1 aspects
+          cost {ASPECT_KEYS.length * getAspectCost(1)} AP/Energy; mixing tiers sums their respective costs.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "0.75rem", marginTop: "0.75rem" }}>
+          {ASPECT_KEYS.map((aspect) => (
+            <label key={aspect} style={{ display: "flex", flexDirection: "column", gap: 4, color: "#e2e8f0" }}>
+              <span style={{ fontWeight: 700 }}>{aspect}</span>
+              <select
+                value={aspectTiers[aspect]}
+                onChange={(e) =>
+                  setAspectTiers((prev) => ({
+                    ...prev,
+                    [aspect]: Number(e.target.value)
+                  }))
+                }
+                style={{ padding: "0.35rem 0.5rem", borderRadius: 6, background: "#0b1019", color: "#e2e8f0", border: "1px solid #2d3748" }}
+              >
+                {ASPECT_COSTS.map((row) => (
+                  <option key={row.tier} value={row.tier}>
+                    Tier {row.tier} — Cost {row.cost}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+        </div>
+        <div style={{ marginTop: "0.75rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <div style={{ ...badgeStyle, background: "#1f2937", color: "#e2e8f0" }}>
+            Total AP Cost: {totalAspectCost}
+          </div>
+          <div style={{ ...badgeStyle, background: "#1f2937", color: "#e2e8f0" }}>
+            Total Energy Cost: {totalAspectCost}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "1.5rem", display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "1rem" }}>
+        {parsed.map((faculty) => {
+          const cost = COST_BY_CATEGORY[faculty.category];
+          const canAfford = remainingPoints >= cost || unlocked[faculty.name];
+          const disabled = loadingCharacters || !selectedCharacter;
+          return (
+            <FacultyCard
+              key={faculty.name}
+              faculty={faculty}
+              unlocked={!!unlocked[faculty.name]}
+              onToggle={() => toggleUnlocked(faculty)}
+              canAfford={canAfford}
+              disabled={disabled}
+            />
+          );
+        })}
       </div>
     </div>
   );
