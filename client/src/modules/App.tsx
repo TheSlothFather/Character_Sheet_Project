@@ -6,6 +6,7 @@ import { SelectedCharacterProvider } from "./characters/SelectedCharacterContext
 import { DefinitionsProvider } from "./definitions/DefinitionsContext";
 import { MartialProwessPage } from "./martial/MartialProwessPage";
 import { PsionicsPage } from "./psionics/PsionicsPage";
+import { MagicFacultiesPage } from "./magic/MagicFacultiesPage";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -55,6 +56,12 @@ export const App: React.FC = () => {
             <NavLink to="/psionics" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
               Psionics
             </NavLink>
+            <NavLink
+              to="/magic-faculties"
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              Magic Faculties
+            </NavLink>
           </nav>
           <main style={{ flex: 1, padding: "1rem" }}>
             <Routes>
@@ -63,6 +70,7 @@ export const App: React.FC = () => {
               <Route path="/character-creation" element={<CharacterCreationPage />} />
               <Route path="/martial" element={<MartialProwessPage />} />
               <Route path="/psionics" element={<PsionicsPage />} />
+              <Route path="/magic-faculties" element={<MagicFacultiesPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
