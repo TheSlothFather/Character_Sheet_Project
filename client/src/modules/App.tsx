@@ -4,6 +4,7 @@ import { CharactersPage } from "./characters/CharactersPage";
 import { CharacterCreationPage } from "./characters/CharacterCreationPage";
 import { SelectedCharacterProvider } from "./characters/SelectedCharacterContext";
 import { DefinitionsProvider } from "./definitions/DefinitionsContext";
+import { AncillariesPage } from "./ancillaries/AncillariesPage";
 import { MartialProwessPage } from "./martial/MartialProwessPage";
 import { PsionicsPage } from "./psionics/PsionicsPage";
 import { MagicFacultiesPage } from "./magic/MagicFacultiesPage";
@@ -52,6 +53,9 @@ export const App: React.FC = () => {
             >
               Character Creation
             </NavLink>
+            <NavLink to="/ancillaries" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+              Ancillaries
+            </NavLink>
             <NavLink to="/martial" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
               Martial Prowess
             </NavLink>
@@ -79,6 +83,7 @@ export const App: React.FC = () => {
               <Route path="/" element={<Navigate to="/characters" replace />} />
               <Route path="/characters" element={<CharactersPage />} />
               <Route path="/character-creation" element={<CharacterCreationPage />} />
+              <Route path="/ancillaries" element={<AncillariesPage />} />
               <Route path="/martial" element={<MartialProwessPage />} />
               <Route path="/psionics" element={<PsionicsPage />} />
               <Route path="/magic-faculties" element={<MagicFacultiesPage />} />
