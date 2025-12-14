@@ -1,0 +1,174 @@
+Inin
+Inin Description: Inin stand at about 5-6 ft tall, weighing approximately 120-200 lbs on average. Inin have standard length pointed ears. Inin are the most numerous species by far on Adûrun, and thus the most varied in their appearances, cultures, and demeanors. Inin typically live 80-120 years. Inin seemingly have less survival instincts than average, and are oftentimes more warlike, but on the other side of that coin, are far more spirited and willing to endure hardship. 
+
+Inin Subraces and Cultures: 
+
+Thairin
+Appearance: Black curly hair, shorter and hairier than average, dark brown eyes, olive skin
+Languages: Thairin, one of the player’s choice
+Disciplines: +30 Martial Prowess Points, +10 Ildakar Faculty Points, +2/Spiritual Modifier for Deity Relationship Point caps
+Attributes: +1 Physical 
+Skills: 
++25 Feat of Strength, +15 Feat of Agility, +5 Endure
+-25 Resist Supernatural, -15 Translate, -5 Resist Psionics 
+Features: 
+Athletic Upbringing: May switch to other equipped items without energy/AP costs
+Thairin Training: +20% to battle while adjacent to allies 
+Available Ancestry Ancillaries: Thairin, Silverrun, Suwasi 
+
+Grazin
+Appearance: Fine blonde hair, broader and taller than average, blue eyes, pale skin
+Languages: Grazin, one of the player’s choice
+Disciplines: +30 Martial Prowess Points, +10 Ildakar Faculty points, +1/Spiritual Modifier for Deity Relationship Point caps
+Attributes: +1 Physical 
+Skills: 
++25 Endure, +15 Persevere, +5 Resist Toxins
+-25 Conceal, -15 Parley, -5 Feat of Austerity 
+Features:
+Tundra Ancestry: -33% damage when targeted by magic using cold/frost, cryomancy, elements
+Rugged Living: +20% to starting energy at character creation and energy increases when leveling up 
+Available Ancestry Ancillaries: Whale Clan, Bear Clan, Owl Clan, Wolf Clan, Fox Clan, Raven Clan
+
+Bryonin
+Appearance: Black hair, red eyes, pale skin
+Languages: Bryonin, Narinduilin
+Disciplines: +20 Martial Prowess Points, +20 Ildakar Faculty Points, +2/Spiritual Modifier for Deity Relationship Point caps
+Attributes: +1 Mental
+Skills: 
++25 Search, +15 Identify, +5 Interpret
+-25 Seduce, -15 Perform, -5 Intimidate 
+Features: 
+Superior Eyes: 60 ft of darkvision
+Bryonin Ingenuity: You may use Will Dakar, Divine Intervention, and Psionic Technique as opposed to Battle for Initiative 
+Available Ancestry Ancillaries: Bryonin
+
+Jiinin
+Fine black hair, almond-shaped brown eyes, less hairy than average, shorter and thinner on average, pale or olive skin
+Languages: Yaich, one of the player’s choice
+Disciplines: +30 Martial Prowess Points, +10 Ildakar Faculty Points, +2/Spiritual Mod Deity Relationship Point caps
+Attributes: +1 Spiritual 
+Skills: 
++25 Resist Supernatural, +15 Artistry, +5 Battle
+-25 Parley, -15 Identify, -5 Resist Toxins
+Features: 
+Multi-faceted Warriors: Wicked criticals are now vicious criticals, and vicious criticals are now brutal criticals
+Devastating Onslaught: When you critically hit a foe, you critically hit a second adjacent foe if one is available at the cost of 1 exhaustion. If there is no second adjacent foe, you gain energy equal to your normal attack with this weapon at the cost of 1 exhaustion. This is not optional.
+Available Ancestry Ancillaries: Yaich, Shun, Rodonin 
+
+Rivanonin
+Appearance: Pale brown hair, pale brown eyes, pale skin
+Languages: Narinduilin 
+Disciplines: +20 Martial Prowess Points, +10 Ildakar Faculty Points, +3 Psi-Points, +3/Spiritual Modifier for Deity Relationship Point caps
+Attributes: +1 Mental 
+Skills: 
++25 Psionic Technique, +15 Resist Psionics, +5 Persevere
+-25 Recall Academics, -15 Identify, -5 Translate
+Features: 
+Deep Mind: Can link with more than one link partner without spending psionic technique points in the link tree
+Isolated Rivermen: Swimming costs the same AP/energy as normal movement
+Available Ancestry Ancillaries: Rivanonin, Ecthvasin, Kaindorin 
+
+Melfarionin
+Appearance: Dirty blonde hair, bright golden eyes, pale or bronze skin
+Languages: Melfaric, two languages of the player’s choice
+Disciplines: +30 Martial Prowess Points, +20 Ildakar Faculty Points
+Attributes: +1 Will
+Skills: 
++25 Will Dakar, +15 Battle, +5 Deceive 
+-25 Resist Supernatural, -15 Divine Intervention, -5 Sense Supernatural
+Features: 
+Melfaric Baptism: Can illuminate a 20 ft cone for 1 minute with your eyes, character tier times per moon face
+Child of the Twin Stars: May use dynakinesis in the psionic technique tree for free character tier times per moon face
+Available Ancestry Ancillaries: Melfarionin 
+
+Thuilin
+Appearance: Black hair, bright silver-rimmed irises in eyes, pale skin
+Languages: Narinduilin
+Disciplines: +30 Martial Prowess Points, +20 Ildakar Faculty Points, +5/Spiritual Modifier Deity Relationship Point caps
+Attributes: +1 Spiritual
+Skills: 
++25 Divine Intervention, +15 Resist Supernatural, +5 Worship 
+-25 Deceive, -15 Seduce, -5 Perform
+Features: 
+Superlative Eyes: You see in Har’Rheunen and in magical darkness and are immune to being blinded
+Mind of Steel: Negate one of the foe’s bonuses in contested rolls or one of your detriments (eg, enemy bonuses to attacking while you are prone or grappled)
+Available Ancestry Ancillaries: Thuilin, Ganzenonin 
+
+Letelin
+Appearance: Thick dark brown hair, dark brown eyes, pale skin
+Languages: Felani, Narinduilin
+Disciplines: +20 Martial Prowess Points
+Attributes: +1 Will 
+Skills: 
++25 Endure, +15 Intimidate, +5 Seduce
+-25 Persevere, -15 Feat of Austerity, -5 Resist Supernatural
+Features: 
+Utilitarian Conditioning: Your exhaustion penalties require double the threshold: Need only half provisions, half rest, and you can travel 50% longer before taking exhaustion penalties 
+Prone to Authority: Once per round, may reduce damage dealt to adjacent ally by 50%, taking the other 50% yourself as a reaction costing 1 AP/energy 
+Available Ancestry Ancillaries: Letelin, Georothin 
+
+
+Anz
+Anz Description: Anz stand at about 12-15 ft tall, and weigh approximately 600-700 lbs on average. Anz have long saber-like ears about the length of one’s forearm and white eyes with no irises or pupils. Anz have a naturally low fat content, broad features, coarse woolly black hair, caramel, coffee, or umber brown skin, and put on muscle faster than the other species. Anz value tranquility and are stoic in demeanor due to a quickness to anger that plagues them. Anz live about 60-100 years on average. Anz are a large creature.
+Disciplines: +10 Martial Prowess Points, +5/Spiritual Mod Deity Relationship Point caps 
+Attributes: +2 Spiritual, -1 Will 
+Skills: 
++25 Feat of Strength, +15 Endure, +5 Divine Intervention
+-25 Feat of Austerity, -15 Feat of Defiance, -5 Heal 
+Features:
+Regenerative: Immune to bleeding (severed limbs and digits regenerate over a phase as well), but unable to heal via magical means and potions 
+Relentless: +40% starting energy at character creation and energy increases when leveling up
+Available Ancestry Ancillaries: Rammish, Prolux, Onlu, Saion, Epir 
+
+Phi’ilin 
+Phi’ilin Description: A Phi’iel stands at about 6-8ft tall, and weighs approximately 300-400 lbs on average. Phi’ilin have long, knife-length pointed ears with fair features, and silver eyes and fine hair. Despite a lithe and slender visage, Phi’ilin are heavy due to extremely dense muscle mass, which gives them superior strength and speed for their size. Phi’ilin live for 800-1200 years on average. Phi’ilin maintain a graceful and haughty utilitarian-obsessed disposition that can slowly change to one of despair, chaos, and loathing with long memories to match their long lifespans.
+Disciplines: +50 Martial Prowess Points, +50 Ildakar Faculty Points
+Attributes: +2 Will, -1 Spiritual
+Skills: 
++25 Academic Recall, +15 Feat of Agility, +5 Feat of Strength
+-25 Attune Wondrous Item, -15 Resist Supernatural, -5 Parley 
+Features: 
+Superlative Eyes:  See during Har’Rheunen and in magical darkness, immune to being blinded
+Dense: Cannot be knocked prone or moved forcefully against your will, but swimming and climbing cost 3 energy as opposed to 2 
+Available Ancestry Ancillaries: Elari, Laigoni, Rodoni 
+
+Cerevu
+Cerevu Description: Cerevu typically stand at about 4-5 ft tall, weighing about 200-300 lbs on average. Cerevu have rounded ears and are hairier than the other species, but are otherwise androgynous, as the other species are unsure of how Cerevu reproduce. Cerevu tend to be rounder and squatter in shape. Cerevu live around 150-200 years on average. Cerevu tend to have a very calm and tranquil disposition, and value quiet and industriousness above all else.
+Disciplines: +30 Martial Prowess Points, +20 Ildakar Faculty Points
+Attributes: +2 Physical, -1 Will 
+Skills: 
++25 Craft, +15 Feat of Austerity, +5 Resist Psionics
+-25 Incite Fate, -15 Forage, -5 Feat of Agility (Cannot use Seduce) 
+Features:
+Deep Delvers: You cannot become lost in subterranean environments
+Cool Head: You cannot be magically charmed or intimidated 
+Available Ancestry Ancillaries: Darii Clans, Cerii Clans 
+
+
+Venii
+Venii Description: Venii usually stand at 6-8 ft tall, weighing approximately 120-200 lbs on average. Venii have jet black smooth chitinous skin, fine stark white hair, and glossy reflective eyes with arachnoid faces and pedipalps, which they almost always keep veiled or hidden from non-Venii. Venii have stringy, scrawny, tall, and slender builds, who otherwise seem like Phi’ilin. Venii typically live 150-200 years on average. Venii maintains an attempted pleasant attitude but suffers from a terribly awkward disposition.
+Disciplines: +20 Martial Prowess Points, +20 Ildakar Faculty Points, +3 Psi-Points 
+Attributes: +2 Mental, -1 Spiritual 
+Skills: 
++25 Resist Toxins, +15 Feat of Defiance, +5 Navigate
+-25 Seduce, -15 Interpret, -5 Perform
+Features: 
+Karst Hunter: Darkvision and 60 ft of pallesthesia 
+Depth Strider: Immune to suffocation 
+Available Ancestry Ancillaries: Agunic, Unfaic 
+ 
+
+Freinin
+Freinin Description: Freinin usually stand at about half an Inin’s height, weighing approximately a quarter as much on average as well. Freinin come in all shapes and sizes, but are considered small creatures. Freinin have a variety of skin, hair, and eye colors. Freinin typically live 60-80 years on average. Freinin, called “humans” or “mankind” in their own tongues and native to Adûrun, maintain a variety of demeanors, but generally speaking, tend to be characterized as frail and craven, or at least, quite risk-averse compared to the other species. Freinin cannot Link.
+Languages: Two of the player’s choice
+Disciplines: +50 Martial Prowess Points, +1/Spiritual Modifier for Deity Relationship Point caps
+Attributes: +2 Will, +1 Spiritual, -2 Physical
+Skills: 
++25 Feat of Defiance, +15 Endure, +5 Persevere
+-25 Feat of Strength, -15 Attune Wondrous Item, -5 Incite Fate (Cannot use Will Dakar or Psionic Technique)
+Features: 
+Only Human: Immune to Psionics 
+Adaptive: Gain an additional ancillary at character creation and at character tier advancements 
+Available Ancestry Ancillaries: Human 
+
+
