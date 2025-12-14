@@ -8,6 +8,7 @@ import { MartialProwessPage } from "./martial/MartialProwessPage";
 import { PsionicsPage } from "./psionics/PsionicsPage";
 import { MagicFacultiesPage } from "./magic/MagicFacultiesPage";
 import { SpellCreationPage } from "./magic/SpellCreationPage";
+import { DeityRelationshipPage } from "./deity/DeityRelationshipPage";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -66,6 +67,12 @@ export const App: React.FC = () => {
             <NavLink to="/spell-creation" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
               Spell Creation
             </NavLink>
+            <NavLink
+              to="/deity-relationship"
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              Deity Relationship
+            </NavLink>
           </nav>
           <main style={{ flex: 1, padding: "1rem" }}>
             <Routes>
@@ -76,6 +83,7 @@ export const App: React.FC = () => {
               <Route path="/psionics" element={<PsionicsPage />} />
               <Route path="/magic-faculties" element={<MagicFacultiesPage />} />
               <Route path="/spell-creation" element={<SpellCreationPage />} />
+              <Route path="/deity-relationship" element={<DeityRelationshipPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
