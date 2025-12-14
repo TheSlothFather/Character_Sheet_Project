@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { api, Character, ApiError, NamedDefinition } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
@@ -254,26 +255,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                     gap: "0.75rem"
                   }}
                 >
-                  <div
-                    style={{
-                      textAlign: "center",
-                      fontWeight: 700,
-                      fontSize: 16,
-                      padding: "0.25rem 0"
-                    }}
-                  >
-                    Martial Prowess
-                  </div>
-                  <div
-                    style={{
-                      textAlign: "center",
-                      fontWeight: 700,
-                      fontSize: 16,
-                      padding: "0.25rem 0"
-                    }}
-                  >
-                    Ildakar Faculty
-                  </div>
                   {specialSkills.map((skill) => (
                     <div
                       key={getSkillCode(skill)}
@@ -349,8 +330,10 @@ export const CharactersPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [allocationSavingId, setAllocationSavingId] = React.useState<string | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [levelUpdatingId, setLevelUpdatingId] = React.useState<string | null>(null);
 
   const { selectedId, setSelectedId } = useSelectedCharacter();
+  const navigate = useNavigate();
 
   const {
     data: definitions,
@@ -411,6 +394,9 @@ export const CharactersPage: React.FC = () => {
         const next = prev.filter((c) => c.id !== id);
         const nextSelected = selectedId === id ? next[0]?.id ?? null : selectedId;
         setSelectedId(nextSelected ?? null);
+        if (!nextSelected) {
+          navigate("/character-creation");
+        }
         return next;
       });
     } catch (err) {
@@ -457,6 +443,33 @@ export const CharactersPage: React.FC = () => {
     }
   };
 
+  const handleLevelUp = async () => {
+    if (!selectedId) return;
+    const selectedCharacter = characters.find((c) => c.id === selectedId);
+    if (!selectedCharacter) return;
+
+    const nextLevel = selectedCharacter.level + 1;
+    const optimistic = { ...selectedCharacter, level: nextLevel };
+
+    setError(null);
+    setLevelUpdatingId(selectedId);
+    setCharacters((prev) => prev.map((c) => (c.id === selectedId ? optimistic : c)));
+
+    try {
+      const saved = await api.updateCharacter(selectedId, { level: nextLevel });
+      if (!isCharacter(saved)) {
+        throw new Error("Unexpected response when updating level");
+      }
+      setCharacters((prev) => prev.map((c) => (c.id === saved.id ? saved : c)));
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Failed to level up";
+      setError(message);
+      setCharacters((prev) => prev.map((c) => (c.id === selectedId ? selectedCharacter : c)));
+    } finally {
+      setLevelUpdatingId(null);
+    }
+  };
+
   const selectedCharacter = characters.find((c) => c.id === selectedId) || null;
   const currentAllocations = selectedCharacter?.skillAllocations ?? {};
   const skillPointPool = selectedCharacter?.skillPoints ?? DEFAULT_SKILL_POINT_POOL;
@@ -484,115 +497,78 @@ export const CharactersPage: React.FC = () => {
       {(definitionsError || error) && (
         <p style={{ color: "#f55" }}>{definitionsError || error}</p>
       )}
-      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "1rem" }}>
-        <aside
-          style={{
-            background: "#12141a",
-            border: "1px solid #2d343f",
-            borderRadius: 10,
-            padding: "0.75rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.75rem"
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 14, color: "#9aa3b5", marginBottom: 6 }}>Characters</div>
-            {loading && <p style={{ margin: 0 }}>Loading characters...</p>}
-            {!loading && characters.length === 0 && <p style={{ margin: 0 }}>No characters yet.</p>}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {characters.map((c) => {
-                const selected = c.id === selectedId;
-                return (
-                  <div key={c.id} style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                    <button
-                      onClick={() => setSelectedId(c.id)}
-                      style={{
-                        flex: 1,
-                        textAlign: "left",
-                        padding: "0.5rem 0.6rem",
-                        borderRadius: 8,
-                        border: selected ? "1px solid #f38b2f" : "1px solid #2d343f",
-                        background: selected ? "#1f2a33" : "#14171d",
-                        color: "#e8edf7",
-                        cursor: "pointer"
-                      }}
-                    >
-                      <div style={{ fontWeight: 700 }}>{c.name}</div>
-                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>
-                        Lv {c.level} • {raceMap.get(c.raceKey || "") ?? "No race"} /{" "}
-                        {subraceMap.get(c.subraceKey || "")?.name ?? "No subrace"}
-                      </div>
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteCharacter(c.id);
-                      }}
-                      disabled={deletingId === c.id || loadingAny}
-                      style={{
-                        padding: "0.45rem 0.55rem",
-                        borderRadius: 8,
-                        border: "1px solid #402b2b",
-                        background: deletingId === c.id ? "#2b1c1c" : "#1b1111",
-                        color: "#f7a046",
-                        cursor: "pointer"
-                      }}
-                    >
-                      {deletingId === c.id ? "Deleting" : "Delete"}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </aside>
-
-        <main
-          style={{
-            background: "#0f1117",
-            border: "1px solid #2d343f",
-            borderRadius: 10,
-            padding: "1rem",
-            minHeight: 600
-          }}
-        >
-          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
-            <div style={{ fontWeight: 700 }}>Selected character</div>
-            <select
-              value={selectedId ?? ""}
-              onChange={(e) => setSelectedId(e.target.value || null)}
-              disabled={loadingAny || characters.length === 0}
-              style={{ minWidth: 200 }}
-            >
-              {characters.length === 0 && <option value="">No characters</option>}
-              {characters.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          {loadingAny && <p style={{ margin: 0 }}>Loading sheet...</p>}
-          {!loadingAny && !selectedCharacter && (
-            <p style={{ margin: 0 }}>Select a character to view the sheet.</p>
-          )}
-          {!loadingAny && selectedCharacter && definitions && (
-            <CharacterSheet
-              character={selectedCharacter}
-              skills={definitions.skills}
-              raceName={raceMap.get(selectedCharacter.raceKey || "")}
-              subraceName={subraceMap.get(selectedCharacter.subraceKey || "")?.name}
-              remaining={remaining}
-              skillPointPool={skillPointPool}
-              allocations={currentAllocations}
-              skillBonuses={skillBonuses}
-              onChangeAllocation={onChangeAllocation}
-              disableAllocation={loadingAny || allocationSavingId === selectedCharacter.id}
-            />
-          )}
-        </main>
-      </div>
+      <main
+        style={{
+          background: "#0f1117",
+          border: "1px solid #2d343f",
+          borderRadius: 10,
+          padding: "1rem",
+          minHeight: 600
+        }}
+      >
+        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
+          <div style={{ fontWeight: 700 }}>Selected character</div>
+          <select
+            value={selectedId ?? ""}
+            onChange={(e) => setSelectedId(e.target.value || null)}
+            disabled={loadingAny || characters.length === 0}
+            style={{ minWidth: 240 }}
+          >
+            {characters.length === 0 && <option value="">No characters</option>}
+            {characters.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => selectedId && handleDeleteCharacter(selectedId)}
+            disabled={!selectedId || deletingId === selectedId || loadingAny}
+            style={{
+              padding: "0.45rem 0.75rem",
+              borderRadius: 8,
+              border: "1px solid #4a1d1d",
+              background: "#2c1515",
+              color: "#f87171",
+              fontWeight: 700,
+              cursor: !selectedId || deletingId === selectedId || loadingAny ? "not-allowed" : "pointer"
+            }}
+          >
+            {deletingId === selectedId ? "Deleting..." : "Delete Character"}
+          </button>
+          <button
+            onClick={handleLevelUp}
+            disabled={!selectedId || loadingAny || levelUpdatingId === selectedId}
+            style={{
+              padding: "0.45rem 0.75rem",
+              borderRadius: 8,
+              border: "1px solid #374151",
+              background: "#1b2431",
+              color: "#e5e7eb",
+              fontWeight: 700,
+              cursor: !selectedId || loadingAny || levelUpdatingId === selectedId ? "not-allowed" : "pointer"
+            }}
+          >
+            {levelUpdatingId === selectedId ? "Leveling..." : "Level Up"}
+          </button>
+        </div>
+        {loadingAny && <p style={{ margin: 0 }}>Loading sheet...</p>}
+        {!loadingAny && !selectedCharacter && <p style={{ margin: 0 }}>Select a character to view the sheet.</p>}
+        {!loadingAny && selectedCharacter && definitions && (
+          <CharacterSheet
+            character={selectedCharacter}
+            skills={definitions.skills}
+            raceName={raceMap.get(selectedCharacter.raceKey || "")}
+            subraceName={subraceMap.get(selectedCharacter.subraceKey || "")?.name}
+            remaining={remaining}
+            skillPointPool={skillPointPool}
+            allocations={currentAllocations}
+            skillBonuses={skillBonuses}
+            onChangeAllocation={onChangeAllocation}
+            disableAllocation={loadingAny || allocationSavingId === selectedCharacter.id}
+          />
+        )}
+      </main>
     </div>
   );
 };
