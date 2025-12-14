@@ -41,7 +41,7 @@ Telepathy,Tap I,3,Interfere,ability to intercept communicate within mental attri
 Telepathy,Tap II,4,Tap I,ability to intercept communicate within mental attribute x10 miles overcomes mask II if target cannot resist psionics,20,
 Telepathy,Tap III,5,Tap II,"ability to intercept communicate within mental attribute x100 miles overcomes mask III if target cannot resist psionics
 ",25,
-Telepathy,Interconnect,2,,increases manifold manifestation by 2,10,
+Telepathy,Interconnect,2,Telepathy,increases manifold manifestation by 2,10,
 Telepathy,Combined Psionics I,3,Interconnect,may combine technique with efforts of a linked psion,15,
 Telepathy,Combined Psionics II,4,Combined Psionics I,may combine technique with efforts of linked psions equal to mental attribute,20,
 Telepathy,Combined Psionics III,5,Combined Psionics II,may combine technique with linked or unlinked psions equal to mental attribute x3,25,
@@ -204,6 +204,7 @@ Hypnosis,Agility,5,Speed,reaction,25,
 Hypnosis,Morale,3,Override,+1 morale to target,15,
 Hypnosis,Fear,4,Morale,-1 morale to target,20,
 Hypnosis,Horror,5,Fear,- mental attribute morale to target. May choose to incapacitate target instead of flee if target's morale reaches -5,25,
+
 
 
 
