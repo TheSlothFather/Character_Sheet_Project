@@ -72,10 +72,36 @@ const evaluateTierFormula = (formula: string, spiritualAttribute: number) => {
 export const DeityRelationshipPage: React.FC = () => {
   const data = deityData as DeityRelationshipData;
 
+  const hasDeityData =
+    data && Array.isArray(data.deities) && data.deities.length > 0 && Array.isArray(data.sects) && data.sects.length > 0;
+
+  const safeData: DeityRelationshipData = hasDeityData
+    ? data
+    : {
+        currency: {
+          name: "DeityRelationshipPoints",
+          currentKey: "current",
+          capKey: "cap",
+          capFormula: "Spiritual Attribute * (10 + racial cap bonus)",
+          racialCapBonusOptions: [],
+          capTiers: {}
+        },
+        sects: [],
+        mechanics: {
+          apostasy: "",
+          spiritualLimit: "",
+          worshipGeneration: { passive: "", active: "", fallback: "" },
+          casting: { divineInterventionCost: "", beseech: "" },
+          gearIntegration: { equipmentSlots: [], effects: {} },
+          worshipTracker: ""
+        },
+        deities: []
+      };
+
   const [spiritualAttribute, setSpiritualAttribute] = useState(3);
   const [racialCapBonus, setRacialCapBonus] = useState(0);
-  const [selectedDeityName, setSelectedDeityName] = useState(data.deities[0]?.name ?? "");
-  const [selectedActionName, setSelectedActionName] = useState<string>(data.deities[0]?.worship[0]?.name ?? "");
+  const [selectedDeityName, setSelectedDeityName] = useState(safeData.deities[0]?.name ?? "");
+  const [selectedActionName, setSelectedActionName] = useState<string>(safeData.deities[0]?.worship[0]?.name ?? "");
   const [timesPerformed, setTimesPerformed] = useState(1);
   const [logEntries, setLogEntries] = useState<WorshipLogEntry[]>([]);
 
@@ -83,20 +109,20 @@ export const DeityRelationshipPage: React.FC = () => {
   const spiritualLimit = spiritualAttribute;
 
   const capTiers = useMemo(() => {
-    return Object.entries(data.currency.capTiers).map(([tier, formula]) => ({
+    return Object.entries(safeData.currency.capTiers).map(([tier, formula]) => ({
       tier,
       formula,
       target: evaluateTierFormula(formula, spiritualAttribute)
     }));
-  }, [data.currency.capTiers, spiritualAttribute]);
+  }, [safeData.currency.capTiers, spiritualAttribute]);
 
   const groupedDeities = useMemo(() => {
     const bySect = new Map<string, Deity[]>();
-    data.deities.forEach((deity) => {
+    safeData.deities.forEach((deity) => {
       if (!bySect.has(deity.sect)) bySect.set(deity.sect, []);
       bySect.get(deity.sect)!.push(deity);
     });
-    data.sects.forEach((sect) => {
+    safeData.sects.forEach((sect) => {
       if (!bySect.has(sect.name)) bySect.set(sect.name, []);
     });
     return Array.from(bySect.entries())
@@ -105,11 +131,11 @@ export const DeityRelationshipPage: React.FC = () => {
         deities: [...deities].sort((a, b) => a.name.localeCompare(b.name))
       }))
       .sort((a, b) => a.sect.localeCompare(b.sect));
-  }, [data.deities, data.sects]);
+  }, [safeData.deities, safeData.sects]);
 
   const selectedDeity = useMemo(
-    () => data.deities.find((deity) => deity.name === selectedDeityName) ?? data.deities[0],
-    [data.deities, selectedDeityName]
+    () => safeData.deities.find((deity) => deity.name === selectedDeityName) ?? safeData.deities[0],
+    [safeData.deities, selectedDeityName]
   );
 
   const availableActions = selectedDeity?.worship ?? [];
@@ -167,6 +193,11 @@ export const DeityRelationshipPage: React.FC = () => {
           Manage Deity Relationship Points (DR), cap tiers, worship generation, beseech options, and sect-specific
           deities.
         </p>
+        {!hasDeityData && (
+          <div style={{ color: "#f6ad55", marginTop: "0.25rem" }}>
+            Data for deities failed to load. Showing an empty template so the page remains usable.
+          </div>
+        )}
       </header>
 
       <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
@@ -189,7 +220,7 @@ export const DeityRelationshipPage: React.FC = () => {
               onChange={(e) => setRacialCapBonus(Number(e.target.value))}
               style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
             >
-              {[0, ...data.currency.racialCapBonusOptions].map((bonus) => (
+              {[0, ...safeData.currency.racialCapBonusOptions].map((bonus) => (
                 <option key={bonus} value={bonus}>
                   {bonus}
                 </option>
@@ -205,7 +236,7 @@ export const DeityRelationshipPage: React.FC = () => {
           <h2 style={{ marginTop: 0 }}>Cap & Currency</h2>
           <div style={{ fontSize: 32, fontWeight: 700 }}>{cap}</div>
           <div style={{ color: "#bbb", marginBottom: "0.75rem" }}>
-            {data.currency.name}: {data.currency.currentKey} / {data.currency.capKey}
+            {safeData.currency.name}: {safeData.currency.currentKey} / {safeData.currency.capKey}
           </div>
           <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.5 }}>
             {capTiers.map((tier) => (
@@ -220,10 +251,10 @@ export const DeityRelationshipPage: React.FC = () => {
           <h2 style={{ marginTop: 0 }}>Worship Generation</h2>
           <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.6 }}>
             <li>
-              Passive: {data.mechanics.worshipGeneration.passive} ⇒ {3 * spiritualAttribute} DR
+              Passive: {safeData.mechanics.worshipGeneration.passive} ⇒ {3 * spiritualAttribute} DR
             </li>
-            <li>Active: {data.mechanics.worshipGeneration.active}</li>
-            <li>Fallback: {data.mechanics.worshipGeneration.fallback} ⇒ {spiritualAttribute} DR</li>
+            <li>Active: {safeData.mechanics.worshipGeneration.active}</li>
+            <li>Fallback: {safeData.mechanics.worshipGeneration.fallback} ⇒ {spiritualAttribute} DR</li>
           </ul>
         </div>
       </section>
@@ -234,25 +265,25 @@ export const DeityRelationshipPage: React.FC = () => {
           <div>
             <h3 style={{ marginTop: 0 }}>Rules</h3>
             <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.6 }}>
-              <li>{data.mechanics.apostasy}</li>
-              <li>{data.mechanics.spiritualLimit}</li>
-              <li>{data.mechanics.casting.divineInterventionCost}</li>
-              <li>{data.mechanics.casting.beseech}</li>
+              <li>{safeData.mechanics.apostasy}</li>
+              <li>{safeData.mechanics.spiritualLimit}</li>
+              <li>{safeData.mechanics.casting.divineInterventionCost}</li>
+              <li>{safeData.mechanics.casting.beseech}</li>
             </ul>
           </div>
           <div>
             <h3 style={{ marginTop: 0 }}>Gear Integration</h3>
             <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.6 }}>
-              {data.mechanics.gearIntegration.equipmentSlots.map((slot) => (
+              {safeData.mechanics.gearIntegration.equipmentSlots.map((slot) => (
                 <li key={slot}>
-                  <strong>{slot}:</strong> {data.mechanics.gearIntegration.effects[slot]}
+                  <strong>{slot}:</strong> {safeData.mechanics.gearIntegration.effects[slot]}
                 </li>
               ))}
             </ul>
           </div>
           <div>
             <h3 style={{ marginTop: 0 }}>Worship Tracker</h3>
-            <p style={{ margin: 0, color: "#ccc" }}>{data.mechanics.worshipTracker}</p>
+            <p style={{ margin: 0, color: "#ccc" }}>{safeData.mechanics.worshipTracker}</p>
           </div>
         </div>
       </section>
@@ -267,7 +298,7 @@ export const DeityRelationshipPage: React.FC = () => {
               onChange={(e) => setSelectedDeityName(e.target.value)}
               style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
             >
-              {data.deities.map((deity) => (
+              {safeData.deities.map((deity) => (
                 <option key={deity.name} value={deity.name}>
                   {deity.name} ({deity.sect})
                 </option>
@@ -369,7 +400,7 @@ export const DeityRelationshipPage: React.FC = () => {
             <div key={group.sect} style={{ border: "1px solid #333", padding: "0.75rem", borderRadius: 4, background: "#0d0d0d" }}>
               <h3 style={{ margin: "0 0 0.25rem" }}>{group.sect}</h3>
               <div style={{ fontSize: 12, color: "#999", marginBottom: "0.5rem" }}>
-                Alignment: {data.sects.find((sect) => sect.name === group.sect)?.alignment ?? ""}
+                Alignment: {safeData.sects.find((sect) => sect.name === group.sect)?.alignment ?? ""}
               </div>
               {group.deities.length === 0 && <div style={{ color: "#777" }}>No deities listed.</div>}
               {group.deities.map((deity) => (
