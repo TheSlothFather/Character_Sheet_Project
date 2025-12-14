@@ -62,7 +62,7 @@ export const PSION_BACKGROUND_CONFIG: Record<PsionBackgroundKey, PsionBackground
       { tree: "Hypnosis", name: "Mnokinesis" },
       { tree: "Hypnosis", name: "Override" }
     ],
-    picksRequired: 1
+    picksRequired: 2
   },
   dynakineticist: {
     psiBonus: 1,

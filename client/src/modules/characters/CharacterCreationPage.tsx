@@ -445,8 +445,14 @@ export const CharacterCreationPage: React.FC = () => {
     Object.entries(attributeSkillBonuses).forEach(([code, bonus]) => {
       bonuses[code] = (bonuses[code] ?? 0) + bonus;
     });
+    if (combinedDisciplines.martialProwess) {
+      bonuses.MARTIAL_PROWESS = (bonuses.MARTIAL_PROWESS ?? 0) + combinedDisciplines.martialProwess;
+    }
+    if (combinedDisciplines.ildakarFaculty) {
+      bonuses.ILDAKAR_FACULTY = (bonuses.ILDAKAR_FACULTY ?? 0) + combinedDisciplines.ildakarFaculty;
+    }
     return bonuses;
-  }, [attributeSkillBonuses, backgroundSkillBonuses, racialSkillBonuses]);
+  }, [attributeSkillBonuses, backgroundSkillBonuses, combinedDisciplines, racialSkillBonuses]);
 
   const sortedSkills = React.useMemo(
     () => [...(definitions?.skills ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
