@@ -22,7 +22,7 @@ interface PsionicsCsvRow {
   Formula?: string;
 }
 
-export const DEFAULT_PSI_POINTS = 15;
+export const DEFAULT_PSI_POINTS = 0;
 
 export const evaluateFormula = (formula: string, mental: number): number | null => {
   const trimmed = formula.trim();

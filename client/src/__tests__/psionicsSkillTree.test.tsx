@@ -3,24 +3,38 @@ import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PsionicsPage } from "../modules/psionics/PsionicsPage";
 import { SelectedCharacterProvider } from "../modules/characters/SelectedCharacterContext";
+import { DefinitionsProvider } from "../modules/definitions/DefinitionsContext";
 import { PsionicAbility, evaluateFormula, isAbilityUnlocked } from "../modules/psionics/psionicsUtils";
 
-const mockCharacter = { id: "char-1", name: "Test", level: 1, skillPoints: 100, skillAllocations: {} };
+let mockCharacter: any;
 const mockFetch = vi.fn();
+
+let mockDefinitions: any;
 
 const renderWithProviders = async () => {
   window.localStorage.setItem("selected_character_id", mockCharacter.id);
   (global as any).fetch = mockFetch;
-  mockFetch.mockResolvedValue({
-    ok: true,
-    status: 200,
-    text: () => Promise.resolve(JSON.stringify([mockCharacter]))
+  mockFetch.mockImplementation((url: string) => {
+    if (url.includes("/api/definitions")) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve(JSON.stringify(mockDefinitions))
+      });
+    }
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve(JSON.stringify([mockCharacter]))
+    });
   });
 
   render(
-    <SelectedCharacterProvider>
-      <PsionicsPage />
-    </SelectedCharacterProvider>
+    <DefinitionsProvider>
+      <SelectedCharacterProvider>
+        <PsionicsPage />
+      </SelectedCharacterProvider>
+    </DefinitionsProvider>
   );
 
   await screen.findByText(/Psi Points Remaining/i);
@@ -30,6 +44,27 @@ describe("psionics skill tree", () => {
   beforeEach(() => {
     window.localStorage.clear();
     mockFetch.mockReset();
+    mockCharacter = {
+      id: "char-1",
+      name: "Test",
+      level: 6,
+      skillPoints: 100,
+      skillAllocations: {},
+      attributes: { MENTAL: 3 }
+    };
+    mockDefinitions = {
+      ruleset: null,
+      attributes: [{ id: "MENTAL", name: "MENTAL" }],
+      skills: [],
+      races: [],
+      subraces: [],
+      feats: [],
+      items: [],
+      statusEffects: [],
+      derivedStats: [],
+      modifiers: [],
+      raceDetails: {}
+    };
   });
 
   afterEach(() => {
@@ -76,7 +111,7 @@ describe("psionics skill tree", () => {
     await renderWithProviders();
 
     const psiDisplay = screen.getByText(/Psi Points Remaining/i).parentElement as HTMLElement;
-    expect(psiDisplay).toHaveTextContent("15");
+    expect(psiDisplay).toHaveTextContent("30");
 
     const telepathyButton = screen
       .getAllByRole("button")
@@ -84,7 +119,7 @@ describe("psionics skill tree", () => {
     expect(telepathyButton).toBeDefined();
     fireEvent.click(telepathyButton);
 
-    expect(psiDisplay).toHaveTextContent("14");
+    expect(psiDisplay).toHaveTextContent("29");
     expect(telepathyButton).toBeDisabled();
   });
 
@@ -106,5 +141,44 @@ describe("psionics skill tree", () => {
     fireEvent.click(telepathyButton);
 
     expect(interfereButton).not.toBeDisabled();
+  });
+
+  it("allows spending psi at level 1 during the initial advancement window", async () => {
+    mockCharacter = {
+      id: "char-1",
+      name: "Psi Novice",
+      level: 1,
+      raceKey: "psi-race",
+      skillPoints: 0,
+      skillAllocations: {},
+      attributes: { MENTAL: 2 }
+    };
+
+    mockDefinitions = {
+      ...mockDefinitions,
+      raceDetails: {
+        "psi-race": {
+          attributes: {},
+          skills: {},
+          disciplines: { martialProwess: 0, ildakarFaculty: 0, psiPoints: 2, deityCapPerSpirit: 0 }
+        }
+      }
+    };
+
+    await renderWithProviders();
+
+    const psiDisplay = screen.getByText(/Psi Points Remaining/i).parentElement as HTMLElement;
+    expect(psiDisplay).toHaveTextContent("2");
+
+    const telepathyButton = screen
+      .getAllByRole("button")
+      .find((button) => button.textContent?.trim().startsWith("Telepathy")) as HTMLButtonElement;
+
+    expect(telepathyButton).toBeDefined();
+    expect(telepathyButton).not.toBeDisabled();
+
+    fireEvent.click(telepathyButton);
+
+    expect(psiDisplay).toHaveTextContent("1");
   });
 });
