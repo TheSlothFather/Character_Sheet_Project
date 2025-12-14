@@ -5,12 +5,16 @@ export interface Character {
   raceKey?: string;
   subraceKey?: string;
   notes?: string;
+  attributePointsAvailable?: number;
   skillPoints: number;
   skillAllocations: Record<string, number>;
   skillBonuses?: Record<string, number>;
   backgrounds?: BackgroundSelection;
   attributes?: AttributeScores;
   fatePoints?: number;
+  weaponNotes?: string;
+  defenseNotes?: string;
+  gearNotes?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -160,12 +164,16 @@ export const api = {
     raceKey?: string;
     subraceKey?: string;
     notes?: string;
+    attributePointsAvailable?: number;
     skillPoints?: number;
     skillAllocations?: Record<string, number>;
     skillBonuses?: Record<string, number>;
     backgrounds?: BackgroundSelection;
     attributes?: AttributeScores;
     fatePoints?: number;
+    weaponNotes?: string;
+    defenseNotes?: string;
+    gearNotes?: string;
   }) =>
     apiRequest<Character>("/characters", {
       method: "POST",
@@ -179,12 +187,16 @@ export const api = {
       raceKey?: string;
       subraceKey?: string;
       notes?: string;
+      attributePointsAvailable?: number;
       skillPoints?: number;
       skillAllocations?: Record<string, number>;
       skillBonuses?: Record<string, number>;
       backgrounds?: BackgroundSelection;
       attributes?: AttributeScores;
       fatePoints?: number;
+      weaponNotes?: string;
+      defenseNotes?: string;
+      gearNotes?: string;
     }>
   ) =>
     apiRequest<Character>(`/characters/${id}`, {

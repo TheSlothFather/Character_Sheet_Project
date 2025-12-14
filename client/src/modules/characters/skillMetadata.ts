@@ -93,6 +93,23 @@ export const getSkillAttributes = (skill: NamedDefinition | string): AttributeKe
   return SKILL_ATTRIBUTE_MAP[key] ?? [];
 };
 
+export const computeAttributeSkillBonuses = (
+  attributes: Record<AttributeKey, number>,
+  skills: { id: string; code?: string; name: string }[] | undefined
+): Record<string, number> => {
+  if (!skills) return {};
+  const bonuses: Record<string, number> = {};
+  skills.forEach((skill) => {
+    const skillKey = normalizeSkillCode(skill);
+    const attributesForSkill = SKILL_ATTRIBUTE_MAP[skillKey];
+    const validAttributes = (attributesForSkill ?? []).filter((attr) => attr in attributes);
+    if (!validAttributes.length) return;
+    const code = getSkillCode(skill);
+    bonuses[code] = validAttributes.reduce((acc, attr) => acc + attributes[attr] * 10, 0);
+  });
+  return bonuses;
+};
+
 const sortAttributes = (attributes: AttributeKey[]): AttributeKey[] => {
   const attributeRank = new Map(ATTRIBUTE_ORDER.map((attr, index) => [attr, index]));
   return Array.from(new Set(attributes)).sort((a, b) => (attributeRank.get(a) ?? 99) - (attributeRank.get(b) ?? 99));
