@@ -112,11 +112,15 @@ const computeRaceSkillBonuses = (
   });
 
   const result: Record<string, number> = {};
+  const modifiedSkills = new Set<string>();
   const state = applyModifiers({ baseState, modifiers: applicable });
   for (const skill of definitions.skills ?? []) {
     const code = getSkillCode(skill);
     const entry = (state.skills as Record<string, any> | undefined)?.[code];
     result[code] = typeof entry?.racialBonus === "number" ? entry.racialBonus : 0;
+    if (typeof entry?.racialBonus === "number") {
+      modifiedSkills.add(code);
+    }
   }
 
   const addRaceDetailBonuses = (key: string | undefined) => {
@@ -125,6 +129,7 @@ const computeRaceSkillBonuses = (
     if (!details?.skills) return;
     Object.entries(details.skills).forEach(([code, value]) => {
       if (typeof value !== "number") return;
+      if (modifiedSkills.has(code)) return;
       result[code] = (result[code] ?? 0) + value;
     });
   };
@@ -462,14 +467,8 @@ export const CharacterCreationPage: React.FC = () => {
     Object.entries(attributeSkillBonuses).forEach(([code, bonus]) => {
       bonuses[code] = (bonuses[code] ?? 0) + bonus;
     });
-    if (combinedDisciplines.martialProwess) {
-      bonuses.MARTIAL_PROWESS = (bonuses.MARTIAL_PROWESS ?? 0) + combinedDisciplines.martialProwess;
-    }
-    if (combinedDisciplines.ildakarFaculty) {
-      bonuses.ILDAKAR_FACULTY = (bonuses.ILDAKAR_FACULTY ?? 0) + combinedDisciplines.ildakarFaculty;
-    }
     return bonuses;
-  }, [attributeSkillBonuses, backgroundSkillBonuses, combinedDisciplines, racialSkillBonuses]);
+  }, [attributeSkillBonuses, backgroundSkillBonuses, racialSkillBonuses]);
 
   const sortedSkills = React.useMemo(
     () => [...(definitions?.skills ?? [])].sort((a, b) => a.name.localeCompare(b.name)),

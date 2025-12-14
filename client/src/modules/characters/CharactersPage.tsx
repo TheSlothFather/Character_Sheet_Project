@@ -117,7 +117,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   };
 
   const levelCards = Array.from({ length: 5 }, (_, idx) => idx + 1);
-  const energy = 100 + 10 * (character.level - 1);
+  const energyBase = character.raceKey === "ANZ" ? 140 : 100;
+  const energyPerLevel = character.raceKey === "ANZ" ? 14 : 10;
+  const energy = energyBase + energyPerLevel * (character.level - 1);
   const damageReduction = 0;
   const fatePoints = character.fatePoints ?? 0;
   const attributeValues = character.attributes ?? {};
@@ -449,14 +451,15 @@ export const CharactersPage: React.FC = () => {
     if (!selectedCharacter) return;
 
     const nextLevel = selectedCharacter.level + 1;
-    const optimistic = { ...selectedCharacter, level: nextLevel };
+    const nextSkillPoints = (selectedCharacter.skillPoints ?? DEFAULT_SKILL_POINT_POOL) + 10;
+    const optimistic = { ...selectedCharacter, level: nextLevel, skillPoints: nextSkillPoints };
 
     setError(null);
     setLevelUpdatingId(selectedId);
     setCharacters((prev) => prev.map((c) => (c.id === selectedId ? optimistic : c)));
 
     try {
-      const saved = await api.updateCharacter(selectedId, { level: nextLevel });
+      const saved = await api.updateCharacter(selectedId, { level: nextLevel, skillPoints: nextSkillPoints });
       if (!isCharacter(saved)) {
         throw new Error("Unexpected response when updating level");
       }
