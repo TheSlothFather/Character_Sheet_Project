@@ -1,0 +1,371 @@
+﻿Clergy and Deities
+
+
+Worship and Divine Intervention
+
+
+        Worship is the ability to acquire Deity Relationship with one or more deities. This is the currency you accrue through roleplay and various actions to use divine intervention, which is divine magic, and that is related to clergy, shamans, druids, paladins, and others of this ilk. Devotion to a deity(s) allows you to accrue deity relationship per moon face equal to your Spiritual Attribute with a worship check of 50 for up to 20% of your Deity Relationship Cap, 75 for up to 40% of your Deity Relationship Cap, 100 for up to 60% of your Deity Relationship Cap, 125 for up to 80% of your Deity Relationship Cap, and 150 for up to 100% of your Deity Relationship Cap, each of these targets increasing by 15 per character’s Spiritual Attribute. If you wish to worship multiple deities, you must choose which one you are dedicating yourself to on that moon face, bar various features or ancillaries. Every deity also has three categories of worship that allow you to make more worship checks to more quickly gain these points when you perform actions from the deity’s worship list. Some worship is active, and some is passive. Passives generate 3x your Spiritual Attribute instead of the base passive point generation. Barring certain features or ancillaries, you may dedicate yourself to Spiritual Attribute number of deities. You may either worship the aligned (good) or unaligned (evil). If you ignore this requirement and choose to worship a deity belonging to the opposite of what you have been devoting yourself to, you lose all of your deity relationship with all deities of the group you belonged to in a grand declaration of apostasy. Apostasy is a grave decision with dire consequences, but it can unlock certain ancillaries for a player character. Aligned is composed of the Light Sect, Knowledge Sect, Ice Sect, Fire Sect, Nature Sect, and Redeemed Dark Sect. There are numerous pieces of gear, such as religious texts, religious organization signifiers, and vestments or divine weapons and armors, etc, that can be equipped to help with worship and divine intervention. The three worships of a deity earn you the points demarcated in parentheses, multiplied by your Spiritual Attribute.  
+        Unlike with Psionic Techniques and Will Dakar, Divine Intervention is neither energy nor action point intensive, costing 1 each regardless of the strength of the spell. The limiting factor is how much worship you can accrue outside of combat and timed events (or in some rare cases, during). Another major difference between this method of casting and the others is that the player has less clear control over the effects of the spell. Instead of casting a spell, the player character beseeches a deity they have deity relationship points with. The GM plays as the deities and has instructions for all deities’ divine intervention lists and every specific divine intervention, categorized into each of the deity’s three spells. Each spell has seven divine interventions, which are essentially seven tiers of the spell, each costing an increasing number of deity relationship points to use. According to the situation, the deity then chooses to react with according severity or aid. The player chooses which of the three spells, and the deity determines how powerful the spell tier is. The more help is needed, the higher the tier, and the more deity relationship points it will cost upon you completing a successful divine intervention check. The GM may best see divine intervention as the employment of help from a very powerful ally NPC. You have to trust your deity’s judgement. Equipping religious texts allows you to be more specific with the tier of divine intervention asked for, dependent upon the tier of said religious text. 
+
+
+Light Sect
+
+
+Homma
+Worship
+1. Organize (1)
+2. Destroy Chaos (3)
+3. Bring Order (4)
+Divine Intervention
+* Turn Evil:  Evil beings are made fearful or cease to be.
+* Turn Chaos: Chaotic beings are made fearful or cease to be.
+* Assert Authority: Supernatural and Divine beings obey.
+Naiben
+Worship
+1. Lawful Place Passive
+2. Enforce Law (2)
+3. Apprehend Criminals (3)
+Divine Intervention
+* Turn Unlawful: Criminal elements and those who break divine contracts are made fearful or cease to be. 
+* Incur Law: Law, whether mortal or divine, is reasserted. 
+* Judge: Those who have committed to chaos or evil are measured and punished. 
+Judaira
+Worship
+1. Home Passive
+2. Bless Home (1)
+3. Soothe Quarrel (3)
+Divine Intervention
+* Befriend: You and another mortal are allies.
+* Combine Efforts: Many of the clergy may use Divine Intervention together.
+* Soothe: The frightened, wrathful, and grieving are comforted.
+Zera
+Worship
+1. Treat Tired (1)
+2. Treat Sick (2)
+3. Treat Injured (3)
+Divine Intervention
+* Heal: The body’s wounds are repaired.
+* Revive: The recently deceased is returned by Nandul on behalf of Zera.
+* Reinvigorate: The body’s fatigue is diminished.
+Aelia
+Worship
+1. Beautification (1)
+2. Love (2)
+3. Heroism (4)
+Divine Intervention
+* Charm: Another is infatuated by you. 
+* Enhance Appearance: Your appearance is made more palatable. 
+* Inspire: Morale is enhanced.  
+Niema
+Worship
+1. Make Art (1)
+2. Perform (2)
+3. Teach Creatives (3)
+Divine Intervention
+* Music: Music sounds from the ether. 
+* Divine Performance: Your performance is divinely inspired. 
+* Thaumaturgy: You perform small signs and amplifications. 
+Rasadan
+Worship
+1. Destroy Cultists (3)
+2. Banish Evil (4)
+3. Destroy Evil (4)
+Divine Intervention
+* Light: Light is shed upon darkness. 
+* Banish: Extraplanar beings are returned to their planes or excised from this place.
+* Smite: Divine Retribution is rendered unto your foe. 
+
+
+Knowledge Sect
+
+
+Silvias
+Worship
+1. Historical Place Passive
+2. Preserve (1)
+3. Restore (4)
+Divine Intervention
+* Haste: Speed is amplified. 
+* Slow: Action is hindered.
+* Identify: The identity and purpose of an item is made clear. 
+Irvine
+Worship
+1. Explore (1)
+2. Discover (1)
+3. Show Discovery (2)
+Divine Intervention
+* Map: The surrounding area is known to you.
+* Astrology: Signs of the moons and stars are known to you.
+* Reveal: The hidden is revealed. 
+Emera
+Worship
+1. Maintain Watch (1)
+2. Science (2)
+3. Invent (4)
+Divine Intervention
+* Innovation: Your mind is aided so you can solve your problem.  
+* Divine Knowledge: Emera grants you her knowledge. 
+* Vigilance: You discern what shall do harm. 
+Makis
+Worship
+1. Place of Learning Passive
+2. Humility (2)
+3. Teach Academics (3)
+Divine Intervention
+* Imbue Knowledge: You impart knowledge unto another. 
+* Disguise: Someone shall not be as they seem. 
+* Divine Learning: You absorb the world around you. 
+
+
+
+
+Ice Sect
+
+
+Yvan
+Worship
+1. Winter Passive
+2. Cool Place Passive
+3. Seek Solitude (1)
+Divine Intervention
+* Ice Blast: Ice from Yvan is used for your offensive purposes.
+* Ice Shield: Ice from Yvan is used for your defensive purposes.
+* Freeze: Ice from Yvan is used to incapitate your foes or freeze liquids.
+Bjorlund
+Worship
+1. Place of Mercantilism Passive
+2. Trade Honestly (1)
+3. Charity (2)
+Divine Intervention
+* Contract: A divine oath between multiple parties is officiated. 
+* Aid: You are given help in your efforts by Bjorlund. 
+* Shape Ice: Ice is molded and formed. 
+Meadrol
+Worship
+1. Travel Passive
+2. Gamble (1)
+3. Party (1)
+Divine Intervention
+* Luck: Fate is woven in your favor.
+* Teleportation: You move without moving. 
+* Divine Rites of Travel: Travel commences without hardship. 
+
+
+Fire Sect
+
+
+Aura
+Worship
+1. Summer Passive
+2. Warm Places Passive
+3. Righteous Fury (3)
+Divine Intervention
+* Lava Blast: Lava from Aura is used for offensive purposes.  
+* Shape Lava: Lava is molded and formed. 
+* Incinerate: What opposes you is turned to ash. 
+Vestneus
+Worship
+1. Hunt (2)
+2. Farm (4)
+3. Defend Place (4)
+Divine Intervention
+* Divine Hunt: Your quarry is revealed. 
+* Plenty: Supplies are readily available. 
+* Secure: What is locked cannot be unlocked. 
+Flora
+Worship
+1. Battle (1)
+2. Conquer Place (4)
+3. Feat of Bravery (4)
+Divine Intervention
+* Valor: Morale is improved. 
+* Divine Offense: Flora aids you in offense.
+* Divine Defense: Flora aids you in defense.  
+
+
+Nature Sect
+
+
+Theri
+Worship
+1. Endure (1)
+2. Repair Common Items (1)
+3. Craft (2)
+Divine Intervention
+* Fortitude: You endure against all odds. 
+* Imbue Soul: A soul is transferred between vessels. 
+* Divine Craft: A magical artifact is created. 
+Azuli
+Worship
+1. Wilderness Passive
+2. Care For Flora (2)
+3. Resist Temptation (3)
+Divine Intervention
+* Befriend Plant: Plantlife becomes an ally. 
+* Plant Growth: Plantlife blooms and ripens. 
+* Entangle: Nature traps a foe of yours.
+Kasha
+Worship
+1. Raise Child Passive
+2. Help Family (2)
+3. Care For the Mentally Ill (4)
+Divine Intervention
+* Bless: Kasha watches over a creature or place. 
+* Divine Care: Kasha aids you in helping the damaged. 
+* Heal Mind: One’s mind is repaired. 
+Kesh
+Worship
+1. Subterranean Places Passive
+2. Forage (1)
+3. Care For Terrestrial (2)
+Divine Intervention
+* Shape Earth: Earth is molded and formed. 
+* Befriend Animal: A beast becomes an ally. 
+* Harden: A body is made more durable. 
+Ar
+Worship
+1. High Places Passive
+2. Read Weather (1)
+3. Care For Avian (2)
+Divine Intervention
+* Gust: A tempest blows. 
+* Fly: One bound to the land takes to the sky. 
+* Lightning: Lightning and thunder is cast from on high. 
+Upht
+Worship
+1. Marine Places Passive
+2. Care For Marine (2)
+3. Follow Dream (4)
+Divine Intervention
+* Shape Water: Water is molded and formed. 
+* Dream: Dreams are revealed and manifest.
+* Control Weather: Skies, waters, and winds obey. 
+
+
+Redeemed Dark Sect
+
+
+Nandul
+Worship
+1. Respect Dead (1)
+2. Restore Graves (3)
+3. Destroy Undead (3)
+Divine Intervention
+* Resurrect: Those deceased for less than a phase are returned by Nandul.  
+* Spare: The dying are spared from death. 
+* Turn Undead: Undead are made fearful or cease to be. 
+Ishmadt
+Worship
+1. Destroy Lies (3)
+2. Exorcise Place (3)
+3. Forgive Enemy (4)
+Divine Intervention
+* Truth: The truth is revealed. 
+* Purify: The unclean is made clean.
+* Convert: The unaligned becomes aligned. 
+
+
+Unaligned/Evil 
+Ordurun
+Worship
+1. Battle (1)
+2. Torture (2)
+3. Follow Cult Orders (4)
+Divine Intervention
+* Secret Knowledge: Ordurun imparts the nature of the universe. 
+* Learn Dakar: Ordurun reveals methods of Willing Dakar. 
+* Read Intent: Another’s intentions are revealed. 
+Ashi
+Worship
+1. Lie (1)
+2. Sacrifice Mortal (3)
+3. Turn To Wraithdom (4)
+Divine Intervention
+* Darkness: Light is doused in dark. 
+* Lifesteal: Life is transferred to another. 
+* Wraith: You descend further into Wraithdom as a Tise. 
+Grall
+Worship
+1. Dedicate Wealth (2)
+2. Steal (3)
+3. Perversion (4)
+Divine Intervention
+* Rot: Living flesh fails.
+* Rust: Crafts and natural features fail. 
+* Corrupt Area: The clean becomes unclean. 
+Du’um
+Worship
+1. Deface (1)
+2. Murder (3)
+3. Destroy Order (4)
+Divine Intervention
+* Frenzy: All succumb to their passions. 
+* Antimagic Field: Psionics, Dakar, and The Divine fail. 
+* Incinerate: What opposes you turns to ash. 
+Myirata
+Worship
+1. Alleviate Grief (2)
+2. Find Lost Thing (2)
+3. Hide Troubled Person (3)
+Divine Intervention
+* Invisibility: What is seen becomes hidden.  
+* Traverse Planes: You move between worlds that cannot be reached through ordinary means. 
+* Find: What you seek is found. 
+Thul 
+Worship
+1. Defend Reputation (2)
+2. Honorable Duel (3)
+3. Change Order (4)
+Divine Intervention
+* Valor: Morale is improved. 
+* Compel Duel: One is fated to face you in single combat. 
+* Diminish: One’s power and glory is reduced. 
+Baras
+Worship
+1. Revolt (3)
+2. Liberate (4)
+3. Usurp (4)
+Divine Intervention
+* Lift Divine: The magical is made mundane. 
+* Break Contract: A Divine Contract is made void. 
+* Conceal Person: One cannot be found. 
+Kar’Dithu
+Worship
+1. Intimidate (1)
+2. Terrorize (2)
+3. Torture (2)
+Divine Intervention
+* Nightmare: One’s worst fears manifest. 
+* Madness: One’s faculties erode. 
+* Fear: Morale is sapped. 
+Aduric Primordial
+Worship
+1. Battle (1)
+2. Dedicate Wealth (2)
+3. Sacrifice Animal (3)
+Divine Intervention
+* Summon Elemental: The natural forces of the world become allies. 
+* Luck: Fate is woven in your favor. 
+* Plenty: Supplies are readily available.
+Cosmic Primordial
+Worship
+1. Extraterrestrial Passive
+2. Dedicate Knowledge (2)
+3. Sacrifice Intellect (3)
+Divine Intervention
+* Astrology: Signs of the moons and stars are known to you.
+* Secret Knowledge: Something from beyond imparts the nature of the universe. 
+* Befriend Extraterrestrial: An alien becomes an ally. 
+Fallen Patriarch/Matriarch
+Worship
+1. Follow Cult Orders (1)
+2. Dedicate Wealth (2)
+3. Sacrifice Mortal (3)
+Divine Intervention
+Choose 1 Divine Intervention from 3 of the following:
+* Grall
+* Du'um 
+* Thul
+* Myirata
+* Baras
+* Kar'Dithu
