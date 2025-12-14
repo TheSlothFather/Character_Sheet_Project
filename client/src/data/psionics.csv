@@ -7,9 +7,9 @@ Telepathy,Project (Pry),5,Transfer,send memories or thoughts to all creatures wi
 Telepathy,Read Memory,3,Pry,search through a creature’s memory for information,15,
 Telepathy,Read Link,4,Read Memory,read what links a creature has access to and what those links are,20,
 Telepathy,Read Genome,5,Read Link,gain access to a creature’s historical lineage,25,
-Telepathy,Higher Conscious,3,Pry,read surface thoughts of a creature within mental attribute x10 ft of you,15,
-Telepathy,Lower Conscious,4,Higher Conscious,read underlying thoughts of a creature within mental attribute x10 ft of you,20,
-Telepathy,Deep Dive,5,Lower Conscious,discover all there is to know within a creature's mind within mental attribute x10 ft of you save for masked or otherwise magically or psionically secured information,25,
+Telepathy,Surface,3,Pry,read surface thoughts of a creature within mental attribute x10 ft of you,15,
+Telepathy,Subsurface,4,Surface,read underlying thoughts of a creature within mental attribute x10 ft of you,20,
+Telepathy,Deep Dive,5,Subsurface,discover all there is to know within a creature's mind within mental attribute x10 ft of you save for masked or otherwise magically or psionically secured information,25,
 Telepathy,Sense Presence,2,Telepathy,automatically sense non-supernatural unmasked presences adjacent to you,10,
 Telepathy,Focus Signal,3,Sense Presence,hone in on a specific type of non-supernatural presence,15,
 Telepathy,Project Signal,4,Focus Signal,focus in on areas not adjacent to you within a range of 10 ft,20,
@@ -204,5 +204,6 @@ Hypnosis,Agility,5,Speed,reaction,25,
 Hypnosis,Morale,3,Override,+1 morale to target,15,
 Hypnosis,Fear,4,Morale,-1 morale to target,20,
 Hypnosis,Horror,5,Fear,- mental attribute morale to target. May choose to incapacitate target instead of flee if target's morale reaches -5,25,
+
 
 
