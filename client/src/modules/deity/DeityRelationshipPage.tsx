@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import deityData from "../../data/deity_relationships.json";
+import { api, Character, RaceDetailProfile } from "../../api/client";
+import { useDefinitions } from "../definitions/DefinitionsContext";
 
 type WorshipAction = {
   name: string;
@@ -76,6 +78,8 @@ const evaluateTierFormula = (formula: string, spiritualAttribute: number) => {
 
 export const DeityRelationshipPage: React.FC = () => {
   const data = deityData as DeityRelationshipData;
+  const { data: definitions } = useDefinitions();
+  const raceDetails = (definitions?.raceDetails ?? {}) as Record<string, RaceDetailProfile>;
 
   const hasDeityData =
     data && Array.isArray(data.deities) && data.deities.length > 0 && Array.isArray(data.sects) && data.sects.length > 0;
@@ -105,10 +109,50 @@ export const DeityRelationshipPage: React.FC = () => {
 
   const [spiritualAttribute, setSpiritualAttribute] = useState(3);
   const [racialCapBonus, setRacialCapBonus] = useState(0);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [selectedCharacterId, setSelectedCharacterId] = useState<string>("");
+  const [characterError, setCharacterError] = useState<string | null>(null);
+  const [loadingCharacters, setLoadingCharacters] = useState(false);
   const [selectedDeityName, setSelectedDeityName] = useState(safeData.deities[0]?.name ?? "");
   const [selectedActionName, setSelectedActionName] = useState<string>(safeData.deities[0]?.worship[0]?.name ?? "");
   const [timesPerformed, setTimesPerformed] = useState(1);
   const [logEntries, setLogEntries] = useState<WorshipLogEntry[]>([]);
+
+  useEffect(() => {
+    setLoadingCharacters(true);
+    setCharacterError(null);
+    api
+      .listCharacters()
+      .then((list) => setCharacters(list))
+      .catch((err) => {
+        const message = err instanceof Error ? err.message : "Failed to load characters";
+        setCharacterError(message);
+      })
+      .finally(() => setLoadingCharacters(false));
+  }, []);
+
+  const selectedCharacter = useMemo(
+    () => characters.find((c) => c.id === selectedCharacterId),
+    [characters, selectedCharacterId]
+  );
+
+  const computeRacialCapBonus = (character: Character | undefined): number => {
+    if (!character) return 0;
+    const raceBonus = raceDetails[character.raceKey ?? ""]?.disciplines?.deityCapPerSpirit ??
+      raceDetails[character.raceKey ?? ""]?.deityCapPerSpirit ??
+      0;
+    const subraceBonus = raceDetails[character.subraceKey ?? ""]?.disciplines?.deityCapPerSpirit ??
+      raceDetails[character.subraceKey ?? ""]?.deityCapPerSpirit ??
+      0;
+    return raceBonus + subraceBonus;
+  };
+
+  useEffect(() => {
+    if (!selectedCharacter) return;
+    const spiritual = selectedCharacter.attributes?.SPIRITUAL ?? selectedCharacter.attributes?.spiritual ?? 0;
+    setSpiritualAttribute(spiritual);
+    setRacialCapBonus(computeRacialCapBonus(selectedCharacter));
+  }, [selectedCharacter, raceDetails]);
 
   const cap = spiritualAttribute * (10 + racialCapBonus);
   const spiritualLimit = spiritualAttribute;
@@ -203,11 +247,28 @@ export const DeityRelationshipPage: React.FC = () => {
             Data for deities failed to load. Showing an empty template so the page remains usable.
           </div>
         )}
+        {characterError && <div style={{ color: "#f6ad55", marginTop: "0.25rem" }}>{characterError}</div>}
       </header>
 
       <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
         <div style={{ border: "1px solid #333", padding: "1rem", borderRadius: 4 }}>
           <h2 style={{ marginTop: 0 }}>Inputs</h2>
+          <label style={{ display: "block", marginBottom: "0.5rem" }}>
+            Character
+            <select
+              value={selectedCharacterId}
+              onChange={(e) => setSelectedCharacterId(e.target.value)}
+              disabled={loadingCharacters}
+              style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
+            >
+              <option value="">Manual entry</option>
+              {characters.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <label style={{ display: "block", marginBottom: "0.5rem" }}>
             Spiritual Attribute
             <input
@@ -231,6 +292,11 @@ export const DeityRelationshipPage: React.FC = () => {
                 </option>
               ))}
             </select>
+            {selectedCharacter && (
+              <div style={{ marginTop: 4, fontSize: 12, color: "#9aa3b5" }}>
+                Auto-set from {selectedCharacter.name}'s race/subrace.
+              </div>
+            )}
           </label>
           <div style={{ marginTop: "0.5rem", fontSize: 14, color: "#ccc" }}>
             Spiritual limit: dedicate to {spiritualLimit} deities max.

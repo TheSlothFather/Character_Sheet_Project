@@ -103,7 +103,11 @@ const normalizeDefinitions = (data: unknown): DefinitionsResponse => {
     derivedStatValues: raw.derivedStatValues && typeof raw.derivedStatValues === "object"
       ? (raw.derivedStatValues as Record<string, number>)
       : undefined,
-    modifiers: ensureModifiers(raw.modifiers, "modifiers")
+    modifiers: ensureModifiers(raw.modifiers, "modifiers"),
+    raceDetails:
+      raw.raceDetails && typeof raw.raceDetails === "object"
+        ? (raw.raceDetails as Record<string, any>)
+        : {}
   };
 };
 

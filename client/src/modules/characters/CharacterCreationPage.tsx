@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import backgroundsData from "../../data/backgrounds.json";
-import { api, BackgroundSelection, AttributeScores, ModifierWithSource } from "../../api/client";
+import { api, BackgroundSelection, AttributeScores, ModifierWithSource, RaceDetailProfile } from "../../api/client";
 import psionicsCsv from "../../data/psionics.csv?raw";
 import { PSION_BACKGROUND_CONFIG, PSIONICS_STORAGE_KEY } from "../psionics/psionBackgrounds";
 import { DEFAULT_PSI_POINTS, parsePsionicsCsv } from "../psionics/psionicsUtils";
@@ -172,6 +172,7 @@ export const CharacterCreationPage: React.FC = () => {
   const navigate = useNavigate();
   const { setSelectedId } = useSelectedCharacter();
   const { data: definitions, loading: definitionsLoading, error: definitionsError } = useDefinitions();
+  const raceDetails = (definitions?.raceDetails ?? {}) as Record<string, RaceDetailProfile>;
 
   const [backgroundOptions, setBackgroundOptions] = React.useState<BackgroundOption[]>([]);
   const [backgroundsError, setBackgroundsError] = React.useState<string | null>(null);
@@ -250,6 +251,22 @@ export const CharacterCreationPage: React.FC = () => {
       (definitions?.subraces ?? []).filter((s) => !raceKey || (s.parentId ? s.parentId === raceKey : true)),
     [definitions, raceKey]
   );
+
+  const selectedRaceDetail = React.useMemo(() => (raceKey ? raceDetails[raceKey] : undefined), [raceDetails, raceKey]);
+  const selectedSubraceDetail = React.useMemo(() => (subraceKey ? raceDetails[subraceKey] : undefined), [raceDetails, subraceKey]);
+
+  const combinedDisciplines = React.useMemo(() => {
+    const totals = { martialProwess: 0, ildakarFaculty: 0, psiPoints: 0, deityCapPerSpirit: 0 };
+    [selectedRaceDetail, selectedSubraceDetail].forEach((detail) => {
+      if (!detail) return;
+      const bonuses = detail.disciplines ?? {};
+      totals.martialProwess += bonuses.martialProwess ?? 0;
+      totals.ildakarFaculty += bonuses.ildakarFaculty ?? 0;
+      totals.psiPoints += bonuses.psiPoints ?? 0;
+      totals.deityCapPerSpirit += bonuses.deityCapPerSpirit ?? detail.deityCapPerSpirit ?? 0;
+    });
+    return totals;
+  }, [selectedRaceDetail, selectedSubraceDetail]);
 
   const handleSingleSelect = (key: keyof BackgroundSelection, value: string) => {
     setSelection((prev) => ({ ...prev, [key]: value || undefined }));
@@ -736,6 +753,29 @@ export const CharacterCreationPage: React.FC = () => {
                 ))}
               </select>
             </div>
+            {(selectedRaceDetail || selectedSubraceDetail) && (
+              <div style={{ ...cardStyle, background: "#0e1116", borderColor: "#1f2a33" }}>
+                <div style={{ fontSize: 12, color: "#9aa3b5", marginBottom: 6 }}>Discipline Bonuses</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 6 }}>
+                  <div>
+                    <div style={{ color: "#9aa3b5", fontSize: 13 }}>Martial Prowess</div>
+                    <div style={{ fontWeight: 700 }}>{combinedDisciplines.martialProwess}</div>
+                  </div>
+                  <div>
+                    <div style={{ color: "#9aa3b5", fontSize: 13 }}>Ildakar Faculty</div>
+                    <div style={{ fontWeight: 700 }}>{combinedDisciplines.ildakarFaculty}</div>
+                  </div>
+                  <div>
+                    <div style={{ color: "#9aa3b5", fontSize: 13 }}>Psi-Points</div>
+                    <div style={{ fontWeight: 700 }}>{combinedDisciplines.psiPoints}</div>
+                  </div>
+                  <div>
+                    <div style={{ color: "#9aa3b5", fontSize: 13 }}>Deity Cap / Spiritual</div>
+                    <div style={{ fontWeight: 700 }}>{combinedDisciplines.deityCapPerSpirit}</div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div>
               <div style={{ fontSize: 12, color: "#9aa3b5", marginBottom: 4 }}>Attribute Points</div>
               <div style={{ fontWeight: 700, color: attributeRemaining === 0 ? "#9ae6b4" : "#f7a046" }}>

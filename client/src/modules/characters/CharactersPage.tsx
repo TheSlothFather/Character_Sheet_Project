@@ -49,6 +49,12 @@ interface CharacterSheetProps {
 }
 
 const SPECIAL_SKILL_CODES = ["MARTIAL_PROWESS", "ILDAKAR_FACULTY"];
+const ATTRIBUTE_DISPLAY: { key: keyof Required<Character>["attributes"] | string; label: string }[] = [
+  { key: "PHYSICAL", label: "Physical" },
+  { key: "MENTAL", label: "Mental" },
+  { key: "SPIRITUAL", label: "Spiritual" },
+  { key: "WILL", label: "Will" }
+];
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
   character,
@@ -113,6 +119,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const energy = 100 + 10 * (character.level - 1);
   const damageReduction = 0;
   const fatePoints = character.fatePoints ?? 0;
+  const attributeValues = character.attributes ?? {};
 
   const renderSkillAllocationRow = (skill: NamedDefinition, showDivider = true) => {
     const code = getSkillCode(skill);
@@ -180,6 +187,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           <span>Speed</span>
           <strong>—</strong>
         </div>
+      </div>
+
+      <div style={{ ...cardStyle, padding: "0.65rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.5rem" }}>
+        {ATTRIBUTE_DISPLAY.map((attr) => (
+          <div key={attr.key as string} style={{ ...pillStyle, margin: 0 }}>
+            <span>{attr.label}</span>
+            <strong>{attributeValues?.[attr.key as string] ?? 0}</strong>
+          </div>
+        ))}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "280px 960px 1fr", gap: "1rem" }}>
