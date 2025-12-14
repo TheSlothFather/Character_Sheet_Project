@@ -466,7 +466,8 @@ export const PsionicsPage: React.FC = () => {
     let psiBonus = 0;
 
     adulthoodBackgrounds.forEach((name) => {
-      const config = PSION_BACKGROUND_CONFIG[name.toLowerCase() as keyof typeof PSION_BACKGROUND_CONFIG];
+      const normalized = name.trim().toLowerCase() as keyof typeof PSION_BACKGROUND_CONFIG;
+      const config = PSION_BACKGROUND_CONFIG[normalized];
       if (!config) return;
       psiBonus += config.psiBonus;
       config.granted.forEach(({ tree, name: abilityName }) => {

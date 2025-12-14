@@ -95,9 +95,11 @@ const computeAttributeSkillBonuses = (
 const computeRaceSkillBonuses = (
   definitions: ReturnType<typeof useDefinitions>["data"] | undefined,
   raceKey: string,
-  subraceKey: string
+  subraceKey: string,
+  raceDetails: Record<string, RaceDetailProfile>
 ): Record<string, number> => {
   if (!definitions) return {};
+
   const baseSkills = Object.fromEntries(
     (definitions.skills ?? []).map((skill) => [getSkillCode(skill), { score: 0, racialBonus: 0 }])
   );
@@ -109,13 +111,27 @@ const computeRaceSkillBonuses = (
     return false;
   });
 
-  const state = applyModifiers({ baseState, modifiers: applicable });
   const result: Record<string, number> = {};
+  const state = applyModifiers({ baseState, modifiers: applicable });
   for (const skill of definitions.skills ?? []) {
     const code = getSkillCode(skill);
     const entry = (state.skills as Record<string, any> | undefined)?.[code];
     result[code] = typeof entry?.racialBonus === "number" ? entry.racialBonus : 0;
   }
+
+  const addRaceDetailBonuses = (key: string | undefined) => {
+    if (!key) return;
+    const details = raceDetails[key];
+    if (!details?.skills) return;
+    Object.entries(details.skills).forEach(([code, value]) => {
+      if (typeof value !== "number") return;
+      result[code] = (result[code] ?? 0) + value;
+    });
+  };
+
+  addRaceDetailBonuses(raceKey);
+  addRaceDetailBonuses(subraceKey);
+
   return result;
 };
 
@@ -302,7 +318,8 @@ export const CharacterCreationPage: React.FC = () => {
     const choices: PsionicsModalChoice[] = [];
 
     adulthoodBackgrounds.forEach((backgroundName) => {
-      const config = PSION_BACKGROUND_CONFIG[backgroundName.toLowerCase() as keyof typeof PSION_BACKGROUND_CONFIG];
+      const normalizedKey = backgroundName.trim().toLowerCase() as keyof typeof PSION_BACKGROUND_CONFIG;
+      const config = PSION_BACKGROUND_CONFIG[normalizedKey];
       if (!config) return;
       psiBonus += config.psiBonus;
 
@@ -428,8 +445,8 @@ export const CharacterCreationPage: React.FC = () => {
   );
 
   const racialSkillBonuses = React.useMemo(
-    () => computeRaceSkillBonuses(definitions, raceKey, subraceKey),
-    [definitions, raceKey, subraceKey]
+    () => computeRaceSkillBonuses(definitions, raceKey, subraceKey, raceDetails),
+    [definitions, raceDetails, raceKey, subraceKey]
   );
 
   const backgroundSkillBonuses = React.useMemo(
