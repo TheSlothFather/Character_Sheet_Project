@@ -487,6 +487,11 @@ export const PsionicsPage: React.FC = () => {
   const { data: definitions } = useDefinitions();
   const raceDetails = (definitions?.raceDetails ?? {}) as Record<string, RaceDetailProfile>;
 
+  const lineagePsi = React.useMemo(() => {
+    const getPsi = (key?: string) => (key ? raceDetails[key]?.disciplines?.psiPoints ?? 0 : 0);
+    return getPsi(selectedCharacter?.raceKey) + getPsi(selectedCharacter?.subraceKey);
+  }, [raceDetails, selectedCharacter?.raceKey, selectedCharacter?.subraceKey]);
+
   const [state, setState] = React.useState<PsiState>(() => loadPersistedState(storageKey, abilityIds));
 
   React.useEffect(() => {
@@ -533,9 +538,6 @@ export const PsionicsPage: React.FC = () => {
   const mentalAttribute = selectedCharacter?.attributes?.MENTAL ?? 0;
   const characterLevel = selectedCharacter?.level ?? 1;
   const psiPerLevel = 3 + mentalAttribute;
-  const lineagePsi =
-    (selectedCharacter?.raceKey ? raceDetails[selectedCharacter.raceKey]?.disciplines?.psiPoints ?? 0 : 0) +
-    (selectedCharacter?.subraceKey ? raceDetails[selectedCharacter.subraceKey]?.disciplines?.psiPoints ?? 0 : 0);
   const levelPsi = Math.max(0, characterLevel - 1) * psiPerLevel;
   const totalPsiPool = DEFAULT_PSI_POINTS + backgroundBenefits.psiBonus + lineagePsi + levelPsi;
 

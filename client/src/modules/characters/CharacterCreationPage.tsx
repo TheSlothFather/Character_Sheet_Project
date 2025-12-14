@@ -454,21 +454,34 @@ export const CharacterCreationPage: React.FC = () => {
     [definitions, raceDetails, raceKey, subraceKey]
   );
 
+  const skillBonusesWithDisciplines = React.useMemo(() => {
+    const bonuses: Record<string, number> = { ...racialSkillBonuses };
+    const maybeAdd = (code: string, value: number) => {
+      if (!value) return;
+      bonuses[code] = (bonuses[code] ?? 0) + value;
+    };
+
+    maybeAdd("MARTIAL_PROWESS", combinedDisciplines.martialProwess);
+    maybeAdd("ILDAKAR_FACULTY", combinedDisciplines.ildakarFaculty);
+
+    return bonuses;
+  }, [combinedDisciplines.ildakarFaculty, combinedDisciplines.martialProwess, racialSkillBonuses]);
+
   const backgroundSkillBonuses = React.useMemo(
     () => computeBackgroundSkillBonuses(selectedBackgrounds, definitions?.skills),
     [definitions?.skills, selectedBackgrounds]
   );
 
-  const skillBonuses = React.useMemo(() => {
-    const bonuses: Record<string, number> = { ...racialSkillBonuses };
-    Object.entries(backgroundSkillBonuses).forEach(([code, bonus]) => {
-      bonuses[code] = (bonuses[code] ?? 0) + bonus;
-    });
-    Object.entries(attributeSkillBonuses).forEach(([code, bonus]) => {
-      bonuses[code] = (bonuses[code] ?? 0) + bonus;
-    });
-    return bonuses;
-  }, [attributeSkillBonuses, backgroundSkillBonuses, racialSkillBonuses]);
+    const skillBonuses = React.useMemo(() => {
+      const bonuses: Record<string, number> = { ...skillBonusesWithDisciplines };
+      Object.entries(backgroundSkillBonuses).forEach(([code, bonus]) => {
+        bonuses[code] = (bonuses[code] ?? 0) + bonus;
+      });
+      Object.entries(attributeSkillBonuses).forEach(([code, bonus]) => {
+        bonuses[code] = (bonuses[code] ?? 0) + bonus;
+      });
+      return bonuses;
+    }, [attributeSkillBonuses, backgroundSkillBonuses, skillBonusesWithDisciplines]);
 
   const sortedSkills = React.useMemo(
     () => [...(definitions?.skills ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
