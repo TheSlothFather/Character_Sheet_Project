@@ -12,12 +12,17 @@ type DivineIntervention = {
   effect: string;
 };
 
+type DivineInterventionChoices = {
+  choose: number;
+  options: string[];
+};
+
 type Deity = {
   name: string;
   sect: string;
   alignment: string;
   worship: WorshipAction[];
-  divineInterventions: DivineIntervention[];
+  divineInterventions: DivineIntervention[] | DivineInterventionChoices;
 };
 
 type DeityRelationshipData = {
@@ -424,13 +429,21 @@ export const DeityRelationshipPage: React.FC = () => {
                   </div>
                   <div style={{ marginTop: "0.35rem" }}>
                     <div style={{ fontSize: 13, color: "#9ae6b4" }}>Divine Interventions</div>
-                    <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.5 }}>
-                      {deity.divineInterventions.map((spell) => (
-                        <li key={spell.spell}>
-                          <strong>{spell.spell}:</strong> {spell.effect}
+                    {Array.isArray(deity.divineInterventions) ? (
+                      <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.5 }}>
+                        {deity.divineInterventions.map((spell) => (
+                          <li key={spell.spell}>
+                            <strong>{spell.spell}:</strong> {spell.effect}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.5 }}>
+                        <li>
+                          Choose {deity.divineInterventions.choose} from: {deity.divineInterventions.options.join(", ")}
                         </li>
-                      ))}
-                    </ul>
+                      </ul>
+                    )}
                   </div>
                 </div>
               ))}
