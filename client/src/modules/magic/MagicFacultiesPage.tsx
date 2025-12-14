@@ -1,6 +1,7 @@
 import React from "react";
 import { api, Character } from "../../api/client";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
+import { useDefinitions } from "../definitions/DefinitionsContext";
 import facultiesText from "../../data/magic-faculties.txt?raw";
 import { ParsedFaculty, parseMagicFaculties } from "./magicParser";
 
@@ -144,6 +145,7 @@ const FacultyCard: React.FC<{
 };
 
 export const MagicFacultiesPage: React.FC = () => {
+  const { data: definitions } = useDefinitions();
   const parsed = React.useMemo(() => parseMagicFaculties(facultiesText), []);
   const basic = parsed.filter((faculty) => faculty.category === "Basic");
   const advanced = parsed.filter((faculty) => faculty.category === "Advanced");
@@ -214,7 +216,26 @@ export const MagicFacultiesPage: React.FC = () => {
     [characters, selectedId]
   );
 
-  const availablePoints = selectedCharacter?.skillAllocations?.ILDAKAR_FACULTY ?? 0;
+  const computeLineageBonus = React.useCallback(
+    (skillCode: string): number => {
+      const existing = selectedCharacter?.skillBonuses?.[skillCode];
+      if (typeof existing === "number") return existing;
+
+      const raceDetails = (definitions?.raceDetails ?? {}) as Record<string, { skills?: Record<string, number> }>;
+      const fromRace = selectedCharacter?.raceKey ? raceDetails[selectedCharacter.raceKey]?.skills?.[skillCode] ?? 0 : 0;
+      const fromSubrace = selectedCharacter?.subraceKey
+        ? raceDetails[selectedCharacter.subraceKey]?.skills?.[skillCode] ?? 0
+        : 0;
+      return fromRace + fromSubrace;
+    },
+    [definitions?.raceDetails, selectedCharacter?.raceKey, selectedCharacter?.skillBonuses, selectedCharacter?.subraceKey]
+  );
+
+  const availablePoints = React.useMemo(() => {
+    const base = selectedCharacter?.skillAllocations?.ILDAKAR_FACULTY ?? 0;
+    const bonus = computeLineageBonus("ILDAKAR_FACULTY");
+    return Math.max(0, base + bonus);
+  }, [computeLineageBonus, selectedCharacter?.skillAllocations?.ILDAKAR_FACULTY]);
 
   const spentPoints = React.useMemo(
     () => parsed.reduce((acc, faculty) => (unlocked[faculty.name] ? acc + COST_BY_CATEGORY[faculty.category] : acc), 0),

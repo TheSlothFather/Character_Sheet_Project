@@ -3,6 +3,7 @@ import armorCsv from "../../data/armor.csv?raw";
 import weaponsCsv from "../../data/weapons.csv?raw";
 import { api, Character } from "../../api/client";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
+import { useDefinitions } from "../definitions/DefinitionsContext";
 import { EquipmentKind, MartialAbility, parseMartialCsv } from "./martialUtils";
 
 interface MartialState {
@@ -201,6 +202,8 @@ const StatPill: React.FC<{ label: string; value: string }> = ({ label, value }) 
 );
 
 export const MartialProwessPage: React.FC = () => {
+  const { data: definitions } = useDefinitions();
+
   const abilities = React.useMemo(
     () => [...parseMartialCsv(weaponsCsv, "Weapon"), ...parseMartialCsv(armorCsv, "Armor")],
     []
@@ -303,13 +306,30 @@ export const MartialProwessPage: React.FC = () => {
       .finally(() => setLoadingCharacter(false));
   }, [selectedId]);
 
+  const computeLineageBonus = React.useCallback(
+    (skillCode: string): number => {
+      const existing = selectedCharacter?.skillBonuses?.[skillCode];
+      if (typeof existing === "number") return existing;
+
+      const raceDetails = (definitions?.raceDetails ?? {}) as Record<string, { skills?: Record<string, number> }>;
+      const fromRace = selectedCharacter?.raceKey ? raceDetails[selectedCharacter.raceKey]?.skills?.[skillCode] ?? 0 : 0;
+      const fromSubrace = selectedCharacter?.subraceKey
+        ? raceDetails[selectedCharacter.subraceKey]?.skills?.[skillCode] ?? 0
+        : 0;
+      return fromRace + fromSubrace;
+    },
+    [definitions?.raceDetails, selectedCharacter?.raceKey, selectedCharacter?.skillBonuses, selectedCharacter?.subraceKey]
+  );
+
   const martialProwessPool = React.useMemo(() => {
     const allocations = selectedCharacter?.skillAllocations ?? {};
     const bonuses = selectedCharacter?.skillBonuses ?? {};
     const base = allocations.MARTIAL_PROWESS ?? 0;
-    const bonus = bonuses.MARTIAL_PROWESS ?? 0;
+    const bonus = typeof bonuses.MARTIAL_PROWESS === "number"
+      ? bonuses.MARTIAL_PROWESS
+      : computeLineageBonus("MARTIAL_PROWESS");
     return Math.max(0, base + bonus);
-  }, [selectedCharacter]);
+  }, [computeLineageBonus, selectedCharacter]);
 
   const normalizeState = React.useCallback(
     (input: MartialState): MartialState => {
