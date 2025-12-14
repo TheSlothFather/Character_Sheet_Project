@@ -675,7 +675,8 @@ export const CharactersPage: React.FC = () => {
 
     const nextLevel = selectedCharacter.level + 1;
     const nextSkillPoints = (selectedCharacter.skillPoints ?? DEFAULT_SKILL_POINT_POOL) + 10;
-    const nextAttributePoints = (selectedCharacter.attributePointsAvailable ?? 0) + 1;
+    const tierAdvancement = nextLevel > 1 && (nextLevel - 1) % 5 === 0;
+    const nextAttributePoints = (selectedCharacter.attributePointsAvailable ?? 0) + (tierAdvancement ? 1 : 0);
     const optimistic = {
       ...selectedCharacter,
       level: nextLevel,
