@@ -302,7 +302,9 @@ const SkillTree: React.FC<{
   const tierTwo = tiers.get(2) ?? [];
   const remainingTiers = orderedTiers.filter((tier) => tier > 2);
   const orbitRadius = Math.max(140, 80 + tierTwo.length * 14);
-  const outerTierSpacing = 220;
+  const outerTierBaseSpacing = 180;
+  const outerTierSpacingTaper = 20;
+  const outerTierSpacingMin = 130;
   const starterRadius = starterTier.length > 1 ? 38 : 0;
   const tierTwoAngleStep = tierTwo.length > 0 ? (2 * Math.PI) / tierTwo.length : 0;
   const starterAngleStep = starterTier.length > 0 ? (2 * Math.PI) / starterTier.length : 0;
@@ -327,7 +329,11 @@ const SkillTree: React.FC<{
 
     remainingTiers.forEach((tier) => {
       const abilitiesForTier = tiers.get(tier) ?? [];
-      const tierRadius = orbitRadius + (tier - 2) * outerTierSpacing;
+      const tierRadius = orbitRadius +
+        Array.from({ length: tier - 2 }).reduce((distance, _, idx) => {
+          const stepSpacing = Math.max(outerTierSpacingMin, outerTierBaseSpacing - outerTierSpacingTaper * idx);
+          return distance + stepSpacing;
+        }, 0);
       maxRadius = Math.max(maxRadius, tierRadius);
 
       const fallbackStep = abilitiesForTier.length > 0 ? (2 * Math.PI) / abilitiesForTier.length : 0;
@@ -532,7 +538,7 @@ export const PsionicsPage: React.FC = () => {
   const levelPsi = Math.max(0, characterLevel - 1) * psiPerLevel;
   const totalPsiPool = DEFAULT_PSI_POINTS + backgroundBenefits.psiBonus + lineagePsi + levelPsi;
 
-  const tierAdvancementAvailable = characterLevel >= 6 && (characterLevel - 1) % 5 === 0;
+  const tierAdvancementAvailable = characterLevel === 1 || (characterLevel >= 6 && (characterLevel - 1) % 5 === 0);
   const completedTiers = Math.floor(Math.max(0, characterLevel - 1) / 5);
   const nextTierLevel = (completedTiers + 1) * 5 + 1;
   const spendLockMessage = tierAdvancementAvailable

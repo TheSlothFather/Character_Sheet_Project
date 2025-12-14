@@ -6,29 +6,10 @@ import { SelectedCharacterProvider } from "../modules/characters/SelectedCharact
 import { DefinitionsProvider } from "../modules/definitions/DefinitionsContext";
 import { PsionicAbility, evaluateFormula, isAbilityUnlocked } from "../modules/psionics/psionicsUtils";
 
-const mockCharacter = {
-  id: "char-1",
-  name: "Test",
-  level: 6,
-  skillPoints: 100,
-  skillAllocations: {},
-  attributes: { MENTAL: 3 }
-};
+let mockCharacter: any;
 const mockFetch = vi.fn();
 
-const mockDefinitions = {
-  ruleset: null,
-  attributes: [{ id: "MENTAL", name: "MENTAL" }],
-  skills: [],
-  races: [],
-  subraces: [],
-  feats: [],
-  items: [],
-  statusEffects: [],
-  derivedStats: [],
-  modifiers: [],
-  raceDetails: {}
-};
+let mockDefinitions: any;
 
 const renderWithProviders = async () => {
   window.localStorage.setItem("selected_character_id", mockCharacter.id);
@@ -63,6 +44,27 @@ describe("psionics skill tree", () => {
   beforeEach(() => {
     window.localStorage.clear();
     mockFetch.mockReset();
+    mockCharacter = {
+      id: "char-1",
+      name: "Test",
+      level: 6,
+      skillPoints: 100,
+      skillAllocations: {},
+      attributes: { MENTAL: 3 }
+    };
+    mockDefinitions = {
+      ruleset: null,
+      attributes: [{ id: "MENTAL", name: "MENTAL" }],
+      skills: [],
+      races: [],
+      subraces: [],
+      feats: [],
+      items: [],
+      statusEffects: [],
+      derivedStats: [],
+      modifiers: [],
+      raceDetails: {}
+    };
   });
 
   afterEach(() => {
@@ -139,5 +141,44 @@ describe("psionics skill tree", () => {
     fireEvent.click(telepathyButton);
 
     expect(interfereButton).not.toBeDisabled();
+  });
+
+  it("allows spending psi at level 1 during the initial advancement window", async () => {
+    mockCharacter = {
+      id: "char-1",
+      name: "Psi Novice",
+      level: 1,
+      raceKey: "psi-race",
+      skillPoints: 0,
+      skillAllocations: {},
+      attributes: { MENTAL: 2 }
+    };
+
+    mockDefinitions = {
+      ...mockDefinitions,
+      raceDetails: {
+        "psi-race": {
+          attributes: {},
+          skills: {},
+          disciplines: { martialProwess: 0, ildakarFaculty: 0, psiPoints: 2, deityCapPerSpirit: 0 }
+        }
+      }
+    };
+
+    await renderWithProviders();
+
+    const psiDisplay = screen.getByText(/Psi Points Remaining/i).parentElement as HTMLElement;
+    expect(psiDisplay).toHaveTextContent("2");
+
+    const telepathyButton = screen
+      .getAllByRole("button")
+      .find((button) => button.textContent?.trim().startsWith("Telepathy")) as HTMLButtonElement;
+
+    expect(telepathyButton).toBeDefined();
+    expect(telepathyButton).not.toBeDisabled();
+
+    fireEvent.click(telepathyButton);
+
+    expect(psiDisplay).toHaveTextContent("1");
   });
 });
