@@ -10,9 +10,9 @@ import { useSelectedCharacter } from "./SelectedCharacterContext";
 import { applyModifiers } from "@shared/rules/modifiers";
 import {
   AttributeKey,
-  SKILL_ATTRIBUTE_MAP,
   getSkillCode,
-  normalizeSkillCode
+  normalizeSkillCode,
+  computeAttributeSkillBonuses
 } from "./skillMetadata";
 const ATTRIBUTE_KEYS: AttributeKey[] = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"] as const;
 const ATTRIBUTE_POINT_POOL = 3;
@@ -73,23 +73,6 @@ const buildAttributeScores = (values: Record<AttributeKey, number>): AttributeSc
     scores[key] = values[key];
   });
   return scores;
-};
-
-const computeAttributeSkillBonuses = (
-  attributes: Record<AttributeKey, number>,
-  skills: { id: string; code?: string; name: string }[] | undefined
-): Record<string, number> => {
-  if (!skills) return {};
-  const bonuses: Record<string, number> = {};
-  skills.forEach((skill) => {
-    const skillKey = normalizeSkillCode(skill);
-    const attributesForSkill = SKILL_ATTRIBUTE_MAP[skillKey];
-    const validAttributes = (attributesForSkill ?? []).filter((attr) => attr in attributes);
-    if (!validAttributes.length) return;
-    const code = getSkillCode(skill);
-    bonuses[code] = validAttributes.reduce((acc, attr) => acc + attributes[attr] * 10, 0);
-  });
-  return bonuses;
 };
 
 const computeRaceSkillBonuses = (
@@ -537,6 +520,7 @@ export const CharacterCreationPage: React.FC = () => {
         level: 1,
         raceKey: raceKey || undefined,
         subraceKey: subraceKey || undefined,
+        attributePointsAvailable: 0,
         skillPoints: 100,
         skillAllocations: {},
         backgrounds: payload,

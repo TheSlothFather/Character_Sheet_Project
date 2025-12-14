@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { api, Character, ApiError, NamedDefinition } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
-import { getSkillCode, groupSkillsByCategory } from "./skillMetadata";
+import { AttributeKey, computeAttributeSkillBonuses, getSkillCode, groupSkillsByCategory } from "./skillMetadata";
+import psionicsCsv from "../../data/psionics.csv?raw";
+import { parsePsionicsCsv, PsionicAbility, replaceMentalAttributePlaceholders } from "../psionics/psionicsUtils";
+import { PSIONICS_STORAGE_KEY } from "../psionics/psionBackgrounds";
 
 const DEFAULT_SKILL_POINT_POOL = 100;
 
@@ -36,6 +39,43 @@ const formatSkillName = (rawName: string): string =>
     .replace(/_/g, " ")
     .replace(/\b(\w)/g, (match) => match.toUpperCase());
 
+const ATTRIBUTE_KEYS: AttributeKey[] = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"];
+
+const normalizeAttributes = (attributes: Record<string, number> | undefined): Record<AttributeKey, number> => {
+  const normalized: Record<AttributeKey, number> = {
+    PHYSICAL: 0,
+    MENTAL: 0,
+    SPIRITUAL: 0,
+    WILL: 0
+  };
+  ATTRIBUTE_KEYS.forEach((key) => {
+    if (typeof attributes?.[key] === "number") {
+      normalized[key] = attributes[key] as number;
+    }
+  });
+  return normalized;
+};
+
+const mergeAttributeSkillBonuses = (
+  currentBonuses: Record<string, number> | undefined,
+  previousAttributes: Record<AttributeKey, number>,
+  nextAttributes: Record<AttributeKey, number>,
+  skills: NamedDefinition[] | undefined
+): Record<string, number> => {
+  const prevAttributeBonuses = computeAttributeSkillBonuses(previousAttributes, skills);
+  const nextAttributeBonuses = computeAttributeSkillBonuses(nextAttributes, skills);
+  const merged: Record<string, number> = { ...(currentBonuses ?? {}) };
+
+  const affectedSkills = new Set([...Object.keys(prevAttributeBonuses), ...Object.keys(nextAttributeBonuses)]);
+  affectedSkills.forEach((code) => {
+    const priorBonus = prevAttributeBonuses[code] ?? 0;
+    const otherBonus = (merged[code] ?? 0) - priorBonus;
+    merged[code] = otherBonus + (nextAttributeBonuses[code] ?? 0);
+  });
+
+  return merged;
+};
+
 interface CharacterSheetProps {
   character: Character;
   skills: NamedDefinition[];
@@ -47,6 +87,10 @@ interface CharacterSheetProps {
   skillBonuses: Record<string, number>;
   onChangeAllocation: (skillCode: string, delta: number) => void;
   disableAllocation: boolean;
+  attributePointsAvailable: number;
+  onSpendAttributePoint: (attributeKey: AttributeKey) => void;
+  isUpdating: boolean;
+  onSaveNotes: (notes: Partial<Character>) => void;
 }
 
 const SPECIAL_SKILL_CODES = ["MARTIAL_PROWESS", "ILDAKAR_FACULTY"];
@@ -67,7 +111,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   allocations,
   skillBonuses,
   onChangeAllocation,
-  disableAllocation
+  disableAllocation,
+  attributePointsAvailable,
+  onSpendAttributePoint,
+  isUpdating,
+  onSaveNotes
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>("Weapons");
   const regularSkills = React.useMemo(
@@ -84,6 +132,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       }),
     [skills]
   );
+
+  const psionicAbilities = React.useMemo<PsionicAbility[]>(() => parsePsionicsCsv(psionicsCsv), []);
+  const [unlockedPsionics, setUnlockedPsionics] = React.useState<PsionicAbility[]>([]);
+  const storageKey = React.useMemo(() => `${PSIONICS_STORAGE_KEY}:${character.id}`, [character.id]);
+
+  const [weaponNotes, setWeaponNotes] = React.useState<string>(character.weaponNotes ?? "");
+  const [defenseNotes, setDefenseNotes] = React.useState<string>(character.defenseNotes ?? "");
+  const [gearNotes, setGearNotes] = React.useState<string>(character.gearNotes ?? "");
 
   const summaryBarStyle: React.CSSProperties = {
     background: "#1a1d24",
@@ -124,6 +180,33 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const fatePoints = character.fatePoints ?? 0;
   const attributeValues = character.attributes ?? {};
 
+  React.useEffect(() => {
+    setWeaponNotes(character.weaponNotes ?? "");
+    setDefenseNotes(character.defenseNotes ?? "");
+    setGearNotes(character.gearNotes ?? "");
+  }, [character.defenseNotes, character.gearNotes, character.id, character.weaponNotes]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") {
+      setUnlockedPsionics([]);
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (!raw) {
+        setUnlockedPsionics([]);
+        return;
+      }
+      const parsed = JSON.parse(raw) as { purchased?: string[]; backgroundPicks?: string[] };
+      const unlockedIds = new Set([...(parsed.purchased ?? []), ...(parsed.backgroundPicks ?? [])]);
+      const unlocked = psionicAbilities.filter((ability) => unlockedIds.has(ability.id));
+      setUnlockedPsionics(unlocked);
+    } catch (err) {
+      console.warn("Unable to read psionics state", err);
+      setUnlockedPsionics([]);
+    }
+  }, [psionicAbilities, storageKey]);
+
   const renderSkillAllocationRow = (skill: NamedDefinition, showDivider = true) => {
     const code = getSkillCode(skill);
     const allocated = allocations[code] ?? 0;
@@ -163,6 +246,57 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     );
   };
 
+  const groupedPsionics = React.useMemo(() => {
+    const groups = new Map<string, PsionicAbility[]>();
+    unlockedPsionics.forEach((ability) => {
+      const list = groups.get(ability.tree) ?? [];
+      list.push(ability);
+      groups.set(ability.tree, list);
+    });
+
+    return Array.from(groups.entries()).map(([tree, abilitiesForTree]) => ({
+      tree,
+      abilities: abilitiesForTree.sort((a, b) => {
+        if (a.tier === b.tier) return a.name.localeCompare(b.name);
+        return a.tier - b.tier;
+      })
+    }));
+  }, [unlockedPsionics]);
+
+  const handleNoteBlur = (field: "weaponNotes" | "defenseNotes" | "gearNotes", value: string) => {
+    const currentValue = character[field] ?? "";
+    if (currentValue === value) return;
+    onSaveNotes({ [field]: value });
+  };
+
+  const renderNotesArea = (
+    label: string,
+    value: string,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+    field: "weaponNotes" | "defenseNotes" | "gearNotes"
+  ) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ fontSize: 12, color: "#9aa3b5" }}>{label}</div>
+      <textarea
+        value={value}
+        onChange={(e) => setter(e.target.value)}
+        onBlur={() => handleNoteBlur(field, value)}
+        rows={8}
+        disabled={isUpdating}
+        style={{
+          width: "100%",
+          background: "#0e1116",
+          color: "#e8edf7",
+          border: "1px solid #2d343f",
+          borderRadius: 8,
+          padding: "0.6rem 0.7rem",
+          resize: "vertical"
+        }}
+      />
+      <div style={{ fontSize: 12, color: "#9aa3b5" }}>Changes are saved on blur.</div>
+    </div>
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <div style={summaryBarStyle}>
@@ -192,13 +326,30 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
       </div>
 
-      <div style={{ ...cardStyle, padding: "0.65rem", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.5rem" }}>
-        {ATTRIBUTE_DISPLAY.map((attr) => (
-          <div key={attr.key as string} style={{ ...pillStyle, margin: 0 }}>
-            <span>{attr.label}</span>
-            <strong>{attributeValues?.[attr.key as string] ?? 0}</strong>
+      <div style={{ ...cardStyle, padding: "0.65rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontSize: 12, color: "#9aa3b5" }}>Attribute Points Available</div>
+          <div style={{ fontWeight: 700, color: attributePointsAvailable > 0 ? "#9ae6b4" : "#e8edf7" }}>
+            {attributePointsAvailable}
           </div>
-        ))}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.5rem" }}>
+          {ATTRIBUTE_DISPLAY.map((attr) => (
+            <div key={attr.key as string} style={{ ...pillStyle, margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+              <span>{attr.label}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <strong>{attributeValues?.[attr.key as string] ?? 0}</strong>
+                <button
+                  onClick={() => onSpendAttributePoint(attr.key as AttributeKey)}
+                  disabled={attributePointsAvailable <= 0 || isUpdating}
+                  style={{ padding: "0.15rem 0.4rem", borderRadius: 4 }}
+                >
+                  +1
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "280px 960px 1fr", gap: "1rem" }}>
@@ -302,7 +453,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-            {["Weapons", "Defense", "Gear", "Spells", "Details", "Feats", "Actions"].map((tab) => (
+            {["Weapons", "Defense", "Gear", "Psionics", "Spells", "Details", "Feats", "Actions"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -319,7 +470,54 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               </button>
             ))}
           </div>
-          <div style={{ ...cardStyle, minHeight: 240 }}>This tab is a placeholder for future content.</div>
+          <div style={{ ...cardStyle, minHeight: 240 }}>
+            {activeTab === "Weapons" && renderNotesArea("Weapons", weaponNotes, setWeaponNotes, "weaponNotes")}
+            {activeTab === "Defense" && renderNotesArea("Defense", defenseNotes, setDefenseNotes, "defenseNotes")}
+            {activeTab === "Gear" && renderNotesArea("Gear", gearNotes, setGearNotes, "gearNotes")}
+            {activeTab === "Psionics" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                  Unlocked psionic abilities are stored per character. Edit unlocks on the Psionics page; summaries appear here.
+                </div>
+                {unlockedPsionics.length === 0 ? (
+                  <div style={{ color: "#9aa3b5" }}>No psionic abilities unlocked yet.</div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {groupedPsionics.map(({ tree, abilities }) => (
+                      <div key={tree} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <div style={{ fontWeight: 700, color: "#e8edf7" }}>{tree}</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 8 }}>
+                          {abilities.map((ability) => (
+                            <details key={ability.id} style={{ border: "1px solid #1f242d", borderRadius: 8, padding: "0.5rem 0.6rem" }}>
+                              <summary style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontWeight: 700 }}>{ability.name}</span>
+                                <span style={{ fontSize: 12, color: "#9aa3b5" }}>
+                                  Tier {ability.tier} • Energy {ability.energyCost}
+                                </span>
+                              </summary>
+                              <div style={{ marginTop: 6, color: "#cfd6e5", fontSize: 13, whiteSpace: "pre-wrap" }}>
+                                <div style={{ marginBottom: 4 }}>
+                                  {replaceMentalAttributePlaceholders(ability.description, attributeValues?.MENTAL ?? 0)}
+                                </div>
+                                {ability.formula && (
+                                  <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                                    Formula: {replaceMentalAttributePlaceholders(ability.formula, attributeValues?.MENTAL ?? 0)}
+                                  </div>
+                                )}
+                              </div>
+                            </details>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {!["Weapons", "Defense", "Gear", "Psionics"].includes(activeTab) && (
+              <div style={{ color: "#9aa3b5" }}>This tab is a placeholder for future content.</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -333,6 +531,7 @@ export const CharactersPage: React.FC = () => {
   const [allocationSavingId, setAllocationSavingId] = React.useState<string | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [levelUpdatingId, setLevelUpdatingId] = React.useState<string | null>(null);
+  const [generalSavingId, setGeneralSavingId] = React.useState<string | null>(null);
 
   const { selectedId, setSelectedId } = useSelectedCharacter();
   const navigate = useNavigate();
@@ -409,6 +608,30 @@ export const CharactersPage: React.FC = () => {
     }
   };
 
+  const updateSelectedCharacter = async (patch: Partial<Character>, errorMessage = "Failed to update character") => {
+    if (!selectedId) return;
+    const existing = characters.find((c) => c.id === selectedId);
+    if (!existing) return;
+
+    setError(null);
+    setGeneralSavingId(selectedId);
+    setCharacters((prev) => prev.map((c) => (c.id === selectedId ? { ...c, ...patch } : c)));
+
+    try {
+      const saved = await api.updateCharacter(selectedId, patch);
+      if (!isCharacter(saved)) {
+        throw new Error("Unexpected response when saving character changes");
+      }
+      setCharacters((prev) => prev.map((c) => (c.id === saved.id ? saved : c)));
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : errorMessage;
+      setError(message);
+      setCharacters((prev) => prev.map((c) => (c.id === selectedId ? existing : c)));
+    } finally {
+      setGeneralSavingId(null);
+    }
+  };
+
   const onChangeAllocation = async (skillCode: string, delta: number) => {
     if (!selectedId) return;
     const selectedCharacter = characters.find((c) => c.id === selectedId);
@@ -452,14 +675,24 @@ export const CharactersPage: React.FC = () => {
 
     const nextLevel = selectedCharacter.level + 1;
     const nextSkillPoints = (selectedCharacter.skillPoints ?? DEFAULT_SKILL_POINT_POOL) + 10;
-    const optimistic = { ...selectedCharacter, level: nextLevel, skillPoints: nextSkillPoints };
+    const nextAttributePoints = (selectedCharacter.attributePointsAvailable ?? 0) + 1;
+    const optimistic = {
+      ...selectedCharacter,
+      level: nextLevel,
+      skillPoints: nextSkillPoints,
+      attributePointsAvailable: nextAttributePoints
+    };
 
     setError(null);
     setLevelUpdatingId(selectedId);
     setCharacters((prev) => prev.map((c) => (c.id === selectedId ? optimistic : c)));
 
     try {
-      const saved = await api.updateCharacter(selectedId, { level: nextLevel, skillPoints: nextSkillPoints });
+      const saved = await api.updateCharacter(selectedId, {
+        level: nextLevel,
+        skillPoints: nextSkillPoints,
+        attributePointsAvailable: nextAttributePoints
+      });
       if (!isCharacter(saved)) {
         throw new Error("Unexpected response when updating level");
       }
@@ -473,12 +706,45 @@ export const CharactersPage: React.FC = () => {
     }
   };
 
+  const handleSpendAttributePoint = async (attributeKey: AttributeKey) => {
+    if (!selectedId) return;
+    const selectedCharacter = characters.find((c) => c.id === selectedId);
+    if (!selectedCharacter) return;
+
+    const available = selectedCharacter.attributePointsAvailable ?? 0;
+    if (available <= 0) return;
+
+    const previousAttributes = normalizeAttributes(selectedCharacter.attributes);
+    const nextAttributes = { ...previousAttributes, [attributeKey]: previousAttributes[attributeKey] + 1 };
+    const updatedAttributes = { ...(selectedCharacter.attributes ?? {}), [attributeKey]: nextAttributes[attributeKey] };
+
+    const patch: Partial<Character> = {
+      attributes: updatedAttributes,
+      attributePointsAvailable: available - 1
+    };
+
+    if (definitions?.skills) {
+      patch.skillBonuses = mergeAttributeSkillBonuses(
+        selectedCharacter.skillBonuses,
+        previousAttributes,
+        nextAttributes,
+        definitions.skills
+      );
+    }
+
+    await updateSelectedCharacter(patch, "Failed to spend attribute point");
+  };
+
   const selectedCharacter = characters.find((c) => c.id === selectedId) || null;
   const currentAllocations = selectedCharacter?.skillAllocations ?? {};
   const skillPointPool = selectedCharacter?.skillPoints ?? DEFAULT_SKILL_POINT_POOL;
   const totalAllocated = sumAllocations(currentAllocations);
   const remaining = skillPointPool - totalAllocated;
   const skillBonuses = selectedCharacter?.skillBonuses ?? {};
+  const attributePointsAvailable = selectedCharacter?.attributePointsAvailable ?? 0;
+  const isGeneralSaving = selectedCharacter ? generalSavingId === selectedCharacter.id : false;
+
+  const handleSaveNotes = (notes: Partial<Character>) => updateSelectedCharacter(notes, "Failed to save notes");
 
   const raceMap = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -569,6 +835,10 @@ export const CharactersPage: React.FC = () => {
             skillBonuses={skillBonuses}
             onChangeAllocation={onChangeAllocation}
             disableAllocation={loadingAny || allocationSavingId === selectedCharacter.id}
+            attributePointsAvailable={attributePointsAvailable}
+            onSpendAttributePoint={handleSpendAttributePoint}
+            isUpdating={loadingAny || isGeneralSaving}
+            onSaveNotes={handleSaveNotes}
           />
         )}
       </main>

@@ -9,12 +9,16 @@ export interface StoredCharacter {
   raceKey?: string;
   subraceKey?: string;
   notes?: string;
+  attributePointsAvailable?: number;
   skillPoints: number;
   skillAllocations: Record<string, number>;
   skillBonuses?: Record<string, number>;
   backgrounds?: BackgroundSelection;
   attributes?: Record<string, number>;
   fatePoints?: number;
+  weaponNotes?: string;
+  defenseNotes?: string;
+  gearNotes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -129,6 +133,12 @@ function sanitizeAttributes(input: unknown): Record<string, number> | undefined 
   return Object.keys(result).length ? result : undefined;
 }
 
+function sanitizeNote(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trimEnd();
+  return trimmed;
+}
+
 function createCharacterId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -146,8 +156,23 @@ charactersRouter.get("/", async (_req: Request, res: Response) => {
 });
 
 charactersRouter.post("/", async (req: Request, res: Response) => {
-  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations, skillBonuses, backgrounds, attributes, fatePoints } =
-    req.body ?? {};
+  const {
+    name,
+    level,
+    raceKey,
+    subraceKey,
+    notes,
+    skillPoints,
+    skillAllocations,
+    skillBonuses,
+    backgrounds,
+    attributes,
+    fatePoints,
+    attributePointsAvailable,
+    weaponNotes,
+    defenseNotes,
+    gearNotes
+  } = req.body ?? {};
   if (typeof name !== "string" || !name.trim()) {
     return res.status(400).json({ error: "name is required" });
   }
@@ -159,6 +184,13 @@ charactersRouter.post("/", async (req: Request, res: Response) => {
   const sanitizedAttributes = sanitizeAttributes(attributes);
   const sanitizedSkillBonuses = sanitizeSkillBonuses(skillBonuses);
   const numericFatePoints = typeof fatePoints === "number" && Number.isFinite(fatePoints) ? fatePoints : undefined;
+  const numericAttributePoints =
+    typeof attributePointsAvailable === "number" && Number.isFinite(attributePointsAvailable)
+      ? attributePointsAvailable
+      : 0;
+  const sanitizedWeaponNotes = sanitizeNote(weaponNotes);
+  const sanitizedDefenseNotes = sanitizeNote(defenseNotes);
+  const sanitizedGearNotes = sanitizeNote(gearNotes);
 
   try {
     const characters = await readCharacters();
@@ -170,12 +202,16 @@ charactersRouter.post("/", async (req: Request, res: Response) => {
       raceKey: typeof raceKey === "string" ? raceKey : undefined,
       subraceKey: typeof subraceKey === "string" ? subraceKey : undefined,
       notes: typeof notes === "string" ? notes : undefined,
+      attributePointsAvailable: numericAttributePoints,
       skillPoints: numericSkillPoints,
       skillAllocations: sanitizedAllocations,
       backgrounds: sanitizedBackgrounds,
       attributes: sanitizedAttributes,
       skillBonuses: sanitizedSkillBonuses,
       fatePoints: numericFatePoints,
+      weaponNotes: sanitizedWeaponNotes,
+      defenseNotes: sanitizedDefenseNotes,
+      gearNotes: sanitizedGearNotes,
       createdAt: now,
       updatedAt: now
     };
@@ -201,8 +237,23 @@ charactersRouter.get("/:id", async (req: Request, res: Response) => {
 });
 
 charactersRouter.put("/:id", async (req: Request, res: Response) => {
-  const { name, level, raceKey, subraceKey, notes, skillPoints, skillAllocations, skillBonuses, backgrounds, attributes, fatePoints } =
-    req.body ?? {};
+  const {
+    name,
+    level,
+    raceKey,
+    subraceKey,
+    notes,
+    skillPoints,
+    skillAllocations,
+    skillBonuses,
+    backgrounds,
+    attributes,
+    fatePoints,
+    attributePointsAvailable,
+    weaponNotes,
+    defenseNotes,
+    gearNotes
+  } = req.body ?? {};
 
   try {
     const characters = await readCharacters();
@@ -219,6 +270,13 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
     const nextSkillBonuses = skillBonuses !== undefined ? sanitizeSkillBonuses(skillBonuses) : existing.skillBonuses;
     const nextFatePoints =
       typeof fatePoints === "number" && Number.isFinite(fatePoints) ? fatePoints : existing.fatePoints;
+    const nextAttributePoints =
+      typeof attributePointsAvailable === "number" && Number.isFinite(attributePointsAvailable)
+        ? attributePointsAvailable
+        : existing.attributePointsAvailable ?? 0;
+    const nextWeaponNotes = weaponNotes !== undefined ? sanitizeNote(weaponNotes) : existing.weaponNotes;
+    const nextDefenseNotes = defenseNotes !== undefined ? sanitizeNote(defenseNotes) : existing.defenseNotes;
+    const nextGearNotes = gearNotes !== undefined ? sanitizeNote(gearNotes) : existing.gearNotes;
 
     const updated: StoredCharacter = {
       ...existing,
@@ -233,6 +291,10 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
       attributes: nextAttributes,
       skillBonuses: nextSkillBonuses,
       fatePoints: nextFatePoints,
+      attributePointsAvailable: nextAttributePoints,
+      weaponNotes: nextWeaponNotes,
+      defenseNotes: nextDefenseNotes,
+      gearNotes: nextGearNotes,
       updatedAt: new Date().toISOString()
     };
 
