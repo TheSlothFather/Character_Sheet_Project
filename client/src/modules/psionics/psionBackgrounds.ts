@@ -62,7 +62,7 @@ export const PSION_BACKGROUND_CONFIG: Record<PsionBackgroundKey, PsionBackground
       { tree: "Hypnosis", name: "Mnokinesis" },
       { tree: "Hypnosis", name: "Override" }
     ],
-    picksRequired: 2
+    picksRequired: 1
   },
   dynakineticist: {
     psiBonus: 1,
@@ -75,7 +75,7 @@ export const PSION_BACKGROUND_CONFIG: Record<PsionBackgroundKey, PsionBackground
       { tree: "Telekinesis", name: "Field" },
       { tree: "Telekinesis", name: "Force" }
     ],
-    picksRequired: 2
+    picksRequired: 1
   },
   illusionist: {
     psiBonus: 1,
@@ -88,6 +88,6 @@ export const PSION_BACKGROUND_CONFIG: Record<PsionBackgroundKey, PsionBackground
       { tree: "Hypnosis", name: "Dampen" },
       { tree: "Hypnosis", name: "Alter Illusion" }
     ],
-    picksRequired: 2
+    picksRequired: 1
   }
 };
