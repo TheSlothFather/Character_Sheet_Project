@@ -98,7 +98,7 @@ function parseSkills(lines) {
   return bonuses;
 }
 
-function parseBlock(blockLines, parentRaceKey) {
+function parseBlock(blockLines, parentRaceKey = null) {
   const name = blockLines[0].trim();
   const key = slugify(name);
   const descEndIdx = blockLines.findIndex((ln) => /Disciplines:/i.test(ln) || /Attributes:/i.test(ln) || /Skills:/i.test(ln));
@@ -184,7 +184,7 @@ function parseRaces(text) {
       });
     } else {
       const block = splitBlocks(segmentLines.slice(1))[0] || [];
-      const entry = parseBlock([seg.race, ...(block || [])], raceKey);
+      const entry = parseBlock([seg.race, ...(block || [])], null);
       parsed.races.push({ key: raceKey, name: seg.race, description: entry.description });
       parsed.raceEntries.push({ ...entry, key: raceKey, name: seg.race });
     }
