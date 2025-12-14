@@ -37,6 +37,18 @@ export interface ContentSubrace {
   description?: string;
 }
 
+export interface ContentRaceDetail {
+  attributes: Record<string, number>;
+  skills: Record<string, number>;
+  disciplines: {
+    martialProwess: number;
+    ildakarFaculty: number;
+    psiPoints: number;
+    deityCapPerSpirit: number;
+  };
+  deityCapPerSpirit?: number;
+}
+
 export interface ContentFeat {
   key: string;
   name: string;
@@ -94,5 +106,6 @@ export interface ContentPack {
   derivedStats: ContentDerivedStat[];
   // Optional standalone modifiers (e.g. backgrounds) that are not nested.
   modifiers?: ContentModifier[];
+  raceDetails?: Record<string, ContentRaceDetail>;
 }
 

@@ -55,6 +55,20 @@ export interface DerivedStatDefinition extends NamedDefinition {
   expression: Expr;
 }
 
+export interface RaceDisciplineBonuses {
+  martialProwess: number;
+  ildakarFaculty: number;
+  psiPoints: number;
+  deityCapPerSpirit: number;
+}
+
+export interface RaceDetailProfile {
+  attributes: Record<string, number>;
+  skills: Record<string, number>;
+  disciplines: RaceDisciplineBonuses;
+  deityCapPerSpirit?: number;
+}
+
 export interface DefinitionsResponse {
   ruleset: string | null;
   attributes: NamedDefinition[];
@@ -67,6 +81,7 @@ export interface DefinitionsResponse {
   derivedStats: DerivedStatDefinition[];
   derivedStatValues?: Record<string, number>;
   modifiers: ModifierWithSource[];
+  raceDetails?: Record<string, RaceDetailProfile>;
 }
 
 export class ApiError extends Error {

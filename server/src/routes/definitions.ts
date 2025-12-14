@@ -26,7 +26,7 @@ type NamedDefinition = {
 };
 
 const contentPackPath =
-  process.env.CONTENT_PACK_PATH ?? path.join(__dirname, "../../../docs/races_output/content-pack.json");
+  process.env.CONTENT_PACK_PATH ?? path.join(__dirname, "../../../data/race-content.json");
 
 const contentPack = loadContentPackFromFile(contentPackPath);
 
@@ -113,6 +113,7 @@ definitionsRouter.get("/", async (_req: Request, res: Response) => {
     statusEffects: contentPack.statusEffects.map(mapDefinition),
     derivedStats: contentPack.derivedStats.map(mapDerivedStat),
     derivedStatValues,
-    modifiers
+    modifiers,
+    raceDetails: contentPack.raceDetails ?? {}
   });
 });
