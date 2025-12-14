@@ -164,7 +164,7 @@ const computeBackgroundSkillBonuses = (
         if (!match) return null;
         const value = parseInt(match[1], 10);
         const skillName = match[2].trim();
-        const normalized = normalizeSkillCode({ id: "", name: skillName });
+        const normalized = normalizeSkillCode({ name: skillName });
         const code = skillLookup.get(normalized);
         if (!code || Number.isNaN(value)) return null;
         return { code, value };
