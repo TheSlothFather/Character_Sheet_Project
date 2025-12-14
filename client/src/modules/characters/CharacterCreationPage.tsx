@@ -4,7 +4,7 @@ import backgroundsData from "../../data/backgrounds.json";
 import { api, BackgroundSelection, AttributeScores, ModifierWithSource, RaceDetailProfile } from "../../api/client";
 import psionicsCsv from "../../data/psionics.csv?raw";
 import { PSION_BACKGROUND_CONFIG, PSIONICS_STORAGE_KEY } from "../psionics/psionBackgrounds";
-import { DEFAULT_PSI_POINTS, parsePsionicsCsv } from "../psionics/psionicsUtils";
+import { parsePsionicsCsv } from "../psionics/psionicsUtils";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
 import { applyModifiers } from "@shared/rules/modifiers";
@@ -84,9 +84,10 @@ const computeAttributeSkillBonuses = (
   skills.forEach((skill) => {
     const skillKey = normalizeSkillCode(skill);
     const attributesForSkill = SKILL_ATTRIBUTE_MAP[skillKey];
-    if (!attributesForSkill) return;
+    const validAttributes = (attributesForSkill ?? []).filter((attr) => attr in attributes);
+    if (!validAttributes.length) return;
     const code = getSkillCode(skill);
-    bonuses[code] = attributesForSkill.reduce((acc, attr) => acc + attributes[attr] * 10, 0);
+    bonuses[code] = validAttributes.reduce((acc, attr) => acc + attributes[attr] * 10, 0);
   });
   return bonuses;
 };
@@ -369,7 +370,7 @@ export const CharacterCreationPage: React.FC = () => {
     const storageKey = `${PSIONICS_STORAGE_KEY}:${psionicsModal.characterId}`;
     const backgroundSelections = psionicsModal.choices.flatMap((choice) => choice.selectedIds);
 
-    let existing: { psiPool?: number; purchased?: string[]; mental?: number; backgroundPicks?: string[] } = {};
+    let existing: { purchased?: string[]; backgroundPicks?: string[] } = {};
     try {
       const raw = window.localStorage.getItem(storageKey);
       if (raw) existing = JSON.parse(raw);
@@ -380,15 +381,7 @@ export const CharacterCreationPage: React.FC = () => {
     const purchased = new Set(existing.purchased ?? []);
     [...psionicsModal.baseAbilityIds, ...backgroundSelections].forEach((id) => purchased.add(id));
 
-    const psiPool = Math.max(
-      DEFAULT_PSI_POINTS + psionicsModal.psiBonus,
-      typeof existing.psiPool === "number" && existing.psiPool >= 0 ? existing.psiPool : 0
-    );
-    const mental = typeof existing.mental === "number" && existing.mental >= 0 ? existing.mental : attributes.MENTAL;
-
     const payload = {
-      psiPool,
-      mental,
       purchased: Array.from(purchased),
       backgroundPicks: backgroundSelections
     };

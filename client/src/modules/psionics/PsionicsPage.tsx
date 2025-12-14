@@ -1,6 +1,7 @@
 import React from "react";
-import { api, Character } from "../../api/client";
+import { api, Character, RaceDetailProfile } from "../../api/client";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
+import { useDefinitions } from "../definitions/DefinitionsContext";
 import psionicsCsv from "../../data/psionics.csv?raw";
 import {
   DEFAULT_PSI_POINTS,
@@ -13,9 +14,7 @@ import {
 import { PSION_BACKGROUND_CONFIG, PSIONICS_STORAGE_KEY } from "./psionBackgrounds";
 
 interface PsiState {
-  psiPool: number;
   purchased: Set<string>;
-  mental: number;
   backgroundPicks: Set<string>;
 }
 
@@ -41,41 +40,30 @@ type PositionedNode = {
   y: number;
 };
 
-const DEFAULT_MENTAL_ATTRIBUTE = 3;
-
-const loadPersistedState = (
-  storageKey: string | null,
-  defaultPsi: number,
-  defaultMental: number,
-  abilityIds: Set<string>
-): PsiState => {
+const loadPersistedState = (storageKey: string | null, abilityIds: Set<string>): PsiState => {
   if (typeof window === "undefined" || !storageKey) {
-    return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental, backgroundPicks: new Set() };
+    return { purchased: new Set(), backgroundPicks: new Set() };
   }
 
   try {
     const raw = window.localStorage.getItem(storageKey);
     if (!raw) {
-      return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental, backgroundPicks: new Set() };
+      return { purchased: new Set(), backgroundPicks: new Set() };
     }
     const parsed = JSON.parse(raw) as {
-      psiPool?: number;
       purchased?: string[];
-      mental?: number;
       backgroundPicks?: string[];
     };
-    const psiPool = typeof parsed.psiPool === "number" && parsed.psiPool >= 0 ? parsed.psiPool : defaultPsi;
-    const mental = typeof parsed.mental === "number" && parsed.mental >= 0 ? parsed.mental : defaultMental;
     const purchased = Array.isArray(parsed.purchased)
       ? parsed.purchased.filter((id) => abilityIds.has(id))
       : [];
     const backgroundPicks = Array.isArray(parsed.backgroundPicks)
       ? parsed.backgroundPicks.filter((id) => abilityIds.has(id))
       : [];
-    return { psiPool, mental, purchased: new Set(purchased), backgroundPicks: new Set(backgroundPicks) };
+    return { purchased: new Set(purchased), backgroundPicks: new Set(backgroundPicks) };
   } catch (err) {
     console.warn("Unable to parse psionics state", err);
-    return { psiPool: defaultPsi, purchased: new Set(), mental: defaultMental, backgroundPicks: new Set() };
+    return { purchased: new Set(), backgroundPicks: new Set() };
   }
 };
 
@@ -83,8 +71,6 @@ const persistState = (storageKey: string | null, state: PsiState) => {
   if (typeof window === "undefined" || !storageKey) return;
   try {
     const payload = JSON.stringify({
-      psiPool: state.psiPool,
-      mental: state.mental,
       purchased: Array.from(state.purchased),
       backgroundPicks: Array.from(state.backgroundPicks)
     });
@@ -180,22 +166,27 @@ const AbilityNode: React.FC<{
   unlocked: boolean;
   isStarter: boolean;
   remainingPsi: number;
+  canSpend: boolean;
+  spendLockReason: string;
   onPurchase: (ability: PsionicAbility) => void;
   buttonRef?: (node: HTMLButtonElement | null) => void;
-}> = ({ ability, purchased, unlocked, isStarter, remainingPsi, onPurchase, buttonRef }) => {
+}> = ({ ability, purchased, unlocked, isStarter, remainingPsi, canSpend, spendLockReason, onPurchase, buttonRef }) => {
   const psiCost = ability.tier;
   const canAfford = remainingPsi >= psiCost;
+  const spendLocked = !canSpend && (unlocked || isStarter);
   const status = purchased
     ? "purchased"
-    : unlocked
-      ? canAfford
-        ? "available"
-        : "locked-cost"
-      : isStarter
+    : spendLocked
+      ? "locked-window"
+      : unlocked
         ? canAfford
-          ? "starter"
-          : "starter-cost"
-        : "locked";
+          ? "available"
+          : "locked-cost"
+        : isStarter
+          ? canAfford
+            ? "starter"
+            : "starter-cost"
+          : "locked";
 
   const colors: Record<string, { bg: string; border: string; text: string }> = {
     purchased: { bg: "#1f352a", border: "#3ca66a", text: "#b5f5c8" },
@@ -203,11 +194,12 @@ const AbilityNode: React.FC<{
     starter: { bg: "#1f1631", border: "#a855f7", text: "#e9d5ff" },
     "starter-cost": { bg: "#181027", border: "#6b21a8", text: "#c7b5ec" },
     "locked-cost": { bg: "#141924", border: "#334155", text: "#9aa3b5" },
+    "locked-window": { bg: "#14161f", border: "#9a3412", text: "#f7a046" },
     locked: { bg: "#0f141d", border: "#1f2935", text: "#6b7280" }
   };
 
   const palette = colors[status];
-  const disabled = purchased || (!unlocked && !isStarter) || !canAfford;
+  const disabled = purchased || (!unlocked && !isStarter) || !canAfford || spendLocked;
 
   return (
     <button
@@ -217,24 +209,26 @@ const AbilityNode: React.FC<{
       title={
         purchased
           ? "Already purchased"
-          : unlocked
-            ? canAfford
-              ? "Purchase ability"
-              : "Not enough Psi"
-            : isStarter
-              ? "Spend Psi to unlock this tree"
-              : "Locked"
+          : spendLocked
+            ? spendLockReason
+            : unlocked
+              ? canAfford
+                ? "Purchase ability"
+                : "Not enough Psi"
+              : isStarter
+                ? "Spend Psi to unlock this tree"
+                : "Locked"
       }
       style={{
-        minWidth: 120,
-        minHeight: 52,
-        padding: "0.6rem 0.8rem",
+        minWidth: 108,
+        minHeight: 48,
+        padding: "0.5rem 0.65rem",
         borderRadius: 999,
         border: `2px solid ${palette.border}`,
         background: palette.bg,
         color: palette.text,
         fontWeight: 700,
-        fontSize: 14,
+        fontSize: 13,
         cursor: disabled ? "not-allowed" : "pointer",
         transition: "transform 0.1s ease, box-shadow 0.1s ease",
         boxShadow: purchased ? "0 0 0 2px rgba(60,166,106,0.2)" : "none"
@@ -252,8 +246,10 @@ const SkillTree: React.FC<{
   lines: LineSegment[];
   purchased: Set<string>;
   remainingPsi: number;
+  canSpendPsi: boolean;
+  spendLockMessage: string;
   onPurchase: (ability: PsionicAbility) => void;
-}> = ({ treeName, tiers, lines, purchased, remainingPsi, onPurchase }) => {
+}> = ({ treeName, tiers, lines, purchased, remainingPsi, canSpendPsi, spendLockMessage, onPurchase }) => {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const nodeRefs = React.useRef(new Map<string, HTMLDivElement>());
   const [linePositions, setLinePositions] = React.useState<PositionedLine[]>([]);
@@ -305,9 +301,9 @@ const SkillTree: React.FC<{
   const starterTier = tiers.get(1) ?? [];
   const tierTwo = tiers.get(2) ?? [];
   const remainingTiers = orderedTiers.filter((tier) => tier > 2);
-  const orbitRadius = Math.max(170, 90 + tierTwo.length * 18);
-  const outerTierSpacing = 300;
-  const starterRadius = starterTier.length > 1 ? 42 : 0;
+  const orbitRadius = Math.max(140, 80 + tierTwo.length * 14);
+  const outerTierSpacing = 220;
+  const starterRadius = starterTier.length > 1 ? 38 : 0;
   const tierTwoAngleStep = tierTwo.length > 0 ? (2 * Math.PI) / tierTwo.length : 0;
   const starterAngleStep = starterTier.length > 0 ? (2 * Math.PI) / starterTier.length : 0;
 
@@ -378,7 +374,7 @@ const SkillTree: React.FC<{
     return { positions: Array.from(positions.values()), maxRadius };
   }, [orbitRadius, remainingTiers, starterAngleStep, starterRadius, starterTier, tierTwo, tierTwoAngleStep, tiers]);
 
-  const centerHeight = Math.max(layout.maxRadius * 2 + 240, 480);
+  const centerHeight = Math.max(layout.maxRadius * 2 + 180, 420);
 
   return (
     <div ref={containerRef} style={{ position: "relative", padding: "1.25rem 1rem 1rem" }}>
@@ -425,6 +421,8 @@ const SkillTree: React.FC<{
                   unlocked={unlocked}
                   isStarter={isStarter}
                   remainingPsi={remainingPsi}
+                  canSpend={canSpendPsi}
+                  spendLockReason={spendLockMessage}
                   onPurchase={onPurchase}
                   buttonRef={(node) => {
                     if (!node) return;
@@ -479,25 +477,21 @@ export const PsionicsPage: React.FC = () => {
     [backgroundBenefits.grantedIds]
   );
 
-  const defaultPsiPool = DEFAULT_PSI_POINTS + backgroundBenefits.psiBonus;
-  const defaultMentalAttribute = selectedCharacter?.attributes?.MENTAL ?? DEFAULT_MENTAL_ATTRIBUTE;
+  const { data: definitions } = useDefinitions();
+  const raceDetails = (definitions?.raceDetails ?? {}) as Record<string, RaceDetailProfile>;
 
-  const [state, setState] = React.useState<PsiState>(() =>
-    loadPersistedState(storageKey, defaultPsiPool, defaultMentalAttribute, abilityIds)
-  );
+  const [state, setState] = React.useState<PsiState>(() => loadPersistedState(storageKey, abilityIds));
 
   React.useEffect(() => {
-    const nextState = loadPersistedState(storageKey, defaultPsiPool, defaultMentalAttribute, abilityIds);
+    const nextState = loadPersistedState(storageKey, abilityIds);
     const purchased = new Set([...nextState.purchased, ...nextState.backgroundPicks]);
     backgroundBenefits.grantedIds.forEach((id) => purchased.add(id));
 
     setState({
-      psiPool: Math.max(defaultPsiPool, nextState.psiPool),
-      mental: nextState.mental,
       purchased,
       backgroundPicks: nextState.backgroundPicks
     });
-  }, [abilityIds, backgroundGrantKey, defaultMentalAttribute, defaultPsiPool, storageKey]);
+  }, [abilityIds, backgroundGrantKey, storageKey]);
 
   React.useEffect(() => {
     persistState(storageKey, state);
@@ -529,12 +523,28 @@ export const PsionicsPage: React.FC = () => {
       .finally(() => setLoadingCharacter(false));
   }, [selectedId]);
 
+  const mentalAttribute = selectedCharacter?.attributes?.MENTAL ?? 0;
+  const characterLevel = selectedCharacter?.level ?? 1;
+  const psiPerLevel = 3 + mentalAttribute;
+  const lineagePsi =
+    (selectedCharacter?.raceKey ? raceDetails[selectedCharacter.raceKey]?.disciplines?.psiPoints ?? 0 : 0) +
+    (selectedCharacter?.subraceKey ? raceDetails[selectedCharacter.subraceKey]?.disciplines?.psiPoints ?? 0 : 0);
+  const levelPsi = Math.max(0, characterLevel - 1) * psiPerLevel;
+  const totalPsiPool = DEFAULT_PSI_POINTS + backgroundBenefits.psiBonus + lineagePsi + levelPsi;
+
+  const tierAdvancementAvailable = characterLevel >= 6 && (characterLevel - 1) % 5 === 0;
+  const completedTiers = Math.floor(Math.max(0, characterLevel - 1) / 5);
+  const nextTierLevel = (completedTiers + 1) * 5 + 1;
+  const spendLockMessage = tierAdvancementAvailable
+    ? ""
+    : `Psi can only be spent during Character Tier Advancements. Next window opens at level ${Math.max(6, nextTierLevel)}.`;
+
   const spentPsi = React.useMemo(
     () => Array.from(state.purchased).reduce((sum, id) => sum + (abilityCostMap.get(id) ?? 0), 0),
     [abilityCostMap, state.purchased]
   );
 
-  const remainingPsi = Math.max(0, state.psiPool - spentPsi);
+  const remainingPsi = Math.max(0, totalPsiPool - spentPsi);
 
   const trees = React.useMemo(() => {
     const byTree = new Map<string, PsionicAbility[]>();
@@ -580,26 +590,19 @@ export const PsionicsPage: React.FC = () => {
 
   const handlePurchase = (ability: PsionicAbility) => {
     setState((prev) => {
+      if (!tierAdvancementAvailable) return prev;
       if (prev.purchased.has(ability.id)) return prev;
       const starterAbility = ability.tier === 1 && ability.prerequisiteIds.length === 0;
       if (!starterAbility && !isAbilityUnlocked(ability, prev.purchased, { allowTier1WithoutPrereq: false })) return prev;
       const psiCost = ability.tier;
       const spent = Array.from(prev.purchased).reduce((sum, id) => sum + (abilityCostMap.get(id) ?? 0), 0);
-      const available = prev.psiPool - spent;
+      const available = totalPsiPool - spent;
       if (available < psiCost) return prev;
 
       const nextPurchased = new Set(prev.purchased);
       nextPurchased.add(ability.id);
       return { ...prev, purchased: nextPurchased };
     });
-  };
-
-  const updatePsiPool = (value: number) => {
-    setState((prev) => ({ ...prev, psiPool: Math.max(0, value) }));
-  };
-
-  const updateMental = (value: number) => {
-    setState((prev) => ({ ...prev, mental: Math.max(0, value) }));
   };
 
   if (!selectedId) {
@@ -626,35 +629,7 @@ export const PsionicsPage: React.FC = () => {
           <p style={{ margin: "0.2rem 0", color: "#c5ccd9" }}>Character: {selectedCharacter.name}</p>
         </div>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <label
-            style={{
-              background: "#131a24",
-              border: "1px solid #2b3747",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
-              minWidth: 180,
-              color: "#c5ccd9",
-              display: "flex",
-              flexDirection: "column",
-              gap: 6
-            }}
-          >
-            <span style={{ fontSize: 13 }}>Psi Pool</span>
-            <input
-              type="number"
-              value={state.psiPool}
-              onChange={(e) => updatePsiPool(Number(e.target.value) || 0)}
-              min={0}
-              style={{
-                background: "#0f141d",
-                border: "1px solid #2b3747",
-                borderRadius: 6,
-                padding: "0.35rem 0.5rem",
-                color: "#e6edf7"
-              }}
-            />
-          </label>
-          <label
+          <div
             style={{
               background: "#131a24",
               border: "1px solid #2b3747",
@@ -668,20 +643,52 @@ export const PsionicsPage: React.FC = () => {
             }}
           >
             <span style={{ fontSize: 13 }}>Mental Attribute</span>
-            <input
-              type="number"
-              value={state.mental}
-              onChange={(e) => updateMental(Number(e.target.value) || 0)}
-              min={0}
-              style={{
-                background: "#0f141d",
-                border: "1px solid #2b3747",
-                borderRadius: 6,
-                padding: "0.35rem 0.5rem",
-                color: "#e6edf7"
-              }}
-            />
-          </label>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#e6edf7" }}>{mentalAttribute}</div>
+            <div style={{ fontSize: 12, color: "#9aa3b5" }}>Used for formulas and per-level gains</div>
+          </div>
+          <div
+            style={{
+              background: "#131a24",
+              border: "1px solid #2b3747",
+              borderRadius: 10,
+              padding: "0.75rem 1rem",
+              minWidth: 220,
+              color: "#c5ccd9",
+              display: "flex",
+              flexDirection: "column",
+              gap: 4
+            }}
+          >
+            <div style={{ fontSize: 13, color: "#9aa3b5" }}>Psi Points Earned</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#9ae6b4" }}>{totalPsiPool}</div>
+            <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+              {lineagePsi > 0 && <span>Lineage: {lineagePsi}. </span>}
+              Backgrounds: {backgroundBenefits.psiBonus}. Per level: {psiPerLevel} × {Math.max(0, characterLevel - 1)} = {levelPsi}
+            </div>
+          </div>
+          <div
+            style={{
+              background: "#131a24",
+              border: "1px solid #2b3747",
+              borderRadius: 10,
+              padding: "0.75rem 1rem",
+              minWidth: 220,
+              color: tierAdvancementAvailable ? "#9ae6b4" : "#f7a046",
+              display: "flex",
+              flexDirection: "column",
+              gap: 4
+            }}
+          >
+            <div style={{ fontSize: 13, color: tierAdvancementAvailable ? "#9aa3b5" : "#f7c689" }}>
+              Spending Window
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>
+              {tierAdvancementAvailable ? "Open" : `Locked until level ${Math.max(6, nextTierLevel)}`}
+            </div>
+            <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+              Psi can only be spent during Character Tier Advancements (every 5 levels).
+            </div>
+          </div>
           <div
             style={{
               background: "#131a24",
@@ -711,6 +718,8 @@ export const PsionicsPage: React.FC = () => {
               lines={layout.lines}
               purchased={state.purchased}
               remainingPsi={remainingPsi}
+              canSpendPsi={tierAdvancementAvailable}
+              spendLockMessage={spendLockMessage}
               onPurchase={handlePurchase}
             />
           </section>
@@ -736,10 +745,10 @@ export const PsionicsPage: React.FC = () => {
                 <h3 style={{ margin: "0 0 0.5rem", color: "#dce7ff" }}>{treeName}</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                   {list.map((ability) => {
-                    const derived = ability.formula ? evaluateFormula(ability.formula, state.mental) : null;
+                    const derived = ability.formula ? evaluateFormula(ability.formula, mentalAttribute) : null;
                     const formattedDescription = replaceMentalAttributePlaceholders(
                       ability.description,
-                      state.mental
+                      mentalAttribute
                     );
 
                     return (
