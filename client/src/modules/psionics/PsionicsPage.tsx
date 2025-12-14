@@ -479,11 +479,6 @@ export const PsionicsPage: React.FC = () => {
     return { psiBonus, grantedIds: Array.from(granted) };
   }, [abilityKeyToId, selectedCharacter?.backgrounds?.adulthood]);
 
-  const backgroundGrantKey = React.useMemo(
-    () => backgroundBenefits.grantedIds.slice().sort().join("|"),
-    [backgroundBenefits.grantedIds]
-  );
-
   const { data: definitions } = useDefinitions();
   const raceDetails = (definitions?.raceDetails ?? {}) as Record<string, RaceDetailProfile>;
 
@@ -496,14 +491,15 @@ export const PsionicsPage: React.FC = () => {
 
   React.useEffect(() => {
     const nextState = loadPersistedState(storageKey, abilityIds);
-    const purchased = new Set([...nextState.purchased, ...nextState.backgroundPicks]);
-    backgroundBenefits.grantedIds.forEach((id) => purchased.add(id));
+    const freeAbilities = new Set([...nextState.backgroundPicks, ...backgroundBenefits.grantedIds]);
+    const purchased = new Set(nextState.purchased);
+    freeAbilities.forEach((id) => purchased.delete(id));
 
     setState({
       purchased,
       backgroundPicks: nextState.backgroundPicks
     });
-  }, [abilityIds, backgroundGrantKey, storageKey]);
+  }, [abilityIds, backgroundBenefits.grantedIds, storageKey]);
 
   React.useEffect(() => {
     persistState(storageKey, state);
@@ -555,6 +551,13 @@ export const PsionicsPage: React.FC = () => {
 
   const remainingPsi = Math.max(0, totalPsiPool - spentPsi);
 
+  const ownedAbilities = React.useMemo(() => {
+    const owned = new Set<string>(state.backgroundPicks);
+    backgroundBenefits.grantedIds.forEach((id) => owned.add(id));
+    state.purchased.forEach((id) => owned.add(id));
+    return owned;
+  }, [backgroundBenefits.grantedIds, state.backgroundPicks, state.purchased]);
+
   const trees = React.useMemo(() => {
     const byTree = new Map<string, PsionicAbility[]>();
     const byTreeAndName = new Map<string, Map<string, PsionicAbility>>();
@@ -584,8 +587,7 @@ export const PsionicsPage: React.FC = () => {
   const unlockedByTree = React.useMemo(() => {
     const grouped = new Map<string, PsionicAbility[]>();
     abilities.forEach((ability) => {
-      const purchased = state.purchased.has(ability.id);
-      if (!purchased) return;
+      if (!ownedAbilities.has(ability.id)) return;
       if (!grouped.has(ability.tree)) grouped.set(ability.tree, []);
       grouped.get(ability.tree)!.push(ability);
     });
@@ -595,14 +597,15 @@ export const PsionicsPage: React.FC = () => {
     });
 
     return grouped;
-  }, [abilities, state.purchased]);
+  }, [abilities, ownedAbilities]);
 
   const handlePurchase = (ability: PsionicAbility) => {
     setState((prev) => {
       if (!tierAdvancementAvailable) return prev;
-      if (prev.purchased.has(ability.id)) return prev;
+      const owned = new Set<string>([...prev.backgroundPicks, ...backgroundBenefits.grantedIds, ...prev.purchased]);
+      if (owned.has(ability.id)) return prev;
       const starterAbility = ability.tier === 1 && ability.prerequisiteIds.length === 0;
-      if (!starterAbility && !isAbilityUnlocked(ability, prev.purchased, { allowTier1WithoutPrereq: false })) return prev;
+      if (!starterAbility && !isAbilityUnlocked(ability, owned, { allowTier1WithoutPrereq: false })) return prev;
       const psiCost = ability.tier;
       const spent = Array.from(prev.purchased).reduce((sum, id) => sum + (abilityCostMap.get(id) ?? 0), 0);
       const available = totalPsiPool - spent;
@@ -725,7 +728,7 @@ export const PsionicsPage: React.FC = () => {
               treeName={treeName}
               tiers={layout.tiers}
               lines={layout.lines}
-              purchased={state.purchased}
+              purchased={ownedAbilities}
               remainingPsi={remainingPsi}
               canSpendPsi={tierAdvancementAvailable}
               spendLockMessage={spendLockMessage}
