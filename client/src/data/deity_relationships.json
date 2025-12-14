@@ -1,0 +1,589 @@
+{
+  "currency": {
+    "name": "DeityRelationshipPoints",
+    "currentKey": "current",
+    "capKey": "cap",
+    "capFormula": "Spiritual Attribute * (10 + racial cap bonus)",
+    "racialCapBonusOptions": [1, 2, 3, 4, 5],
+    "capTiers": {
+      "20": "50 + (15 * Spiritual Attribute)",
+      "40": "75 + (15 * Spiritual Attribute)",
+      "60": "100 + (15 * Spiritual Attribute)",
+      "80": "125 + (15 * Spiritual Attribute)",
+      "100": "150 + (15 * Spiritual Attribute)"
+    }
+  },
+  "sects": [
+    { "name": "Light", "alignment": "Aligned" },
+    { "name": "Knowledge", "alignment": "Aligned" },
+    { "name": "Ice", "alignment": "Aligned" },
+    { "name": "Fire", "alignment": "Aligned" },
+    { "name": "Nature", "alignment": "Aligned" },
+    { "name": "Redeemed Dark", "alignment": "Aligned" },
+    { "name": "Unaligned", "alignment": "Unaligned/Evil" }
+  ],
+  "mechanics": {
+    "apostasy": "Switching between Aligned and Unaligned resets all DR points across that side.",
+    "spiritualLimit": "A character may dedicate themselves to a number of deities equal to their Spiritual Attribute.",
+    "worshipGeneration": {
+      "passive": "Generates 3 * Spiritual Attribute DR if passive conditions are met.",
+      "active": "Each worship action grants its listed value multiplied by Spiritual Attribute.",
+      "fallback": "If no worship actions are taken and no passive condition is met, gain Spiritual Attribute DR on that Moon Face."
+    },
+    "casting": {
+      "divineInterventionCost": "1 Energy and 1 Action Point regardless of spell strength",
+      "beseech": "Players pick one of three deity-specific spells; the deity/GM determines tier and DR cost unless a Religious Text specifies a tier."
+    },
+    "gearIntegration": {
+      "equipmentSlots": ["Religious Texts", "Vestments", "Talismans and Symbols", "Verses"],
+      "effects": {
+        "Religious Texts": "Allow requesting a specific intervention tier; add Spiritual Attribute x Item Tier to Divine Intervention rolls.",
+        "Vestments": "Increase Worship rolls by Spiritual Attribute x Item Tier.",
+        "Talismans and Symbols": "Increase Resist Supernatural rolls by Spiritual Attribute x Item Tier.",
+        "Verses": "Consumable; allow direct free usage of Divine Intervention spells and are expended after one use."
+      }
+    },
+    "worshipTracker": "Dashboard for logging active worship actions during roleplay to calculate DR gains."
+  },
+  "deities": [
+    {
+      "name": "Homma",
+      "sect": "Light",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Organize", "value": 1, "type": "active" },
+        { "name": "Destroy Chaos", "value": 3, "type": "active" },
+        { "name": "Bring Order", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Turn Evil", "effect": "Evil beings are made fearful or cease to be." },
+        { "spell": "Turn Chaos", "effect": "Chaotic beings are made fearful or cease to be." },
+        { "spell": "Assert Authority", "effect": "Supernatural and Divine beings obey." }
+      ]
+    },
+    {
+      "name": "Naiben",
+      "sect": "Light",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Lawful Place", "value": null, "type": "passive" },
+        { "name": "Enforce Law", "value": 2, "type": "active" },
+        { "name": "Apprehend Criminals", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Turn Unlawful", "effect": "Criminal elements and those who break divine contracts are made fearful or cease to be." },
+        { "spell": "Incur Law", "effect": "Law, whether mortal or divine, is reasserted." },
+        { "spell": "Judge", "effect": "Those who have committed to chaos or evil are measured and punished." }
+      ]
+    },
+    {
+      "name": "Judaira",
+      "sect": "Light",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Home", "value": null, "type": "passive" },
+        { "name": "Bless Home", "value": 1, "type": "active" },
+        { "name": "Soothe Quarrel", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Befriend", "effect": "You and another mortal are allies." },
+        { "spell": "Combine Efforts", "effect": "Many of the clergy may use Divine Intervention together." },
+        { "spell": "Soothe", "effect": "The frightened, wrathful, and grieving are comforted." }
+      ]
+    },
+    {
+      "name": "Zera",
+      "sect": "Light",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Treat Tired", "value": 1, "type": "active" },
+        { "name": "Treat Sick", "value": 2, "type": "active" },
+        { "name": "Treat Injured", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Heal", "effect": "The body’s wounds are repaired." },
+        { "spell": "Revive", "effect": "The recently deceased is returned by Nandul on behalf of Zera." },
+        { "spell": "Reinvigorate", "effect": "The body’s fatigue is diminished." }
+      ]
+    },
+    {
+      "name": "Aelia",
+      "sect": "Light",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Beautification", "value": 1, "type": "active" },
+        { "name": "Love", "value": 2, "type": "active" },
+        { "name": "Heroism", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Charm", "effect": "Another is infatuated by you." },
+        { "spell": "Enhance Appearance", "effect": "Your appearance is made more palatable." },
+        { "spell": "Inspire", "effect": "Morale is enhanced." }
+      ]
+    },
+    {
+      "name": "Niema",
+      "sect": "Light",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Make Art", "value": 1, "type": "active" },
+        { "name": "Perform", "value": 2, "type": "active" },
+        { "name": "Teach Creatives", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Music", "effect": "Music sounds from the ether." },
+        { "spell": "Divine Performance", "effect": "Your performance is divinely inspired." },
+        { "spell": "Thaumaturgy", "effect": "You perform small signs and amplifications." }
+      ]
+    },
+    {
+      "name": "Rasadan",
+      "sect": "Light",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Destroy Cultists", "value": 3, "type": "active" },
+        { "name": "Banish Evil", "value": 4, "type": "active" },
+        { "name": "Destroy Evil", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Light", "effect": "Light is shed upon darkness." },
+        { "spell": "Banish", "effect": "Extraplanar beings are returned to their planes or excised from this place." },
+        { "spell": "Smite", "effect": "Divine Retribution is rendered unto your foe." }
+      ]
+    },
+    {
+      "name": "Silvias",
+      "sect": "Knowledge",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Historical Place", "value": null, "type": "passive" },
+        { "name": "Preserve", "value": 1, "type": "active" },
+        { "name": "Restore", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Haste", "effect": "Speed is amplified." },
+        { "spell": "Slow", "effect": "Action is hindered." },
+        { "spell": "Identify", "effect": "The identity and purpose of an item is made clear." }
+      ]
+    },
+    {
+      "name": "Irvine",
+      "sect": "Knowledge",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Explore", "value": 1, "type": "active" },
+        { "name": "Discover", "value": 1, "type": "active" },
+        { "name": "Show Discovery", "value": 2, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Map", "effect": "The surrounding area is known to you." },
+        { "spell": "Astrology", "effect": "Signs of the moons and stars are known to you." },
+        { "spell": "Reveal", "effect": "The hidden is revealed." }
+      ]
+    },
+    {
+      "name": "Emera",
+      "sect": "Knowledge",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Maintain Watch", "value": 1, "type": "active" },
+        { "name": "Science", "value": 2, "type": "active" },
+        { "name": "Invent", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Innovation", "effect": "Your mind is aided so you can solve your problem." },
+        { "spell": "Divine Knowledge", "effect": "Emera grants you her knowledge." },
+        { "spell": "Vigilance", "effect": "You discern what shall do harm." }
+      ]
+    },
+    {
+      "name": "Makis",
+      "sect": "Knowledge",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Place of Learning", "value": null, "type": "passive" },
+        { "name": "Humility", "value": 2, "type": "active" },
+        { "name": "Teach Academics", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Imbue Knowledge", "effect": "You impart knowledge unto another." },
+        { "spell": "Disguise", "effect": "Someone shall not be as they seem." },
+        { "spell": "Divine Learning", "effect": "You absorb the world around you." }
+      ]
+    },
+    {
+      "name": "Yvan",
+      "sect": "Ice",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Winter", "value": null, "type": "passive" },
+        { "name": "Cool Place", "value": null, "type": "passive" },
+        { "name": "Seek Solitude", "value": 1, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Ice Blast", "effect": "Ice from Yvan is used for your offensive purposes." },
+        { "spell": "Ice Shield", "effect": "Ice from Yvan is used for your defensive purposes." },
+        { "spell": "Freeze", "effect": "Ice from Yvan is used to incapacitate foes or freeze liquids." }
+      ]
+    },
+    {
+      "name": "Bjorlund",
+      "sect": "Ice",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Place of Mercantilism", "value": null, "type": "passive" },
+        { "name": "Trade Honestly", "value": 1, "type": "active" },
+        { "name": "Charity", "value": 2, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Contract", "effect": "A divine oath between multiple parties is officiated." },
+        { "spell": "Aid", "effect": "You are given help in your efforts by Bjorlund." },
+        { "spell": "Shape Ice", "effect": "Ice is molded and formed." }
+      ]
+    },
+    {
+      "name": "Meadrol",
+      "sect": "Ice",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Travel", "value": null, "type": "passive" },
+        { "name": "Gamble", "value": 1, "type": "active" },
+        { "name": "Party", "value": 1, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Luck", "effect": "Fate is woven in your favor." },
+        { "spell": "Teleportation", "effect": "You move without moving." },
+        { "spell": "Divine Rites of Travel", "effect": "Travel commences without hardship." }
+      ]
+    },
+    {
+      "name": "Aura",
+      "sect": "Fire",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Summer", "value": null, "type": "passive" },
+        { "name": "Warm Places", "value": null, "type": "passive" },
+        { "name": "Righteous Fury", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Lava Blast", "effect": "Lava from Aura is used for offensive purposes." },
+        { "spell": "Shape Lava", "effect": "Lava is molded and formed." },
+        { "spell": "Incinerate", "effect": "What opposes you is turned to ash." }
+      ]
+    },
+    {
+      "name": "Vestneus",
+      "sect": "Fire",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Hunt", "value": 2, "type": "active" },
+        { "name": "Farm", "value": 4, "type": "active" },
+        { "name": "Defend Place", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Divine Hunt", "effect": "Your quarry is revealed." },
+        { "spell": "Plenty", "effect": "Supplies are readily available." },
+        { "spell": "Secure", "effect": "What is locked cannot be unlocked." }
+      ]
+    },
+    {
+      "name": "Flora",
+      "sect": "Fire",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Battle", "value": 1, "type": "active" },
+        { "name": "Conquer Place", "value": 4, "type": "active" },
+        { "name": "Feat of Bravery", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Valor", "effect": "Morale is improved." },
+        { "spell": "Divine Offense", "effect": "Flora aids you in offense." },
+        { "spell": "Divine Defense", "effect": "Flora aids you in defense." }
+      ]
+    },
+    {
+      "name": "Theri",
+      "sect": "Nature",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Endure", "value": 1, "type": "active" },
+        { "name": "Repair Common Items", "value": 1, "type": "active" },
+        { "name": "Craft", "value": 2, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Fortitude", "effect": "You endure against all odds." },
+        { "spell": "Imbue Soul", "effect": "A soul is transferred between vessels." },
+        { "spell": "Divine Craft", "effect": "A magical artifact is created." }
+      ]
+    },
+    {
+      "name": "Azuli",
+      "sect": "Nature",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Wilderness", "value": null, "type": "passive" },
+        { "name": "Care For Flora", "value": 2, "type": "active" },
+        { "name": "Resist Temptation", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Befriend Plant", "effect": "Plantlife becomes an ally." },
+        { "spell": "Plant Growth", "effect": "Plantlife blooms and ripens." },
+        { "spell": "Entangle", "effect": "Nature traps a foe of yours." }
+      ]
+    },
+    {
+      "name": "Kasha",
+      "sect": "Nature",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Raise Child", "value": null, "type": "passive" },
+        { "name": "Help Family", "value": 2, "type": "active" },
+        { "name": "Care For the Mentally Ill", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Bless", "effect": "Kasha watches over a creature or place." },
+        { "spell": "Divine Care", "effect": "Kasha aids you in helping the damaged." },
+        { "spell": "Heal Mind", "effect": "One’s mind is repaired." }
+      ]
+    },
+    {
+      "name": "Kesh",
+      "sect": "Nature",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Subterranean Places", "value": null, "type": "passive" },
+        { "name": "Forage", "value": 1, "type": "active" },
+        { "name": "Care For Terrestrial", "value": 2, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Shape Earth", "effect": "Earth is molded and formed." },
+        { "spell": "Befriend Animal", "effect": "A beast becomes an ally." },
+        { "spell": "Harden", "effect": "A body is made more durable." }
+      ]
+    },
+    {
+      "name": "Ar",
+      "sect": "Nature",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "High Places", "value": null, "type": "passive" },
+        { "name": "Read Weather", "value": 1, "type": "active" },
+        { "name": "Care For Avian", "value": 2, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Gust", "effect": "A tempest blows." },
+        { "spell": "Fly", "effect": "One bound to the land takes to the sky." },
+        { "spell": "Lightning", "effect": "Lightning and thunder is cast from on high." }
+      ]
+    },
+    {
+      "name": "Upht",
+      "sect": "Nature",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Marine Places", "value": null, "type": "passive" },
+        { "name": "Care For Marine", "value": 2, "type": "active" },
+        { "name": "Follow Dream", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Shape Water", "effect": "Water is molded and formed." },
+        { "spell": "Dream", "effect": "Dreams are revealed and manifest." },
+        { "spell": "Control Weather", "effect": "Skies, waters, and winds obey." }
+      ]
+    },
+    {
+      "name": "Nandul",
+      "sect": "Redeemed Dark",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Respect Dead", "value": 1, "type": "active" },
+        { "name": "Restore Graves", "value": 3, "type": "active" },
+        { "name": "Destroy Undead", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Resurrect", "effect": "Those deceased for less than a phase are returned by Nandul." },
+        { "spell": "Spare", "effect": "The dying are spared from death." },
+        { "spell": "Turn Undead", "effect": "Undead are made fearful or cease to be." }
+      ]
+    },
+    {
+      "name": "Ishmadt",
+      "sect": "Redeemed Dark",
+      "alignment": "Aligned",
+      "worship": [
+        { "name": "Destroy Lies", "value": 3, "type": "active" },
+        { "name": "Exorcise Place", "value": 3, "type": "active" },
+        { "name": "Forgive Enemy", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Truth", "effect": "The truth is revealed." },
+        { "spell": "Purify", "effect": "The unclean is made clean." },
+        { "spell": "Convert", "effect": "The unaligned becomes aligned." }
+      ]
+    },
+    {
+      "name": "Ordurun",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Battle", "value": 1, "type": "active" },
+        { "name": "Torture", "value": 2, "type": "active" },
+        { "name": "Follow Cult Orders", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Secret Knowledge", "effect": "Ordurun imparts the nature of the universe." },
+        { "spell": "Learn Dakar", "effect": "Ordurun reveals methods of Willing Dakar." },
+        { "spell": "Read Intent", "effect": "Another’s intentions are revealed." }
+      ]
+    },
+    {
+      "name": "Ashi",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Lie", "value": 1, "type": "active" },
+        { "name": "Sacrifice Mortal", "value": 3, "type": "active" },
+        { "name": "Turn To Wraithdom", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Darkness", "effect": "Light is doused in dark." },
+        { "spell": "Lifesteal", "effect": "Life is transferred to another." },
+        { "spell": "Wraith", "effect": "You descend further into Wraithdom as a Tise." }
+      ]
+    },
+    {
+      "name": "Grall",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Dedicate Wealth", "value": 2, "type": "active" },
+        { "name": "Steal", "value": 3, "type": "active" },
+        { "name": "Perversion", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Rot", "effect": "Living flesh fails." },
+        { "spell": "Rust", "effect": "Crafts and natural features fail." },
+        { "spell": "Corrupt Area", "effect": "The clean becomes unclean." }
+      ]
+    },
+    {
+      "name": "Du’um",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Deface", "value": 1, "type": "active" },
+        { "name": "Murder", "value": 3, "type": "active" },
+        { "name": "Destroy Order", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Frenzy", "effect": "All succumb to their passions." },
+        { "spell": "Antimagic Field", "effect": "Psionics, Dakar, and The Divine fail." },
+        { "spell": "Incinerate", "effect": "What opposes you turns to ash." }
+      ]
+    },
+    {
+      "name": "Myirata",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Alleviate Grief", "value": 2, "type": "active" },
+        { "name": "Find Lost Thing", "value": 2, "type": "active" },
+        { "name": "Hide Troubled Person", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Invisibility", "effect": "What is seen becomes hidden." },
+        { "spell": "Traverse Planes", "effect": "You move between worlds that cannot be reached through ordinary means." },
+        { "spell": "Find", "effect": "What you seek is found." }
+      ]
+    },
+    {
+      "name": "Thul",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Defend Reputation", "value": 2, "type": "active" },
+        { "name": "Honorable Duel", "value": 3, "type": "active" },
+        { "name": "Change Order", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Valor", "effect": "Morale is improved." },
+        { "spell": "Compel Duel", "effect": "One is fated to face you in single combat." },
+        { "spell": "Diminish", "effect": "One’s power and glory is reduced." }
+      ]
+    },
+    {
+      "name": "Baras",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Revolt", "value": 3, "type": "active" },
+        { "name": "Liberate", "value": 4, "type": "active" },
+        { "name": "Usurp", "value": 4, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Lift Divine", "effect": "The magical is made mundane." },
+        { "spell": "Break Contract", "effect": "A Divine Contract is made void." },
+        { "spell": "Conceal Person", "effect": "One cannot be found." }
+      ]
+    },
+    {
+      "name": "Kar’Dithu",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Intimidate", "value": 1, "type": "active" },
+        { "name": "Terrorize", "value": 2, "type": "active" },
+        { "name": "Torture", "value": 2, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Nightmare", "effect": "One’s worst fears manifest." },
+        { "spell": "Madness", "effect": "One’s faculties erode." },
+        { "spell": "Fear", "effect": "Morale is sapped." }
+      ]
+    },
+    {
+      "name": "Aduric Primordial",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Battle", "value": 1, "type": "active" },
+        { "name": "Dedicate Wealth", "value": 2, "type": "active" },
+        { "name": "Sacrifice Animal", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Summon Elemental", "effect": "The natural forces of the world become allies." },
+        { "spell": "Luck", "effect": "Fate is woven in your favor." },
+        { "spell": "Plenty", "effect": "Supplies are readily available." }
+      ]
+    },
+    {
+      "name": "Cosmic Primordial",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Extraterrestrial", "value": null, "type": "passive" },
+        { "name": "Dedicate Knowledge", "value": 2, "type": "active" },
+        { "name": "Sacrifice Intellect", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": [
+        { "spell": "Astrology", "effect": "Signs of the moons and stars are known to you." },
+        { "spell": "Secret Knowledge", "effect": "Something from beyond imparts the nature of the universe." },
+        { "spell": "Befriend Extraterrestrial", "effect": "An alien becomes an ally." }
+      ]
+    },
+    {
+      "name": "Fallen Patriarch/Matriarch",
+      "sect": "Unaligned",
+      "alignment": "Unaligned/Evil",
+      "worship": [
+        { "name": "Follow Cult Orders", "value": 1, "type": "active" },
+        { "name": "Dedicate Wealth", "value": 2, "type": "active" },
+        { "name": "Sacrifice Mortal", "value": 3, "type": "active" }
+      ],
+      "divineInterventions": {
+        "choose": 3,
+        "options": ["Grall", "Du’um", "Thul", "Myirata", "Baras", "Kar’Dithu"]
+      }
+    }
+  ]
+}
