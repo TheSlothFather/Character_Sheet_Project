@@ -94,18 +94,6 @@ const FacultyCard: React.FC<{
           >
             {faculty.category}
           </span>
-          <span
-            style={{
-              ...badgeStyle,
-              background: faculty.sourceFound ? "#3182ce" : "#c53030",
-              color: "#f7fafc",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6
-            }}
-          >
-            {faculty.sourceFound ? "Loaded from source document" : "Not found in source"}
-          </span>
           <button
             onClick={onToggle}
             disabled={disabled || (!unlocked && !canAfford)}
@@ -155,6 +143,7 @@ export const MagicFacultiesPage: React.FC = () => {
   const [characterError, setCharacterError] = React.useState<string | null>(null);
   const [loadingCharacters, setLoadingCharacters] = React.useState<boolean>(true);
   const [unlocked, setUnlocked] = React.useState<Record<string, boolean>>({});
+  const [unlockedLoaded, setUnlockedLoaded] = React.useState(false);
   const [selectedAncillaries, setSelectedAncillaries] = React.useState<Set<string>>(new Set());
   const [aspectTiers, setAspectTiers] = React.useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
@@ -210,10 +199,11 @@ export const MagicFacultiesPage: React.FC = () => {
     } else {
       setUnlocked({});
     }
+    setUnlockedLoaded(true);
   }, [facultyStorageKey, parsed]);
 
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !unlockedLoaded) return;
     const payload: Record<string, boolean> = {};
     Object.entries(unlocked).forEach(([name, value]) => {
       if (!value) return;
@@ -221,7 +211,7 @@ export const MagicFacultiesPage: React.FC = () => {
       payload[normalizeName(name)] = true;
     });
     window.localStorage.setItem(facultyStorageKey, JSON.stringify(payload));
-  }, [facultyStorageKey, unlocked]);
+  }, [facultyStorageKey, unlocked, unlockedLoaded]);
 
   React.useEffect(() => {
     const read = () => {
