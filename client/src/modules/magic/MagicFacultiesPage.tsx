@@ -4,6 +4,8 @@ import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
 import facultiesText from "../../data/magic-faculties.txt?raw";
 import { ParsedFaculty, parseMagicFaculties } from "./magicParser";
 
+const normalizeName = (value: string): string => value.trim().toLowerCase();
+
 const COST_BY_CATEGORY: Record<"Basic" | "Advanced", number> = {
   Basic: 30,
   Advanced: 60
@@ -195,7 +197,13 @@ export const MagicFacultiesPage: React.FC = () => {
     if (stored) {
       try {
         const parsedStorage = JSON.parse(stored) as Record<string, boolean>;
-        setUnlocked(parsedStorage);
+        const normalized: Record<string, boolean> = {};
+        parsed.forEach((faculty) => {
+          const key = normalizeName(faculty.name);
+          const matchingValue = parsedStorage[key] ?? parsedStorage[faculty.name];
+          if (matchingValue) normalized[faculty.name] = true;
+        });
+        setUnlocked(normalized);
       } catch {
         setUnlocked({});
       }
@@ -206,7 +214,13 @@ export const MagicFacultiesPage: React.FC = () => {
 
   React.useEffect(() => {
     if (typeof window === "undefined" || !selectedId) return;
-    window.localStorage.setItem(`unlocked_faculties_${selectedId}`, JSON.stringify(unlocked));
+    const payload: Record<string, boolean> = {};
+    Object.entries(unlocked).forEach(([name, value]) => {
+      if (!value) return;
+      payload[name] = true;
+      payload[normalizeName(name)] = true;
+    });
+    window.localStorage.setItem(`unlocked_faculties_${selectedId}`, JSON.stringify(payload));
   }, [selectedId, unlocked]);
 
   const selectedCharacter = React.useMemo(

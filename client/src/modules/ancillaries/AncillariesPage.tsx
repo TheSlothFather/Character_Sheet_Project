@@ -7,6 +7,8 @@ import { getSkillCode, normalizeSkillCode } from "../characters/skillMetadata";
 import weaponsCsv from "../../data/weapons.csv?raw";
 import armorCsv from "../../data/armor.csv?raw";
 import { parseMartialCsv, MartialAbility } from "../martial/martialUtils";
+import { parseMagicFaculties } from "../magic/magicParser";
+import facultiesText from "../../data/magic-faculties.txt?raw";
 
 type RawAncillary = {
   id: string;
@@ -75,6 +77,14 @@ type MartialProgress = {
   categoryCosts: Map<string, number>;
   categoryAbilityCounts: Map<string, number>;
   categoriesByName: Map<string, Set<string>>;
+};
+
+type IldakarProgress = {
+  unlocked: Set<string>;
+  basicUnlocked: number;
+  advancedUnlocked: number;
+  totalBasic: number;
+  totalAdvanced: number;
 };
 
 const buildMartialCatalog = () => {
@@ -171,6 +181,40 @@ const buildSkillTotals = (character: Character | null, lookup: Map<string, strin
   });
 
   return totals;
+};
+
+const FACULTY_CATALOG = parseMagicFaculties(facultiesText);
+const FACULTY_LOOKUP = new Map(FACULTY_CATALOG.map((faculty) => [normalizeName(faculty.name), faculty]));
+
+const summarizeIldakarFaculties = (characterId: string | null | undefined): IldakarProgress => {
+  if (!characterId || typeof window === "undefined") {
+    return { unlocked: new Set(), basicUnlocked: 0, advancedUnlocked: 0, totalBasic: 0, totalAdvanced: 0 };
+  }
+
+  let stored: Record<string, boolean> = {};
+  try {
+    const raw = window.localStorage.getItem(`unlocked_faculties_${characterId}`);
+    stored = raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
+  } catch (err) {
+    console.warn("Unable to read stored Ildakar faculties", err);
+  }
+
+  const unlocked = new Set<string>();
+  let basicUnlocked = 0;
+  let advancedUnlocked = 0;
+  FACULTY_CATALOG.forEach((faculty) => {
+    const normalized = normalizeName(faculty.name);
+    const isUnlocked = Boolean(stored[normalized] ?? stored[faculty.name]);
+    if (!isUnlocked) return;
+    unlocked.add(faculty.name);
+    if (faculty.category === "Basic") basicUnlocked += 1;
+    if (faculty.category === "Advanced") advancedUnlocked += 1;
+  });
+
+  const totalBasic = FACULTY_CATALOG.filter((faculty) => faculty.category === "Basic").length;
+  const totalAdvanced = FACULTY_CATALOG.filter((faculty) => faculty.category === "Advanced").length;
+
+  return { unlocked, basicUnlocked, advancedUnlocked, totalBasic, totalAdvanced };
 };
 
 const collectBackgrounds = (backgrounds: Character["backgrounds"] | undefined): { backgrounds: Set<string>; flaws: Set<string> } => {
@@ -465,9 +509,45 @@ const evaluateNonNumericRequirement = (raw: string, ctx: RequirementContext): Re
   }
 
   if (normalized.includes("ildakar")) {
-    const total = ctx.skills.ILDAKAR_FACULTY ?? 0;
-    const met = total > 0;
-    return { requirement: raw, met, detail: met ? undefined : "No Ildakar Faculty unlocked" };
+    const { ildakar } = ctx;
+    const basicMatch = cleaned.match(/at\s+least\s*(\d+)\s*basic/i);
+    const advancedMatch = cleaned.match(/at\s+least\s*(\d+)\s*advanced/i);
+    const totalMatch = cleaned.match(/at\s+least\s*(\d+)/i);
+    const specificFaculty = Array.from(FACULTY_LOOKUP.entries()).find(([name]) => normalized.includes(name))?.[1];
+
+    if (specificFaculty) {
+      const met = ildakar.unlocked.has(specificFaculty.name);
+      return {
+        requirement: raw,
+        met,
+        detail: met ? undefined : `${specificFaculty.name} not unlocked`
+      };
+    }
+
+    const needBasic = basicMatch ? Number(basicMatch[1]) : null;
+    const needAdvanced = advancedMatch ? Number(advancedMatch[1]) : null;
+    const needTotal = totalMatch ? Number(totalMatch[1]) : null;
+
+    const basicMet = needBasic === null || ildakar.basicUnlocked >= needBasic;
+    const advancedMet = needAdvanced === null || ildakar.advancedUnlocked >= needAdvanced;
+    const totalMet = needTotal === null || ildakar.unlocked.size >= needTotal;
+    const allBasicMet = normalized.includes("all basic")
+      ? ildakar.totalBasic > 0 && ildakar.basicUnlocked >= ildakar.totalBasic
+      : true;
+
+    const met = basicMet && advancedMet && totalMet && allBasicMet && ildakar.unlocked.size > 0;
+
+    const detailParts: string[] = [];
+    if (!basicMet && needBasic !== null) detailParts.push(`Basic ${ildakar.basicUnlocked}/${needBasic}`);
+    if (!advancedMet && needAdvanced !== null) detailParts.push(`Advanced ${ildakar.advancedUnlocked}/${needAdvanced}`);
+    if (!totalMet && needTotal !== null) detailParts.push(`Faculties ${ildakar.unlocked.size}/${needTotal}`);
+    if (!allBasicMet && normalized.includes("all basic")) detailParts.push("Not all basic faculties unlocked");
+
+    return {
+      requirement: raw,
+      met,
+      detail: detailParts.join("; ") || (met ? undefined : "No Ildakar Faculty unlocked")
+    };
   }
 
   return { requirement: raw, met: false, detail: "Manual verification required" };
@@ -478,7 +558,7 @@ const evaluateRequirement = (req: string, ctx: RequirementContext): RequirementR
   if (!trimmed) return { requirement: req, met: true };
 
   if (trimmed.startsWith("+")) {
-    const segments = trimmed.match(/\+[0-9][^+]*?/g);
+    const segments = trimmed.match(/\+\s*\d+[^\+]*(?=(?:\+\s*\d+)|$)/g);
     const parts = segments && segments.length > 0 ? segments : [trimmed];
     const results = parts.map((segment) => {
       const match = segment.match(/^\+(\d+)\s*(.*)$/);
@@ -515,6 +595,7 @@ type RequirementContext = {
   ancillaryNames: Map<string, string>;
   skillLookup: Map<string, string>;
   martial: MartialProgress;
+  ildakar: IldakarProgress;
 };
 
 const buildEntries = (): AncillaryEntry[] => {
@@ -699,6 +780,11 @@ export const AncillariesPage: React.FC = () => {
     selectedId
   ]);
 
+  const ildakarProgress = React.useMemo(() => summarizeIldakarFaculties(selectedCharacter?.id ?? selectedId), [
+    selectedCharacter?.id,
+    selectedId
+  ]);
+
   const requirementContext = React.useMemo<RequirementContext>(
     () => ({
       character: selectedCharacter,
@@ -710,12 +796,14 @@ export const AncillariesPage: React.FC = () => {
       ancillaries: new Set(selectedAncillaries),
       ancillaryNames,
       skillLookup,
-      martial: martialProgress
+      martial: martialProgress,
+      ildakar: ildakarProgress
     }),
     [
       ancillaryNames,
       backgroundSet,
       flaws,
+      ildakarProgress,
       martialProgress,
       raceNames,
       selectedAncillaries,
