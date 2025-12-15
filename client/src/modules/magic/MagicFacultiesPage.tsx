@@ -3,6 +3,7 @@ import { api, Character } from "../../api/client";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
 import facultiesText from "../../data/magic-faculties.txt?raw";
 import { ParsedFaculty, parseMagicFaculties } from "./magicParser";
+import { getAncillaryStorageKey, readAncillarySelection } from "../ancillaries/storage";
 
 const normalizeName = (value: string): string => value.trim().toLowerCase();
 
@@ -72,8 +73,8 @@ const FacultyCard: React.FC<{
   onToggle: () => void;
   canAfford: boolean;
   disabled: boolean;
-}> = ({ faculty, unlocked, onToggle, canAfford, disabled }) => {
-  const cost = COST_BY_CATEGORY[faculty.category];
+  cost: number;
+}> = ({ faculty, unlocked, onToggle, canAfford, disabled, cost }) => {
   return (
     <div style={cardStyle}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -154,6 +155,7 @@ export const MagicFacultiesPage: React.FC = () => {
   const [characterError, setCharacterError] = React.useState<string | null>(null);
   const [loadingCharacters, setLoadingCharacters] = React.useState<boolean>(true);
   const [unlocked, setUnlocked] = React.useState<Record<string, boolean>>({});
+  const [selectedAncillaries, setSelectedAncillaries] = React.useState<Set<string>>(new Set());
   const [aspectTiers, setAspectTiers] = React.useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
     ASPECT_KEYS.forEach((key) => {
@@ -187,13 +189,11 @@ export const MagicFacultiesPage: React.FC = () => {
     };
   }, []);
 
+  const facultyStorageKey = React.useMemo(() => `unlocked_faculties_${selectedId ?? "unassigned"}`, [selectedId]);
+
   React.useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!selectedId) {
-      setUnlocked({});
-      return;
-    }
-    const stored = window.localStorage.getItem(`unlocked_faculties_${selectedId}`);
+    const stored = window.localStorage.getItem(facultyStorageKey);
     if (stored) {
       try {
         const parsedStorage = JSON.parse(stored) as Record<string, boolean>;
@@ -210,18 +210,36 @@ export const MagicFacultiesPage: React.FC = () => {
     } else {
       setUnlocked({});
     }
-  }, [selectedId]);
+  }, [facultyStorageKey, parsed]);
 
   React.useEffect(() => {
-    if (typeof window === "undefined" || !selectedId) return;
+    if (typeof window === "undefined") return;
     const payload: Record<string, boolean> = {};
     Object.entries(unlocked).forEach(([name, value]) => {
       if (!value) return;
       payload[name] = true;
       payload[normalizeName(name)] = true;
     });
-    window.localStorage.setItem(`unlocked_faculties_${selectedId}`, JSON.stringify(payload));
-  }, [selectedId, unlocked]);
+    window.localStorage.setItem(facultyStorageKey, JSON.stringify(payload));
+  }, [facultyStorageKey, unlocked]);
+
+  React.useEffect(() => {
+    const read = () => {
+      const stored = readAncillarySelection(selectedId).selected;
+      setSelectedAncillaries(new Set(stored));
+    };
+
+    read();
+
+    const handler = (event: StorageEvent) => {
+      if (event.key === getAncillaryStorageKey(selectedId)) read();
+    };
+
+    if (typeof window !== "undefined") window.addEventListener("storage", handler);
+    return () => {
+      if (typeof window !== "undefined") window.removeEventListener("storage", handler);
+    };
+  }, [selectedId]);
 
   const selectedCharacter = React.useMemo(
     () => characters.find((c) => c.id === selectedId),
@@ -230,15 +248,58 @@ export const MagicFacultiesPage: React.FC = () => {
 
   const availablePoints = selectedCharacter?.skillAllocations?.ILDAKAR_FACULTY ?? 0;
 
+  const ancillaryEffects = React.useMemo(() => {
+    let basicCostMultiplier = 1;
+    let apMultiplier = 1;
+    let energyMultiplier = 1;
+    const modifiers: string[] = [];
+
+    if (selectedAncillaries.has("ildakar-prodigy")) {
+      basicCostMultiplier *= 0.5;
+      modifiers.push("Basic Faculty unlock cost -50% (Ildakar Prodigy)");
+    }
+
+    const applyBoth = (label: string) => {
+      apMultiplier *= 0.8;
+      energyMultiplier *= 0.8;
+      modifiers.push(`${label}: -20% AP & Energy`);
+    };
+
+    if (selectedAncillaries.has("ildakar-acolyte")) applyBoth("Ildakar Acolyte");
+    if (selectedAncillaries.has("ildakar-understudy")) applyBoth("Ildakar Understudy");
+    if (selectedAncillaries.has("ildakar-theurgist")) applyBoth("Ildakar Theurgist");
+
+    if (selectedAncillaries.has("well-of-dakar")) {
+      energyMultiplier *= 0.8;
+      modifiers.push("Well of Dakar: -20% Energy cost");
+    }
+
+    return {
+      basicCostMultiplier,
+      apMultiplier,
+      energyMultiplier,
+      modifiers
+    };
+  }, [selectedAncillaries]);
+
+  const getFacultyCost = React.useCallback(
+    (faculty: ParsedFaculty) => {
+      const baseCost = COST_BY_CATEGORY[faculty.category];
+      if (faculty.category === "Basic") return Math.ceil(baseCost * ancillaryEffects.basicCostMultiplier);
+      return baseCost;
+    },
+    [ancillaryEffects.basicCostMultiplier]
+  );
+
   const spentPoints = React.useMemo(
-    () => parsed.reduce((acc, faculty) => (unlocked[faculty.name] ? acc + COST_BY_CATEGORY[faculty.category] : acc), 0),
-    [parsed, unlocked]
+    () => parsed.reduce((acc, faculty) => (unlocked[faculty.name] ? acc + getFacultyCost(faculty) : acc), 0),
+    [getFacultyCost, parsed, unlocked]
   );
 
   const remainingPoints = Math.max(0, availablePoints - spentPoints);
 
   const toggleUnlocked = (faculty: ParsedFaculty) => {
-    const cost = COST_BY_CATEGORY[faculty.category];
+    const cost = getFacultyCost(faculty);
     if (!unlocked[faculty.name] && remainingPoints < cost) return;
     setUnlocked((prev) => ({ ...prev, [faculty.name]: !prev[faculty.name] }));
   };
@@ -248,11 +309,15 @@ export const MagicFacultiesPage: React.FC = () => {
     [aspectTiers]
   );
 
+  const adjustedApCost = Math.round(totalAspectCost * ancillaryEffects.apMultiplier);
+  const adjustedEnergyCost = Math.round(totalAspectCost * ancillaryEffects.energyMultiplier);
+  const effectiveBasicCost = Math.ceil(COST_BY_CATEGORY.Basic * ancillaryEffects.basicCostMultiplier);
+
   return (
     <div style={{ color: "#e2e8f0" }}>
       <h1 style={{ marginTop: 0, marginBottom: "0.5rem" }}>Magic Faculties</h1>
       <p style={{ marginTop: 0, color: "#cbd5e0" }}>
-        Faculties are unlocked with Ildakar Faculty points. Basic Faculties cost {COST_BY_CATEGORY.Basic} points and Advanced
+        Faculties are unlocked with Ildakar Faculty points. Basic Faculties cost {effectiveBasicCost} points and Advanced
         Faculties cost {COST_BY_CATEGORY.Advanced}. Aspect investments are additive across all six aspects.
       </p>
 
@@ -315,7 +380,7 @@ export const MagicFacultiesPage: React.FC = () => {
           <p style={{ margin: 0, color: "#cbd5e0" }}>Spend Ildakar Faculty points to unlock a Faculty for the caster.</p>
           <ul style={{ marginTop: "0.5rem", paddingLeft: "1.25rem", color: "#e2e8f0" }}>
             {basic.map((faculty) => (
-              <li key={faculty.name}>{faculty.name} — {COST_BY_CATEGORY.Basic} points</li>
+              <li key={faculty.name}>{faculty.name} — {effectiveBasicCost} points</li>
             ))}
             {advanced.map((faculty) => (
               <li key={faculty.name}>{faculty.name} — {COST_BY_CATEGORY.Advanced} points</li>
@@ -383,23 +448,36 @@ export const MagicFacultiesPage: React.FC = () => {
         </div>
         <div style={{ marginTop: "0.75rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <div style={{ ...badgeStyle, background: "#1f2937", color: "#e2e8f0" }}>
-            Total AP Cost: {totalAspectCost}
+            Total AP Cost: {adjustedApCost}
+            {ancillaryEffects.apMultiplier !== 1 ? ` (base ${totalAspectCost})` : ""}
           </div>
           <div style={{ ...badgeStyle, background: "#1f2937", color: "#e2e8f0" }}>
-            Total Energy Cost: {totalAspectCost}
+            Total Energy Cost: {adjustedEnergyCost}
+            {ancillaryEffects.energyMultiplier !== 1 ? ` (base ${totalAspectCost})` : ""}
           </div>
         </div>
+        {ancillaryEffects.modifiers.length > 0 && (
+          <div style={{ marginTop: "0.5rem", color: "#a0aec0", fontSize: 13 }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>Ancillary modifiers applied:</div>
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {ancillaryEffects.modifiers.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: "1.5rem", display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "1rem" }}>
         {parsed.map((faculty) => {
-          const cost = COST_BY_CATEGORY[faculty.category];
+          const cost = getFacultyCost(faculty);
           const canAfford = remainingPoints >= cost || unlocked[faculty.name];
           const disabled = loadingCharacters || !selectedCharacter;
           return (
             <FacultyCard
               key={faculty.name}
               faculty={faculty}
+              cost={cost}
               unlocked={!!unlocked[faculty.name]}
               onToggle={() => toggleUnlocked(faculty)}
               canAfford={canAfford}
