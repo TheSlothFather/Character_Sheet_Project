@@ -2,12 +2,15 @@ export const ANCILLARY_STORAGE_PREFIX = "ancillaries:selected";
 
 export type AncillaryMetadata = Record<string, Record<string, unknown>>;
 
+export type AncillaryFlags = Record<string, unknown>;
+
 export type AncillarySelectionState = {
   selected: string[];
   metadata: AncillaryMetadata;
+  flags: AncillaryFlags;
 };
 
-const buildDefaultState = (): AncillarySelectionState => ({ selected: [], metadata: {} });
+const buildDefaultState = (): AncillarySelectionState => ({ selected: [], metadata: {}, flags: {} });
 
 export const getAncillaryStorageKey = (characterId: string | null | undefined) =>
   `${ANCILLARY_STORAGE_PREFIX}:${characterId ?? "unassigned"}`;
@@ -21,12 +24,13 @@ export const readAncillarySelection = (characterId: string | null | undefined): 
     const parsed = JSON.parse(raw);
 
     if (Array.isArray(parsed)) {
-      return { selected: parsed, metadata: {} };
+      return { selected: parsed, metadata: {}, flags: {} };
     }
 
     const selected = Array.isArray(parsed.selected) ? parsed.selected : [];
     const metadata = parsed.metadata && typeof parsed.metadata === "object" ? (parsed.metadata as AncillaryMetadata) : {};
-    return { selected, metadata };
+    const flags = parsed.flags && typeof parsed.flags === "object" ? (parsed.flags as AncillaryFlags) : {};
+    return { selected, metadata, flags };
   } catch (err) {
     console.warn("Unable to read ancillary selection", err);
     return buildDefaultState();
