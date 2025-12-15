@@ -828,6 +828,7 @@ export const CharactersPage: React.FC = () => {
   const skillBonuses = selectedCharacter?.skillBonuses ?? {};
   const attributePointsAvailable = selectedCharacter?.attributePointsAvailable ?? 0;
   const isGeneralSaving = selectedCharacter ? generalSavingId === selectedCharacter.id : false;
+  const loadingAny = loading || definitionsLoading;
   const lockButtonDisabled =
     !selectedCharacter ||
     loadingAny ||
@@ -848,8 +849,6 @@ export const CharactersPage: React.FC = () => {
     (definitions?.subraces ?? []).forEach((s) => map.set(s.id, { name: s.name, parentId: s.parentId }));
     return map;
   }, [definitions]);
-
-  const loadingAny = loading || definitionsLoading;
 
   return (
     <div>
