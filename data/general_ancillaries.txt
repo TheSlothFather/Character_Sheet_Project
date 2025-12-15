@@ -179,6 +179,22 @@ Requirements:
 
 May use Academic Recall in place of Will Dakar. You may cast an Ildakar spell requiring +1 Mental in exchange for 1 exhaustion once per moonface.  
 
+
+Divine Aura 
+Requirements: 
++5 Spiritual 
+-Full game history with a Deity
+-Clergy background 
+
+If the Deity is aligned, unaligned creatures must succeed on a persevere check when they perceive you or flee, and if the Deity is unaligned, aligned creatures must do so instead. Attacks and spells used against you cause the attacker to take damage equal to your spiritual attribute. If the deity is of the sect below, they take this damage type:
+Light: Holy Spiritual
+Knowledge: Mental
+Ice: Cold
+Fire: Fire
+Nature: Poison
+Redeemed Dark: Necrosis
+Unaligned: Unholy Spiritual 
+
 Divine Health
 Requirements: 
 +4 Spiritual
@@ -963,5 +979,6 @@ Requirements:
 -Red Paladin Ancillary
 +4 Physical  
 +150 Sense Supernatural and +150 Resist Supernatural  
+
 
 You are in command of The Paladin Order behind the Angelic Vessels of Rasadan and Zera. You may expend Deity Relationship points with Rasadan for all other Aligned Deities’ Divine Interventions. All weapons you touch deal holy spiritual damage for spiritual attribute minutes, and all armors you touch gain their appropriate damage reduction for unholy spiritual necrosis damage for spiritual attribute minutes.
