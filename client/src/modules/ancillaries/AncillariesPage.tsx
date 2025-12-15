@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import ancillariesData from "../../data/ancillaries.json";
 import { api, Character } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
@@ -11,6 +12,7 @@ import { parseMagicFaculties } from "../magic/magicParser";
 import facultiesText from "../../data/magic-faculties.txt?raw";
 import {
   AncillaryMetadata,
+  AncillarySelectionState,
   getAncillaryStorageKey,
   persistAncillarySelection,
   readAncillarySelection
@@ -631,6 +633,13 @@ const ALL_ENTRIES = buildEntries();
 const GENERAL_ENTRIES = ALL_ENTRIES.filter((entry) => entry.category === "general");
 const ANCESTRY_ENTRIES = ALL_ENTRIES.filter((entry) => entry.category === "ancestry");
 const ANCESTRY_GROUPS_BY_ID = new Map(data.ancestryGroups.map((group) => [group.id, group]));
+const PSION_ANCILLARY_IDS = new Set([
+  "fledgling-psion",
+  "advanced-psion",
+  "heroic-psion",
+  "epic-psion",
+  "mythic-psion"
+]);
 
 const summarizeAllowed = (character: Character | null): { total: number; tierAdvancements: number } => {
   if (!character) {
@@ -689,6 +698,7 @@ export const AncillariesPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState("");
   const [showEligibleOnly, setShowEligibleOnly] = React.useState(false);
+  const navigate = useNavigate();
 
   const skillLookup = React.useMemo(() => buildSkillLookup(definitions), [definitions]);
   const ancillaryNames = React.useMemo(
@@ -698,7 +708,9 @@ export const AncillariesPage: React.FC = () => {
 
   const storageKey = React.useMemo(() => getAncillaryStorageKey(selectedId), [selectedId]);
 
-  const [{ selected: selectedAncillaries, metadata }, setSelection] = React.useState(() => readAncillarySelection(selectedId));
+  const [{ selected: selectedAncillaries, metadata, flags }, setSelection] = React.useState<AncillarySelectionState>(
+    () => readAncillarySelection(selectedId)
+  );
 
   const setSelectedAncillaries = React.useCallback(
     (updater: React.SetStateAction<string[]>) => {
@@ -710,7 +722,7 @@ export const AncillariesPage: React.FC = () => {
         filtered.forEach((id) => {
           if (prev.metadata[id]) nextMetadata[id] = prev.metadata[id];
         });
-        return { selected: filtered, metadata: nextMetadata };
+        return { selected: filtered, metadata: nextMetadata, flags: prev.flags ?? {} };
       });
     },
     []
@@ -719,7 +731,8 @@ export const AncillariesPage: React.FC = () => {
   const updateMetadata = React.useCallback((id: string, data: Record<string, unknown>) => {
     setSelection((prev) => ({
       selected: prev.selected,
-      metadata: { ...prev.metadata, [id]: { ...prev.metadata[id], ...data } }
+      metadata: { ...prev.metadata, [id]: { ...prev.metadata[id], ...data } },
+      flags: prev.flags ?? {}
     }));
   }, []);
 
@@ -728,8 +741,8 @@ export const AncillariesPage: React.FC = () => {
   }, [storageKey]);
 
   React.useEffect(() => {
-    persistAncillarySelection(selectedId, { selected: selectedAncillaries, metadata });
-  }, [metadata, selectedAncillaries, selectedId, storageKey]);
+    persistAncillarySelection(selectedId, { selected: selectedAncillaries, metadata, flags });
+  }, [flags, metadata, selectedAncillaries, selectedId, storageKey]);
 
   React.useEffect(() => {
     const load = async () => {
@@ -778,6 +791,11 @@ export const AncillariesPage: React.FC = () => {
 
   const { total: allowed, tierAdvancements } = summarizeAllowed(selectedCharacter);
   const remaining = Math.max(allowed - selectedAncillaries.length, 0);
+
+  const hasPsionAncillary = React.useMemo(
+    () => selectedAncillaries.some((id) => PSION_ANCILLARY_IDS.has(id)),
+    [selectedAncillaries]
+  );
 
   const skillTotals = React.useMemo(() => buildSkillTotals(selectedCharacter, skillLookup), [selectedCharacter, skillLookup]);
 
@@ -900,6 +918,17 @@ export const AncillariesPage: React.FC = () => {
       return haystack.includes(filterTerm);
     });
   }, [ancestryLevelEligible, availableEntries, evaluateEntryRequirements, filterTerm, selectedAncillaries, selectedCharacter, showEligibleOnly]);
+
+  const handleLockPsionAncillaries = () => {
+    if (!hasPsionAncillary) return;
+    setSelection((prev) => {
+      const nextFlags = { ...prev.flags, psionicsLockRequested: true };
+      const nextState: AncillarySelectionState = { selected: prev.selected, metadata: prev.metadata, flags: nextFlags };
+      persistAncillarySelection(selectedId, nextState);
+      return nextState;
+    });
+    navigate("/psionics");
+  };
 
   const selectedDetails = selectedAncillaries
     .map((id) => filtered.find((entry) => entry.id === id) || ALL_ENTRIES.find((e) => e.id === id))
@@ -1135,6 +1164,28 @@ export const AncillariesPage: React.FC = () => {
                 {selectedAncillaries.length}/{allowed}
               </span>
             </div>
+            {hasPsionAncillary && (
+              <div style={{ marginBottom: 10, display: "grid", gap: 6 }}>
+                <button
+                  type="button"
+                  onClick={handleLockPsionAncillaries}
+                  style={{
+                    padding: "0.55rem 0.9rem",
+                    borderRadius: 8,
+                    border: "1px solid #1d4ed8",
+                    background: "#2563eb",
+                    color: "#e6edf7",
+                    cursor: "pointer",
+                    fontWeight: 700
+                  }}
+                >
+                  Lock Psion Ancillaries
+                </button>
+                <div style={{ color: "#9ca3af", fontSize: 13 }}>
+                  Locks your selections and opens a Psionics prompt to choose ancillary abilities.
+                </div>
+              </div>
+            )}
             {selectedDetails.length === 0 ? (
               <p style={{ margin: 0, color: "#94a3b8" }}>No ancillaries selected yet.</p>
             ) : (

@@ -12,7 +12,7 @@ import {
   replaceMentalAttributePlaceholders
 } from "./psionicsUtils";
 import { PSION_BACKGROUND_CONFIG, PSIONICS_STORAGE_KEY } from "./psionBackgrounds";
-import { getAncillaryStorageKey, readAncillarySelection } from "../ancillaries/storage";
+import { AncillarySelectionState, getAncillaryStorageKey, persistAncillarySelection, readAncillarySelection } from "../ancillaries/storage";
 
 interface PsiState {
   purchased: Set<string>;
@@ -485,7 +485,9 @@ export const PsionicsPage: React.FC = () => {
   );
 
   const { selectedId } = useSelectedCharacter();
-  const [ancillarySelection, setAncillarySelection] = React.useState(() => readAncillarySelection(selectedId));
+  const [ancillarySelection, setAncillarySelection] = React.useState<AncillarySelectionState>(() =>
+    readAncillarySelection(selectedId)
+  );
   const [selectedCharacter, setSelectedCharacter] = React.useState<Character | null>(null);
   const [characterError, setCharacterError] = React.useState<string | null>(null);
   const [loadingCharacter, setLoadingCharacter] = React.useState(false);
@@ -531,11 +533,43 @@ export const PsionicsPage: React.FC = () => {
 
   const [state, setState] = React.useState<PsiState>(() => loadPersistedState(storageKey, abilityIds));
   const ancillaryPicksState = state.ancillaryPicks ?? {};
+  const ancillaryStorageKey = React.useMemo(() => getAncillaryStorageKey(selectedId), [selectedId]);
+
+  const resolveAncillaryUnlocks = React.useCallback(
+    (ancillaryId: string, abilityIds: string[]): Set<string> => {
+      if (ancillaryId !== "mythic-psion") {
+        return new Set(abilityIds);
+      }
+
+      const unlocked = new Set<string>();
+
+      const addWithPrerequisites = (id: string) => {
+        if (unlocked.has(id)) return;
+        unlocked.add(id);
+        const ability = abilityById.get(id);
+        ability?.prerequisiteIds.forEach((prereqId) => addWithPrerequisites(prereqId));
+      };
+
+      abilityIds.forEach(addWithPrerequisites);
+      return unlocked;
+    },
+    [abilityById]
+  );
+
+  const ancillaryUnlockedAbilities = React.useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    Object.entries(ancillaryPicksState).forEach(([ancillaryId, abilityIds]) => {
+      map.set(ancillaryId, resolveAncillaryUnlocks(ancillaryId, abilityIds));
+    });
+    return map;
+  }, [ancillaryPicksState, resolveAncillaryUnlocks]);
 
   React.useEffect(() => {
     const nextState = loadPersistedState(storageKey, abilityIds);
     const freeAbilities = new Set([...nextState.backgroundPicks, ...backgroundBenefits.grantedIds]);
-    Object.values(nextState.ancillaryPicks).forEach((list) => list.forEach((id) => freeAbilities.add(id)));
+    Object.entries(nextState.ancillaryPicks).forEach(([ancillaryId, list]) => {
+      resolveAncillaryUnlocks(ancillaryId, list).forEach((id) => freeAbilities.add(id));
+    });
     const purchased = new Set(nextState.purchased);
     freeAbilities.forEach((id) => purchased.delete(id));
 
@@ -544,7 +578,7 @@ export const PsionicsPage: React.FC = () => {
       backgroundPicks: nextState.backgroundPicks,
       ancillaryPicks: nextState.ancillaryPicks
     });
-  }, [abilityIds, backgroundBenefits.grantedIds, storageKey]);
+  }, [abilityIds, backgroundBenefits.grantedIds, resolveAncillaryUnlocks, storageKey]);
 
   React.useEffect(() => {
     persistState(storageKey, state);
@@ -599,9 +633,8 @@ export const PsionicsPage: React.FC = () => {
   }, [selectedId]);
 
   React.useEffect(() => {
-    const storageKey = getAncillaryStorageKey(selectedId);
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === storageKey) {
+      if (event.key === ancillaryStorageKey) {
         setAncillarySelection(readAncillarySelection(selectedId));
       }
     };
@@ -615,7 +648,7 @@ export const PsionicsPage: React.FC = () => {
         window.removeEventListener("storage", handleStorage);
       }
     };
-  }, [selectedId]);
+  }, [ancillaryStorageKey, selectedId]);
 
   const mentalAttribute = selectedCharacter?.attributes?.MENTAL ?? 0;
   const characterLevel = selectedCharacter?.level ?? 1;
@@ -643,10 +676,10 @@ export const PsionicsPage: React.FC = () => {
   const ownedAbilities = React.useMemo(() => {
     const owned = new Set<string>(state.backgroundPicks);
     backgroundBenefits.grantedIds.forEach((id) => owned.add(id));
-    Object.values(ancillaryPicksState).forEach((list) => list.forEach((id) => owned.add(id)));
+    ancillaryUnlockedAbilities.forEach((list) => list.forEach((id) => owned.add(id)));
     state.purchased.forEach((id) => owned.add(id));
     return owned;
-  }, [ancillaryPicksState, backgroundBenefits.grantedIds, state.backgroundPicks, state.purchased]);
+  }, [ancillaryUnlockedAbilities, backgroundBenefits.grantedIds, state.backgroundPicks, state.purchased]);
 
   const trees = React.useMemo(() => {
     const byTree = new Map<string, PsionicAbility[]>();
@@ -689,23 +722,17 @@ export const PsionicsPage: React.FC = () => {
     return grouped;
   }, [abilities, ownedAbilities]);
 
-  const nonAncillaryOwned = React.useMemo(() => {
-    const base = new Set(ownedAbilities);
-    Object.values(ancillaryPicksState).forEach((list) => list.forEach((id) => base.delete(id)));
-    return base;
-  }, [ancillaryPicksState, ownedAbilities]);
-
   const ancillaryEnergyOverrides = React.useMemo(() => {
     const overrides = new Map<string, number>();
-    Object.entries(ancillaryPicksState).forEach(([ancillaryId, abilityIds]) => {
+    ancillaryUnlockedAbilities.forEach((abilityIds, ancillaryId) => {
       const override = PSION_ANCILLARY_CONFIG[ancillaryId]?.energyCostOverride;
       if (!override) return;
       abilityIds.forEach((abilityId) => overrides.set(abilityId, override));
     });
     return overrides;
-  }, [ancillaryPicksState]);
+  }, [ancillaryUnlockedAbilities]);
 
-  const openAncillaryModal = () => {
+  const openAncillaryModal = React.useCallback(() => {
     const initial: Record<string, Set<string>> = {};
     psionAncillaries.forEach((id) => {
       const saved = ancillaryPicksState[id] ?? [];
@@ -713,7 +740,29 @@ export const PsionicsPage: React.FC = () => {
     });
     setAncillaryChoices(initial);
     setAncillaryModalOpen(true);
-  };
+  }, [ancillaryPicksState, mentalAttribute, psionAncillaries]);
+
+  const psionicsLockRequested = Boolean(
+    (ancillarySelection.flags as { psionicsLockRequested?: boolean } | undefined)?.psionicsLockRequested
+  );
+
+  const clearPsionicsLockRequest = React.useCallback(() => {
+    setAncillarySelection((prev) => {
+      if (!prev.flags?.psionicsLockRequested) return prev;
+      const nextSelection: AncillarySelectionState = {
+        ...prev,
+        flags: { ...prev.flags, psionicsLockRequested: false }
+      };
+      persistAncillarySelection(selectedId, nextSelection);
+      return nextSelection;
+    });
+  }, [selectedId]);
+
+  React.useEffect(() => {
+    if (!psionicsLockRequested || psionAncillaryList.length === 0) return;
+    clearPsionicsLockRequest();
+    openAncillaryModal();
+  }, [clearPsionicsLockRequest, openAncillaryModal, psionAncillaryList.length, psionicsLockRequested]);
 
   const toggleAncillaryAbility = (ancillaryId: string, abilityId: string) => {
     if (!psionAncillaries.has(ancillaryId)) return;
@@ -752,7 +801,9 @@ export const PsionicsPage: React.FC = () => {
     setState((prev) => {
       if (!tierAdvancementAvailable) return prev;
       const owned = new Set<string>([...prev.backgroundPicks, ...backgroundBenefits.grantedIds, ...prev.purchased]);
-      Object.values(prev.ancillaryPicks).forEach((list) => list.forEach((id) => owned.add(id)));
+      Object.entries(prev.ancillaryPicks).forEach(([ancillaryId, list]) => {
+        resolveAncillaryUnlocks(ancillaryId, list).forEach((id) => owned.add(id));
+      });
       if (owned.has(ability.id)) return prev;
       const starterAbility = ability.tier === 1 && ability.prerequisiteIds.length === 0;
       if (!starterAbility && !isAbilityUnlocked(ability, owned, { allowTier1WithoutPrereq: false })) return prev;
@@ -829,10 +880,15 @@ export const PsionicsPage: React.FC = () => {
                 const selectedSet = ancillaryChoices[id] ?? new Set(ancillaryPicksState[id] ?? []);
                 const otherSelections = (abilityId: string) =>
                   Object.entries(ancillaryChoices).some(([otherId, picks]) => otherId !== id && picks?.has(abilityId));
-                const options = abilities.filter(
-                  (ability) =>
-                    ability.tier === config.tier && (!nonAncillaryOwned.has(ability.id) || selectedSet.has(ability.id))
-                );
+                const unlockedByCurrent = ancillaryUnlockedAbilities.get(id) ?? new Set<string>();
+                const ownedOutsideCurrent = new Set(ownedAbilities);
+                unlockedByCurrent.forEach((abilityId) => ownedOutsideCurrent.delete(abilityId));
+                const options = abilities.filter((ability) => {
+                  if (ability.tier !== config.tier) return false;
+                  if (ownedOutsideCurrent.has(ability.id) && !selectedSet.has(ability.id)) return false;
+                  if (id !== "mythic-psion" && !isAbilityUnlocked(ability, ownedOutsideCurrent)) return false;
+                  return true;
+                });
                 const disabledReason = mentalAttribute <= 0 ? "Mental Attribute must be above 0" : "";
                 const helper = config.energyCostOverride
                   ? "Chosen abilities cost 1 Energy."
@@ -867,7 +923,9 @@ export const PsionicsPage: React.FC = () => {
                       )}
                       {options.map((ability) => {
                         const chosen = selectedSet.has(ability.id);
-                        const unavailable = (!chosen && (nonAncillaryOwned.has(ability.id) || otherSelections(ability.id))) || mentalAttribute <= 0;
+                        const unavailable =
+                          (!chosen && (ownedOutsideCurrent.has(ability.id) || otherSelections(ability.id))) ||
+                          mentalAttribute <= 0;
                         return (
                           <label
                             key={`${id}-${ability.id}`}
