@@ -1561,8 +1561,8 @@
     {
       "id": "tise-initiate",
       "name": "Tise Initiate",
-      "requirements": [],
-      "description": "Permanent dedication to the Dark God Ashi, where you may not take points in other Deities.\nYou may use 1 cost Ashi Divine Interventions without spending deity relationship points. You may summon a shadeling to serve you once per moonface during Har’Rheunen phase."
+      "requirements": ["-Permanent dedication to the Dark God Ashi, where you may not take points in other Deities."],
+      "description": "You may use 1 cost Ashi Divine Interventions without spending deity relationship points. You may summon a shadeling to serve you once per moonface during Har’Rheunen phase."
     },
     {
       "id": "tise-loyalist",
