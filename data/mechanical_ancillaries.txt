@@ -37,15 +37,6 @@ Requirements:
 -Full game history with a Deity
 -Clergy background 
 
-If the Deity is aligned, unaligned creatures must succeed on a persevere check when they perceive you or flee, and if the Deity is unaligned, aligned creatures must do so instead. Attacks and spells used against you cause the attacker to take damage equal to your spiritual attribute. If the deity is of the sect below, they take this damage type:
-Light: Holy Spiritual
-Knowledge: Mental
-Ice: Cold
-Fire: Fire
-Nature: Poison
-Redeemed Dark: Necrosis
-Unaligned: Unholy Spiritual 
-
 Diviner Apprentice 
 Requirements: 
 -Clergy background
