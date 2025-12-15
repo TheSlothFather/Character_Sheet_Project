@@ -7,6 +7,7 @@ import { AttributeKey, computeAttributeSkillBonuses, getSkillCode, groupSkillsBy
 import psionicsCsv from "../../data/psionics.csv?raw";
 import { parsePsionicsCsv, PsionicAbility, replaceMentalAttributePlaceholders } from "../psionics/psionicsUtils";
 import { PSIONICS_STORAGE_KEY } from "../psionics/psionBackgrounds";
+import { getAncillaryStorageKey, readAncillarySelection } from "../ancillaries/storage";
 
 const DEFAULT_SKILL_POINT_POOL = 100;
 
@@ -102,6 +103,14 @@ interface CharacterSheetProps {
 }
 
 const SPECIAL_SKILL_CODES = ["MARTIAL_PROWESS", "ILDAKAR_FACULTY"];
+const MARTIAL_AP_BONUS: Record<string, { ap: number; note: string }> = {
+  "fledgling-martial": { ap: 2, note: "Attacks & reactions" },
+  "advanced-martial": { ap: 2, note: "Movement, attacks, reactions" },
+  "heroic-martial": { ap: 2, note: "Movement, attacks, reactions" },
+  "epic-martial": { ap: 3, note: "Movement, attacks, reactions" },
+  "legendary-martial": { ap: 3, note: "Movement, attacks, reactions" },
+  "mythic-martial": { ap: 3, note: "Movement, attacks, reactions" }
+};
 const ATTRIBUTE_DISPLAY: { key: keyof Required<Character>["attributes"] | string; label: string }[] = [
   { key: "PHYSICAL", label: "Physical" },
   { key: "MENTAL", label: "Mental" },
@@ -152,6 +161,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [weaponNotes, setWeaponNotes] = React.useState<string>(character.weaponNotes ?? "");
   const [defenseNotes, setDefenseNotes] = React.useState<string>(character.defenseNotes ?? "");
   const [gearNotes, setGearNotes] = React.useState<string>(character.gearNotes ?? "");
+  const [ancillarySelection, setAncillarySelection] = React.useState(() => readAncillarySelection(character.id));
+
+  React.useEffect(() => {
+    setAncillarySelection(readAncillarySelection(character.id));
+    const storageKey = getAncillaryStorageKey(character.id);
+
+    const handler = (event: StorageEvent) => {
+      if (event.key === storageKey) {
+        setAncillarySelection(readAncillarySelection(character.id));
+      }
+    };
+
+    if (typeof window !== "undefined") window.addEventListener("storage", handler);
+    return () => {
+      if (typeof window !== "undefined") window.removeEventListener("storage", handler);
+    };
+  }, [character.id]);
 
   const summaryBarStyle: React.CSSProperties = {
     background: "#1a1d24",
@@ -187,10 +213,24 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const levelCards = Array.from({ length: 5 }, (_, idx) => idx + 1);
   const energyBase = character.raceKey === "ANZ" ? 140 : 100;
   const energyPerLevel = character.raceKey === "ANZ" ? 14 : 10;
-  const energy = energyBase + energyPerLevel * (character.level - 1);
+  const energeticMultiplier = ancillarySelection.selected.includes("energetic")
+    ? 1 + 0.1 * character.level
+    : 1;
+  const energy = Math.round((energyBase + energyPerLevel * (character.level - 1)) * energeticMultiplier);
   const damageReduction = 0;
   const fatePoints = character.fatePoints ?? 0;
   const attributeValues = character.attributes ?? {};
+
+  const martialBonus = React.useMemo(() => {
+    return ancillarySelection.selected.reduce(
+      (acc, id) => {
+        const bonus = MARTIAL_AP_BONUS[id];
+        if (!bonus) return acc;
+        return { ap: acc.ap + bonus.ap, notes: new Set([...acc.notes, bonus.note]) };
+      },
+      { ap: 0, notes: new Set<string>() }
+    );
+  }, [ancillarySelection.selected]);
 
   React.useEffect(() => {
     setWeaponNotes(character.weaponNotes ?? "");
@@ -378,7 +418,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.5rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
             <div style={pillStyle}>
               <span>Damage Reduction</span>
               <strong>{damageReduction}</strong>
@@ -390,6 +430,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             <div style={pillStyle}>
               <span>Energy</span>
               <strong>{energy}</strong>
+            </div>
+            <div style={{ ...pillStyle, flexDirection: "column", alignItems: "flex-start", gap: 2 }}>
+              <div style={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
+                <span>Martial Bonus AP</span>
+                <strong>{martialBonus.ap}</strong>
+              </div>
+              {martialBonus.notes.size > 0 && (
+                <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                  {Array.from(martialBonus.notes).join(", ")}
+                </div>
+              )}
             </div>
           </div>
           <div style={{ ...cardStyle, padding: 0, display: "flex", flexDirection: "column", height: "100%" }}>

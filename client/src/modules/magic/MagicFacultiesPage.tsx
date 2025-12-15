@@ -258,6 +258,10 @@ export const MagicFacultiesPage: React.FC = () => {
     if (selectedAncillaries.has("ildakar-acolyte")) applyBoth("Ildakar Acolyte");
     if (selectedAncillaries.has("ildakar-understudy")) applyBoth("Ildakar Understudy");
     if (selectedAncillaries.has("ildakar-theurgist")) applyBoth("Ildakar Theurgist");
+    if (selectedAncillaries.has("quickcaster")) {
+      apMultiplier *= 0.8;
+      modifiers.push("Quickcaster: -20% AP");
+    }
 
     if (selectedAncillaries.has("well-of-dakar")) {
       energyMultiplier *= 0.8;
