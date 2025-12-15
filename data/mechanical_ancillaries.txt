@@ -24,13 +24,6 @@ Requirements:
 
 -1 energy/per round costs if applicable to equipped shields and armors, minimum 0 energy per round, and you can ignore exhaustion the first time it is incurred, once per moonface
 
-Demigod
-Requirements: 
--Pontifex Maximus Ancillary
-+4 Physical, Mental, or Will 
-
-1, 3, 7, 15, and 25 cost Divine Interventions with your Deity now cost energy instead of Deity Relationship points. 
-
 Diviner Apprentice 
 Requirements: 
 -Clergy background
