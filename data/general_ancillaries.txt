@@ -179,6 +179,12 @@ Requirements:
 
 May use Academic Recall in place of Will Dakar. You may cast an Ildakar spell requiring +1 Mental in exchange for 1 exhaustion once per moonface.  
 
+Demigod
+Requirements: 
+-Pontifex Maximus Ancillary
++4 Physical, Mental, or Will 
+
+1, 3, 7, 15, and 25 cost Divine Interventions with your Deity now cost energy instead of Deity Relationship points. 
 
 Divine Aura 
 Requirements: 
@@ -982,3 +988,4 @@ Requirements:
 
 
 You are in command of The Paladin Order behind the Angelic Vessels of Rasadan and Zera. You may expend Deity Relationship points with Rasadan for all other Aligned Deities’ Divine Interventions. All weapons you touch deal holy spiritual damage for spiritual attribute minutes, and all armors you touch gain their appropriate damage reduction for unholy spiritual necrosis damage for spiritual attribute minutes.
+
