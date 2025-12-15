@@ -1639,8 +1639,7 @@
       "id": "weapon-mastery-choose-weapon-category",
       "name": "Weapon Mastery [Choose Weapon Category]",
       "requirements": [
-        "-All base abilities in chosen Martial Prowess unlocked.",
-        "-Cannot be Armors, Shields, or Exotic"
+        "-All base abilities in chosen Martial Prowess unlocked."
       ],
       "description": "Choose a Martial Prowess. You may now use all unlocked abilities with this type of weapon, regardless of which Martial Prowess they fall under, so long as they are not under Armors or Shields. If applicable, the range of this Martial Prowess cannot become larger than +1.\nYou may only take this ancillary once."
     },
