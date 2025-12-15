@@ -1,0 +1,216 @@
+Mechanical Ancillaries
+
+Advanced Martial 
+Requirements: 
++3 Physical
++100 Battle
+-Fledgling Martial Ancillary
+-At least 6 Martial Prowess Abilities Unlocked
+
+You gain +2 AP per round strictly for the purpose of making attacks or reactions with martial prowess abilities. 
+
+Advanced Psion
+Requirements: 
++2 Mental
+-Fledgling Psion Ancillary
++80 Psionic Technique
+
+Unlock Mental attribute 2 Point Techniques you have access to. These Techniques costs 1 Energy.
+
+Athletic 
+Requirements: 
++3 Physical 
++50 Feat of Strength
+
+-1 energy/per round costs if applicable to equipped shields and armors, minimum 0 energy per round, and you can ignore exhaustion the first time it is incurred, once per moonface
+
+Demigod
+Requirements: 
+-Pontifex Maximus Ancillary
++4 Physical, Mental, or Will 
+
+1, 3, 7, 15, and 25 cost Divine Interventions with your Deity now cost energy instead of Deity Relationship points. 
+
+Divine Aura 
+Requirements: 
++5 Spiritual 
+-Full game history with a Deity
+-Clergy background 
+
+If the Deity is aligned, unaligned creatures must succeed on a persevere check when they perceive you or flee, and if the Deity is unaligned, aligned creatures must do so instead. Attacks and spells used against you cause the attacker to take damage equal to your spiritual attribute. If the deity is of the sect below, they take this damage type:
+Light: Holy Spiritual
+Knowledge: Mental
+Ice: Cold
+Fire: Fire
+Nature: Poison
+Redeemed Dark: Necrosis
+Unaligned: Unholy Spiritual 
+
+Diviner Apprentice 
+Requirements: 
+-Clergy background
+-Member of Thairin Church or Thairin Race
++1 Spiritual
++50 Worship and Divine Intervention
+
+You choose a specific Deity to be permanently dedicated to. With this Deity, you gain a passive spiritual attribute amount of deity relationship points. Add your character tier to your deity relationship point caps.
+
+Energetic 
+Requirements: 
++3 Physical 
+
+You begin the game with +10% energy at character creation, and gain +10% every level-up. You may only take this ancillary once. 
+
+Epic Martial 
+Requirements: 
++5 Physical
++200 Battle
+-Heroic Martial Ancillary
+-At least 12 Martial Prowess Abilities unlocked and 2 Martial Prowess categories with all Martial Prowess Abilities unlocked
+-1 Martial Prowess category with more points invested than required to unlock all abilities 
+
+You gain +3 AP per round strictly for the purpose of making attacks or reactions with martial prowess abilities. When you successfully hit with a martial prowess ability, it is automatically a wicked critical. 
+
+Epic Psion
+Requirements: 
++4 Mental 
+-Heroic Psion Ancillary
++150 Psionic Technique
+
+Unlock Mental attribute 4 Point Techniques you have access to. These Techniques cost 1 Energy.
+
+Fledgling Martial 
+Requirements: 
++2 Physical 
++50 Battle 
+-At least 3 Martial Prowess abilities unlocked 
+
+You gain +2 AP per round strictly for the purpose of making attacks or reactions with martial prowess abilities. 
+
+Fledgling Psion 
+Requirements: 
++1 Mental
++50 Psionic Technique
+
+Unlock Mental attribute number of 1 Point Techniques. +1 x Mental attribute Manifold Manifestation.
+
+Heroic Martial 
+Requirements: 
++4 Physical
++150 Battle 
+-Advanced Martial Ancillary
+-At least 9 Martial Prowess Abilities unlocked and all Martial Prowess abilities unlocked in one category
+
+You gain +2 AP per round strictly for the purpose of making attacks or reactions with martial prowess abilities. 
+
+Heroic Psion 
+Requirements: 
++3 Mental 
+-Advanced Psion Ancillary
++120 Psionic Technique
+
+Unlock Mental attribute 3 Point Techniques you have access to. These Techniques costs 1 Energy.
+
+Ildakar Acolyte
+Requirements: 
++50 Will Dakar 
+
+Unlocks Basic Ildakar Faculty. That Faculty costs you -20% energy and action points to use.
+
+Ildakar Archmage
+Requirements: 
+-Ildakar Primus Ancillary 
++250 Will Dakar 
++6 Mental or Will
+
+Choose one Faculty. When combining Faculties to cast a spell, this Faculty does not count towards the Compound aspect. If you take this Ancillary 6x, you are considered an Ildakar Order. 
+
+Ildakar Primus
+Requirements: 
+-Ildakar Rector Ancillary
++200 Will Dakar 
+
+All spells are 20% more effective, regardless of Faculty.
+
+Ildakar Prodigy 
+Requirements: 
++3 Mental 
++50 Study 
+
+Basic Ildakar Faculties cost 50% fewer points to unlock.
+
+Ildakar Rector
+Requirements: 
+-Ildakar Theurgist Ancillary
++150 Will Dakar 
+
+Choose one Faculty. The effects of each Aspect are increased by 50% when you use it.
+
+Ildakar Theurgist
+Requirements: 
+-Ildakar Understudy Ancillary
++120 Will Dakar 
+
+Choose one Advanced Faculty or two Basic Faculties. These now cost -20% energy and action points to use.
+
+Ildakar Understudy
+Requirements: 
+-Ildakar Acolyte Ancillary
++80 Will Dakar
+
+Unlocks Advanced Ildakar Faculty. That Faculty costs you -20% energy and action points to use.
+
+Legendary Martial 
+Requirements: 
++6 Physical
++250 Battle 
+-Epic Martial Ancillary
+-At least 15 Martial Prowess Abilities unlocked
+-1 MP where you have double the points invested to unlock all MP abilities in the category. 
+
+You gain +3 AP per round strictly for the purpose of making attacks or reactions with martial prowess abilities. Whenever you successfully hit with a martial prowess ability, it is automatically a vicious critical. 
+
+Legendary Psion
+Requirements: 
+-Epic Psion Ancillary
++5 Mental 
++200 Psionic Technique
+
+Unlock Mental attribute 5 Point Techniques you have access to. These Techniques cost 1 Energy.
+
+Mythic Martial 
+Requirements: 
+-Legendary Martial Ancillary
+-20 Martial Prowess Abilities unlocked, at least 2 Martial Prowess categories where you have double the points to unlock all abilities in the MP category. 
+
+You gain +3 AP per round strictly for the purpose of making attacks or reactions with martial prowess abilities. Whenever you successfully hit an opponent with a martial prowess ability, it is a brutal critical.  
+
+Mythic Psion
+Requirements: 
++6 Mental 
+-Legendary Psion Ancillary
++250 Psionic Technique
+
+Unlock Mental attribute 5 Point Techniques, gaining all of the prior techniques leading to them for free as well. These Techniques cost 1 Energy.
+
+Quickcaster
+Requirements: 
++50 Will Dakar
++50 Feat of Agility 
+
+When you Will Dakar, your spells cost -20% Action Points.
+
+Well of Dakar
+Requirements:
++50 Will Dakar
++50 Endure 
+
+When you Will Dakar, your spells cost -20% Energy.
+
+Well of Divinity 
+Requirements:
++4 Spiritual 
++100 Worship 
++100 Divine Intervention 
+
+Your Deity Relationship Point caps are increased by Spiritual attribute x3. 

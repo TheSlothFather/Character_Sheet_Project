@@ -1,0 +1,967 @@
+﻿General Ancillaries 
+
+Advanced Angelic Vessel 
+Requirements: 
+-Fledgling Angelic Vessel Ancillary
++3 Spiritual 
+
+You may use Divine Intervention in place of Battle and Heal. You no longer need to breathe. You may use 3 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per moonface. 
+
+Advanced Fireborn 
+Requirements: 
+-Fledgling Fireborn Ancillary 
++2 Spiritual
++1 Will
+
+You can light unequipped items on fire with touch. Your critical attacks cause burning status on your foes. You can use a long-range attack that deals spiritual attribute in fire damage against targets equal to spiritual attribute x10 ft away at the cost of your melee attack in action points and energy.
+
+Advanced Grappler 
+Requirements: 
+-Grappler Ancillary
+
+When you initiate grapples, the grapple tracker automatically starts at Heavily Maintained. When you are in a grapple, your foe loses passive energy 2x your physical attribute per round.
+
+Advanced Psychic 
+Requirements: 
+-Fledgling Psychic Ancillary
++75 Will Dakar
++75 Psionic Technique
+-At least 1 2-Point Psionic Technique unlocked
+
+You may use Psionic Technique in place of Will Dakar for tier 2 Ildakar spells. 
+
+Advanced Spell Blade 
+Requirements: 
+-Fledgling Spell Blade Ancillary
++3 Physical 
++75 Battle and +75 Psionic Technique, Will Dakar, or Divine Intervention
+-All martial prowess abilities unlocked in a category
+
+You add your physical attribute to your channeled spells after you attack, using the same process as the fledgling spell blade ancillary.
+
+Advanced Spell Sculptor 
+Requirements: 
+-Spell Sculptor Ancillary 
++150 Will Dakar and Feat of Agility 
+
+You may now choose where to place the environmental consequence effects of your Ildakar Spells as opposed to the typical ring effect for the given faculty. The range of this relocation must use the same range as the spell’s primary effect.
+
+Alchemist
+Requirements: 
+-Alchemist Apprentice Ancillary
++100 Craft
+
+You can Craft Advanced Potions. Crafting Basic Potions takes 20% less time and resources.
+
+Alchemist Apprentice
+Requirements: 
++50 Craft 
++50 Academic Recall 
+
+You can Craft Basic Potions.
+
+Ancestral Flame
+Requirements: 
+-Cerevu Race
+-Membership in a Cerii or Darii Clan
+-Possession of a Clan Lantern Relic
+
+Add your Relationship Score (positive or negative) with your Clan to your Feat of Defiance rolls so long as you have your lantern lit. If your lantern is snuffed or runs out of fuel, you lose 25 Points with your Clan. 
+
+Astronaut
+Requirements: 
+-Ildakar Understudy Ancillary 
+-Cosmomancy Faculty unlocked  
++100 Navigate
+
+You may navigate in extraterrestrial areas. 
+
+Bilge Baron 
+Requirements:
+-Rat Ancillary 
++2 Spiritual
+
+You take half necrosis damage and add your spiritual attribute x8 to persevere against undead. 
+
+Black Cloth
+Requirements:
++2 Spiritual 
++50 Worship and Divine Intervention
+-Aligned
+-Clergy Background   
+
+You may specify Divine Interventions that cost 1 and 3 Deity Relationships without using Texts or Verses, and these DIs only cost 1 Deity Relationship point.  
+
+Black Paladin
+Requirements: 
++2 Physical
++2 Spiritual
++50 Sense Supernatural
++50 Resist Supernatural  
+-Aligned 
+-Clergy or Noble Background
+
+Divine Interventions from Rasadan deal double damage to demons and undead. 
+
+Blue Cloth
+Requirements: 
+-Green Cloth Ancillary
++4 Spiritual 
++100 Worship and Divine Intervention
+
+You may specify Divine Interventions that cost 15 Deity Relationship without using Texts or Verses, and these DIs only cost 7 Deity Relationship Points. 
+
+Blue Paladin
+Requirements: 
+-Green Paladin Ancillary
++3 Physical
++100 Sense Supernatural and +100 Resist Supernatural  
+
+You may expend Deity Relationship points with Rasadan for Zera’s Divine Interventions. Add your physical attribute to the magical heals you cast. 
+
+Bone Warrior
+Requirements:
+-Du’umist Ancillary
++2 Physical 
+-All unarmed martial prowess abilities unlocked
+
+An exoskeleton connected to your skeletal structure grows from your skin. Your unarmed strikes cause supernatural creatures to lose 1 AP for spiritual attribute rounds. They also cause targets to lose spiritual attribute Will Dakar, Psionic Technique, and Divine Intervention. In addition, your exoskeleton is as strong as steel, taking on the defensive properties of steel plate armor. With 3 Physical, titanium plate armor, with 4, giantstone plate armor, 5, star steel plate armor, and 6, aquiline plate armor. You may perform hard armor martial prowess abilities even when unarmored.  
+
+Champion of Du’um 
+Requirements: 
+-Paladin of Du’um Ancillary
++4 Physical and Spiritual
+
+The Dark God Du’um torments you, causing your critical strikes to disempower artifacts. Magical creatures take spiritual attribute damage when they attack you and per round as a passive when within spiritual attribute x20 ft of you.  
+
+Brutal Ildakar
+Requirements:
++4 Physical
++100 Feat of Strength 
+-At least one Ildakar Faculty unlocked
+
+May use Feat of Strength in place of Will Dakar. You may cast an Ildakar spell requiring +1 Physical in exchange for 1 exhaustion once per moonface. 
+
+Cavalryman
+Requirements: 
++50 Battle
++50 Animal Handling
+-Warrior or Noble Background 
+-One martial prowess ability unlocked 
+
+When you attack atop your mount after your mount moves, add the amount moved to your attack damage, whether melee or ranged. Your mount deals the amount of movement used in damage if it runs a creature over, and the creature cannot successfully defend.
+
+Cloak and Dagger
+Requirements:
++50 Battle
++50 Conceal
+-At least 1 Small Blades MP ability and 1 Cloak MP ability unlocked
+
+Once per round, you may roll conceal against your target instead of battle, and upon success, you score a wicked critical on a hit. 
+
+Contortionist 
+Requirements: 
++50 Feat of Agility 
+
+You can fit through openings that are one size smaller than your actual size. You can automatically escape from nonmagical bindings and shackles if given a few minutes. If you are grappled, the grapple tracker automatically starts at Slightly Escaped.
+
+Crafter
+Requirements:  
++50 Craft
+
+You know how to use 2 more toolsets. With every character tier advancement, you learn how to use an additional toolset.  
+
+Cunning Ildakar
+Requirements:
++4 Mental
++100 Academic Recall
+-At least one Ildakar Faculty unlocked
+
+May use Academic Recall in place of Will Dakar. You may cast an Ildakar spell requiring +1 Mental in exchange for 1 exhaustion once per moonface.  
+
+Divine Health
+Requirements: 
++4 Spiritual
++100 Divine Intervention or Worship, or +60 in Both
+
+May use Divine Intervention in place of Resist Toxins and Endure. 
+
+Diviner
+Requirements: 
+-Diviner Apprentice Ancillary
++2 Spiritual
++75 Worship and Divine Intervention
+
+Based on your specific deity’s sect, you gain:
+Light: Spiritual attribute coverage against Holy Spiritual damage 
+Knowledge: Spiritual attribute coverage against Mental damage 
+Fire: Spiritual attribute coverage against Burn damage 
+Ice: Spiritual attribute coverage against Cold damage 
+Nature: Spiritual attribute coverage against Necrosis damage 
+Dark: Spiritual attribute coverage against Unholy Spiritual damage damage 
+
+Druid
+Requirements:
++3 Spiritual
++50 Worship 
+-Grazin Race
+-Clergy Background
+
+Must dedicate to only the Ice Sect. Your deities all gain an additional Spiritual attribute Deity Relationship Points passive generation regardless of biome.  
+
+Du’umist  
+Requirements: 
+-Permanent singular dedication to Du’um
+-Clergy or Criminal background
++1 Spiritual and Physical  
+-At least 3 Unarmed Martial Prowess abilities unlocked
+
+You may create spiritual attribute 5ft by 5 ft antimagic fields where you stand per hour, each lasting 1 hour. 
+
+Enchanter 
+Requirements: 
+-Apprentice Enchanter Ancillary
++75 Will Dakar and +75 Craft
+
+You may specify 1 major effect or all minor effects when you craft magic items. Your enchantments cause less radiation, and you can cast at +1 duration. 
+
+Enchanter Apprentice 
+Requirements: 
+-Artificy Ildakar Faculty Unlocked
++50 Will Dakar and +50 Craft
+
+You may specify 1 minor effect when you craft magic items.
+
+Epic Angelic Vessel 
+Requirements: 
+-Heroic Angelic Vessel Ancillary
++4 Spiritual 
+
+You may use Divine Intervention in place of Will Skills. You no longer need to sleep. You may use 15 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per moonface. 
+
+Epic Fireborn 
+Requirements: 
+-Heroic Fireborn Ancillary 
++4 Spiritual
++1 Will
+Instead of teal blue, your flames can now manifest as gold, purple, blue, red, green, or black. Choose one of the following: 
+
+Gold: All prior Fireborn abilities may now be used to heal instead. All evil creatures take additional damage equal to spiritual attribute. 
+
+Purple: All prior Fireborn abilities may now be used to deal mental damage instead. All creatures with at least -1 Mental now take additional damage equal to spiritual attribute.
+
+Blue: All prior Fireborn abilities may now be used to deal cold elemental and freeze instead of burn. All fire-based creatures and elementals now take additional damage equal to spiritual attribute. 
+
+Red: All prior Fireborn abilities now deal +1 damage. All cold and water-based creatures and elementals take additional damage equal to spiritual attribute. 
+
+Green: All prior Fireborn abilities may now be used to deal poison damage and poison instead of burn. All beasts and sentient plants take additional damage equal to spiritual attribute. 
+
+Black: All prior Fireborn abilities may now be used to deal necrosis damage and necrotize instead of burn. Undead take additional damage equal to spiritual attribute. 
+
+You may now attempt to become a Thuil. You may only take this ancillary once. 
+
+Epic Psychic 
+Requirements: 
+-Heroic Psychic Ancillary
++125 Will Dakar
++125 Psionic Technique
+-At least 1 4-Point Psionic Technique unlocked
+-At least 3 Basic Ildakar Faculties and 2 Advanced Ildakar Faculties unlocked
+
+You may use Psionic Technique in place of Will Dakar for tier 4 Ildakar spells. 
+
+Epic Spell Blade
+Requirements: 
+-Heroic Spell Blade Ancillary
++4 Physical 
++125 Battle and +125 Psionic Technique, Will Dakar, or Divine Intervention
+-Double the points to unlock all martial prowess abilities in a category
+
+For your chosen spellcasting style, AP used for one martial prowess per round counts towards channelling spells. 
+
+Fateweaver’s Chosen
+Requirements: 
++50 Incite Fate
+
+The Fateweaver’s Folly appears to you once per character tier without expenditure of Fate Points. You gain +1 Fate whenever you level up. You may only take this ancillary once. 
+
+Fledgling Angelic Vessel
+Requirements: 
+-Permanent singular dedication to one aligned Deity
+
+You gain double the passive accrual of the Deity Relationship and double the amount for performing your Deity’s desired worship actions. You may use 1 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per moonface. 
+
+You may only take this ancillary once. 
+
+Fledgling Fireborn
+Requirements: 
+-Thuilin or Ganzenonin Race
+-Palace Family or Thuil Adulthood Background
++1 Spiritual
+
+Melee attacks against you deal Spiritual attribute in fire damage against the attacker. Your melee attacks deal an additional Spiritual attribute in fire damage.
+
+Fledgling Psychic 
+Requirements: 
++50 Will Dakar
++50 Psionic Technique
+-At least 1 Psionic Technique unlocked
+-At least 1 Ildakar Faculty unlocked
+
+You may use Psionic Technique in place of Will Dakar for tier 1 Ildakar spells. 
+
+Fledgling Spell Blade 
+Requirements: 
++2 Physical 
++2 Mental, Will, or Spiritual  
++50 Battle and +50 Psionic Technique, Will Dakar, or Divine Intervention
+-Dedication to at least one Deity or at least one Psionic Technique unlocked or at least one Ildakar Faculty unlocked 
+-At least one martial prowess ability unlocked
+
+Choose from one of the following: Psionic Technique, Will Dakar, or Divine Intervention.
+You may channel one of these magics, dedicating the relevant resources of said spell, relieving yourself of concentration until you next rest. The spell will automatically go off when you successfully hit a creature with a martial prowess ability.  
+
+Fool’s Luck
+Requirements:
++50 Incite Fate
+-1 Mental 
+
+You may use Incite Fate in place of Feat of Defiance checks. 
+
+Grappler
+Requirements: 
++1 Physical
+-At least 2 Unarmed Martial Prowess abilities unlocked
+
+When you initiate grapples, the grapple tracker automatically starts at Slightly Maintained. When you are in a grapple, your foe loses passive energy x your physical attribute per round.
+
+Green Cloth
+Requirements:
+-Black Cloth Ancillary
++4 Spiritual 
++75 Worship and Divine Intervention
+
+You may specify Divine Interventions that cost 7 Deity Relationship without using Texts or Verses, and these DIs only cost 3 Deity Relationship Points. 
+
+Green Paladin
+Requirements: 
+-Black Paladin Ancillary
++3 Spiritual
++75 Sense Supernatural and Resist Supernatural  
+
+You may expend Deity Relationship points with Rasadan for Homma’s Turn Evil, Ishmadt’s Purify, and Nandul’s Turn Undead Divine Interventions. Add your spiritual attribute to your weapon attacks. 
+
+Hell-Lock  
+Requirements: 
+-Hexlock Ancillary 
++3 Spiritual
+
+You cannot be frightened or charmed by demons or undead. Unaligned creatures, demons, and undead within spiritual attribute x10 ft must resist supernatural with a target of spiritual attribute x25 or be paralyzed and prone for spiritual attribute rounds. You can do this spiritual attribute times per moon face. In addition, you may summon random unbound demons from Du’um’s Hellscape as he sees fit to send. Successful spells you cast against magic-users and those using magic equipment must Resist Supernatural with a target of spiritual attribute x25 for spiritual attribute rounds.
+
+Heroic Angelic Vessel 
+Requirements: 
+-Advanced Angelic Vessel Ancillary
++3 Spiritual 
+
+You may use Divine Intervention in place of Physical skills. You no longer need to eat or drink. You may use 7 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per moonface. 
+
+Heroic Fireborn 
+Requirements: 
+-Advanced Fireborn Ancillary 
++3 Spiritual
++1 Will
+You gain flight. You can fly spiritual attribute x5 ft up and can move 3 at the cost of 1 action point and energy. Creatures you fly over take spiritual attribute fire damage and gain the burning status.
+
+Heroic Psychic  
+Requirements: 
+-Advanced Psychic Ancillary
++100 Will Dakar
++100 Psionic Technique
+-At least 1 3-Point Psionic Technique unlocked
+-At least 1 Advanced Ildakar Faculty unlocked
+
+You may use Psionic Technique in place of Will Dakar for tier 3 Ildakar spells. 
+
+Heroic Spell Blade
+Requirements: 
+-Advanced Spell Blade Ancillary
++3 Mental, Will, or Spiritual  
++100 Battle and Psionic Technique, Will Dakar, or Divine Intervention
+-More points than are required to unlock all MP abilities in a category 
+
+Energy used for martial prowess abilities counts towards channelling spells of the chosen spellcasting type, once per round. 
+
+Hex-Lock
+Requirements: 
+-Bone Warrior Ancillary
++2 Spiritual
+
+You may use Divine Intervention for Presence Skills. Successful presence skills cause creatures to become charmed for spiritual attribute minutes. Unaligned creatures and demons resist with disadvantage. Aligned and angelic resist with advantage. In addition, your martial prowess abilities cause creatures to take an additional spiritual attribute unholy spiritual damage, as well as penalties of spiritual attribute x3 to psionic technique, divine intervention, and will dakar. 
+
+High Diviner 
+Requirements: 
+-Diviner Ancillary
++3 Spiritual 
++100 Worship and Divine Intervention
+
+Based on your specific deity’s sect, you gain:
+Light: Spiritual attribute aura of Holy Spiritual damage 
+Knowledge: Spiritual attribute aura of Mental damage 
+Fire: Spiritual attribute aura of Burn damage 
+Ice: Spiritual attribute aura of Cold damage 
+Nature: Spiritual attribute aura of Healing for allies 
+Dark: Spiritual attribute aura of Unholy Spiritual damage damage 
+
+Infamous 
+Requirements: 
+-Membership in at least 1 Organization
+-10 Reputation in at least 1 organization
+-Arrogant, Corrupt, Guilty, or Cruel, or Overzealous Flaw
+
+You start with -25 reputation in any organization you interact with, but gain +100 in organizations you are a member of.
+
+Iron Gut
+Requirements: 
++50 Resist Toxins
+
+You may take an additional Physical attribute potions per moonface without penalties. 
+
+Legendary Angelic Vessel 
+Requirements: 
+-Epic Angelic Vessel Ancillary
++5 Spiritual 
+
+You may use Divine Intervention in place of Mental Skills. You are immune to necrosis wounds and damage, as well as disease and poison. You may use 25 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per phase. 
+
+Legendary Fireborn
+Requirements: 
+-Epic Fireborn Ancillary 
++5 Spiritual
++2 Will
+You produce an aura that is spiritual attribute x5 ft. This aura burns all creatures you are not linked to or have not linked to for spiritual attribute and applies burning status to them, whether they are allies, bystanders, or foes. You may now fly spiritual attribute x100 ft high and may move 6 for 1 action point and energy. Long-distance travel time is reduced by 50%. 
+
+You must now succeed with Feat of Austerity with a difficulty equal to your spiritual attribute x10 whenever you perceive a Fireborn you have not met since you acquired this ancillary, or are driven into a frenzy to battle said Fireborn.
+
+Legendary Psychic 
+Requirements: 
+-Epic Psychic Ancillary
++150 Will Dakar
++150 Psionic Technique
+-At least 1 5-Point Psionic Technique unlocked
+-At least 4 Basic Ildakar Faculties and 3 Advanced Ildakar Faculties unlocked
+
+You may use Psionic Technique in place of Will Dakar for tier 5 Ildakar spells. 
+
+Legendary Spell Blade
+Requirements: 
+-Epic Spell Blade Ancillary
++4 Mental, Will, or Spiritual  
++150 Battle and +150 Psionic Technique, Will Dakar, or Divine Intervention
+-At least two martial prowess categories with all abilities unlocked
+
+Energy for Martial Prowess abilities count towards channelling spells of your chosen spellcasting type. 
+
+Levied Footsoldier
+Requirements: 
++50 Battle 
++1 Physical 
+-Warrior or Farmer background 
+
+When attacked by a charging foe or mounted foe, add the distance in feet they moved to your defense. If you surpass the rider's defense, you may dismount them, and they fall prone.
+
+Locust Lord 
+Requirements: 
+-Plague Prince Ancillary
++5 Spiritual
+
+15 and 25 cost Grall DIs can be specified without texts or verses. 15-cost Grall DIs now cost 7 Deity Relationship points, and 25-cost Grall DIs cost 15. All undead must make resist supernatural rolls of spiritual attribute x20 when they first perceive you or become loyal to you. You cannot suffer necrosis wounds and are immune to necrosis damage. 
+
+Mage Slayer
+Requirements: 
++75 Resist Supernatural
++75 Resist Psionics
++75 Will Dakar
++75 Endure
+
+Your attacks and offensive spells cause magic-users to take Physical attribute penalties to Divine Intervention, Will Dakar, or Psionic Technique.  
+
+Master Alchemist
+Requirements: 
+-Alchemist Ancillary
++150 Craft
+-A potion each person in your party regularly uses, including yourself 
+
+You can Craft Complex Potions. Crafting Basic and Advanced Potions takes 50% less time and resources.
+
+Master Craftsman 
+Requirements: 
+-Prodigal Craftsman or Crafter Ancillary
++150 Craft 
+-A piece of equipment that each of your party members, including yourself, uses regularly
+-Member of a crafting or trade-related Organization 
+
+You can produce +5 Fine Items. Crafting takes 50% less time and resources.
+
+Master Enchanter 
+Requirements: 
+-Enchanter Ancillary
++125 Will Dakar and +125 Craft
+
+You may specify all magic effects when you craft magic items. Your enchantments cause no radiation, and you can cast at full duration. 
+
+Master Lightkeeper 
+Requirements: 
+-Crafter Background
++120 Craft 
++50 Academic Recall
+
+You can craft basic and advanced potions, and use Lightkeeper tools to do so.
+
+Myrmidon
+Requirements: 
++50 Battle
++50 Endure or Feat of Strength 
+-Warrior background
+-At least 1 Shield and 1 Polearm, large blunt, large bearded, or large bladed martial prowess abilities unlocked
+
+May use two-handed melee weapons in conjunction with a shield.
+
+Mythic Angelic Vessel 
+Requirements: 
+-Legendary Angelic Vessel Ancillary
++6 Spiritual 
+
+You may use Divine Intervention in place of all Skills. You may travel between planes without penalties. You may use 40 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per cycle. 
+
+Mythic Fireborn
+Requirements: 
+-Legendary Fireborn Ancillary 
++6 Spiritual
++3 Will
+Minion foes are instantly vaporized in an aura around you that is spiritual attribute x10 ft. You may move 12 for 1 action point and energy. Liquids within 10 ft of you are instantly vaporized, and flammable objects or explosives ignite. Long-distance travel time is reduced by 99%. All unlinked creatures must succeed on a Persevere check equal to your spiritual attribute x25 when they perceive you or lose 1 morale. You now appear as a humanoid flame at all times, and this cannot be undone. You apply burning status to anyone you touch, including allies.
+
+Mythic Psychic 
+Requirements: 
+-Legendary Psychic Ancillary
++175 Will Dakar
++200 Psionic Technique
+-An entire Psionic Technique branch unlocked
+-All basic Ildakar Faculties unlocked
+
+You may use Psionic Technique in place of Will Dakar for tier 6 Ildakar spells. You may combine Psionic Techniques and Ildakar spells. 
+
+Mythic Spell Blade
+Requirements: 
+-Legendary Spell Blade Ancillary
++6 Mental, Will, or Spiritual, and +6 Physical
++250 Battle or in Psionic Technique, Will Dakar, or Divine Intervention, or +175 in both
+
+Action Points for Martial Prowess abilities count towards channelling spells of your chosen spellcasting type.
+
+Oracle of Atenikil 
+Requirements: 
+-Blind
+-Woman
+-At least one 5-Point Psionic Technique unlocked
+
+You may link with the Dragon Atenikil to learn psionic techniques in exchange for seeing visions he sends.  
+
+Outlander
+Requirements: 
++50 Navigate
+-Freinin Race or Wanderer Background 
+
+You may navigate in outerland environments. 
+
+Paladin of Du’um 
+Requirements: 
+-Hellock Ancillary
++3 Physical 
+
+An antimagic field aura with a range of Spiritual attribute x10 ft emanates from you. Those affected by the field are slowed. Your critical hits cause your magical creatures and magic-users to be paralyzed for Spiritual attribute rounds. 
+
+Paragon of Battle
+Requirements: 
+-Weapon Mastery Ancillary 
++6 Physical
++250 Battle
+-Triple the investment of points into a martial prowess that is required to unlock all martial prowess abilities in the category 
+
+With your chosen martial prowess, you may invent 3 additional signature abilities per character tier advancement. Each of these abilities may be performed once per encounter with 0 energy and AP costs, and are automatic brutal critical hits upon successful attack or reaction. 
+
+Paragon of Virtue
+Requirements: 
++6 Spiritual 
++250 Worship or Divine Intervention or +175 in both. 
+-Aligned
+
+All worship accrues Deity Relationship with all Aligned Deities.
+
+Plague Prince 
+Requirements: 
+-Vulture Ancillary 
++4 Spiritual
+
+You may specify 1, 3, and 7 cost Grall Divine Interventions without texts or verses. 3-cost DIs now cost 1 Deity Relationship, and 7-cost now cost 3. You cannot be poisoned and automatically reduce necrosis wounds by 1. 
+
+Plane Hopper
+Requirements: 
++4 Spiritual
++120 Resist Supernatural 
+
+You may travel through extraplanar environments without suffering penalties.  
+
+Polyglot
+Requirements:
++3 Mental 
++50 Translate
+
+You gain Mental attribute additional known languages. You gain an additional known language with every character tier advancement. 
+
+Pontifex Maximus
+Requirements: 
+-Rex Sacrorum Ancillary
++5 Spiritual
++150 Worship and Divine Intervention
+
+Based on your specific deity’s sect, you gain:
+* Light: Spiritual attribute aura of resist Holy Spiritual damage for yourself and allies
+* Knowledge: Spiritual attribute aura of resist Mental damage for yourself and allies 
+* Fire: Spiritual attribute aura of resist Burn damage for yourself and allies 
+* Ice: Spiritual attribute aura of resist Cold damage for yourself and allies
+* Nature: Spiritual attribute aura of resist Necrosis damage for yourself and allies
+* Dark: Spiritual attribute aura of resist Unholy Spiritual damage for yourself and allies
+
+Prodigal Craftsman 
+Requirements: 
++50 Craft 
+
+You can produce +1 Fine items. Crafting takes 20% less time and resources.
+
+Quick Hands
+Requirements:
++50 Feat of Agility 
+
+You can use equipment for 1 less AP cost.  
+
+Rat 
+Requirements: 
+-clergy or criminal background 
++1 Spiritual 
+-Permanent singular dedication to Grall
+
+You may add your spiritual attribute x8 to resist toxins rolls. 
+
+Red Cloth
+Requirements: 
+-Blue Cloth Ancillary
++5 Spiritual 
++125 Worship and Divine Intervention
+
+You may specify Divine Interventions that cost 25 Deity Relationship without using Texts or Verses, and these DIs only cost 15 Deity Relationship Points. 
+
+Red Cloth of Osolon
+Requirements: 
+-Red Cloth Ancillary
+-Member of Old Narindurin Church
++6 Spiritual
++150 Worship and Divine Intervention
+
+You are now the leader of the Old Narindurin Church. You may specify Divine Interventions that cost 40 Deity Relationship without using Texts or Verses, and these DIs only cost 25 Deity Relationship Points. 
+
+Red Cloth of Tuluron 
+Requirements: leader of new church
+-Red Cloth Ancillary 
+-Member of New Narindurin Church
++6 Spiritual
++150 Worship and Divine Intervention
+
+You are now the leader of the New Narindurin Church. You may specify Divine Interventions that cost 50 Deity Relationship without using Texts or Verses, and these DIs only cost 40 Deity Relationship Points. 
+
+Red Paladin
+Requirements: 
+-Blue Paladin Ancillary
++4 Spiritual 
++125 Sense Supernatural and Resist Supernatural  
+
+You are the leader of a Paladin Chapter. You may expend Deity Relationship points with Rasadan for Aelia’s Inspire, Flora’s Valor, and Kasha’s Bless Divine Interventions. Your smites deal double damage to all unaligned creatures. Your light spells deal spiritual attribute holy spiritual damage to unaligned creatures. 
+
+Relentless Rex
+Requirements: 
++80 Persevere
++40 Endure
+
+You suffer no morale penalties when you suffer critical hits.  
+
+Renowned
+Requirements: 
++4 Will
+-Membership in at least 4 Organizations 
+
+You start with +25 reputation in any organization you interact with.
+
+Restless
+Requirements:
++4 Physical or Will
++150 Endure 
+
+You become conscious with 4 exhaustion upon succeeding on a Feat of Defiance roll.
+
+Rex Sacrorum 
+Requirements: 
+-High Diviner Ancillary
++4 Spiritual 
++125 Worship and Divine Intervention
+
+Based on your specific deity’s sect, you gain:
+* Light: Weapon attacks deal additional Spiritual attribute Holy Spiritual damage
+* Knowledge: Weapon attacks deal additional Spiritual attribute Mental damage
+* Fire: Weapon attacks deal additional Spiritual attribute Burn damage
+* Ice: Weapon attacks deal additional Spiritual attribute Cold damage
+* Nature: Weapon attacks deal additional Spiritual attribute Necrosis damage
+* Dark: Weapon attacks deal additional Spiritual attribute Unholy Spiritual damage
+
+Rheunen Walker 
+Requirements: 
++50 Track 
++30 Search 
+-Member of Rheunen Walker Guild Organization 
+
+You can see during Har'Rheunen. You start with one secret path and gain one secret path with every character tier advancement. 
+
+Rotten One
+Requirements: 
+-Locust Lord Ancillary
++6 Spiritual 
+
+You are the leader of the Cult of Grall. You may travel between planes without penalties and may teleport at will. Grall will give you directives for artifact locations. You may use 40 Deity Relationship cost Grall Divine Interventions without expending deity relationship points Spiritual attribute times per cycle. 
+
+Savage 
+Requirements:
+-Cruel Flaw 
+-Grazin or Freinin race or Rammish Anz ancestral ancillary or Ganzenonin Inin ancestral ancillary
++150 Intimidate 
+
+You may use Intimidate in place of Parley. Your use of intimidate and critical attacks deal morale penalties to the other foes in the encounter besides the initial target.   
+
+Sect Cloth 
+Requirements:
++3 Spiritual 
++50 Worship or Divine Intervention 
+
+Choose a sect of Aligned Deities. All Worship of any of these Deities accrues Deity Relationship with all Deities of that Sect.
+
+Shaman
+Requirements:
++3 Spiritual
++50 Worship 
+-Anz Race
+-Clergy Background
+
+Must dedicate to only the Nature Sect. Your deities all gain an additional Spiritual attribute Deity Relationship Points passive generation regardless of biome.  
+
+Shield Maiden
+Requirements: 
++50 Battle
++3 Physical
+-Woman
+-Grazin or Thairin Race
+-Warrior or Noble background
+-At least one shield martial prowess ability unlocked
+
+You may expend shield durability to add Battle for an adjacent ally’s defense. Shields in your hands have additional durability equal to your physical attribute.   
+
+Shock Troop
+Requirements: 
++50 Battle
++2 Physical
+-One martial prowess ability unlocked 
+
+When you charge, you add your physical attribute twice to damage. When you are ambushing, you add your physical attribute to your damage for the entire encounter until you go unconscious or lose morale.
+
+Shrewd
+Requirements:
+-Criminal Background
+-Paranoid Flaw
+
+When you are wanted after committing crimes, you automatically succeed with an Interpret roll once per moon face. 
+
+Shrine Attendant 
+Requirements:
++3 Spiritual
++100 Worship and Resist Supernatural  
+-Jiinin Race
+-Woman 
+-Clergy Background
+
+
+Must dedicate to only one Deity. You may use Resist Supernatural in place of Battle when defending or Will Dakar when targeted by spells for the purpose of counterspells.
+
+Soothing Spirit
+Requirements: 
++2 Will or +2 Spiritual 
+
+You may use Perform or Divine Intervention in place of parley. 
+
+Spell Jammer
+Requirements: 
++4 Physical or Mental 
++120 Will Dakar
++80 Craft
+-Merchant, Artisan, or Academic Background 
+-At least 1 Ildakar Faculty unlocked 
+
+You may create physical or mental attribute (whichever is highest) imbued gems per moonface without incurring endure checks. 
+
+Spell Sculptor 
+Requirements: 
++100 Will Dakar and Feat of Agility 
+-At least 1 Ildakar Faculty Unlocked
+
+You may shape the exact areas of your spells. Will attribute creatures (minimum 1) within the areas of your spells are exempt from its effects. 
+
+Spell Slinger
+Requirements: 
++4 Physical or Mental 
++120 Will Dakar
++80 Craft
+-Merchant, Artisan, or Academic Background 
+-At least 1 Ildakar Faculty unlocked 
+
+You may create physical or mental attribute (whichever is highest) spell scrolls per moonface without incurring endure checks. 
+
+Starseamstress
+Requirements: 
++50 Incite Fate
++50 in one Sagacity skill 
+-Woman 
+
+You may use Sagacity skills in place of Divine Intervention, and without needing Deity Relationship to use Astrology and Secret Knowledge DI spells. 
+
+Superior Immunity 
+Requirements: resistance to poisons and necrosis, disease, etc 
++75 Endure
++75 Resist Toxins
+
+May take an exhaustion penalty instead of contracting a disease or succumbing to a poison whenever you fail the check. In addition, you take half necrosis damage. 
+
+Survivor 
+Requirements: 
++50 Endure
+
+You only need half rations and supplies per moonface to survive without penalties. You may only take this ancillary once. 
+
+Sword Saint
+Requirements: 
++6 Physical and +6 Spiritual 
+-Triple the investment to unlock all MP abilities for medium blades and large blades
+-Aligned
+
+You are one of the Seven Sword Saints of the current Prophet. Swords in your hands deal siege damage and/or holy spiritual damage, as you desire. 
+
+Time Keeper
+Requirements: 
+-Permanent singular dedication to Silvias
++5 Spiritual 
++125 Academic Recall and Gather Intelligence 
+
+You become the Lord of a Time Keeper City. You may summon an epic hero giant bat that aids you. You automatically succeed on academic recall and gather intelligence rolls related to all historical topics or matters of what has transpired upon Adûrun.
+
+Titangrip 
+Requirements: 
++4 Physical 
++80 Feat of Strength
+
+You may dual-wield two-handed weapons. 
+
+Tise 
+Requirements: 
+-Tise Sacrifice Ancillary
+
+You may use 25 cost Ashi Divine Interventions without spending deity relationship points. Upon succeeding in your campaign spanning goal based on your inciting incident in your background, or your death, you become a Tise permanently. Current Tises will aid you if you are battling powerful enemies of Ashi or about to accomplish his goals. 
+
+Tise Initiate  
+Requirements: 
+Permanent singular dedication to the Dark God Ashi.
+
+You may use 1 cost Ashi Divine Interventions without spending deity relationship points. You may summon a shadeling to serve you once per moonface during Har’Rheunen phase. 
+
+Tise Loyalist
+Requirements: 
+-Tise Initiate Ancillary
+
+You may use 3 cost Ashi Divine Interventions without spending deity relationship points. You may summon spiritual attribute shadelings to serve you once per moonface during Har’Rheunen phase. 
+
+Tise Sacrifice 
+Requirements: 
+-Tise Loyalist Ancillary
+
+You may use 7 cost Ashi Divine Interventions without spending deity relationship points. You may summon spiritual attribute wraiths to serve you once per moonface during Har’Rheunen phase. 
+
+Touchy
+Requirements: 
+-Anz, Ganzenonin, Grazin, or Jiinin 
+-Aggressive Flaw 
+
+When you are critically hit, you are afflicted with the enraged status. 
+
+Tower Ildakar 
+Requirements: 
+-Ildakar Background
+-Relevant Ildakar Faculty unlocked
+
+Arkrow (Thermomancy): Thermomancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental.   
+Retovas (Electromancy): Electromancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental.   
+Muras (Vivomancy): Vivomancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental.   
+Parron (Transmutation): Transmutation spells may be cast at one tier higher in one aspect per spell than you have physical/mental.   
+Derus (Artificy): Artificy spells may be cast at one tier higher in one aspect per spell than you have physical/mental.   
+Tower of The Sun (Cosmomancy): Cosmomancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental.   
+The Twin Stars (Oscillomancy): Oscillomancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental.
+
+You are now a member of one of the selected organizations. You may only take this ancillary once. 
+
+Unwilling to Die
+Requirements:
++50 Feat of Defiance
+-Homeless background or Ganzenonin Ancillary 
+
+You do not die when you fail a Feat of Defiance check. You may use this feature twice per character tier, dying when you fail the third check.  
+
+Veteran Footsoldier
+Requirements:
++50 Battle
+-Warrior background 
+
+When adjacent to a bracing (martial prowess abilities) or defending ally, they may use your defense rolls with battle instead of their own.
+
+Vulture 
+Requirements: 
+-bilge baron ancillary
++3 Spiritual
+
+You are unable to be charmed or turned by aligned creatures. You may become invisible for spiritual attribute minutes per moon face. 
+
+Warden
+Requirements: 
+-Hunter or Wanderer background 
++50 Track or Forage
+-At least 1 Long Range Martial Prowess Ability unlocked 
+
+Your ranged attacks do not treat foliage as cover. 
+
+Weapon Mastery [Choose Weapon Category]
+Requirements: 
+-All base abilities in chosen Martial Prowess unlocked. 
+-Cannot be Armors, Shields, or Exotic 
+
+Choose a Martial Prowess. You may now use all unlocked abilities with this type of weapon, regardless of which Martial Prowess they fall under, so long as they are not under Armors or Shields. If applicable, the range of this Martial Prowess cannot become larger than +1. 
+
+You may only take this ancillary once.
+
+White Paladin
+Requirements:
+-Red Paladin Ancillary
++4 Physical  
++150 Sense Supernatural and +150 Resist Supernatural  
+
+You are in command of The Paladin Order behind the Angelic Vessels of Rasadan and Zera. You may expend Deity Relationship points with Rasadan for all other Aligned Deities’ Divine Interventions. All weapons you touch deal holy spiritual damage for spiritual attribute minutes, and all armors you touch gain their appropriate damage reduction for unholy spiritual necrosis damage for spiritual attribute minutes.

@@ -1,0 +1,73 @@
+﻿Ancestry Ancillaries
+
+Thairin Inin
+Thairin: May use two-handed weapons and shields simultaneously.
+Silverrun: You add character tier x physical modifier to weapon damage. 
+Suwasi: Your armors and shields do not cost passive energy.
+
+
+Grazin Inin
+Whale Clan: Swimming only takes 1 energy/AP.
+Owl Clan: Advantage when in mental contested rolls.
+Raven Clan: Add physical modifier x character tier to energy gained through spells/potions. used to heal 
+Wolf Clan: You gain +1 coverage against cold wounds.
+Bear Clan: You gain +20% to armor damage reductions.
+Fox Clan: You may use Deceive in place of another skill character tier times per moon face.
+
+
+Bryonin Inin
+Bryonin: You see through non-magical disguises after a few minutes spent speaking/interacting with a mortal.
+
+
+Jiinin Inin 
+Yaich: Add physical modifier to initiative rolls.
+Shun: Add +10 martial prowess at character-tier increases.
+Rodonin: You always go first in initiative while in darkness.
+
+
+Rivanonin Inin
+Rivanonin: You gain +1 link point per level per link partner.
+Ecthvasin: Your Ildakar spells are 20% more effective.
+Kaindorin: You may spend a link point after a failed link once per moon face per link partner to attempt again.
+
+
+Melfarionin Inin 
+Melfarionin: May use message with adjacent link partners for free.
+
+
+Thuilin Inin
+Thuilin: You may use feat of agility to defend against ranged weapon/spell attacks instead of battle.
+Ganzenonin: You gain +30 Martial Prowess at character tier increases. 
+
+
+Letelin Inin
+Letelin: You recover all spent ammunition after every encounter. 
+Georothin: You are immune to poison.
+
+
+Anz
+Rammish: +20% to resisting abilities/effects of a specific enemy type.
+Prolux: Unless brought to 0 energy after sustaining damage, may spend 3 action points as a reaction to regain 2x character tier energy.
+Onlu: You automatically regain 2x character tier energy per round.
+Saion: When conscious again after being unconscious, you may add your feat of strength skill’s raw value to energy at the cost of a level of exhaustion.
+Epir: Your unarmed attacks multiply by your physical modifier for damage.
+
+
+Phi’ilin
+Elari: You may use Will Dakar for Battle or Battle for Will Dakar.
+Laigoni: You may move for free once per round.
+Rodoni: You gain +20% damage reduction from all sources. 
+
+
+Cerevu
+Darii: You gain +20% battle against a specific type of creature. 
+Cerii: Your tools don't take up inventory slots. 
+
+
+Venii
+Agunic: You can link with non-mortal creature types.
+Unfaic: You can climb sheer surfaces and on ceilings without tools or checks.
+
+
+Freinin 
+Human: You gain +10% energy, +10 martial prowess, and +1 spiritual mod deity relationship point cap at character tier increases. 
