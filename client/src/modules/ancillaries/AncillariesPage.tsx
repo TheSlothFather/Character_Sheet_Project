@@ -9,6 +9,12 @@ import armorCsv from "../../data/armor.csv?raw";
 import { parseMartialCsv, MartialAbility } from "../martial/martialUtils";
 import { parseMagicFaculties } from "../magic/magicParser";
 import facultiesText from "../../data/magic-faculties.txt?raw";
+import {
+  AncillaryMetadata,
+  getAncillaryStorageKey,
+  persistAncillarySelection,
+  readAncillarySelection
+} from "./storage";
 
 type RawAncillary = {
   id: string;
@@ -185,6 +191,8 @@ const buildSkillTotals = (character: Character | null, lookup: Map<string, strin
 
 const FACULTY_CATALOG = parseMagicFaculties(facultiesText);
 const FACULTY_LOOKUP = new Map(FACULTY_CATALOG.map((faculty) => [normalizeName(faculty.name), faculty]));
+
+const WEAPON_MASTERY_ID = "weapon-mastery-choose-weapon-category";
 
 const summarizeIldakarFaculties = (characterId: string | null | undefined): IldakarProgress => {
   if (!characterId || typeof window === "undefined") {
@@ -624,31 +632,6 @@ const GENERAL_ENTRIES = ALL_ENTRIES.filter((entry) => entry.category === "genera
 const ANCESTRY_ENTRIES = ALL_ENTRIES.filter((entry) => entry.category === "ancestry");
 const ANCESTRY_GROUPS_BY_ID = new Map(data.ancestryGroups.map((group) => [group.id, group]));
 
-const STORAGE_PREFIX = "ancillaries:selected";
-
-const readSelection = (key: string): string[] => {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as string[];
-    const validIds = new Set(ALL_ENTRIES.map((entry) => entry.id));
-    return Array.isArray(parsed) ? parsed.filter((id) => validIds.has(id)) : [];
-  } catch (err) {
-    console.warn("Unable to read ancillary selection", err);
-    return [];
-  }
-};
-
-const persistSelection = (key: string, ids: string[]) => {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(key, JSON.stringify(ids));
-  } catch (err) {
-    console.warn("Unable to persist ancillary selection", err);
-  }
-};
-
 const summarizeAllowed = (character: Character | null): { total: number; tierAdvancements: number } => {
   if (!character) {
     return { total: 2, tierAdvancements: 0 };
@@ -713,17 +696,40 @@ export const AncillariesPage: React.FC = () => {
     []
   );
 
-  const storageKey = React.useMemo(() => `${STORAGE_PREFIX}:${selectedId ?? "unassigned"}`, [selectedId]);
+  const storageKey = React.useMemo(() => getAncillaryStorageKey(selectedId), [selectedId]);
 
-  const [selectedAncillaries, setSelectedAncillaries] = React.useState<string[]>(() => readSelection(storageKey));
+  const [{ selected: selectedAncillaries, metadata }, setSelection] = React.useState(() => readAncillarySelection(selectedId));
+
+  const setSelectedAncillaries = React.useCallback(
+    (updater: React.SetStateAction<string[]>) => {
+      setSelection((prev) => {
+        const nextSelected = typeof updater === "function" ? (updater as (ids: string[]) => string[])(prev.selected) : updater;
+        const validIds = new Set(ALL_ENTRIES.map((entry) => entry.id));
+        const filtered = nextSelected.filter((id) => validIds.has(id));
+        const nextMetadata: AncillaryMetadata = {};
+        filtered.forEach((id) => {
+          if (prev.metadata[id]) nextMetadata[id] = prev.metadata[id];
+        });
+        return { selected: filtered, metadata: nextMetadata };
+      });
+    },
+    []
+  );
+
+  const updateMetadata = React.useCallback((id: string, data: Record<string, unknown>) => {
+    setSelection((prev) => ({
+      selected: prev.selected,
+      metadata: { ...prev.metadata, [id]: { ...prev.metadata[id], ...data } }
+    }));
+  }, []);
 
   React.useEffect(() => {
-    setSelectedAncillaries(readSelection(storageKey));
+    setSelection(readAncillarySelection(selectedId));
   }, [storageKey]);
 
   React.useEffect(() => {
-    persistSelection(storageKey, selectedAncillaries);
-  }, [selectedAncillaries, storageKey]);
+    persistAncillarySelection(selectedId, { selected: selectedAncillaries, metadata });
+  }, [metadata, selectedAncillaries, selectedId, storageKey]);
 
   React.useEffect(() => {
     const load = async () => {
@@ -784,6 +790,28 @@ export const AncillariesPage: React.FC = () => {
     selectedCharacter?.id,
     selectedId
   ]);
+
+  const weaponCategoryOptions = React.useMemo(
+    () =>
+      Array.from(martialProgress.categoryAbilityCounts.entries())
+        .filter(([key]) => key.startsWith("Weapon:"))
+        .map(([key, total]) => {
+          const unlocked = martialProgress.unlockedByCategory.get(key) ?? 0;
+          return {
+            key,
+            label: key.replace(/^Weapon:/, ""),
+            unlocked,
+            total,
+            complete: unlocked >= total
+          };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [martialProgress.categoryAbilityCounts, martialProgress.unlockedByCategory]
+  );
+
+  const selectedWeaponCategory = (metadata[WEAPON_MASTERY_ID]?.weaponCategory as string) ?? "";
+  const selectedWeaponCategoryState = weaponCategoryOptions.find((opt) => opt.key === selectedWeaponCategory);
+  const weaponCategoryComplete = selectedWeaponCategoryState ? selectedWeaponCategoryState.complete : false;
 
   const requirementContext = React.useMemo<RequirementContext>(
     () => ({
@@ -899,7 +927,16 @@ export const AncillariesPage: React.FC = () => {
       (!isAncestryAllowedForCharacter(entry.ancestryGroupId, selectedCharacter) || (!ancestryLevelEligible && !isSelected));
     const requirementResults = evaluateEntryRequirements(entry);
     const requirementsBlocked = requirementResults.some((result) => !result.met);
-    const disabled = !showRemove && (isSelected || remaining <= 0 || ancestryBlocked || requirementsBlocked);
+    const isWeaponMastery = entry.id === WEAPON_MASTERY_ID;
+    const storedCategory = (metadata[entry.id]?.weaponCategory as string) ?? "";
+    const weaponCategoryState = storedCategory
+      ? weaponCategoryOptions.find((opt) => opt.key === storedCategory)
+      : selectedWeaponCategoryState;
+    const weaponCategoryBlocked =
+      isWeaponMastery && (!weaponCategoryState || !weaponCategoryState.complete || !storedCategory);
+
+    const disabled =
+      !showRemove && (isSelected || remaining <= 0 || ancestryBlocked || requirementsBlocked || weaponCategoryBlocked);
 
     return (
       <div key={entry.id} style={{ ...cardStyle, marginBottom: "0.75rem" }}>
@@ -937,6 +974,43 @@ export const AncillariesPage: React.FC = () => {
             <div style={{ whiteSpace: "pre-line", color: "#cbd5e1", fontSize: 14 }}>{entry.description}</div>
             {entry.category === "ancestry" && !ancestryLevelEligible && !isSelected && (
               <div style={{ color: "#fbbf24", marginTop: 6, fontSize: 13 }}>Ancestry ancillaries can only be added at level 1.</div>
+            )}
+            {isWeaponMastery && (
+              <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                <label style={{ fontWeight: 700 }}>Choose Weapon Category</label>
+                <select
+                  value={storedCategory}
+                  onChange={(e) => updateMetadata(entry.id, { weaponCategory: e.target.value })}
+                  style={{
+                    padding: "0.45rem 0.6rem",
+                    borderRadius: 6,
+                    background: "#0b1017",
+                    color: "#e5e7eb",
+                    border: "1px solid #2f3542"
+                  }}
+                >
+                  <option value="">Select a weapon category</option>
+                  {weaponCategoryOptions.map((opt) => (
+                    <option key={opt.key} value={opt.key}>
+                      {opt.label} — {opt.unlocked}/{opt.total} abilities unlocked
+                    </option>
+                  ))}
+                </select>
+                {storedCategory && (
+                  <div style={{ fontSize: 13, color: weaponCategoryBlocked ? "#f87171" : "#34d399" }}>
+                    {weaponCategoryState
+                      ? weaponCategoryState.complete
+                        ? "All abilities purchased."
+                        : `This category still needs ${weaponCategoryState.total - weaponCategoryState.unlocked} abilities.`
+                      : "Select a valid category."}
+                  </div>
+                )}
+                {weaponCategoryBlocked && (
+                  <div style={{ color: "#f87171", fontSize: 13 }}>
+                    You must fully purchase a weapon category before taking Weapon Mastery.
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <div>
