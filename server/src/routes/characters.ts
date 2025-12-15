@@ -12,6 +12,7 @@ export interface StoredCharacter {
   attributePointsAvailable?: number;
   skillPoints: number;
   skillAllocations: Record<string, number>;
+  skillAllocationMinimums?: Record<string, number>;
   skillBonuses?: Record<string, number>;
   backgrounds?: BackgroundSelection;
   attributes?: Record<string, number>;
@@ -164,6 +165,7 @@ charactersRouter.post("/", async (req: Request, res: Response) => {
     notes,
     skillPoints,
     skillAllocations,
+    skillAllocationMinimums,
     skillBonuses,
     backgrounds,
     attributes,
@@ -180,6 +182,7 @@ charactersRouter.post("/", async (req: Request, res: Response) => {
   const numericSkillPoints =
     typeof skillPoints === "number" && Number.isFinite(skillPoints) ? skillPoints : DEFAULT_SKILL_POINTS;
   const sanitizedAllocations = sanitizeSkillAllocations(skillAllocations);
+  const sanitizedMinimums = sanitizeSkillAllocations(skillAllocationMinimums);
   const sanitizedBackgrounds = sanitizeBackgrounds(backgrounds);
   const sanitizedAttributes = sanitizeAttributes(attributes);
   const sanitizedSkillBonuses = sanitizeSkillBonuses(skillBonuses);
@@ -205,6 +208,7 @@ charactersRouter.post("/", async (req: Request, res: Response) => {
       attributePointsAvailable: numericAttributePoints,
       skillPoints: numericSkillPoints,
       skillAllocations: sanitizedAllocations,
+      skillAllocationMinimums: sanitizedMinimums,
       backgrounds: sanitizedBackgrounds,
       attributes: sanitizedAttributes,
       skillBonuses: sanitizedSkillBonuses,
@@ -245,6 +249,7 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
     notes,
     skillPoints,
     skillAllocations,
+    skillAllocationMinimums,
     skillBonuses,
     backgrounds,
     attributes,
@@ -263,6 +268,10 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
     const existing = characters[idx];
     const nextSkillAllocations =
       skillAllocations !== undefined ? sanitizeSkillAllocations(skillAllocations) : existing.skillAllocations;
+    const nextSkillAllocationMinimums =
+      skillAllocationMinimums !== undefined
+        ? sanitizeSkillAllocations(skillAllocationMinimums)
+        : existing.skillAllocationMinimums;
     const nextSkillPoints =
       typeof skillPoints === "number" && Number.isFinite(skillPoints) ? skillPoints : existing.skillPoints;
     const nextBackgrounds = backgrounds !== undefined ? sanitizeBackgrounds(backgrounds) : existing.backgrounds;
@@ -287,6 +296,7 @@ charactersRouter.put("/:id", async (req: Request, res: Response) => {
       notes: typeof notes === "string" ? notes : existing.notes,
       skillPoints: nextSkillPoints,
       skillAllocations: nextSkillAllocations,
+      skillAllocationMinimums: nextSkillAllocationMinimums,
       backgrounds: nextBackgrounds,
       attributes: nextAttributes,
       skillBonuses: nextSkillBonuses,

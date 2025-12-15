@@ -15,6 +15,9 @@ const isAllocationMap = (value: unknown): value is Record<string, number> => {
   return Object.values(value as Record<string, unknown>).every((v) => typeof v === "number");
 };
 
+const isOptionalAllocationMap = (value: unknown): value is Record<string, number> | undefined =>
+  value === undefined || isAllocationMap(value);
+
 const isCharacter = (value: unknown): value is Character => {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Partial<Character>;
@@ -23,7 +26,8 @@ const isCharacter = (value: unknown): value is Character => {
     typeof candidate.name === "string" &&
     typeof candidate.level === "number" &&
     typeof candidate.skillPoints === "number" &&
-    isAllocationMap(candidate.skillAllocations)
+    isAllocationMap(candidate.skillAllocations) &&
+    isOptionalAllocationMap(candidate.skillAllocationMinimums)
   );
 };
 
@@ -84,9 +88,13 @@ interface CharacterSheetProps {
   remaining: number;
   skillPointPool: number;
   allocations: Record<string, number>;
+  allocationMinimums: Record<string, number>;
   skillBonuses: Record<string, number>;
   onChangeAllocation: (skillCode: string, delta: number) => void;
+  onLockAllocations: () => void;
   disableAllocation: boolean;
+  lockDisabled: boolean;
+  isLocking: boolean;
   attributePointsAvailable: number;
   onSpendAttributePoint: (attributeKey: AttributeKey) => void;
   isUpdating: boolean;
@@ -109,9 +117,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   remaining,
   skillPointPool,
   allocations,
+  allocationMinimums,
   skillBonuses,
   onChangeAllocation,
+  onLockAllocations,
   disableAllocation,
+  lockDisabled,
+  isLocking,
   attributePointsAvailable,
   onSpendAttributePoint,
   isUpdating,
@@ -210,10 +222,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const renderSkillAllocationRow = (skill: NamedDefinition, showDivider = true) => {
     const code = getSkillCode(skill);
     const allocated = allocations[code] ?? 0;
+    const minimum = allocationMinimums[code] ?? 0;
     const bonus = skillBonuses[code] ?? 0;
     const total = allocated + bonus;
     const disableInc = disableAllocation || remaining <= 0;
-    const disableDec = disableAllocation || allocated <= 0;
+    const disableDec = disableAllocation || allocated <= minimum;
 
     return (
       <div
@@ -395,7 +408,27 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   {remaining}
                 </div>
               </div>
-              <div style={{ fontSize: 12, color: "#9aa3b5" }}>Pool: {skillPointPool}</div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <div style={{ fontSize: 12, color: "#9aa3b5" }}>Pool: {skillPointPool}</div>
+                <button
+                  onClick={onLockAllocations}
+                  disabled={lockDisabled || isLocking}
+                  style={{
+                    padding: "0.35rem 0.6rem",
+                    borderRadius: 6,
+                    border: "1px solid #374151",
+                    background: lockDisabled ? "#1a1d24" : "#253143",
+                    color: lockDisabled ? "#6b7280" : "#e8edf7",
+                    cursor: lockDisabled || isLocking ? "not-allowed" : "pointer",
+                    fontWeight: 700
+                  }}
+                >
+                  {isLocking ? "Locking..." : "Lock Skill Points"}
+                </button>
+              </div>
+            </div>
+            <div style={{ fontSize: 12, color: "#f38b2f", padding: "0 1rem 0.35rem" }}>
+              Spend all skill points at level up and lock your allocations when finished.
             </div>
             <div style={{ overflowY: "auto", padding: "0.75rem", flex: 1 }}>
               {skills.length === 0 ? (
@@ -529,6 +562,7 @@ export const CharactersPage: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [allocationSavingId, setAllocationSavingId] = React.useState<string | null>(null);
+  const [lockingAllocationId, setLockingAllocationId] = React.useState<string | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [levelUpdatingId, setLevelUpdatingId] = React.useState<string | null>(null);
   const [generalSavingId, setGeneralSavingId] = React.useState<string | null>(null);
@@ -639,8 +673,11 @@ export const CharactersPage: React.FC = () => {
 
     const pool = selectedCharacter.skillPoints ?? DEFAULT_SKILL_POINT_POOL;
     const currentAllocations = selectedCharacter.skillAllocations ?? {};
+    const minimums = selectedCharacter.skillAllocationMinimums ?? {};
     const currentValue = currentAllocations[skillCode] ?? 0;
-    const nextValue = Math.max(0, currentValue + delta);
+    const floor = minimums[skillCode] ?? 0;
+    const nextValue = Math.max(floor, currentValue + delta);
+    if (nextValue === currentValue) return;
     const currentTotal = sumAllocations(currentAllocations);
     const proposedTotal = currentTotal - currentValue + nextValue;
     if (proposedTotal > pool) return;
@@ -672,6 +709,14 @@ export const CharactersPage: React.FC = () => {
     if (!selectedId) return;
     const selectedCharacter = characters.find((c) => c.id === selectedId);
     if (!selectedCharacter) return;
+
+    const remainingPoints =
+      (selectedCharacter.skillPoints ?? DEFAULT_SKILL_POINT_POOL) -
+      sumAllocations(selectedCharacter.skillAllocations ?? {});
+    if (remainingPoints > 0) {
+      setError("Spend all skill points before leveling up.");
+      return;
+    }
 
     const nextLevel = selectedCharacter.level + 1;
     const nextSkillPoints = (selectedCharacter.skillPoints ?? DEFAULT_SKILL_POINT_POOL) + 10;
@@ -736,14 +781,59 @@ export const CharactersPage: React.FC = () => {
     await updateSelectedCharacter(patch, "Failed to spend attribute point");
   };
 
+  const handleLockAllocations = async () => {
+    if (!selectedId) return;
+    const selectedCharacter = characters.find((c) => c.id === selectedId);
+    if (!selectedCharacter) return;
+
+    const pool = selectedCharacter.skillPoints ?? DEFAULT_SKILL_POINT_POOL;
+    const currentAllocations = selectedCharacter.skillAllocations ?? {};
+    const remainingPoints = pool - sumAllocations(currentAllocations);
+    if (remainingPoints !== 0) {
+      setError("Spend all skill points before locking allocations.");
+      return;
+    }
+
+    const existingMinimums = selectedCharacter.skillAllocationMinimums ?? {};
+    const nextMinimums: Record<string, number> = { ...existingMinimums };
+    Object.entries(currentAllocations).forEach(([code, value]) => {
+      nextMinimums[code] = Math.max(existingMinimums[code] ?? 0, value);
+    });
+
+    setError(null);
+    setLockingAllocationId(selectedId);
+    const optimistic = { ...selectedCharacter, skillAllocationMinimums: nextMinimums };
+    setCharacters((prev) => prev.map((c) => (c.id === selectedId ? optimistic : c)));
+    try {
+      const saved = await api.updateCharacter(selectedId, { skillAllocationMinimums: nextMinimums });
+      if (!isCharacter(saved)) {
+        throw new Error("Unexpected response when locking skill allocations");
+      }
+      setCharacters((prev) => prev.map((c) => (c.id === saved.id ? saved : c)));
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Failed to lock skill allocations";
+      setError(message);
+      setCharacters((prev) => prev.map((c) => (c.id === selectedId ? selectedCharacter : c)));
+    } finally {
+      setLockingAllocationId(null);
+    }
+  };
+
   const selectedCharacter = characters.find((c) => c.id === selectedId) || null;
   const currentAllocations = selectedCharacter?.skillAllocations ?? {};
+  const allocationMinimums = selectedCharacter?.skillAllocationMinimums ?? {};
   const skillPointPool = selectedCharacter?.skillPoints ?? DEFAULT_SKILL_POINT_POOL;
   const totalAllocated = sumAllocations(currentAllocations);
   const remaining = skillPointPool - totalAllocated;
   const skillBonuses = selectedCharacter?.skillBonuses ?? {};
   const attributePointsAvailable = selectedCharacter?.attributePointsAvailable ?? 0;
   const isGeneralSaving = selectedCharacter ? generalSavingId === selectedCharacter.id : false;
+  const lockButtonDisabled =
+    !selectedCharacter ||
+    loadingAny ||
+    allocationSavingId === selectedCharacter?.id ||
+    lockingAllocationId === selectedCharacter?.id ||
+    remaining !== 0;
 
   const handleSaveNotes = (notes: Partial<Character>) => updateSelectedCharacter(notes, "Failed to save notes");
 
@@ -808,7 +898,7 @@ export const CharactersPage: React.FC = () => {
           </button>
           <button
             onClick={handleLevelUp}
-            disabled={!selectedId || loadingAny || levelUpdatingId === selectedId}
+            disabled={!selectedId || loadingAny || levelUpdatingId === selectedId || remaining > 0}
             style={{
               padding: "0.45rem 0.75rem",
               borderRadius: 8,
@@ -833,9 +923,15 @@ export const CharactersPage: React.FC = () => {
             remaining={remaining}
             skillPointPool={skillPointPool}
             allocations={currentAllocations}
+            allocationMinimums={allocationMinimums}
             skillBonuses={skillBonuses}
             onChangeAllocation={onChangeAllocation}
-            disableAllocation={loadingAny || allocationSavingId === selectedCharacter.id}
+            onLockAllocations={handleLockAllocations}
+            disableAllocation={
+              loadingAny || allocationSavingId === selectedCharacter.id || lockingAllocationId === selectedCharacter.id
+            }
+            lockDisabled={lockButtonDisabled}
+            isLocking={lockingAllocationId === selectedCharacter.id}
             attributePointsAvailable={attributePointsAvailable}
             onSpendAttributePoint={handleSpendAttributePoint}
             isUpdating={loadingAny || isGeneralSaving}
