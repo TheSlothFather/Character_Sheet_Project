@@ -4,6 +4,9 @@ import { api, Character } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
 import { getSkillCode, normalizeSkillCode } from "../characters/skillMetadata";
+import weaponsCsv from "../../data/weapons.csv?raw";
+import armorCsv from "../../data/armor.csv?raw";
+import { parseMartialCsv, MartialAbility } from "../martial/martialUtils";
 
 type RawAncillary = {
   id: string;
@@ -54,6 +57,88 @@ const SKILL_ALIASES: Record<string, string> = {
 };
 
 const normalizeName = (value: string | undefined): string => (value ?? "").trim().toLowerCase();
+
+const MARTIAL_STORAGE_PREFIX = "martial_prowess_v2";
+const ILDAKAR_BACKGROUNDS = new Set([
+  "thermomancy",
+  "graviturgist",
+  "vivomancer",
+  "electromancer",
+  "pneumancer",
+  "photomancer"
+].map(normalizeName));
+
+type MartialProgress = {
+  totalUnlocked: number;
+  unlockedByCategory: Map<string, number>;
+  spentByCategory: Map<string, number>;
+  categoryCosts: Map<string, number>;
+  categoryAbilityCounts: Map<string, number>;
+  categoriesByName: Map<string, Set<string>>;
+};
+
+const buildMartialCatalog = () => {
+  const weaponAbilities = parseMartialCsv(weaponsCsv, "Weapon");
+  const armorAbilities = parseMartialCsv(armorCsv, "Armor");
+  const abilities = [...weaponAbilities, ...armorAbilities];
+
+  const abilityMap = new Map<string, MartialAbility>();
+  const categoryCosts = new Map<string, number>();
+  const categoryAbilityCounts = new Map<string, number>();
+  const categoriesByName = new Map<string, Set<string>>();
+
+  abilities.forEach((ability) => {
+    abilityMap.set(ability.id, ability);
+    const key = `${ability.kind}:${ability.category}`;
+    categoryCosts.set(key, (categoryCosts.get(key) ?? 0) + ability.mpCost);
+    categoryAbilityCounts.set(key, (categoryAbilityCounts.get(key) ?? 0) + 1);
+
+    const normalizedName = normalizeName(ability.category);
+    if (!categoriesByName.has(normalizedName)) categoriesByName.set(normalizedName, new Set());
+    categoriesByName.get(normalizedName)?.add(key);
+  });
+
+  return { abilityMap, categoryCosts, categoryAbilityCounts, categoriesByName };
+};
+
+const MARTIAL_CATALOG = buildMartialCatalog();
+
+const readMartialState = (characterId: string | null | undefined): { purchased: Set<string> } => {
+  if (typeof window === "undefined" || !characterId) return { purchased: new Set() };
+  try {
+    const raw = window.localStorage.getItem(`${MARTIAL_STORAGE_PREFIX}:${characterId}`);
+    if (!raw) return { purchased: new Set() };
+    const parsed = JSON.parse(raw) as { purchased?: string[] };
+    const purchased = Array.isArray(parsed.purchased) ? parsed.purchased : [];
+    return { purchased: new Set(purchased.filter((id) => MARTIAL_CATALOG.abilityMap.has(id))) };
+  } catch (err) {
+    console.warn("Unable to read martial prowess state", err);
+    return { purchased: new Set() };
+  }
+};
+
+const summarizeMartialProgress = (characterId: string | null | undefined): MartialProgress => {
+  const { purchased } = readMartialState(characterId);
+  const unlockedByCategory = new Map<string, number>();
+  const spentByCategory = new Map<string, number>();
+
+  purchased.forEach((id) => {
+    const ability = MARTIAL_CATALOG.abilityMap.get(id);
+    if (!ability) return;
+    const key = `${ability.kind}:${ability.category}`;
+    unlockedByCategory.set(key, (unlockedByCategory.get(key) ?? 0) + 1);
+    spentByCategory.set(key, (spentByCategory.get(key) ?? 0) + ability.mpCost);
+  });
+
+  return {
+    totalUnlocked: purchased.size,
+    unlockedByCategory,
+    spentByCategory,
+    categoryCosts: MARTIAL_CATALOG.categoryCosts,
+    categoryAbilityCounts: MARTIAL_CATALOG.categoryAbilityCounts,
+    categoriesByName: MARTIAL_CATALOG.categoriesByName
+  };
+};
 
 const buildSkillLookup = (definitions: ReturnType<typeof useDefinitions>["data"] | null): Map<string, string> => {
   const lookup = new Map<string, string>();
@@ -217,11 +302,115 @@ const evaluateNumericRequirement = (
 const matchesAny = (options: string[], candidates: Set<string>): boolean =>
   options.some((opt) => candidates.has(normalizeName(opt)));
 
+const evaluateMartialRequirement = (
+  raw: string,
+  cleaned: string,
+  normalized: string,
+  ctx: RequirementContext
+): RequirementResult | null => {
+  if (!normalized.includes("martial prowess")) return null;
+
+  const progress = ctx.martial;
+  const availableCategoriesWithAll = Array.from(progress.categoryAbilityCounts.entries()).filter(
+    ([key, total]) => (progress.unlockedByCategory.get(key) ?? 0) >= total
+  );
+
+  const categoriesByName = Array.from(progress.categoriesByName.entries()).filter(([name]) =>
+    normalized.includes(name)
+  );
+
+  const abilityCountMatch = cleaned.match(/at least\s*(\d+)\s+martial prowess abilities/i);
+  const categoryCountMatch = cleaned.match(/(\d+)\s+martial prowess categories? with all/i);
+  const genericCountMatch = cleaned.match(/at least\s*(\d+)/i);
+
+  const requiredAbilityCount = abilityCountMatch
+    ? Number(abilityCountMatch[1])
+    : normalized.includes("abilities unlocked") && genericCountMatch
+    ? Number(genericCountMatch[1])
+    : null;
+  const requiredCategoryCount = categoryCountMatch
+    ? Number(categoryCountMatch[1])
+    : normalized.includes("categories with all")
+    ? 1
+    : null;
+
+  if (requiredCategoryCount !== null) {
+    const categoriesWithAll = availableCategoriesWithAll.length;
+    const categoriesMet = categoriesWithAll >= requiredCategoryCount;
+    const abilitiesMet = requiredAbilityCount === null || progress.totalUnlocked >= requiredAbilityCount;
+    const met = categoriesMet && abilitiesMet;
+    const details: string[] = [];
+    if (!categoriesMet) details.push(`${categoriesWithAll}/${requiredCategoryCount} categories complete`);
+    if (!abilitiesMet && requiredAbilityCount !== null)
+      details.push(`Martial Prowess abilities ${progress.totalUnlocked}/${requiredAbilityCount}`);
+    return { requirement: raw, met, detail: details.join("; ") || undefined };
+  }
+
+  if (normalized.includes("all martial prowess abilities unlocked")) {
+    const met = availableCategoriesWithAll.length > 0;
+    const detail = met ? undefined : "No categories have all Martial Prowess abilities unlocked";
+    return { requirement: raw, met, detail };
+  }
+
+  if (normalized.includes("abilities unlocked")) {
+    if (categoriesByName.length > 0 && requiredAbilityCount !== null) {
+      const met = categoriesByName.some(([, keys]) =>
+        Array.from(keys).some((key) => (progress.unlockedByCategory.get(key) ?? 0) >= requiredAbilityCount)
+      );
+      const detail = met ? undefined : "Not enough abilities unlocked in the specified category";
+      return { requirement: raw, met, detail };
+    }
+
+    if (requiredAbilityCount !== null) {
+      const met = progress.totalUnlocked >= requiredAbilityCount;
+      const detail = met ? undefined : `Martial Prowess abilities ${progress.totalUnlocked}/${requiredAbilityCount}`;
+      return { requirement: raw, met, detail };
+    }
+
+    const met = progress.totalUnlocked > 0;
+    return { requirement: raw, met, detail: met ? undefined : "No Martial Prowess abilities unlocked" };
+  }
+
+  if (normalized.includes("double the points") || normalized.includes("more points than are required")) {
+    const factor = normalized.includes("double the points") ? 2 : 1;
+    const candidate = Array.from(progress.categoryCosts.entries()).find(([key, cost]) => {
+      const spent = progress.spentByCategory.get(key) ?? 0;
+      return spent >= cost * factor;
+    });
+    const met = Boolean(candidate);
+    const detail = met
+      ? undefined
+      : `No category has ${factor === 2 ? "double" : "more than"} the points needed (${factor}x cost)`;
+    return { requirement: raw, met, detail };
+  }
+
+  if (normalized.includes("base abilities") && normalized.includes("martial prowess")) {
+    const met = availableCategoriesWithAll.length > 0;
+    const detail = met ? undefined : "No Martial Prowess category has all base abilities unlocked";
+    return { requirement: raw, met, detail };
+  }
+
+  if (normalized.includes("long range")) {
+    const targetCategories = progress.categoriesByName.get("long range");
+    const count = targetCategories
+      ? Array.from(targetCategories).reduce((sum, key) => sum + (progress.unlockedByCategory.get(key) ?? 0), 0)
+      : 0;
+    const met = count > 0;
+    const detail = met ? undefined : "No Long Range Martial Prowess abilities unlocked";
+    return { requirement: raw, met, detail };
+  }
+
+  return { requirement: raw, met: false, detail: "Manual verification required" };
+};
+
 const evaluateNonNumericRequirement = (raw: string, ctx: RequirementContext): RequirementResult => {
   const cleaned = raw.replace(/^[-+]/, "").trim();
   const normalized = normalizeName(cleaned);
 
   if (!normalized) return { requirement: raw, met: true };
+
+  const martialResult = evaluateMartialRequirement(raw, cleaned, normalized, ctx);
+  if (martialResult) return martialResult;
 
   if (normalized.includes("ancillar")) {
     const matchingId = Array.from(ctx.ancillaryNames.entries()).find(([name]) => normalized.includes(name))?.[1];
@@ -235,7 +424,16 @@ const evaluateNonNumericRequirement = (raw: string, ctx: RequirementContext): Re
       .split(/,|\bor\b|\band\b/)
       .map((p) => p.trim())
       .filter(Boolean);
-    const met = tokens.length ? matchesAny(tokens, ctx.backgrounds) : false;
+    const met =
+      tokens.length === 0
+        ? false
+        : tokens.some((token) => {
+            const normalizedToken = normalizeName(token);
+            if (normalizedToken === "ildakar") {
+              return matchesAny(Array.from(ILDAKAR_BACKGROUNDS), ctx.backgrounds);
+            }
+            return ctx.backgrounds.has(normalizedToken);
+          });
     return { requirement: raw, met, detail: met ? undefined : "Missing required background" };
   }
 
@@ -316,6 +514,7 @@ type RequirementContext = {
   ancillaries: Set<string>;
   ancillaryNames: Map<string, string>;
   skillLookup: Map<string, string>;
+  martial: MartialProgress;
 };
 
 const buildEntries = (): AncillaryEntry[] => {
@@ -495,6 +694,11 @@ export const AncillariesPage: React.FC = () => {
 
   const skillTotals = React.useMemo(() => buildSkillTotals(selectedCharacter, skillLookup), [selectedCharacter, skillLookup]);
 
+  const martialProgress = React.useMemo(() => summarizeMartialProgress(selectedCharacter?.id ?? selectedId), [
+    selectedCharacter?.id,
+    selectedId
+  ]);
+
   const requirementContext = React.useMemo<RequirementContext>(
     () => ({
       character: selectedCharacter,
@@ -505,9 +709,21 @@ export const AncillariesPage: React.FC = () => {
       races: raceNames,
       ancillaries: new Set(selectedAncillaries),
       ancillaryNames,
-      skillLookup
+      skillLookup,
+      martial: martialProgress
     }),
-    [ancillaryNames, backgroundSet, flaws, raceNames, selectedAncillaries, selectedCharacter, skillLookup, skillTotals]
+    [
+      ancillaryNames,
+      backgroundSet,
+      flaws,
+      martialProgress,
+      raceNames,
+      selectedAncillaries,
+      selectedCharacter,
+      selectedId,
+      skillLookup,
+      skillTotals
+    ]
   );
 
   const evaluateEntryRequirements = React.useCallback(
