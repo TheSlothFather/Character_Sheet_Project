@@ -1,0 +1,1829 @@
+{
+  "ancestryGroups": [
+    {
+      "name": "Thairin Inin",
+      "id": "thairin-inin",
+      "entries": [
+        {
+          "id": "thairin",
+          "name": "Thairin",
+          "description": "May use two-handed weapons and shields simultaneously.",
+          "mechanical": false
+        },
+        {
+          "id": "silverrun",
+          "name": "Silverrun",
+          "description": "You add character tier x physical modifier to weapon damage.[Mechanical]",
+          "mechanical": true
+        },
+        {
+          "id": "suwasi",
+          "name": "Suwasi",
+          "description": "Your armors and shields do not cost passive energy.[Mechanical]",
+          "mechanical": true
+        }
+      ]
+    },
+    {
+      "name": "Grazin Inin",
+      "id": "grazin-inin",
+      "entries": [
+        {
+          "id": "whale-clan",
+          "name": "Whale Clan",
+          "description": "Swimming only takes 1 energy/AP.",
+          "mechanical": false
+        },
+        {
+          "id": "owl-clan",
+          "name": "Owl Clan",
+          "description": "Advantage when in mental contested rolls.",
+          "mechanical": false
+        },
+        {
+          "id": "raven-clan",
+          "name": "Raven Clan",
+          "description": "Add physical modifier x character tier to energy gained through spells/potions. used to heal",
+          "mechanical": false
+        },
+        {
+          "id": "wolf-clan",
+          "name": "Wolf Clan",
+          "description": "You always ignore 1 cold wound.[Mechanical]",
+          "mechanical": true
+        },
+        {
+          "id": "bear-clan",
+          "name": "Bear Clan",
+          "description": "You gain +20% to armor damage reductions.[Mechanical]",
+          "mechanical": true
+        },
+        {
+          "id": "fox-clan",
+          "name": "Fox Clan",
+          "description": "You may use Deceive in place of another skill character tier times per moon face.",
+          "mechanical": false
+        }
+      ]
+    },
+    {
+      "name": "Bryonin Inin",
+      "id": "bryonin-inin",
+      "entries": [
+        {
+          "id": "bryonin",
+          "name": "Bryonin",
+          "description": "You see through non-magical disguises after a few minutes spent speaking/interacting with a mortal.",
+          "mechanical": false
+        }
+      ]
+    },
+    {
+      "name": "Jiinin Inin",
+      "id": "jiinin-inin",
+      "entries": [
+        {
+          "id": "yaich",
+          "name": "Yaich",
+          "description": "Add physical modifier to initiative rolls.[Mechanical]",
+          "mechanical": true
+        },
+        {
+          "id": "shun",
+          "name": "Shun",
+          "description": "Add +10 martial prowess at character-tier increases.[Mechanical]",
+          "mechanical": true
+        },
+        {
+          "id": "rodonin",
+          "name": "Rodonin",
+          "description": "You always go first in initiative while in darkness.",
+          "mechanical": false
+        }
+      ]
+    },
+    {
+      "name": "Rivanonin Inin",
+      "id": "rivanonin-inin",
+      "entries": [
+        {
+          "id": "rivanonin",
+          "name": "Rivanonin",
+          "description": "You gain +1 link point per level per link partner.",
+          "mechanical": false
+        },
+        {
+          "id": "ecthvasin",
+          "name": "Ecthvasin",
+          "description": "Your Ildakar spell aspects are increased by 20%.[Mechanical]",
+          "mechanical": true
+        },
+        {
+          "id": "kaindorin",
+          "name": "Kaindorin",
+          "description": "You may spend a link point after a failed link once per moon face per link partner to attempt again.",
+          "mechanical": false
+        }
+      ]
+    },
+    {
+      "name": "Melfarionin Inin",
+      "id": "melfarionin-inin",
+      "entries": [
+        {
+          "id": "melfarionin",
+          "name": "Melfarionin",
+          "description": "May use message with adjacent link partners for free.",
+          "mechanical": false
+        }
+      ]
+    },
+    {
+      "name": "Thuilin Inin",
+      "id": "thuilin-inin",
+      "entries": [
+        {
+          "id": "thuilin",
+          "name": "Thuilin",
+          "description": "You may use feat of agility to defend against ranged weapon/spell attacks instead of battle.",
+          "mechanical": false
+        },
+        {
+          "id": "ganzenonin",
+          "name": "Ganzenonin",
+          "description": "You gain +30 Martial Prowess at character tier increases.[Mechanical]",
+          "mechanical": true
+        }
+      ]
+    },
+    {
+      "name": "Letelin Inin",
+      "id": "letelin-inin",
+      "entries": [
+        {
+          "id": "letelin",
+          "name": "Letelin",
+          "description": "You recover all spent ammunition after every encounter.",
+          "mechanical": false
+        },
+        {
+          "id": "georothin",
+          "name": "Georothin",
+          "description": "You are immune to poison.",
+          "mechanical": false
+        }
+      ]
+    },
+    {
+      "name": "Anz",
+      "id": "anz",
+      "entries": [
+        {
+          "id": "rammish",
+          "name": "Rammish",
+          "description": "+20% to resisting abilities/effects of a specific enemy type. [Mechanical]",
+          "mechanical": true
+        },
+        {
+          "id": "prolux",
+          "name": "Prolux",
+          "description": "Unless brought to 0 energy after sustaining damage, may spend 3 action points as a reaction to regain 2x character tier energy.",
+          "mechanical": false
+        },
+        {
+          "id": "onlu",
+          "name": "Onlu",
+          "description": "You automatically regain 2x character tier energy per round.[Mechanical]",
+          "mechanical": true
+        },
+        {
+          "id": "saion",
+          "name": "Saion",
+          "description": "When conscious again after being unconscious, you may add your feat of strength skill’s raw value to energy at the cost of a level of exhaustion.[Mechanical]",
+          "mechanical": true
+        },
+        {
+          "id": "epir",
+          "name": "Epir",
+          "description": "Your unarmed attacks multiply by your physical modifier for damage.[Mechanical]",
+          "mechanical": true
+        }
+      ]
+    },
+    {
+      "name": "Phi’ilin",
+      "id": "phiilin",
+      "entries": [
+        {
+          "id": "elari",
+          "name": "Elari",
+          "description": "You may use Will Dakar for Battle or Battle for Will Dakar.",
+          "mechanical": false
+        },
+        {
+          "id": "laigoni",
+          "name": "Laigoni",
+          "description": "You may move for free once per round.",
+          "mechanical": false
+        },
+        {
+          "id": "rodoni",
+          "name": "Rodoni",
+          "description": "You gain +20% damage reduction from all sources.[Mechanical]",
+          "mechanical": true
+        }
+      ]
+    },
+    {
+      "name": "Cerevu",
+      "id": "cerevu",
+      "entries": [
+        {
+          "id": "darii",
+          "name": "Darii",
+          "description": "You gain +20% battle against a specific type of creature.",
+          "mechanical": false
+        },
+        {
+          "id": "cerii",
+          "name": "Cerii",
+          "description": "Your tools don't take up inventory slots.",
+          "mechanical": false
+        }
+      ]
+    },
+    {
+      "name": "Venii",
+      "id": "venii",
+      "entries": [
+        {
+          "id": "agunic",
+          "name": "Agunic",
+          "description": "You can link with non-mortal creature types.",
+          "mechanical": false
+        },
+        {
+          "id": "unfaic",
+          "name": "Unfaic",
+          "description": "You can climb sheer surfaces and on ceilings without tools or checks.",
+          "mechanical": false
+        }
+      ]
+    },
+    {
+      "name": "Freinin",
+      "id": "freinin",
+      "entries": [
+        {
+          "id": "human",
+          "name": "Human",
+          "description": "You gain +10% energy, +10 martial prowess, and +1 spiritual mod deity relationship point cap at character tier increases.[Mechanical]",
+          "mechanical": true
+        }
+      ]
+    }
+  ],
+  "ancillaries": [
+    {
+      "id": "advanced-angelic-vessel",
+      "name": "Advanced Angelic Vessel",
+      "requirements": [
+        "-Fledgling Angelic Vessel Ancillary",
+        "+3 Spiritual"
+      ],
+      "description": "You may use Divine Intervention in place of Battle and Heal. You no longer need to breathe. You may use 3 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per moonface.",
+      "mechanical": false
+    },
+    {
+      "id": "advanced-fireborn",
+      "name": "Advanced Fireborn",
+      "requirements": [
+        "-Fledgling Fireborn Ancillary",
+        "+2 Spiritual",
+        "+1 Will"
+      ],
+      "description": "You can light unequipped items on fire with touch. Your critical attacks cause burning status on your foes. You can use a long-range attack that deals spiritual attribute in fire damage against targets equal to spiritual attribute x10 ft away at the cost of your melee attack in action points and energy.",
+      "mechanical": false
+    },
+    {
+      "id": "advanced-grappler",
+      "name": "Advanced Grappler",
+      "requirements": [
+        "-Grappler Ancillary"
+      ],
+      "description": "When you initiate grapples, the grapple tracker automatically starts at Heavily Maintained. When you are in a grapple, your foe loses passive energy 2x your physical attribute per round.",
+      "mechanical": false
+    },
+    {
+      "id": "advanced-psychic",
+      "name": "Advanced Psychic",
+      "requirements": [
+        "-Fledgling Psychic Ancillary",
+        "+75 Will Dakar",
+        "+75 Psionic Technique",
+        "-At least 1 2-Point Psionic Technique unlocked"
+      ],
+      "description": "You may use Psionic Technique in place of Will Dakar for tier 2 Ildakar spells.",
+      "mechanical": false
+    },
+    {
+      "id": "advanced-spell-blade",
+      "name": "Advanced Spell Blade",
+      "requirements": [
+        "-Fledgling Spell Blade Ancillary",
+        "+3 Physical",
+        "+75 Battle and +75 Psionic Technique, Will Dakar, or Divine Intervention",
+        "-All martial prowess abilities unlocked in a category"
+      ],
+      "description": "You add your physical attribute to your channeled spells after you attack, using the same process as the fledgling spell blade ancillary.",
+      "mechanical": false
+    },
+    {
+      "id": "advanced-spell-sculptor",
+      "name": "Advanced Spell Sculptor",
+      "requirements": [
+        "-Spell Sculptor Ancillary",
+        "+150 Will Dakar and Feat of Agility"
+      ],
+      "description": "You may now choose where to place the environmental consequence effects of your Ildakar Spells as opposed to the typical ring effect for the given faculty. The range of this relocation must use the same range as the spell’s primary effect.",
+      "mechanical": false
+    },
+    {
+      "id": "alchemist",
+      "name": "Alchemist",
+      "requirements": [
+        "-Alchemist Apprentice Ancillary",
+        "+100 Craft"
+      ],
+      "description": "You can Craft Advanced Potions. Crafting Basic Potions takes 20% less time and resources.",
+      "mechanical": false
+    },
+    {
+      "id": "alchemist-apprentice",
+      "name": "Alchemist Apprentice",
+      "requirements": [
+        "+50 Craft",
+        "+50 Academic Recall"
+      ],
+      "description": "You can Craft Basic Potions.",
+      "mechanical": false
+    },
+    {
+      "id": "ancestral-flame",
+      "name": "Ancestral Flame",
+      "requirements": [
+        "-Cerevu Race",
+        "-Membership in a Cerii or Darii Clan",
+        "-Possession of a Clan Lantern Relic"
+      ],
+      "description": "Add your Relationship Score (positive or negative) with your Clan to your Feat of Defiance rolls so long as you have your lantern lit. If your lantern is snuffed or runs out of fuel, you lose 25 Points with your Clan.",
+      "mechanical": false
+    },
+    {
+      "id": "astronaut",
+      "name": "Astronaut",
+      "requirements": [
+        "-Ildakar Understudy Ancillary",
+        "-Cosmomancy Faculty unlocked",
+        "+100 Navigate"
+      ],
+      "description": "You may navigate in extraterrestrial areas.",
+      "mechanical": false
+    },
+    {
+      "id": "bilge-baron",
+      "name": "Bilge Baron",
+      "requirements": [
+        "-Rat Ancillary",
+        "+2 Spiritual"
+      ],
+      "description": "You take half necrosis damage and add your spiritual attribute x8 to persevere against undead.",
+      "mechanical": false
+    },
+    {
+      "id": "black-cloth",
+      "name": "Black Cloth",
+      "requirements": [
+        "+2 Spiritual",
+        "+50 Worship and Divine Intervention",
+        "-Aligned",
+        "-Clergy Background"
+      ],
+      "description": "You may specify Divine Interventions that cost 1 and 3 Deity Relationships without using Texts or Verses, and these DIs only cost 1 Deity Relationship point.",
+      "mechanical": false
+    },
+    {
+      "id": "black-paladin",
+      "name": "Black Paladin",
+      "requirements": [
+        "+2 Physical",
+        "+2 Spiritual",
+        "+50 Sense Supernatural",
+        "+50 Resist Supernatural",
+        "-Aligned",
+        "-Clergy or Noble Background"
+      ],
+      "description": "Divine Interventions from Rasadan deal double damage to demons and undead.",
+      "mechanical": false
+    },
+    {
+      "id": "blue-cloth",
+      "name": "Blue Cloth",
+      "requirements": [
+        "-Green Cloth Ancillary",
+        "+4 Spiritual",
+        "+100 Worship and Divine Intervention"
+      ],
+      "description": "You may specify Divine Interventions that cost 15 Deity Relationship without using Texts or Verses, and these DIs only cost 7 Deity Relationship Points.",
+      "mechanical": false
+    },
+    {
+      "id": "blue-paladin",
+      "name": "Blue Paladin",
+      "requirements": [
+        "-Green Paladin Ancillary",
+        "+3 Physical",
+        "+100 Sense Supernatural and +100 Resist Supernatural"
+      ],
+      "description": "You may expend Deity Relationship points with Rasadan for Zera’s Divine Interventions. Add your physical attribute to the magical heals you cast.",
+      "mechanical": false
+    },
+    {
+      "id": "bone-warrior",
+      "name": "Bone Warrior",
+      "requirements": [
+        "-Du’umist Ancillary",
+        "+2 Physical",
+        "-All unarmed martial prowess abilities unlocked"
+      ],
+      "description": "An exoskeleton connected to your skeletal structure grows from your skin. Your unarmed strikes cause supernatural creatures to lose 1 AP for spiritual attribute rounds. They also cause targets to lose spiritual attribute Will Dakar, Psionic Technique, and Divine Intervention. In addition, your exoskeleton is as strong as steel, taking on the defensive properties of steel plate armor. With 3 Physical, titanium plate armor, with 4, giantstone plate armor, 5, star steel plate armor, and 6, aquiline plate armor. You may perform hard armor martial prowess abilities even when unarmored.",
+      "mechanical": false
+    },
+    {
+      "id": "champion-of-duum",
+      "name": "Champion of Du’um",
+      "requirements": [
+        "-Paladin of Du’um Ancillary",
+        "+4 Physical and Spiritual"
+      ],
+      "description": "The Dark God Du’um torments you, causing your critical strikes to disempower artifacts. Magical creatures take spiritual attribute damage when they attack you and per round as a passive when within spiritual attribute x20 ft of you.",
+      "mechanical": false
+    },
+    {
+      "id": "brutal-ildakar",
+      "name": "Brutal Ildakar",
+      "requirements": [
+        "+4 Physical",
+        "+100 Feat of Strength",
+        "-At least one Ildakar Faculty unlocked"
+      ],
+      "description": "May use Feat of Strength in place of Will Dakar. You may cast an Ildakar spell requiring +1 Physical in exchange for 1 exhaustion once per moonface.",
+      "mechanical": false
+    },
+    {
+      "id": "cavalryman",
+      "name": "Cavalryman",
+      "requirements": [
+        "+50 Battle",
+        "+50 Animal Handling",
+        "-Warrior or Noble Background",
+        "-One martial prowess ability unlocked"
+      ],
+      "description": "When you attack atop your mount after your mount moves, add the amount moved to your attack damage, whether melee or ranged. Your mount deals the amount of movement used in damage if it runs a creature over, and the creature cannot successfully defend.",
+      "mechanical": false
+    },
+    {
+      "id": "cloak-and-dagger",
+      "name": "Cloak and Dagger",
+      "requirements": [
+        "+50 Battle",
+        "+50 Conceal",
+        "-At least 1 Small Blades MP ability and 1 Cloak MP ability unlocked"
+      ],
+      "description": "Once per round, you may roll conceal against your target instead of battle, and upon success, you score a wicked critical on a hit.",
+      "mechanical": false
+    },
+    {
+      "id": "contortionist",
+      "name": "Contortionist",
+      "requirements": [
+        "+50 Feat of Agility"
+      ],
+      "description": "You can fit through openings that are one size smaller than your actual size. You can automatically escape from nonmagical bindings and shackles if given a few minutes. If you are grappled, the grapple tracker automatically starts at Slightly Escaped.",
+      "mechanical": false
+    },
+    {
+      "id": "crafter",
+      "name": "Crafter",
+      "requirements": [
+        "+50 Craft"
+      ],
+      "description": "You know how to use 2 more toolsets. With every character tier advancement, you learn how to use an additional toolset.",
+      "mechanical": false
+    },
+    {
+      "id": "cunning-ildakar",
+      "name": "Cunning Ildakar",
+      "requirements": [
+        "+4 Mental",
+        "+100 Academic Recall",
+        "-At least one Ildakar Faculty unlocked"
+      ],
+      "description": "May use Academic Recall in place of Will Dakar. You may cast an Ildakar spell requiring +1 Mental in exchange for 1 exhaustion once per moonface.",
+      "mechanical": false
+    },
+    {
+      "id": "demigod",
+      "name": "Demigod",
+      "requirements": [
+        "-Pontifex Maximus Ancillary",
+        "+4 Physical, Mental, or Will"
+      ],
+      "description": "1, 3, 7, 15, and 25 cost Divine Interventions with your Deity now cost energy instead of Deity Relationship points.",
+      "mechanical": false
+    },
+    {
+      "id": "divine-aura",
+      "name": "Divine Aura",
+      "requirements": [
+        "+5 Spiritual",
+        "-Full game history with a Deity",
+        "-Clergy background"
+      ],
+      "description": "If the Deity is aligned, unaligned creatures must succeed on a persevere check when they perceive you or flee, and if the Deity is unaligned, aligned creatures must do so instead. Attacks and spells used against you cause the attacker to take damage equal to your spiritual attribute. If the deity is of the sect below, they take this damage type: Light: Holy Spiritual Knowledge: Mental Ice: Cold Fire: Fire Nature: Poison Redeemed Dark: Necrosis Unaligned: Unholy Spiritual",
+      "mechanical": false
+    },
+    {
+      "id": "divine-health",
+      "name": "Divine Health",
+      "requirements": [
+        "+4 Spiritual",
+        "+100 Divine Intervention or Worship, or +60 in Both"
+      ],
+      "description": "May use Divine Intervention in place of Resist Toxins and Endure.",
+      "mechanical": false
+    },
+    {
+      "id": "diviner",
+      "name": "Diviner",
+      "requirements": [
+        "-Diviner Apprentice Ancillary",
+        "+2 Spiritual",
+        "+75 Worship and Divine Intervention"
+      ],
+      "description": "Based on your specific deity’s sect, you gain: Light: Spiritual attribute coverage against Holy Spiritual damage Knowledge: Spiritual attribute coverage against Mental damage Fire: Spiritual attribute coverage against Burn damage Ice: Spiritual attribute coverage against Cold damage Nature: Spiritual attribute coverage against Necrosis damage Dark: Spiritual attribute coverage against Unholy Spiritual damage damage",
+      "mechanical": false
+    },
+    {
+      "id": "druid",
+      "name": "Druid",
+      "requirements": [
+        "+3 Spiritual",
+        "+50 Worship",
+        "-Grazin Race",
+        "-Clergy Background"
+      ],
+      "description": "Must dedicate to only the Ice Sect. Your deities all gain an additional Spiritual attribute Deity Relationship Points passive generation regardless of biome.",
+      "mechanical": false
+    },
+    {
+      "id": "duumist",
+      "name": "Du’umist",
+      "requirements": [
+        "-Permanent singular dedication to Du’um",
+        "-Clergy or Criminal background",
+        "+1 Spiritual and Physical",
+        "-At least 3 Unarmed Martial Prowess abilities unlocked"
+      ],
+      "description": "You may create spiritual attribute 5ft by 5 ft antimagic fields where you stand per hour, each lasting 1 hour.",
+      "mechanical": false
+    },
+    {
+      "id": "enchanter",
+      "name": "Enchanter",
+      "requirements": [
+        "-Apprentice Enchanter Ancillary",
+        "+75 Will Dakar and +75 Craft"
+      ],
+      "description": "You may specify 1 major effect or all minor effects when you craft magic items. Your enchantments cause less radiation, and you can cast at +1 duration.",
+      "mechanical": false
+    },
+    {
+      "id": "enchanter-apprentice",
+      "name": "Enchanter Apprentice",
+      "requirements": [
+        "-Artificy Ildakar Faculty Unlocked",
+        "+50 Will Dakar and +50 Craft"
+      ],
+      "description": "You may specify 1 minor effect when you craft magic items.",
+      "mechanical": false
+    },
+    {
+      "id": "epic-angelic-vessel",
+      "name": "Epic Angelic Vessel",
+      "requirements": [
+        "-Heroic Angelic Vessel Ancillary",
+        "+4 Spiritual"
+      ],
+      "description": "You may use Divine Intervention in place of Will Skills. You no longer need to sleep. You may use 15 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per moonface.",
+      "mechanical": false
+    },
+    {
+      "id": "epic-fireborn",
+      "name": "Epic Fireborn",
+      "requirements": [
+        "-Heroic Fireborn Ancillary",
+        "+4 Spiritual",
+        "+1 Will",
+        "Instead of teal blue, your flames can now manifest as gold, purple, blue, red, green, or black. Choose one of the following:"
+      ],
+      "description": "Gold: All prior Fireborn abilities may now be used to heal instead. All evil creatures take additional damage equal to spiritual attribute. Purple: All prior Fireborn abilities may now be used to deal mental damage instead. All creatures with at least -1 Mental now take additional damage equal to spiritual attribute. Blue: All prior Fireborn abilities may now be used to deal cold elemental and freeze instead of burn. All fire-based creatures and elementals now take additional damage equal to spiritual attribute. Red: All prior Fireborn abilities now deal +1 damage. All cold and water-based creatures and elementals take additional damage equal to spiritual attribute. Green: All prior Fireborn abilities may now be used to deal poison damage and poison instead of burn. All beasts and sentient plants take additional damage equal to spiritual attribute. Black: All prior Fireborn abilities may now be used to deal necrosis damage and necrotize instead of burn. Undead take additional damage equal to spiritual attribute. You may now attempt to become a Thuil. You may only take this ancillary once.",
+      "mechanical": false
+    },
+    {
+      "id": "epic-psychic",
+      "name": "Epic Psychic",
+      "requirements": [
+        "-Heroic Psychic Ancillary",
+        "+125 Will Dakar",
+        "+125 Psionic Technique",
+        "-At least 1 4-Point Psionic Technique unlocked",
+        "-At least 3 Basic Ildakar Faculties and 2 Advanced Ildakar Faculties unlocked"
+      ],
+      "description": "You may use Psionic Technique in place of Will Dakar for tier 4 Ildakar spells.",
+      "mechanical": false
+    },
+    {
+      "id": "epic-spell-blade",
+      "name": "Epic Spell Blade",
+      "requirements": [
+        "-Heroic Spell Blade Ancillary",
+        "+4 Physical",
+        "+125 Battle and +125 Psionic Technique, Will Dakar, or Divine Intervention",
+        "-Double the points to unlock all martial prowess abilities in a category"
+      ],
+      "description": "For your chosen spellcasting style, AP used for one martial prowess per round counts towards channelling spells.",
+      "mechanical": false
+    },
+    {
+      "id": "fateweavers-chosen",
+      "name": "Fateweaver’s Chosen",
+      "requirements": [
+        "+50 Incite Fate"
+      ],
+      "description": "The Fateweaver’s Folly appears to you once per character tier without expenditure of Fate Points. You gain +1 Fate whenever you level up. You may only take this ancillary once.",
+      "mechanical": false
+    },
+    {
+      "id": "fledgling-angelic-vessel",
+      "name": "Fledgling Angelic Vessel",
+      "requirements": [
+        "-Permanent singular dedication to one aligned Deity"
+      ],
+      "description": "You gain double the passive accrual of the Deity Relationship and double the amount for performing your Deity’s desired worship actions. You may use 1 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per moonface. You may only take this ancillary once.",
+      "mechanical": false
+    },
+    {
+      "id": "fledgling-fireborn",
+      "name": "Fledgling Fireborn",
+      "requirements": [
+        "-Thuilin or Ganzenonin Race",
+        "-Palace Family or Thuil Adulthood Background",
+        "+1 Spiritual"
+      ],
+      "description": "Melee attacks against you deal Spiritual attribute in fire damage against the attacker. Your melee attacks deal an additional Spiritual attribute in fire damage.",
+      "mechanical": false
+    },
+    {
+      "id": "fledgling-psychic",
+      "name": "Fledgling Psychic",
+      "requirements": [
+        "+50 Will Dakar",
+        "+50 Psionic Technique",
+        "-At least 1 Psionic Technique unlocked",
+        "-At least 1 Ildakar Faculty unlocked"
+      ],
+      "description": "You may use Psionic Technique in place of Will Dakar for tier 1 Ildakar spells.",
+      "mechanical": false
+    },
+    {
+      "id": "fledgling-spell-blade",
+      "name": "Fledgling Spell Blade",
+      "requirements": [
+        "+2 Physical",
+        "+2 Mental, Will, or Spiritual",
+        "+50 Battle and +50 Psionic Technique, Will Dakar, or Divine Intervention",
+        "-Dedication to at least one Deity or at least one Psionic Technique unlocked or at least one Ildakar Faculty unlocked",
+        "-At least one martial prowess ability unlocked"
+      ],
+      "description": "Choose from one of the following: Psionic Technique, Will Dakar, or Divine Intervention. You may channel one of these magics, dedicating the relevant resources of said spell, relieving yourself of concentration until you next rest. The spell will automatically go off when you successfully hit a creature with a martial prowess ability.",
+      "mechanical": false
+    },
+    {
+      "id": "fools-luck",
+      "name": "Fool’s Luck",
+      "requirements": [
+        "+50 Incite Fate",
+        "-1 Mental"
+      ],
+      "description": "You may use Incite Fate in place of Feat of Defiance checks.",
+      "mechanical": false
+    },
+    {
+      "id": "grappler",
+      "name": "Grappler",
+      "requirements": [
+        "+1 Physical",
+        "-At least 2 Unarmed Martial Prowess abilities unlocked"
+      ],
+      "description": "When you initiate grapples, the grapple tracker automatically starts at Slightly Maintained. When you are in a grapple, your foe loses passive energy x your physical attribute per round.",
+      "mechanical": false
+    },
+    {
+      "id": "green-cloth",
+      "name": "Green Cloth",
+      "requirements": [
+        "-Black Cloth Ancillary",
+        "+4 Spiritual",
+        "+75 Worship and Divine Intervention"
+      ],
+      "description": "You may specify Divine Interventions that cost 7 Deity Relationship without using Texts or Verses, and these DIs only cost 3 Deity Relationship Points.",
+      "mechanical": false
+    },
+    {
+      "id": "green-paladin",
+      "name": "Green Paladin",
+      "requirements": [
+        "-Black Paladin Ancillary",
+        "+3 Spiritual",
+        "+75 Sense Supernatural and Resist Supernatural"
+      ],
+      "description": "You may expend Deity Relationship points with Rasadan for Homma’s Turn Evil, Ishmadt’s Purify, and Nandul’s Turn Undead Divine Interventions. Add your spiritual attribute to your weapon attacks.",
+      "mechanical": false
+    },
+    {
+      "id": "hell-lock",
+      "name": "Hell-Lock",
+      "requirements": [
+        "-Hexlock Ancillary",
+        "+3 Spiritual"
+      ],
+      "description": "You cannot be frightened or charmed by demons or undead. Unaligned creatures, demons, and undead within spiritual attribute x10 ft must resist supernatural with a target of spiritual attribute x25 or be paralyzed and prone for spiritual attribute rounds. You can do this spiritual attribute times per moon face. In addition, you may summon random unbound demons from Du’um’s Hellscape as he sees fit to send. Successful spells you cast against magic-users and those using magic equipment must Resist Supernatural with a target of spiritual attribute x25 for spiritual attribute rounds.",
+      "mechanical": false
+    },
+    {
+      "id": "heroic-angelic-vessel",
+      "name": "Heroic Angelic Vessel",
+      "requirements": [
+        "-Advanced Angelic Vessel Ancillary",
+        "+3 Spiritual"
+      ],
+      "description": "You may use Divine Intervention in place of Physical skills. You no longer need to eat or drink. You may use 7 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per moonface.",
+      "mechanical": false
+    },
+    {
+      "id": "heroic-fireborn",
+      "name": "Heroic Fireborn",
+      "requirements": [
+        "-Advanced Fireborn Ancillary",
+        "+3 Spiritual",
+        "+1 Will",
+        "You gain flight. You can fly spiritual attribute x5 ft up and can move 3 at the cost of 1 action point and energy. Creatures you fly over take spiritual attribute fire damage and gain the burning status."
+      ],
+      "description": "",
+      "mechanical": false
+    },
+    {
+      "id": "heroic-psychic",
+      "name": "Heroic Psychic",
+      "requirements": [
+        "-Advanced Psychic Ancillary",
+        "+100 Will Dakar",
+        "+100 Psionic Technique",
+        "-At least 1 3-Point Psionic Technique unlocked",
+        "-At least 1 Advanced Ildakar Faculty unlocked"
+      ],
+      "description": "You may use Psionic Technique in place of Will Dakar for tier 3 Ildakar spells.",
+      "mechanical": false
+    },
+    {
+      "id": "heroic-spell-blade",
+      "name": "Heroic Spell Blade",
+      "requirements": [
+        "-Advanced Spell Blade Ancillary",
+        "+3 Mental, Will, or Spiritual",
+        "+100 Battle and Psionic Technique, Will Dakar, or Divine Intervention",
+        "-More points than are required to unlock all MP abilities in a category"
+      ],
+      "description": "Energy used for martial prowess abilities counts towards channelling spells of the chosen spellcasting type, once per round.",
+      "mechanical": false
+    },
+    {
+      "id": "hex-lock",
+      "name": "Hex-Lock",
+      "requirements": [
+        "-Bone Warrior Ancillary",
+        "+2 Spiritual"
+      ],
+      "description": "You may use Divine Intervention for Presence Skills. Successful presence skills cause creatures to become charmed for spiritual attribute minutes. Unaligned creatures and demons resist with disadvantage. Aligned and angelic resist with advantage. In addition, your martial prowess abilities cause creatures to take an additional spiritual attribute unholy spiritual damage, as well as penalties of spiritual attribute x3 to psionic technique, divine intervention, and will dakar.",
+      "mechanical": false
+    },
+    {
+      "id": "high-diviner",
+      "name": "High Diviner",
+      "requirements": [
+        "-Diviner Ancillary",
+        "+3 Spiritual",
+        "+100 Worship and Divine Intervention"
+      ],
+      "description": "Based on your specific deity’s sect, you gain: Light: Spiritual attribute aura of Holy Spiritual damage Knowledge: Spiritual attribute aura of Mental damage Fire: Spiritual attribute aura of Burn damage Ice: Spiritual attribute aura of Cold damage Nature: Spiritual attribute aura of Healing for allies Dark: Spiritual attribute aura of Unholy Spiritual damage damage",
+      "mechanical": false
+    },
+    {
+      "id": "infamous",
+      "name": "Infamous",
+      "requirements": [
+        "-Membership in at least 1 Organization",
+        "-10 Reputation in at least 1 organization",
+        "-Arrogant, Corrupt, Guilty, or Cruel, or Overzealous Flaw"
+      ],
+      "description": "You start with -25 reputation in any organization you interact with, but gain +100 in organizations you are a member of.",
+      "mechanical": false
+    },
+    {
+      "id": "iron-gut",
+      "name": "Iron Gut",
+      "requirements": [
+        "+50 Resist Toxins"
+      ],
+      "description": "You may take an additional Physical attribute potions per moonface without penalties.",
+      "mechanical": false
+    },
+    {
+      "id": "legendary-angelic-vessel",
+      "name": "Legendary Angelic Vessel",
+      "requirements": [
+        "-Epic Angelic Vessel Ancillary",
+        "+5 Spiritual"
+      ],
+      "description": "You may use Divine Intervention in place of Mental Skills. You are immune to necrosis wounds and damage, as well as disease and poison. You may use 25 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per phase.",
+      "mechanical": false
+    },
+    {
+      "id": "legendary-fireborn",
+      "name": "Legendary Fireborn",
+      "requirements": [
+        "-Epic Fireborn Ancillary",
+        "+5 Spiritual",
+        "+2 Will",
+        "You produce an aura that is spiritual attribute x5 ft. This aura burns all creatures you are not linked to or have not linked to for spiritual attribute and applies burning status to them, whether they are allies, bystanders, or foes. You may now fly spiritual attribute x100 ft high and may move 6 for 1 action point and energy. Long-distance travel time is reduced by 50%."
+      ],
+      "description": "You must now succeed with Feat of Austerity with a difficulty equal to your spiritual attribute x10 whenever you perceive a Fireborn you have not met since you acquired this ancillary, or are driven into a frenzy to battle said Fireborn.",
+      "mechanical": false
+    },
+    {
+      "id": "legendary-psychic",
+      "name": "Legendary Psychic",
+      "requirements": [
+        "-Epic Psychic Ancillary",
+        "+150 Will Dakar",
+        "+150 Psionic Technique",
+        "-At least 1 5-Point Psionic Technique unlocked",
+        "-At least 4 Basic Ildakar Faculties and 3 Advanced Ildakar Faculties unlocked"
+      ],
+      "description": "You may use Psionic Technique in place of Will Dakar for tier 5 Ildakar spells.",
+      "mechanical": false
+    },
+    {
+      "id": "legendary-spell-blade",
+      "name": "Legendary Spell Blade",
+      "requirements": [
+        "-Epic Spell Blade Ancillary",
+        "+4 Mental, Will, or Spiritual",
+        "+150 Battle and +150 Psionic Technique, Will Dakar, or Divine Intervention",
+        "-At least two martial prowess categories with all abilities unlocked"
+      ],
+      "description": "Energy for Martial Prowess abilities count towards channelling spells of your chosen spellcasting type.",
+      "mechanical": false
+    },
+    {
+      "id": "levied-footsoldier",
+      "name": "Levied Footsoldier",
+      "requirements": [
+        "+50 Battle",
+        "+1 Physical",
+        "-Warrior or Farmer background"
+      ],
+      "description": "When attacked by a charging foe or mounted foe, add the distance in feet they moved to your defense. If you surpass the rider's defense, you may dismount them, and they fall prone.",
+      "mechanical": false
+    },
+    {
+      "id": "locust-lord",
+      "name": "Locust Lord",
+      "requirements": [
+        "-Plague Prince Ancillary",
+        "+5 Spiritual"
+      ],
+      "description": "15 and 25 cost Grall DIs can be specified without texts or verses. 15-cost Grall DIs now cost 7 Deity Relationship points, and 25-cost Grall DIs cost 15. All undead must make resist supernatural rolls of spiritual attribute x20 when they first perceive you or become loyal to you. You cannot suffer necrosis wounds and are immune to necrosis damage.",
+      "mechanical": false
+    },
+    {
+      "id": "mage-slayer",
+      "name": "Mage Slayer",
+      "requirements": [
+        "+75 Resist Supernatural",
+        "+75 Resist Psionics",
+        "+75 Will Dakar",
+        "+75 Endure"
+      ],
+      "description": "Your attacks and offensive spells cause magic-users to take Physical attribute penalties to Divine Intervention, Will Dakar, or Psionic Technique.",
+      "mechanical": false
+    },
+    {
+      "id": "master-alchemist",
+      "name": "Master Alchemist",
+      "requirements": [
+        "-Alchemist Ancillary",
+        "+150 Craft",
+        "-A potion each person in your party regularly uses, including yourself"
+      ],
+      "description": "You can Craft Complex Potions. Crafting Basic and Advanced Potions takes 50% less time and resources.",
+      "mechanical": false
+    },
+    {
+      "id": "master-craftsman",
+      "name": "Master Craftsman",
+      "requirements": [
+        "-Prodigal Craftsman or Crafter Ancillary",
+        "+150 Craft",
+        "-A piece of equipment that each of your party members, including yourself, uses regularly",
+        "-Member of a crafting or trade-related Organization"
+      ],
+      "description": "You can produce +5 Fine Items. Crafting takes 50% less time and resources.",
+      "mechanical": false
+    },
+    {
+      "id": "master-enchanter",
+      "name": "Master Enchanter",
+      "requirements": [
+        "-Enchanter Ancillary",
+        "+125 Will Dakar and +125 Craft"
+      ],
+      "description": "You may specify all magic effects when you craft magic items. Your enchantments cause no radiation, and you can cast at full duration.",
+      "mechanical": false
+    },
+    {
+      "id": "master-lightkeeper",
+      "name": "Master Lightkeeper",
+      "requirements": [
+        "-Crafter Background",
+        "+120 Craft",
+        "+50 Academic Recall"
+      ],
+      "description": "You can craft basic and advanced potions, and use Lightkeeper tools to do so.",
+      "mechanical": false
+    },
+    {
+      "id": "myrmidon",
+      "name": "Myrmidon",
+      "requirements": [
+        "+50 Battle",
+        "+50 Endure or Feat of Strength",
+        "-Warrior background",
+        "-At least 1 Shield and 1 Polearm, large blunt, large bearded, or large bladed martial prowess abilities unlocked"
+      ],
+      "description": "May use two-handed melee weapons in conjunction with a shield.",
+      "mechanical": false
+    },
+    {
+      "id": "mythic-angelic-vessel",
+      "name": "Mythic Angelic Vessel",
+      "requirements": [
+        "-Legendary Angelic Vessel Ancillary",
+        "+6 Spiritual"
+      ],
+      "description": "You may use Divine Intervention in place of all Skills. You may travel between planes without penalties. You may use 40 Deity Relationship cost Divine Interventions without expending deity relationship points Spiritual attribute times per cycle.",
+      "mechanical": false
+    },
+    {
+      "id": "mythic-fireborn",
+      "name": "Mythic Fireborn",
+      "requirements": [
+        "-Legendary Fireborn Ancillary",
+        "+6 Spiritual",
+        "+3 Will",
+        "Minion foes are instantly vaporized in an aura around you that is spiritual attribute x10 ft. You may move 12 for 1 action point and energy. Liquids within 10 ft of you are instantly vaporized, and flammable objects or explosives ignite. Long-distance travel time is reduced by 99%. All unlinked creatures must succeed on a Persevere check equal to your spiritual attribute x25 when they perceive you or lose 1 morale. You now appear as a humanoid flame at all times, and this cannot be undone. You apply burning status to anyone you touch, including allies."
+      ],
+      "description": "",
+      "mechanical": false
+    },
+    {
+      "id": "mythic-psychic",
+      "name": "Mythic Psychic",
+      "requirements": [
+        "-Legendary Psychic Ancillary",
+        "+175 Will Dakar",
+        "+200 Psionic Technique",
+        "-An entire Psionic Technique branch unlocked",
+        "-All basic Ildakar Faculties unlocked"
+      ],
+      "description": "You may use Psionic Technique in place of Will Dakar for tier 6 Ildakar spells. You may combine Psionic Techniques and Ildakar spells.",
+      "mechanical": false
+    },
+    {
+      "id": "mythic-spell-blade",
+      "name": "Mythic Spell Blade",
+      "requirements": [
+        "-Legendary Spell Blade Ancillary",
+        "+6 Mental, Will, or Spiritual, and +6 Physical",
+        "+250 Battle or in Psionic Technique, Will Dakar, or Divine Intervention, or +175 in both"
+      ],
+      "description": "Action Points for Martial Prowess abilities count towards channelling spells of your chosen spellcasting type.",
+      "mechanical": false
+    },
+    {
+      "id": "oracle-of-atenikil",
+      "name": "Oracle of Atenikil",
+      "requirements": [
+        "-Blind",
+        "-Woman",
+        "-At least one 5-Point Psionic Technique unlocked"
+      ],
+      "description": "You may link with the Dragon Atenikil to learn psionic techniques in exchange for seeing visions he sends.",
+      "mechanical": false
+    },
+    {
+      "id": "outlander",
+      "name": "Outlander",
+      "requirements": [
+        "+50 Navigate",
+        "-Freinin Race or Wanderer Background"
+      ],
+      "description": "You may navigate in outerland environments.",
+      "mechanical": false
+    },
+    {
+      "id": "paladin-of-duum",
+      "name": "Paladin of Du’um",
+      "requirements": [
+        "-Hellock Ancillary",
+        "+3 Physical"
+      ],
+      "description": "An antimagic field aura with a range of Spiritual attribute x10 ft emanates from you. Those affected by the field are slowed. Your critical hits cause your magical creatures and magic-users to be paralyzed for Spiritual attribute rounds.",
+      "mechanical": false
+    },
+    {
+      "id": "paragon-of-battle",
+      "name": "Paragon of Battle",
+      "requirements": [
+        "-Weapon Mastery Ancillary",
+        "+6 Physical",
+        "+250 Battle",
+        "-Triple the investment of points into a martial prowess that is required to unlock all martial prowess abilities in the category"
+      ],
+      "description": "With your chosen martial prowess, you may invent 3 additional signature abilities per character tier advancement. Each of these abilities may be performed once per encounter with 0 energy and AP costs, and are automatic brutal critical hits upon successful attack or reaction.",
+      "mechanical": false
+    },
+    {
+      "id": "paragon-of-virtue",
+      "name": "Paragon of Virtue",
+      "requirements": [
+        "+6 Spiritual",
+        "+250 Worship or Divine Intervention or +175 in both.",
+        "-Aligned"
+      ],
+      "description": "All worship accrues Deity Relationship with all Aligned Deities.",
+      "mechanical": false
+    },
+    {
+      "id": "plague-prince",
+      "name": "Plague Prince",
+      "requirements": [
+        "-Vulture Ancillary",
+        "+4 Spiritual"
+      ],
+      "description": "You may specify 1, 3, and 7 cost Grall Divine Interventions without texts or verses. 3-cost DIs now cost 1 Deity Relationship, and 7-cost now cost 3. You cannot be poisoned and automatically reduce necrosis wounds by 1.",
+      "mechanical": false
+    },
+    {
+      "id": "plane-hopper",
+      "name": "Plane Hopper",
+      "requirements": [
+        "+4 Spiritual",
+        "+120 Resist Supernatural"
+      ],
+      "description": "You may travel through extraplanar environments without suffering penalties.",
+      "mechanical": false
+    },
+    {
+      "id": "polyglot",
+      "name": "Polyglot",
+      "requirements": [
+        "+3 Mental",
+        "+50 Translate"
+      ],
+      "description": "You gain Mental attribute additional known languages. You gain an additional known language with every character tier advancement.",
+      "mechanical": false
+    },
+    {
+      "id": "pontifex-maximus",
+      "name": "Pontifex Maximus",
+      "requirements": [
+        "-Rex Sacrorum Ancillary",
+        "+5 Spiritual",
+        "+150 Worship and Divine Intervention"
+      ],
+      "description": "Based on your specific deity’s sect, you gain: * Light: Spiritual attribute aura of resist Holy Spiritual damage for yourself and allies * Knowledge: Spiritual attribute aura of resist Mental damage for yourself and allies * Fire: Spiritual attribute aura of resist Burn damage for yourself and allies * Ice: Spiritual attribute aura of resist Cold damage for yourself and allies * Nature: Spiritual attribute aura of resist Necrosis damage for yourself and allies * Dark: Spiritual attribute aura of resist Unholy Spiritual damage for yourself and allies",
+      "mechanical": false
+    },
+    {
+      "id": "prodigal-craftsman",
+      "name": "Prodigal Craftsman",
+      "requirements": [
+        "+50 Craft"
+      ],
+      "description": "You can produce +1 Fine items. Crafting takes 20% less time and resources.",
+      "mechanical": false
+    },
+    {
+      "id": "quick-hands",
+      "name": "Quick Hands",
+      "requirements": [
+        "+50 Feat of Agility"
+      ],
+      "description": "You can use equipment for 1 less AP cost.",
+      "mechanical": false
+    },
+    {
+      "id": "rat",
+      "name": "Rat",
+      "requirements": [
+        "-clergy or criminal background",
+        "+1 Spiritual",
+        "-Permanent singular dedication to Grall"
+      ],
+      "description": "You may add your spiritual attribute x8 to resist toxins rolls.",
+      "mechanical": false
+    },
+    {
+      "id": "red-cloth",
+      "name": "Red Cloth",
+      "requirements": [
+        "-Blue Cloth Ancillary",
+        "+5 Spiritual",
+        "+125 Worship and Divine Intervention"
+      ],
+      "description": "You may specify Divine Interventions that cost 25 Deity Relationship without using Texts or Verses, and these DIs only cost 15 Deity Relationship Points.",
+      "mechanical": false
+    },
+    {
+      "id": "red-cloth-of-osolon",
+      "name": "Red Cloth of Osolon",
+      "requirements": [
+        "-Red Cloth Ancillary",
+        "-Member of Old Narindurin Church",
+        "+6 Spiritual",
+        "+150 Worship and Divine Intervention"
+      ],
+      "description": "You are now the leader of the Old Narindurin Church. You may specify Divine Interventions that cost 40 Deity Relationship without using Texts or Verses, and these DIs only cost 25 Deity Relationship Points. Red Cloth of Tuluron Requirements: leader of new church -Red Cloth Ancillary -Member of New Narindurin Church +6 Spiritual +150 Worship and Divine Intervention You are now the leader of the New Narindurin Church. You may specify Divine Interventions that cost 50 Deity Relationship without using Texts or Verses, and these DIs only cost 40 Deity Relationship Points.",
+      "mechanical": false
+    },
+    {
+      "id": "red-paladin",
+      "name": "Red Paladin",
+      "requirements": [
+        "-Blue Paladin Ancillary",
+        "+4 Spiritual",
+        "+125 Sense Supernatural and Resist Supernatural"
+      ],
+      "description": "You are the leader of a Paladin Chapter. You may expend Deity Relationship points with Rasadan for Aelia’s Inspire, Flora’s Valor, and Kasha’s Bless Divine Interventions. Your smites deal double damage to all unaligned creatures. Your light spells deal spiritual attribute holy spiritual damage to unaligned creatures.",
+      "mechanical": false
+    },
+    {
+      "id": "relentless-rex",
+      "name": "Relentless Rex",
+      "requirements": [
+        "+80 Persevere",
+        "+40 Endure"
+      ],
+      "description": "You suffer no morale penalties when you suffer critical hits.",
+      "mechanical": false
+    },
+    {
+      "id": "renowned",
+      "name": "Renowned",
+      "requirements": [
+        "+4 Will",
+        "-Membership in at least 4 Organizations"
+      ],
+      "description": "You start with +25 reputation in any organization you interact with.",
+      "mechanical": false
+    },
+    {
+      "id": "restless",
+      "name": "Restless",
+      "requirements": [
+        "+4 Physical or Will",
+        "+150 Endure"
+      ],
+      "description": "You become conscious with 4 exhaustion upon succeeding on a Feat of Defiance roll.",
+      "mechanical": false
+    },
+    {
+      "id": "rex-sacrorum",
+      "name": "Rex Sacrorum",
+      "requirements": [
+        "-High Diviner Ancillary",
+        "+4 Spiritual",
+        "+125 Worship and Divine Intervention"
+      ],
+      "description": "Based on your specific deity’s sect, you gain: * Light: Weapon attacks deal additional Spiritual attribute Holy Spiritual damage * Knowledge: Weapon attacks deal additional Spiritual attribute Mental damage * Fire: Weapon attacks deal additional Spiritual attribute Burn damage * Ice: Weapon attacks deal additional Spiritual attribute Cold damage * Nature: Weapon attacks deal additional Spiritual attribute Necrosis damage * Dark: Weapon attacks deal additional Spiritual attribute Unholy Spiritual damage",
+      "mechanical": false
+    },
+    {
+      "id": "rheunen-walker",
+      "name": "Rheunen Walker",
+      "requirements": [
+        "+50 Track",
+        "+30 Search",
+        "-Member of Rheunen Walker Guild Organization"
+      ],
+      "description": "You can see during Har'Rheunen. You start with one secret path and gain one secret path with every character tier advancement.",
+      "mechanical": false
+    },
+    {
+      "id": "rotten-one",
+      "name": "Rotten One",
+      "requirements": [
+        "-Locust Lord Ancillary",
+        "+6 Spiritual"
+      ],
+      "description": "You are the leader of the Cult of Grall. You may travel between planes without penalties and may teleport at will. Grall will give you directives for artifact locations. You may use 40 Deity Relationship cost Grall Divine Interventions without expending deity relationship points Spiritual attribute times per cycle.",
+      "mechanical": false
+    },
+    {
+      "id": "savage",
+      "name": "Savage",
+      "requirements": [
+        "-Cruel Flaw",
+        "-Grazin or Freinin race or Rammish Anz ancestral ancillary or Ganzenonin Inin ancestral ancillary",
+        "+150 Intimidate"
+      ],
+      "description": "You may use Intimidate in place of Parley. Your use of intimidate and critical attacks deal morale penalties to the other foes in the encounter besides the initial target.",
+      "mechanical": false
+    },
+    {
+      "id": "sect-cloth",
+      "name": "Sect Cloth",
+      "requirements": [
+        "+3 Spiritual",
+        "+50 Worship or Divine Intervention"
+      ],
+      "description": "Choose a sect of Aligned Deities. All Worship of any of these Deities accrues Deity Relationship with all Deities of that Sect.",
+      "mechanical": false
+    },
+    {
+      "id": "shaman",
+      "name": "Shaman",
+      "requirements": [
+        "+3 Spiritual",
+        "+50 Worship",
+        "-Anz Race",
+        "-Clergy Background"
+      ],
+      "description": "Must dedicate to only the Nature Sect. Your deities all gain an additional Spiritual attribute Deity Relationship Points passive generation regardless of biome.",
+      "mechanical": false
+    },
+    {
+      "id": "shield-maiden",
+      "name": "Shield Maiden",
+      "requirements": [
+        "+50 Battle",
+        "+3 Physical",
+        "-Woman",
+        "-Grazin or Thairin Race",
+        "-Warrior or Noble background",
+        "-At least one shield martial prowess ability unlocked"
+      ],
+      "description": "You may expend shield durability to add Battle for an adjacent ally’s defense. Shields in your hands have additional durability equal to your physical attribute.",
+      "mechanical": false
+    },
+    {
+      "id": "shock-troop",
+      "name": "Shock Troop",
+      "requirements": [
+        "+50 Battle",
+        "+2 Physical",
+        "-One martial prowess ability unlocked"
+      ],
+      "description": "When you charge, you add your physical attribute twice to damage. When you are ambushing, you add your physical attribute to your damage for the entire encounter until you go unconscious or lose morale.",
+      "mechanical": false
+    },
+    {
+      "id": "shrewd",
+      "name": "Shrewd",
+      "requirements": [
+        "-Criminal Background",
+        "-Paranoid Flaw"
+      ],
+      "description": "When you are wanted after committing crimes, you automatically succeed with an Interpret roll once per moon face.",
+      "mechanical": false
+    },
+    {
+      "id": "shrine-attendant",
+      "name": "Shrine Attendant",
+      "requirements": [
+        "+3 Spiritual",
+        "+100 Worship and Resist Supernatural",
+        "-Jiinin Race",
+        "-Woman",
+        "-Clergy Background"
+      ],
+      "description": "Must dedicate to only one Deity. You may use Resist Supernatural in place of Battle when defending or Will Dakar when targeted by spells for the purpose of counterspells.",
+      "mechanical": false
+    },
+    {
+      "id": "soothing-spirit",
+      "name": "Soothing Spirit",
+      "requirements": [
+        "+2 Will or +2 Spiritual"
+      ],
+      "description": "You may use Perform or Divine Intervention in place of parley.",
+      "mechanical": false
+    },
+    {
+      "id": "spell-jammer",
+      "name": "Spell Jammer",
+      "requirements": [
+        "+4 Physical or Mental",
+        "+120 Will Dakar",
+        "+80 Craft",
+        "-Merchant, Artisan, or Academic Background",
+        "-At least 1 Ildakar Faculty unlocked"
+      ],
+      "description": "You may create physical or mental attribute (whichever is highest) imbued gems per moonface without incurring endure checks.",
+      "mechanical": false
+    },
+    {
+      "id": "spell-sculptor",
+      "name": "Spell Sculptor",
+      "requirements": [
+        "+100 Will Dakar and Feat of Agility",
+        "-At least 1 Ildakar Faculty Unlocked"
+      ],
+      "description": "You may shape the exact areas of your spells. Will attribute creatures (minimum 1) within the areas of your spells are exempt from its effects.",
+      "mechanical": false
+    },
+    {
+      "id": "spell-slinger",
+      "name": "Spell Slinger",
+      "requirements": [
+        "+4 Physical or Mental",
+        "+120 Will Dakar",
+        "+80 Craft",
+        "-Merchant, Artisan, or Academic Background",
+        "-At least 1 Ildakar Faculty unlocked"
+      ],
+      "description": "You may create physical or mental attribute (whichever is highest) spell scrolls per moonface without incurring endure checks.",
+      "mechanical": false
+    },
+    {
+      "id": "starseamstress",
+      "name": "Starseamstress",
+      "requirements": [
+        "+50 Incite Fate",
+        "+50 in one Sagacity skill",
+        "-Woman"
+      ],
+      "description": "You may use Sagacity skills in place of Divine Intervention, and without needing Deity Relationship to use Astrology and Secret Knowledge DI spells. Superior Immunity Requirements: resistance to poisons and necrosis, disease, etc +75 Endure +75 Resist Toxins May take an exhaustion penalty instead of contracting a disease or succumbing to a poison whenever you fail the check. In addition, you take half necrosis damage.",
+      "mechanical": false
+    },
+    {
+      "id": "survivor",
+      "name": "Survivor",
+      "requirements": [
+        "+50 Endure"
+      ],
+      "description": "You only need half rations and supplies per moonface to survive without penalties. You may only take this ancillary once.",
+      "mechanical": false
+    },
+    {
+      "id": "sword-saint",
+      "name": "Sword Saint",
+      "requirements": [
+        "+6 Physical and +6 Spiritual",
+        "-Triple the investment to unlock all MP abilities for medium blades and large blades",
+        "-Aligned"
+      ],
+      "description": "You are one of the Seven Sword Saints of the current Prophet. Swords in your hands deal siege damage and/or holy spiritual damage, as you desire.",
+      "mechanical": false
+    },
+    {
+      "id": "time-keeper",
+      "name": "Time Keeper",
+      "requirements": [
+        "-Permanent singular dedication to Silvias",
+        "+5 Spiritual",
+        "+125 Academic Recall and Gather Intelligence"
+      ],
+      "description": "You become the Lord of a Time Keeper City. You may summon an epic hero giant bat that aids you. You automatically succeed on academic recall and gather intelligence rolls related to all historical topics or matters of what has transpired upon Adûrun.",
+      "mechanical": false
+    },
+    {
+      "id": "titangrip",
+      "name": "Titangrip",
+      "requirements": [
+        "+4 Physical",
+        "+80 Feat of Strength"
+      ],
+      "description": "You may dual-wield two-handed weapons.",
+      "mechanical": false
+    },
+    {
+      "id": "tise",
+      "name": "Tise",
+      "requirements": [
+        "-Tise Sacrifice Ancillary"
+      ],
+      "description": "You may use 25 cost Ashi Divine Interventions without spending deity relationship points. Upon succeeding in your campaign spanning goal based on your inciting incident in your background, or your death, you become a Tise permanently. Current Tises will aid you if you are battling powerful enemies of Ashi or about to accomplish his goals.",
+      "mechanical": false
+    },
+    {
+      "id": "tise-initiate",
+      "name": "Tise Initiate",
+      "requirements": [
+        "Permanent singular dedication to the Dark God Ashi."
+      ],
+      "description": "You may use 1 cost Ashi Divine Interventions without spending deity relationship points. You may summon a shadeling to serve you once per moonface during Har’Rheunen phase.",
+      "mechanical": false
+    },
+    {
+      "id": "tise-loyalist",
+      "name": "Tise Loyalist",
+      "requirements": [
+        "-Tise Initiate Ancillary"
+      ],
+      "description": "You may use 3 cost Ashi Divine Interventions without spending deity relationship points. You may summon spiritual attribute shadelings to serve you once per moonface during Har’Rheunen phase.",
+      "mechanical": false
+    },
+    {
+      "id": "tise-sacrifice",
+      "name": "Tise Sacrifice",
+      "requirements": [
+        "-Tise Loyalist Ancillary"
+      ],
+      "description": "You may use 7 cost Ashi Divine Interventions without spending deity relationship points. You may summon spiritual attribute wraiths to serve you once per moonface during Har’Rheunen phase.",
+      "mechanical": false
+    },
+    {
+      "id": "touchy",
+      "name": "Touchy",
+      "requirements": [
+        "-Anz, Ganzenonin, Grazin, or Jiinin",
+        "-Aggressive Flaw"
+      ],
+      "description": "When you are critically hit, you are afflicted with the enraged status.",
+      "mechanical": false
+    },
+    {
+      "id": "tower-ildakar",
+      "name": "Tower Ildakar",
+      "requirements": [
+        "-Ildakar Background",
+        "-Relevant Ildakar Faculty unlocked"
+      ],
+      "description": "Arkrow (Thermomancy): Thermomancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental. Retovas (Electromancy): Electromancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental. Muras (Vivomancy): Vivomancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental. Parron (Transmutation): Transmutation spells may be cast at one tier higher in one aspect per spell than you have physical/mental. Derus (Artificy): Artificy spells may be cast at one tier higher in one aspect per spell than you have physical/mental. Tower of The Sun (Cosmomancy): Cosmomancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental. The Twin Stars (Oscillomancy): Oscillomancy spells may be cast at one tier higher in one aspect per spell than you have physical/mental. You are now a member of one of the selected organizations. You may only take this ancillary once.",
+      "mechanical": false
+    },
+    {
+      "id": "unwilling-to-die",
+      "name": "Unwilling to Die",
+      "requirements": [
+        "+50 Feat of Defiance",
+        "-Homeless background or Ganzenonin Ancillary"
+      ],
+      "description": "You do not die when you fail a Feat of Defiance check. You may use this feature twice per character tier, dying when you fail the third check.",
+      "mechanical": false
+    },
+    {
+      "id": "veteran-footsoldier",
+      "name": "Veteran Footsoldier",
+      "requirements": [
+        "+50 Battle",
+        "-Warrior background"
+      ],
+      "description": "When adjacent to a bracing (martial prowess abilities) or defending ally, they may use your defense rolls with battle instead of their own.",
+      "mechanical": false
+    },
+    {
+      "id": "vulture",
+      "name": "Vulture",
+      "requirements": [
+        "-bilge baron ancillary",
+        "+3 Spiritual"
+      ],
+      "description": "You are unable to be charmed or turned by aligned creatures. You may become invisible for spiritual attribute minutes per moon face.",
+      "mechanical": false
+    },
+    {
+      "id": "warden",
+      "name": "Warden",
+      "requirements": [
+        "-Hunter or Wanderer background",
+        "+50 Track or Forage",
+        "-At least 1 Long Range Martial Prowess Ability unlocked"
+      ],
+      "description": "Your ranged attacks do not treat foliage as cover.",
+      "mechanical": false
+    },
+    {
+      "id": "weapon-mastery-choose-weapon-category",
+      "name": "Weapon Mastery [Choose Weapon Category]",
+      "requirements": [
+        "-All base abilities in chosen Martial Prowess unlocked.",
+        "-Cannot be Armors, Shields, or Exotic"
+      ],
+      "description": "Choose a Martial Prowess. You may now use all unlocked abilities with this type of weapon, regardless of which Martial Prowess they fall under, so long as they are not under Armors or Shields. If applicable, the range of this Martial Prowess cannot become larger than +1. You may only take this ancillary once.",
+      "mechanical": false
+    },
+    {
+      "id": "white-paladin",
+      "name": "White Paladin",
+      "requirements": [
+        "-Red Paladin Ancillary",
+        "+4 Physical",
+        "+150 Sense Supernatural and +150 Resist Supernatural"
+      ],
+      "description": "You are in command of The Paladin Order behind the Angelic Vessels of Rasadan and Zera. You may expend Deity Relationship points with Rasadan for all other Aligned Deities’ Divine Interventions. All weapons you touch deal holy spiritual damage for spiritual attribute minutes, and all armors you touch gain their appropriate damage reduction for unholy spiritual necrosis damage for spiritual attribute minutes.",
+      "mechanical": false
+    },
+    {
+      "id": "advanced-martial",
+      "name": "Advanced Martial",
+      "requirements": [
+        "+3 Physical",
+        "+100 Battle",
+        "-Fledgling Martial Ancillary",
+        "-At least 6 Martial Prowess Abilities Unlocked"
+      ],
+      "description": "You gain +2 AP per round strictly for the purpose of moving or making attacks or reactions with martial prowess abilities.",
+      "mechanical": true
+    },
+    {
+      "id": "advanced-psion",
+      "name": "Advanced Psion",
+      "requirements": [
+        "+2 Mental",
+        "-Fledgling Psion Ancillary",
+        "+80 Psionic Technique"
+      ],
+      "description": "Unlock Mental attribute 2 Point Techniques you have access to. These Techniques costs 1 Energy.",
+      "mechanical": true
+    },
+    {
+      "id": "athletic",
+      "name": "Athletic",
+      "requirements": [
+        "+3 Physical",
+        "+50 Feat of Strength"
+      ],
+      "description": "-1 energy/per round costs if applicable to equipped shields and armors, minimum 0 energy per round, and you can ignore exhaustion the first time it is incurred, once per moonface",
+      "mechanical": true
+    },
+    {
+      "id": "diviner-apprentice",
+      "name": "Diviner Apprentice",
+      "requirements": [
+        "-Clergy background",
+        "-Member of Thairin Church or Thairin Race",
+        "+1 Spiritual",
+        "+50 Worship and Divine Intervention"
+      ],
+      "description": "You choose a specific Deity to be permanently dedicated to. With this Deity, you gain a passive spiritual attribute amount of deity relationship points. Add your character tier to your deity relationship point caps.",
+      "mechanical": true
+    },
+    {
+      "id": "energetic",
+      "name": "Energetic",
+      "requirements": [
+        "+3 Physical"
+      ],
+      "description": "You begin the game with +10% energy at character creation, and gain +10% every level-up. You may only take this ancillary once.",
+      "mechanical": true
+    },
+    {
+      "id": "epic-martial",
+      "name": "Epic Martial",
+      "requirements": [
+        "+5 Physical",
+        "+200 Battle",
+        "-Heroic Martial Ancillary",
+        "-At least 12 Martial Prowess Abilities unlocked and 2 Martial Prowess categories with all Martial Prowess Abilities unlocked",
+        "-1 Martial Prowess category with more points invested than required to unlock all abilities"
+      ],
+      "description": "You gain +3 AP per round strictly for the purpose of moving or making attacks or reactions with martial prowess abilities. When you successfully hit with a martial prowess ability, it is automatically a wicked critical.",
+      "mechanical": true
+    },
+    {
+      "id": "epic-psion",
+      "name": "Epic Psion",
+      "requirements": [
+        "+4 Mental",
+        "-Heroic Psion Ancillary",
+        "+150 Psionic Technique"
+      ],
+      "description": "Unlock Mental attribute 4 Point Techniques you have access to. These Techniques cost 1 Energy.",
+      "mechanical": true
+    },
+    {
+      "id": "fledgling-martial",
+      "name": "Fledgling Martial",
+      "requirements": [
+        "+2 Physical",
+        "+50 Battle",
+        "-At least 3 Martial Prowess abilities unlocked"
+      ],
+      "description": "You gain +2 AP per round strictly for the purpose of making attacks or reactions with martial prowess abilities.",
+      "mechanical": true
+    },
+    {
+      "id": "fledgling-psion",
+      "name": "Fledgling Psion",
+      "requirements": [
+        "+1 Mental",
+        "+50 Psionic Technique"
+      ],
+      "description": "Unlock Mental attribute number of 1 Point Techniques. +1 x Mental attribute Manifold Manifestation.",
+      "mechanical": true
+    },
+    {
+      "id": "heroic-martial",
+      "name": "Heroic Martial",
+      "requirements": [
+        "+4 Physical",
+        "+150 Battle",
+        "-Advanced Martial Ancillary",
+        "-At least 9 Martial Prowess Abilities unlocked and all Martial Prowess abilities unlocked in one category"
+      ],
+      "description": "You gain +2 AP per round strictly for the purpose of moving or making attacks or reactions with martial prowess abilities.",
+      "mechanical": true
+    },
+    {
+      "id": "heroic-psion",
+      "name": "Heroic Psion",
+      "requirements": [
+        "+3 Mental",
+        "-Advanced Psion Ancillary",
+        "+120 Psionic Technique"
+      ],
+      "description": "Unlock Mental attribute 3 Point Techniques you have access to. These Techniques costs 1 Energy.",
+      "mechanical": true
+    },
+    {
+      "id": "ildakar-acolyte",
+      "name": "Ildakar Acolyte",
+      "requirements": [
+        "+50 Will Dakar"
+      ],
+      "description": "Unlocks Basic Ildakar Faculty. That Faculty costs you -20% energy and action points to use.",
+      "mechanical": true
+    },
+    {
+      "id": "ildakar-archmage",
+      "name": "Ildakar Archmage",
+      "requirements": [
+        "-Ildakar Primus Ancillary",
+        "+250 Will Dakar",
+        "+6 Mental or Will"
+      ],
+      "description": "Choose one Faculty. When combining Faculties to cast a spell, this Faculty does not count towards the Compound aspect. If you take this Ancillary 6x, you are considered an Ildakar Order.",
+      "mechanical": true
+    },
+    {
+      "id": "ildakar-primus",
+      "name": "Ildakar Primus",
+      "requirements": [
+        "-Ildakar Rector Ancillary",
+        "+200 Will Dakar"
+      ],
+      "description": "All Ildakar spell aspects are increased by 20%, regardless of Faculty.",
+      "mechanical": true
+    },
+    {
+      "id": "ildakar-prodigy",
+      "name": "Ildakar Prodigy",
+      "requirements": [
+        "+3 Mental",
+        "+50 Study"
+      ],
+      "description": "Basic Ildakar Faculties cost 50% fewer points to unlock.",
+      "mechanical": true
+    },
+    {
+      "id": "ildakar-rector",
+      "name": "Ildakar Rector",
+      "requirements": [
+        "-Ildakar Theurgist Ancillary",
+        "+150 Will Dakar"
+      ],
+      "description": "Choose one Faculty. The effects of each Aspect are increased by 50% when you use it.",
+      "mechanical": true
+    },
+    {
+      "id": "ildakar-theurgist",
+      "name": "Ildakar Theurgist",
+      "requirements": [
+        "-Ildakar Understudy Ancillary",
+        "+120 Will Dakar"
+      ],
+      "description": "Choose one Advanced Faculty or two Basic Faculties. These now cost -20% energy and action points to use.",
+      "mechanical": true
+    },
+    {
+      "id": "ildakar-understudy",
+      "name": "Ildakar Understudy",
+      "requirements": [
+        "-Ildakar Acolyte Ancillary",
+        "+80 Will Dakar"
+      ],
+      "description": "Unlocks Advanced Ildakar Faculty. That Faculty costs you -20% energy and action points to use.",
+      "mechanical": true
+    },
+    {
+      "id": "legendary-martial",
+      "name": "Legendary Martial",
+      "requirements": [
+        "+6 Physical",
+        "+250 Battle",
+        "-Epic Martial Ancillary",
+        "-At least 15 Martial Prowess Abilities unlocked",
+        "-1 MP where you have double the points invested to unlock all MP abilities in the category."
+      ],
+      "description": "You gain +3 AP per round strictly for the purpose of moving or making attacks or reactions with martial prowess abilities. Whenever you successfully hit with a martial prowess ability, it is automatically a vicious critical.",
+      "mechanical": true
+    },
+    {
+      "id": "legendary-psion",
+      "name": "Legendary Psion",
+      "requirements": [
+        "-Epic Psion Ancillary",
+        "+5 Mental",
+        "+200 Psionic Technique"
+      ],
+      "description": "Unlock Mental attribute 5 Point Techniques you have access to. These Techniques cost 1 Energy.",
+      "mechanical": true
+    },
+    {
+      "id": "mythic-martial",
+      "name": "Mythic Martial",
+      "requirements": [
+        "-Legendary Martial Ancillary",
+        "-20 Martial Prowess Abilities unlocked, at least 2 Martial Prowess categories where you have double the points to unlock all abilities in the MP category."
+      ],
+      "description": "You gain +3 AP per round strictly for the purpose of moving or making attacks or reactions with martial prowess abilities. Whenever you successfully hit an opponent with a martial prowess ability, it is a brutal critical.",
+      "mechanical": true
+    },
+    {
+      "id": "mythic-psion",
+      "name": "Mythic Psion",
+      "requirements": [
+        "+6 Mental",
+        "-Legendary Psion Ancillary",
+        "+250 Psionic Technique"
+      ],
+      "description": "Unlock Mental attribute 5 Point Techniques, gaining all of the prior techniques leading to them for free as well. These Techniques cost 1 Energy.",
+      "mechanical": true
+    },
+    {
+      "id": "quickcaster",
+      "name": "Quickcaster",
+      "requirements": [
+        "+50 Will Dakar",
+        "+50 Feat of Agility"
+      ],
+      "description": "When you Will Dakar, your spells cost -20% Action Points.",
+      "mechanical": true
+    },
+    {
+      "id": "well-of-dakar",
+      "name": "Well of Dakar",
+      "requirements": [
+        "+50 Will Dakar",
+        "+50 Endure"
+      ],
+      "description": "When you Will Dakar, your spells cost -20% Energy.",
+      "mechanical": true
+    },
+    {
+      "id": "well-of-divinity",
+      "name": "Well of Divinity",
+      "requirements": [
+        "+4 Spiritual",
+        "+100 Worship",
+        "+100 Divine Intervention"
+      ],
+      "description": "Your Deity Relationship Point caps are increased by Spiritual attribute x3.",
+      "mechanical": true
+    }
+  ]
+}
