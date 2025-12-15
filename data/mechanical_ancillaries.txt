@@ -108,7 +108,7 @@ Requirements:
 -Ildakar Rector Ancillary
 +200 Will Dakar 
 
-All spells are 20% more effective, regardless of Faculty.
+All Ildakar spell aspects are increased by 20%, regardless of Faculty.
 
 Ildakar Prodigy 
 Requirements: 
