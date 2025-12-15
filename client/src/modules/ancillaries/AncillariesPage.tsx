@@ -425,6 +425,7 @@ export const AncillariesPage: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState("");
+  const [showEligibleOnly, setShowEligibleOnly] = React.useState(false);
 
   const skillLookup = React.useMemo(() => buildSkillLookup(definitions), [definitions]);
   const ancillaryNames = React.useMemo(
@@ -547,14 +548,26 @@ export const AncillariesPage: React.FC = () => {
 
   const filterTerm = search.trim().toLowerCase();
   const filtered = React.useMemo(() => {
-    if (!filterTerm) return availableEntries;
-    return availableEntries.filter((entry) => {
+    const matchesEligibility = (entry: AncillaryEntry) => {
+      const ancestryAllowed =
+        entry.category === "general" ||
+        (isAncestryAllowedForCharacter(entry.ancestryGroupId, selectedCharacter) &&
+          (ancestryLevelEligible || selectedAncillaries.includes(entry.id)));
+
+      const requirementsMet = evaluateEntryRequirements(entry).every((req) => req.met);
+      return ancestryAllowed && requirementsMet;
+    };
+
+    const pool = showEligibleOnly ? availableEntries.filter(matchesEligibility) : availableEntries;
+
+    if (!filterTerm) return pool;
+    return pool.filter((entry) => {
       const haystack = [entry.name, entry.description, entry.ancestryGroup ?? "", ...entry.requirements]
         .join(" \n ")
         .toLowerCase();
       return haystack.includes(filterTerm);
     });
-  }, [filterTerm, availableEntries]);
+  }, [ancestryLevelEligible, availableEntries, evaluateEntryRequirements, filterTerm, selectedAncillaries, selectedCharacter, showEligibleOnly]);
 
   const selectedDetails = selectedAncillaries
     .map((id) => filtered.find((entry) => entry.id === id) || ALL_ENTRIES.find((e) => e.id === id))
@@ -701,20 +714,38 @@ export const AncillariesPage: React.FC = () => {
 
       <div style={{ ...cardStyle, marginBottom: "1rem" }}>
         <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>Search Ancillaries</label>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name, requirement, or description"
-          style={{
-            width: "100%",
-            padding: "0.6rem 0.75rem",
-            borderRadius: 8,
-            border: "1px solid #2f3542",
-            background: "#0b1017",
-            color: "#e5e7eb"
-          }}
-        />
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, requirement, or description"
+            style={{
+              flex: 1,
+              padding: "0.6rem 0.75rem",
+              borderRadius: 8,
+              border: "1px solid #2f3542",
+              background: "#0b1017",
+              color: "#e5e7eb"
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowEligibleOnly((prev) => !prev)}
+            style={{
+              padding: "0.6rem 0.9rem",
+              borderRadius: 8,
+              border: showEligibleOnly ? "1px solid #10b981" : "1px solid #2f3542",
+              background: showEligibleOnly ? "#0b3b2a" : "#0b1017",
+              color: showEligibleOnly ? "#a7f3d0" : "#e5e7eb",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              fontWeight: 700
+            }}
+          >
+            {showEligibleOnly ? "Showing Eligible" : "Show Eligible"}
+          </button>
+        </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 12, alignItems: "start" }}>
