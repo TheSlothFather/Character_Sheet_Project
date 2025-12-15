@@ -31,12 +31,6 @@ Requirements:
 
 1, 3, 7, 15, and 25 cost Divine Interventions with your Deity now cost energy instead of Deity Relationship points. 
 
-Divine Aura 
-Requirements: 
-+5 Spiritual 
--Full game history with a Deity
--Clergy background 
-
 Diviner Apprentice 
 Requirements: 
 -Clergy background
