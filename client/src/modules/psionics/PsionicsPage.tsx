@@ -12,10 +12,12 @@ import {
   replaceMentalAttributePlaceholders
 } from "./psionicsUtils";
 import { PSION_BACKGROUND_CONFIG, PSIONICS_STORAGE_KEY } from "./psionBackgrounds";
+import { getAncillaryStorageKey, readAncillarySelection } from "../ancillaries/storage";
 
 interface PsiState {
   purchased: Set<string>;
   backgroundPicks: Set<string>;
+  ancillaryPicks: Record<string, string[]>;
 }
 
 type LineSegment = {
@@ -42,17 +44,18 @@ type PositionedNode = {
 
 const loadPersistedState = (storageKey: string | null, abilityIds: Set<string>): PsiState => {
   if (typeof window === "undefined" || !storageKey) {
-    return { purchased: new Set(), backgroundPicks: new Set() };
+    return { purchased: new Set(), backgroundPicks: new Set(), ancillaryPicks: {} };
   }
 
   try {
     const raw = window.localStorage.getItem(storageKey);
     if (!raw) {
-      return { purchased: new Set(), backgroundPicks: new Set() };
+      return { purchased: new Set(), backgroundPicks: new Set(), ancillaryPicks: {} };
     }
     const parsed = JSON.parse(raw) as {
       purchased?: string[];
       backgroundPicks?: string[];
+      ancillaryPicks?: Record<string, string[]>;
     };
     const purchased = Array.isArray(parsed.purchased)
       ? parsed.purchased.filter((id) => abilityIds.has(id))
@@ -60,10 +63,16 @@ const loadPersistedState = (storageKey: string | null, abilityIds: Set<string>):
     const backgroundPicks = Array.isArray(parsed.backgroundPicks)
       ? parsed.backgroundPicks.filter((id) => abilityIds.has(id))
       : [];
-    return { purchased: new Set(purchased), backgroundPicks: new Set(backgroundPicks) };
+    const ancillaryPicks: Record<string, string[]> = {};
+    Object.entries(parsed.ancillaryPicks ?? {}).forEach(([key, value]) => {
+      const filtered = Array.isArray(value) ? value.filter((id) => abilityIds.has(id)) : [];
+      if (filtered.length > 0) ancillaryPicks[key] = filtered;
+    });
+
+    return { purchased: new Set(purchased), backgroundPicks: new Set(backgroundPicks), ancillaryPicks };
   } catch (err) {
     console.warn("Unable to parse psionics state", err);
-    return { purchased: new Set(), backgroundPicks: new Set() };
+    return { purchased: new Set(), backgroundPicks: new Set(), ancillaryPicks: {} };
   }
 };
 
@@ -72,7 +81,8 @@ const persistState = (storageKey: string | null, state: PsiState) => {
   try {
     const payload = JSON.stringify({
       purchased: Array.from(state.purchased),
-      backgroundPicks: Array.from(state.backgroundPicks)
+      backgroundPicks: Array.from(state.backgroundPicks),
+      ancillaryPicks: state.ancillaryPicks
     });
     window.localStorage.setItem(storageKey, payload);
   } catch (err) {
@@ -158,6 +168,26 @@ const TREE_OVERRIDES: Record<string, TreeOverride> = {
       { from: "Read Link", to: "Read Genome" }
     ]
   }
+};
+
+const PSION_ANCILLARY_CONFIG: Record<
+  string,
+  { tier: number; grantsManifoldBonus?: boolean; energyCostOverride?: number }
+> = {
+  "fledgling-psion": { tier: 1, grantsManifoldBonus: true },
+  "advanced-psion": { tier: 2, energyCostOverride: 1 },
+  "heroic-psion": { tier: 3, energyCostOverride: 1 },
+  "epic-psion": { tier: 4, energyCostOverride: 1 },
+  "mythic-psion": { tier: 5, energyCostOverride: 1 }
+};
+
+const PSION_ANCILLARY_IDS = new Set(Object.keys(PSION_ANCILLARY_CONFIG));
+const PSION_ANCILLARY_LABELS: Record<string, string> = {
+  "fledgling-psion": "Fledgling Psion",
+  "advanced-psion": "Advanced Psion",
+  "heroic-psion": "Heroic Psion",
+  "epic-psion": "Epic Psion",
+  "mythic-psion": "Mythic Psion"
 };
 
 const AbilityNode: React.FC<{
@@ -455,9 +485,12 @@ export const PsionicsPage: React.FC = () => {
   );
 
   const { selectedId } = useSelectedCharacter();
+  const [ancillarySelection, setAncillarySelection] = React.useState(() => readAncillarySelection(selectedId));
   const [selectedCharacter, setSelectedCharacter] = React.useState<Character | null>(null);
   const [characterError, setCharacterError] = React.useState<string | null>(null);
   const [loadingCharacter, setLoadingCharacter] = React.useState(false);
+  const [ancillaryModalOpen, setAncillaryModalOpen] = React.useState(false);
+  const [ancillaryChoices, setAncillaryChoices] = React.useState<Record<string, Set<string>>>({});
 
   const storageKey = React.useMemo(() => (selectedId ? `${PSIONICS_STORAGE_KEY}:${selectedId}` : null), [selectedId]);
   const backgroundBenefits = React.useMemo(() => {
@@ -479,6 +512,15 @@ export const PsionicsPage: React.FC = () => {
     return { psiBonus, grantedIds: Array.from(granted) };
   }, [abilityKeyToId, selectedCharacter?.backgrounds?.adulthood]);
 
+  const psionAncillaries = React.useMemo(() => {
+    const selected = new Set(
+      ancillarySelection.selected.filter((id) => PSION_ANCILLARY_IDS.has(id))
+    );
+    return selected;
+  }, [ancillarySelection.selected]);
+
+  const psionAncillaryList = React.useMemo(() => Array.from(psionAncillaries), [psionAncillaries]);
+
   const { data: definitions } = useDefinitions();
   const raceDetails = (definitions?.raceDetails ?? {}) as Record<string, RaceDetailProfile>;
 
@@ -488,16 +530,19 @@ export const PsionicsPage: React.FC = () => {
   }, [raceDetails, selectedCharacter?.raceKey, selectedCharacter?.subraceKey]);
 
   const [state, setState] = React.useState<PsiState>(() => loadPersistedState(storageKey, abilityIds));
+  const ancillaryPicksState = state.ancillaryPicks ?? {};
 
   React.useEffect(() => {
     const nextState = loadPersistedState(storageKey, abilityIds);
     const freeAbilities = new Set([...nextState.backgroundPicks, ...backgroundBenefits.grantedIds]);
+    Object.values(nextState.ancillaryPicks).forEach((list) => list.forEach((id) => freeAbilities.add(id)));
     const purchased = new Set(nextState.purchased);
     freeAbilities.forEach((id) => purchased.delete(id));
 
     setState({
       purchased,
-      backgroundPicks: nextState.backgroundPicks
+      backgroundPicks: nextState.backgroundPicks,
+      ancillaryPicks: nextState.ancillaryPicks
     });
   }, [abilityIds, backgroundBenefits.grantedIds, storageKey]);
 
@@ -506,7 +551,29 @@ export const PsionicsPage: React.FC = () => {
   }, [state, storageKey]);
 
   React.useEffect(() => {
+    setState((prev) => {
+      const nextAncillaryPicks: Record<string, string[]> = {};
+      let changed = false;
+
+      psionAncillaries.forEach((id) => {
+        const existing = prev.ancillaryPicks[id] ?? [];
+        const filtered = existing.filter((abilityId) => abilityIds.has(abilityId));
+        if (filtered.length !== existing.length || !(id in prev.ancillaryPicks)) changed = true;
+        nextAncillaryPicks[id] = filtered;
+      });
+
+      Object.keys(prev.ancillaryPicks).forEach((id) => {
+        if (!psionAncillaries.has(id)) changed = true;
+      });
+
+      if (!changed) return prev;
+      return { ...prev, ancillaryPicks: nextAncillaryPicks };
+    });
+  }, [abilityIds, psionAncillaries]);
+
+  React.useEffect(() => {
     setSelectedCharacter(null);
+    setAncillarySelection(readAncillarySelection(selectedId));
     if (!selectedId) {
       setCharacterError("Select a character on the Characters page to manage psionics.");
       setLoadingCharacter(false);
@@ -531,11 +598,33 @@ export const PsionicsPage: React.FC = () => {
       .finally(() => setLoadingCharacter(false));
   }, [selectedId]);
 
+  React.useEffect(() => {
+    const storageKey = getAncillaryStorageKey(selectedId);
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === storageKey) {
+        setAncillarySelection(readAncillarySelection(selectedId));
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", handleStorage);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("storage", handleStorage);
+      }
+    };
+  }, [selectedId]);
+
   const mentalAttribute = selectedCharacter?.attributes?.MENTAL ?? 0;
   const characterLevel = selectedCharacter?.level ?? 1;
   const psiPerLevel = 3 + mentalAttribute;
   const levelPsi = Math.max(0, characterLevel - 1) * psiPerLevel;
   const totalPsiPool = DEFAULT_PSI_POINTS + backgroundBenefits.psiBonus + lineagePsi + levelPsi;
+  const fledglingLocked = psionAncillaries.has("fledgling-psion") &&
+    (ancillaryPicksState["fledgling-psion"]?.length ?? 0) > 0;
+  const manifoldManifestationLimit = mentalAttribute + (fledglingLocked ? mentalAttribute : 0);
 
   const tierAdvancementAvailable = characterLevel === 1 || (characterLevel >= 6 && (characterLevel - 1) % 5 === 0);
   const completedTiers = Math.floor(Math.max(0, characterLevel - 1) / 5);
@@ -554,9 +643,10 @@ export const PsionicsPage: React.FC = () => {
   const ownedAbilities = React.useMemo(() => {
     const owned = new Set<string>(state.backgroundPicks);
     backgroundBenefits.grantedIds.forEach((id) => owned.add(id));
+    Object.values(ancillaryPicksState).forEach((list) => list.forEach((id) => owned.add(id)));
     state.purchased.forEach((id) => owned.add(id));
     return owned;
-  }, [backgroundBenefits.grantedIds, state.backgroundPicks, state.purchased]);
+  }, [ancillaryPicksState, backgroundBenefits.grantedIds, state.backgroundPicks, state.purchased]);
 
   const trees = React.useMemo(() => {
     const byTree = new Map<string, PsionicAbility[]>();
@@ -599,10 +689,70 @@ export const PsionicsPage: React.FC = () => {
     return grouped;
   }, [abilities, ownedAbilities]);
 
+  const nonAncillaryOwned = React.useMemo(() => {
+    const base = new Set(ownedAbilities);
+    Object.values(ancillaryPicksState).forEach((list) => list.forEach((id) => base.delete(id)));
+    return base;
+  }, [ancillaryPicksState, ownedAbilities]);
+
+  const ancillaryEnergyOverrides = React.useMemo(() => {
+    const overrides = new Map<string, number>();
+    Object.entries(ancillaryPicksState).forEach(([ancillaryId, abilityIds]) => {
+      const override = PSION_ANCILLARY_CONFIG[ancillaryId]?.energyCostOverride;
+      if (!override) return;
+      abilityIds.forEach((abilityId) => overrides.set(abilityId, override));
+    });
+    return overrides;
+  }, [ancillaryPicksState]);
+
+  const openAncillaryModal = () => {
+    const initial: Record<string, Set<string>> = {};
+    psionAncillaries.forEach((id) => {
+      const saved = ancillaryPicksState[id] ?? [];
+      initial[id] = new Set(saved.slice(0, Math.max(mentalAttribute, 0)));
+    });
+    setAncillaryChoices(initial);
+    setAncillaryModalOpen(true);
+  };
+
+  const toggleAncillaryAbility = (ancillaryId: string, abilityId: string) => {
+    if (!psionAncillaries.has(ancillaryId)) return;
+    setAncillaryChoices((prev) => {
+      const next = { ...prev } as Record<string, Set<string>>;
+      const existing = new Set(next[ancillaryId] ?? []);
+      const chosenElsewhere = Object.entries(prev).some(
+        ([key, picks]) => key !== ancillaryId && picks?.has(abilityId)
+      );
+
+      if (existing.has(abilityId)) {
+        existing.delete(abilityId);
+      } else {
+        if (mentalAttribute <= 0 || existing.size >= mentalAttribute || chosenElsewhere) return prev;
+        existing.add(abilityId);
+      }
+
+      next[ancillaryId] = existing;
+      return next;
+    });
+  };
+
+  const confirmAncillaryChoices = () => {
+    setState((prev) => {
+      const nextPicks: Record<string, string[]> = {};
+      psionAncillaries.forEach((id) => {
+        const selected = ancillaryChoices[id] ?? new Set(ancillaryPicksState[id] ?? []);
+        nextPicks[id] = Array.from(selected);
+      });
+      return { ...prev, ancillaryPicks: nextPicks };
+    });
+    setAncillaryModalOpen(false);
+  };
+
   const handlePurchase = (ability: PsionicAbility) => {
     setState((prev) => {
       if (!tierAdvancementAvailable) return prev;
       const owned = new Set<string>([...prev.backgroundPicks, ...backgroundBenefits.grantedIds, ...prev.purchased]);
+      Object.values(prev.ancillaryPicks).forEach((list) => list.forEach((id) => owned.add(id)));
       if (owned.has(ability.id)) return prev;
       const starterAbility = ability.tier === 1 && ability.prerequisiteIds.length === 0;
       if (!starterAbility && !isAbilityUnlocked(ability, owned, { allowTier1WithoutPrereq: false })) return prev;
@@ -634,7 +784,145 @@ export const PsionicsPage: React.FC = () => {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <>
+      {ancillaryModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            zIndex: 40,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "flex-start",
+            padding: "2rem 1rem",
+            overflowY: "auto"
+          }}
+        >
+          <div
+            style={{
+              background: "#0f131a",
+              border: "1px solid #1f2935",
+              borderRadius: 12,
+              padding: "1rem",
+              width: "min(960px, 95vw)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
+              color: "#e6edf7"
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+              <h3 style={{ margin: 0 }}>Lock Psion Ancillaries</h3>
+              <button
+                onClick={() => setAncillaryModalOpen(false)}
+                style={{ padding: "0.4rem 0.75rem", background: "#1f2935", color: "#e5e7eb", border: "1px solid #2b3747", borderRadius: 6 }}
+              >
+                Close
+              </button>
+            </div>
+            <p style={{ marginTop: 8, color: "#c5ccd9" }}>
+              Choose up to {mentalAttribute} abilities from each selected ancillary's tier. Abilities already unlocked elsewhere
+              are not eligible. Advanced ancillaries mark chosen abilities as costing 1 Energy.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {psionAncillaryList.map((id) => {
+                const config = PSION_ANCILLARY_CONFIG[id];
+                const selectedSet = ancillaryChoices[id] ?? new Set(ancillaryPicksState[id] ?? []);
+                const otherSelections = (abilityId: string) =>
+                  Object.entries(ancillaryChoices).some(([otherId, picks]) => otherId !== id && picks?.has(abilityId));
+                const options = abilities.filter(
+                  (ability) =>
+                    ability.tier === config.tier && (!nonAncillaryOwned.has(ability.id) || selectedSet.has(ability.id))
+                );
+                const disabledReason = mentalAttribute <= 0 ? "Mental Attribute must be above 0" : "";
+                const helper = config.energyCostOverride
+                  ? "Chosen abilities cost 1 Energy."
+                  : config.grantsManifoldBonus
+                    ? "Adds your Mental attribute to Manifold Manifestation."
+                    : "";
+
+                return (
+                  <div
+                    key={`ancillary-${id}`}
+                    style={{
+                      border: "1px solid #1f2935",
+                      borderRadius: 10,
+                      padding: "0.75rem",
+                      background: "#0c111a"
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                      <div>
+                        <div style={{ fontWeight: 700 }}>{PSION_ANCILLARY_LABELS[id] ?? id}</div>
+                        <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                          Tier {config.tier} abilities • {helper}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                        Selected: {selectedSet.size}/{Math.max(mentalAttribute, 0)}
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8 }}>
+                      {options.length === 0 && (
+                        <div style={{ color: "#9aa3b5" }}>No abilities available for this tier.</div>
+                      )}
+                      {options.map((ability) => {
+                        const chosen = selectedSet.has(ability.id);
+                        const unavailable = (!chosen && (nonAncillaryOwned.has(ability.id) || otherSelections(ability.id))) || mentalAttribute <= 0;
+                        return (
+                          <label
+                            key={`${id}-${ability.id}`}
+                            style={{
+                              border: "1px solid #1f2935",
+                              borderRadius: 8,
+                              padding: "0.6rem 0.75rem",
+                              background: chosen ? "#162235" : "#0f141d",
+                              display: "flex",
+                              gap: 8,
+                              alignItems: "flex-start",
+                              opacity: unavailable ? 0.6 : 1
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={chosen}
+                              disabled={unavailable}
+                              onChange={() => toggleAncillaryAbility(id, ability.id)}
+                              style={{ marginTop: 4 }}
+                            />
+                            <div style={{ fontSize: 13 }}>
+                              <div style={{ fontWeight: 700 }}>{ability.name}</div>
+                              <div style={{ color: "#9aa3b5" }}>{ability.tree} • Tier {ability.tier}</div>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {disabledReason && (
+                      <div style={{ marginTop: 6, fontSize: 12, color: "#f7a046" }}>{disabledReason}</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
+              <button
+                onClick={() => setAncillaryModalOpen(false)}
+                style={{ padding: "0.55rem 0.9rem", background: "#1f2935", color: "#e5e7eb", border: "1px solid #2b3747", borderRadius: 8 }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmAncillaryChoices}
+                style={{ padding: "0.55rem 0.9rem", background: "#2563eb", color: "#e6edf7", border: "1px solid #1d4ed8", borderRadius: 8 }}
+              >
+                Lock Choices
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
         <div>
           <h1 style={{ margin: 0 }}>Psionics</h1>
@@ -657,6 +945,26 @@ export const PsionicsPage: React.FC = () => {
             <span style={{ fontSize: 13 }}>Mental Attribute</span>
             <div style={{ fontSize: 24, fontWeight: 700, color: "#e6edf7" }}>{mentalAttribute}</div>
             <div style={{ fontSize: 12, color: "#9aa3b5" }}>Used for formulas and per-level gains</div>
+          </div>
+          <div
+            style={{
+              background: "#131a24",
+              border: "1px solid #2b3747",
+              borderRadius: 10,
+              padding: "0.75rem 1rem",
+              minWidth: 210,
+              color: "#c5ccd9",
+              display: "flex",
+              flexDirection: "column",
+              gap: 6
+            }}
+          >
+            <span style={{ fontSize: 13 }}>Manifold Manifestation Limit</span>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#e6edf7" }}>{manifoldManifestationLimit}</div>
+            <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+              Base Mental: {mentalAttribute}
+              {fledglingLocked ? ` + ${mentalAttribute} from Fledgling Psion` : ""}
+            </div>
           </div>
           <div
             style={{
@@ -699,6 +1007,47 @@ export const PsionicsPage: React.FC = () => {
             </div>
             <div style={{ fontSize: 12, color: "#9aa3b5" }}>
               Psi can only be spent during Character Tier Advancements (every 5 levels).
+            </div>
+          </div>
+          <div
+            style={{
+              background: "#131a24",
+              border: "1px solid #2b3747",
+              borderRadius: 10,
+              padding: "0.75rem 1rem",
+              minWidth: 220,
+              color: "#c5ccd9",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8
+            }}
+          >
+            <div style={{ fontSize: 13, color: "#9aa3b5" }}>Psion Ancillaries</div>
+            <div style={{ fontSize: 12, color: "#dce7ff" }}>
+              {psionAncillaryList.length
+                ? psionAncillaryList.map((id) => PSION_ANCILLARY_LABELS[id] ?? id).join(", ")
+                : "None selected"}
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <button
+                onClick={openAncillaryModal}
+                disabled={psionAncillaryList.length === 0}
+                style={{
+                  padding: "0.55rem 0.9rem",
+                  background: psionAncillaryList.length === 0 ? "#1f2935" : "#2563eb",
+                  color: "#e6edf7",
+                  border: "1px solid #1d4ed8",
+                  borderRadius: 8,
+                  cursor: psionAncillaryList.length === 0 ? "not-allowed" : "pointer"
+                }}
+              >
+                Lock Psion Ancillaries
+              </button>
+              <span style={{ fontSize: 12, color: "#9aa3b5" }}>
+                {mentalAttribute > 0
+                  ? `Select up to ${mentalAttribute} tier-matched abilities per ancillary.`
+                  : "Mental Attribute is required to lock picks."}
+              </span>
             </div>
           </div>
           <div
@@ -809,7 +1158,11 @@ export const PsionicsPage: React.FC = () => {
                                 fontSize: 12
                               }}
                             >
-                              Energy: {ability.energyCost}
+                              {(() => {
+                                const overrideCost = ancillaryEnergyOverrides.get(ability.id);
+                                const costLabel = overrideCost ?? ability.energyCost;
+                                return overrideCost ? `Energy: ${costLabel} (ancillary)` : `Energy: ${costLabel}`;
+                              })()}
                             </span>
                           </div>
                         </div>
@@ -835,5 +1188,6 @@ export const PsionicsPage: React.FC = () => {
         )}
       </section>
     </div>
+    </>
   );
 };

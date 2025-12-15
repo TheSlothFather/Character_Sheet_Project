@@ -249,8 +249,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         setUnlockedPsionics([]);
         return;
       }
-      const parsed = JSON.parse(raw) as { purchased?: string[]; backgroundPicks?: string[] };
-      const unlockedIds = new Set([...(parsed.purchased ?? []), ...(parsed.backgroundPicks ?? [])]);
+      const parsed = JSON.parse(raw) as { purchased?: string[]; backgroundPicks?: string[]; ancillaryPicks?: Record<string, string[]> };
+      const ancillaryIds = Object.values(parsed.ancillaryPicks ?? {}).flat();
+      const unlockedIds = new Set([...(parsed.purchased ?? []), ...(parsed.backgroundPicks ?? []), ...ancillaryIds]);
       const unlocked = psionicAbilities.filter((ability) => unlockedIds.has(ability.id));
       setUnlockedPsionics(unlocked);
     } catch (err) {
