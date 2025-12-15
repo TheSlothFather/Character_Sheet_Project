@@ -8,6 +8,7 @@ export interface Character {
   attributePointsAvailable?: number;
   skillPoints: number;
   skillAllocations: Record<string, number>;
+  skillAllocationMinimums?: Record<string, number>;
   skillBonuses?: Record<string, number>;
   backgrounds?: BackgroundSelection;
   attributes?: AttributeScores;
@@ -167,6 +168,7 @@ export const api = {
     attributePointsAvailable?: number;
     skillPoints?: number;
     skillAllocations?: Record<string, number>;
+    skillAllocationMinimums?: Record<string, number>;
     skillBonuses?: Record<string, number>;
     backgrounds?: BackgroundSelection;
     attributes?: AttributeScores;
@@ -190,6 +192,7 @@ export const api = {
       attributePointsAvailable?: number;
       skillPoints?: number;
       skillAllocations?: Record<string, number>;
+      skillAllocationMinimums?: Record<string, number>;
       skillBonuses?: Record<string, number>;
       backgrounds?: BackgroundSelection;
       attributes?: AttributeScores;
