@@ -3,6 +3,7 @@ import ancillariesData from "../../data/ancillaries.json";
 import { api, Character } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
+import { getSkillCode, normalizeSkillCode } from "../characters/skillMetadata";
 
 type RawAncillary = {
   id: string;
@@ -46,6 +47,275 @@ const ANCESTRY_GROUP_ACCESS: Record<string, { raceKey: string; subraceKey?: stri
   cerevu: { raceKey: "CEREVU" },
   venii: { raceKey: "VENII" },
   freinin: { raceKey: "FREININ" }
+};
+
+const SKILL_ALIASES: Record<string, string> = {
+  ANIMAL_HANDLING: "ANIMAL_HUSBANDRY"
+};
+
+const normalizeName = (value: string | undefined): string => (value ?? "").trim().toLowerCase();
+
+const buildSkillLookup = (definitions: ReturnType<typeof useDefinitions>["data"] | null): Map<string, string> => {
+  const lookup = new Map<string, string>();
+  (definitions?.skills ?? []).forEach((skill) => {
+    const normalized = normalizeSkillCode(skill);
+    lookup.set(normalized, getSkillCode(skill));
+  });
+  return lookup;
+};
+
+const resolveSkillCode = (lookup: Map<string, string>, raw: string): string | null => {
+  const normalized = normalizeSkillCode({ name: raw });
+  if (lookup.has(normalized)) return lookup.get(normalized) ?? null;
+  if (SKILL_ALIASES[normalized]) return SKILL_ALIASES[normalized];
+  return null;
+};
+
+const buildSkillTotals = (character: Character | null, lookup: Map<string, string>): Record<string, number> => {
+  const totals: Record<string, number> = {};
+  lookup.forEach((code) => {
+    totals[code] = 0;
+  });
+
+  Object.entries(character?.skillAllocations ?? {}).forEach(([code, value]) => {
+    totals[code] = (totals[code] ?? 0) + value;
+  });
+
+  Object.entries(character?.skillBonuses ?? {}).forEach(([code, value]) => {
+    totals[code] = (totals[code] ?? 0) + value;
+  });
+
+  return totals;
+};
+
+const collectBackgrounds = (backgrounds: Character["backgrounds"] | undefined): { backgrounds: Set<string>; flaws: Set<string> } => {
+  const backgroundSet = new Set<string>();
+  const flaws = new Set<string>();
+  if (!backgrounds) return { backgrounds: backgroundSet, flaws };
+
+  const push = (value: string | string[] | undefined) => {
+    if (!value) return;
+    if (Array.isArray(value)) {
+      value.forEach((v) => backgroundSet.add(normalizeName(v)));
+      return;
+    }
+    backgroundSet.add(normalizeName(value));
+  };
+
+  push(backgrounds.family);
+  push(backgrounds.childhood);
+  push(backgrounds.adolescence);
+  push(backgrounds.adulthood);
+  push(backgrounds.incitingIncident);
+  (backgrounds.flaws ?? []).forEach((flaw) => flaws.add(normalizeName(flaw)));
+
+  return { backgrounds: backgroundSet, flaws };
+};
+
+const resolveRaceNames = (
+  character: Character | null,
+  raceMap: Map<string, string>,
+  subraceMap: Map<string, { name: string; raceKey: string }>
+): Set<string> => {
+  const races = new Set<string>();
+  if (!character) return races;
+
+  const raceName = character.raceKey ? raceMap.get(character.raceKey) ?? character.raceKey : undefined;
+  const subraceName = character.subraceKey ? subraceMap.get(character.subraceKey)?.name ?? character.subraceKey : undefined;
+
+  if (raceName) races.add(normalizeName(raceName));
+  if (subraceName) races.add(normalizeName(subraceName));
+  return races;
+};
+
+const extractAttributeTargets = (targetText: string): { keys: string[]; mode: "any" | "all" } => {
+  const lower = targetText.toLowerCase();
+  const mode: "any" | "all" = lower.includes(" or ") ? "any" : lower.includes(" and ") ? "all" : lower.includes(",") ? "any" : "all";
+  const parts = targetText
+    .replace(/[()]/g, "")
+    .split(/,|\bor\b|\band\b|\/|&/i)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const keys: string[] = [];
+  parts.forEach((part) => {
+    const normalized = part.toUpperCase();
+    if (["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"].includes(normalized)) {
+      keys.push(normalized);
+    }
+  });
+
+  return { keys, mode };
+};
+
+const extractSkillTargets = (
+  targetText: string,
+  lookup: Map<string, string>
+): { codes: string[]; mode: "any" | "all"; original: string[] } => {
+  const lower = targetText.toLowerCase();
+  const mode: "any" | "all" = lower.includes(" or ") || lower.includes(",") ? "any" : "all";
+  const parts = targetText
+    .replace(/[()]/g, "")
+    .split(/,|\bor\b|\band\b|\/|&/i)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const codes: string[] = [];
+  const original: string[] = [];
+
+  parts.forEach((part) => {
+    const code = resolveSkillCode(lookup, part);
+    if (code) {
+      codes.push(code);
+      original.push(part);
+    }
+  });
+
+  return { codes, mode, original };
+};
+
+const evaluateNumericRequirement = (
+  raw: string,
+  ctx: RequirementContext,
+  threshold: number,
+  targetText: string
+): RequirementResult => {
+  const attributes = extractAttributeTargets(targetText);
+  if (attributes.keys.length > 0) {
+    const results = attributes.keys.map((key) => {
+      const value = ctx.attributes[key] ?? 0;
+      return { key, met: value >= threshold, value };
+    });
+
+    const met = attributes.mode === "all" ? results.every((r) => r.met) : results.some((r) => r.met);
+    const failed = results.filter((r) => !r.met);
+    return {
+      requirement: raw,
+      met,
+      detail: met ? undefined : failed.map((r) => `${r.key} ${r.value}/${threshold}`).join(", ")
+    };
+  }
+
+  const skills = extractSkillTargets(targetText, ctx.skillLookup);
+  if (skills.codes.length > 0) {
+    const results = skills.codes.map((code, idx) => {
+      const value = ctx.skills[code] ?? 0;
+      return { code, label: skills.original[idx] ?? code, met: value >= threshold, value };
+    });
+    const met = skills.mode === "all" ? results.every((r) => r.met) : results.some((r) => r.met);
+    const failed = results.filter((r) => !r.met);
+    return {
+      requirement: raw,
+      met,
+      detail: met ? undefined : failed.map((r) => `${r.label} ${r.value}/${threshold}`).join(", ")
+    };
+  }
+
+  return { requirement: raw, met: false, detail: "Requirement could not be matched" };
+};
+
+const matchesAny = (options: string[], candidates: Set<string>): boolean =>
+  options.some((opt) => candidates.has(normalizeName(opt)));
+
+const evaluateNonNumericRequirement = (raw: string, ctx: RequirementContext): RequirementResult => {
+  const cleaned = raw.replace(/^[-+]/, "").trim();
+  const normalized = normalizeName(cleaned);
+
+  if (!normalized) return { requirement: raw, met: true };
+
+  if (normalized.includes("ancillar")) {
+    const matchingId = Array.from(ctx.ancillaryNames.entries()).find(([name]) => normalized.includes(name))?.[1];
+    const met = matchingId ? ctx.ancillaries.has(matchingId) : false;
+    return { requirement: raw, met, detail: met ? undefined : "Prerequisite ancillary not selected" };
+  }
+
+  if (normalized.includes("background")) {
+    const tokens = cleaned
+      .replace(/background/gi, "")
+      .split(/,|\bor\b|\band\b/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    const met = tokens.length ? matchesAny(tokens, ctx.backgrounds) : false;
+    return { requirement: raw, met, detail: met ? undefined : "Missing required background" };
+  }
+
+  if (normalized.includes("flaw")) {
+    const tokens = cleaned.replace(/flaw/gi, "").split(/,|\bor\b|\band\b/);
+    const met = tokens.some((token) => ctx.flaws.has(normalizeName(token)));
+    return { requirement: raw, met, detail: met ? undefined : "Missing required flaw" };
+  }
+
+  if (normalized.includes("race") || cleaned.match(/\banz\b|\bganz|\bgraz|\bjiin/i)) {
+    const tokens = cleaned
+      .replace(/race/gi, "")
+      .split(/,|\bor\b|\band\b/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    const met = matchesAny(tokens, ctx.races);
+    return { requirement: raw, met, detail: met ? undefined : "Race or subrace mismatch" };
+  }
+
+  if (normalized.includes("martial prowess")) {
+    const total = ctx.skills.MARTIAL_PROWESS ?? 0;
+    const countMatch = cleaned.match(/(\d+)/);
+    if (countMatch) {
+      const needed = Number(countMatch[1]);
+      const met = total >= needed;
+      return { requirement: raw, met, detail: met ? undefined : `Martial Prowess ${total}/${needed}` };
+    }
+    return { requirement: raw, met: total > 0, detail: total > 0 ? undefined : "No Martial Prowess recorded" };
+  }
+
+  if (normalized.includes("ildakar")) {
+    const total = ctx.skills.ILDAKAR_FACULTY ?? 0;
+    const met = total > 0;
+    return { requirement: raw, met, detail: met ? undefined : "No Ildakar Faculty unlocked" };
+  }
+
+  return { requirement: raw, met: false, detail: "Manual verification required" };
+};
+
+const evaluateRequirement = (req: string, ctx: RequirementContext): RequirementResult => {
+  const trimmed = req.trim();
+  if (!trimmed) return { requirement: req, met: true };
+
+  if (trimmed.startsWith("+")) {
+    const segments = trimmed.match(/\+[0-9][^+]*?/g);
+    const parts = segments && segments.length > 0 ? segments : [trimmed];
+    const results = parts.map((segment) => {
+      const match = segment.match(/^\+(\d+)\s*(.*)$/);
+      if (!match) return { requirement: segment, met: false, detail: "Invalid format" } as RequirementResult;
+      const threshold = Number(match[1]);
+      const targetText = match[2].trim();
+      return evaluateNumericRequirement(segment, ctx, threshold, targetText);
+    });
+    const met = results.every((r) => r.met);
+    const detail = results.filter((r) => !r.met).map((r) => r.detail).filter(Boolean).join("; ") || undefined;
+    return { requirement: req, met, detail };
+  }
+
+  return evaluateNonNumericRequirement(req, ctx);
+};
+
+const evaluateAllRequirements = (requirements: string[], ctx: RequirementContext): RequirementResult[] =>
+  requirements.map((req) => evaluateRequirement(req, ctx));
+
+type RequirementResult = {
+  requirement: string;
+  met: boolean;
+  detail?: string;
+};
+
+type RequirementContext = {
+  character: Character | null;
+  attributes: Record<string, number>;
+  skills: Record<string, number>;
+  backgrounds: Set<string>;
+  flaws: Set<string>;
+  races: Set<string>;
+  ancillaries: Set<string>;
+  ancillaryNames: Map<string, string>;
+  skillLookup: Map<string, string>;
 };
 
 const buildEntries = (): AncillaryEntry[] => {
@@ -156,6 +426,12 @@ export const AncillariesPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [search, setSearch] = React.useState("");
 
+  const skillLookup = React.useMemo(() => buildSkillLookup(definitions), [definitions]);
+  const ancillaryNames = React.useMemo(
+    () => new Map<string, string>(ALL_ENTRIES.map((entry) => [normalizeName(entry.name), entry.id])),
+    []
+  );
+
   const storageKey = React.useMemo(() => `${STORAGE_PREFIX}:${selectedId ?? "unassigned"}`, [selectedId]);
 
   const [selectedAncillaries, setSelectedAncillaries] = React.useState<string[]>(() => readSelection(storageKey));
@@ -191,6 +467,11 @@ export const AncillariesPage: React.FC = () => {
     [characters, selectedId]
   );
 
+  const { backgrounds: backgroundSet, flaws } = React.useMemo(
+    () => collectBackgrounds(selectedCharacter?.backgrounds),
+    [selectedCharacter]
+  );
+
   const raceMap = React.useMemo(() => new Map((definitions?.races ?? []).map((race) => [race.id, race.name])), [definitions]);
   const subraceMap = React.useMemo(
     () =>
@@ -200,6 +481,8 @@ export const AncillariesPage: React.FC = () => {
     [definitions]
   );
 
+  const raceNames = React.useMemo(() => resolveRaceNames(selectedCharacter, raceMap, subraceMap), [raceMap, selectedCharacter, subraceMap]);
+
   const selectedRaceName = selectedCharacter?.raceKey ? raceMap.get(selectedCharacter.raceKey) ?? selectedCharacter.raceKey : undefined;
   const selectedSubraceName =
     selectedCharacter?.subraceKey && subraceMap.get(selectedCharacter.subraceKey)?.name
@@ -208,6 +491,31 @@ export const AncillariesPage: React.FC = () => {
 
   const { total: allowed, tierAdvancements } = summarizeAllowed(selectedCharacter);
   const remaining = Math.max(allowed - selectedAncillaries.length, 0);
+
+  const skillTotals = React.useMemo(() => buildSkillTotals(selectedCharacter, skillLookup), [selectedCharacter, skillLookup]);
+
+  const requirementContext = React.useMemo<RequirementContext>(
+    () => ({
+      character: selectedCharacter,
+      attributes: (selectedCharacter?.attributes as Record<string, number>) ?? {},
+      skills: skillTotals,
+      backgrounds: backgroundSet,
+      flaws,
+      races: raceNames,
+      ancillaries: new Set(selectedAncillaries),
+      ancillaryNames,
+      skillLookup
+    }),
+    [ancillaryNames, backgroundSet, flaws, raceNames, selectedAncillaries, selectedCharacter, skillLookup, skillTotals]
+  );
+
+  const evaluateEntryRequirements = React.useCallback(
+    (entry: AncillaryEntry) =>
+      entry.category === "ancestry"
+        ? entry.requirements.map((req) => ({ requirement: req, met: true }))
+        : evaluateAllRequirements(entry.requirements, requirementContext),
+    [requirementContext]
+  );
 
   const ancestryAllowedGroups = React.useMemo(() => {
     const groups = data.ancestryGroups.filter((group) => isAncestryAllowedForCharacter(group.id, selectedCharacter));
@@ -272,7 +580,9 @@ export const AncillariesPage: React.FC = () => {
     const ancestryBlocked =
       entry.category === "ancestry" &&
       (!isAncestryAllowedForCharacter(entry.ancestryGroupId, selectedCharacter) || (!ancestryLevelEligible && !isSelected));
-    const disabled = !showRemove && (isSelected || remaining <= 0 || ancestryBlocked);
+    const requirementResults = evaluateEntryRequirements(entry);
+    const requirementsBlocked = requirementResults.some((result) => !result.met);
+    const disabled = !showRemove && (isSelected || remaining <= 0 || ancestryBlocked || requirementsBlocked);
 
     return (
       <div key={entry.id} style={{ ...cardStyle, marginBottom: "0.75rem" }}>
@@ -291,8 +601,18 @@ export const AncillariesPage: React.FC = () => {
               <div style={{ marginBottom: 6 }}>
                 <div style={{ fontWeight: 700, marginBottom: 2, fontSize: 13 }}>Requirements</div>
                 <ul style={{ margin: 0, paddingLeft: 18 }}>
-                  {entry.requirements.map((req) => (
-                    <li key={req} style={{ marginBottom: 2 }}>{req}</li>
+                  {requirementResults.map((req) => (
+                    <li
+                      key={`${entry.id}-${req.requirement}`}
+                      style={{
+                        marginBottom: 2,
+                        color: req.met ? "#34d399" : "#f87171",
+                        fontWeight: 600
+                      }}
+                    >
+                      {req.requirement}
+                      {!req.met && req.detail ? ` — ${req.detail}` : ""}
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -329,7 +649,7 @@ export const AncillariesPage: React.FC = () => {
       <h2 style={{ marginBottom: "0.5rem" }}>Ancillaries</h2>
       <p style={{ marginTop: 0, color: "#cbd5e1" }}>
         Choose 2 ancillaries at character creation. You gain 2 more picks at every Character Tier Advancement (levels 6, 11, 16,
-        and so on). Requirements are not enforced by the tool—verify eligibility before adding.
+        and so on). Entries stay locked until the listed prerequisites are satisfied for the selected character.
       </p>
       <p style={{ marginTop: 0, color: "#cbd5e1" }}>
         Ancestry ancillaries are locked to your character’s race and subrace (when applicable) and can only be chosen at level 1.
