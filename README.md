@@ -4,8 +4,8 @@ This repo is now ready to ship the Vite React client to Cloudflare Pages and con
 
 ## Cloudflare Pages configuration
 - **Root directory:** repository root.
-- **Build command:** `npm run build:client`
-- **Build output directory:** `client/dist`
+- **Build command:** `npm run build`
+- **Build output directory:** `dist` (copied automatically from `client/dist` during the build script)
 - **Environment variables (production + preview):**
   - `VITE_SUPABASE_URL` – your Supabase project URL
   - `VITE_SUPABASE_ANON_KEY` – the anon public key
@@ -16,8 +16,8 @@ This repo is now ready to ship the Vite React client to Cloudflare Pages and con
 1. Install dependencies at the repo root: `npm install`.
 2. Copy `.env.example` from `client` to `client/.env` and set Supabase values.
 3. Run the Vite dev server: `npm run dev:client` (defaults to port 5173).
-4. Build locally to verify Pages output: `npm run build:client` then preview with `npm run preview:client`.
+4. Build locally to verify Pages output: `npm run build` then preview with `npm run preview:client`.
 
 ## Notes
-- Node 20+ is required (matches Cloudflare build image).
+- Node 20+ is required. Cloudflare Pages will pick up the `.node-version` file and install Node 20 automatically.
 - Server code remains in the repo for reference but is not part of the Pages deploy. If you add Pages Functions later, keep secrets there and never in client code.
