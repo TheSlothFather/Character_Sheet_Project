@@ -638,6 +638,7 @@ const PSION_ANCILLARY_IDS = new Set([
   "advanced-psion",
   "heroic-psion",
   "epic-psion",
+  "legendary-psion",
   "mythic-psion"
 ]);
 
@@ -712,9 +713,12 @@ export const AncillariesPage: React.FC = () => {
     () => readAncillarySelection(selectedId)
   );
 
+  const ancillariesLocked = Boolean((flags as { locked?: boolean } | undefined)?.locked);
+
   const setSelectedAncillaries = React.useCallback(
     (updater: React.SetStateAction<string[]>) => {
       setSelection((prev) => {
+        if ((prev.flags as { locked?: boolean } | undefined)?.locked) return prev;
         const nextSelected = typeof updater === "function" ? (updater as (ids: string[]) => string[])(prev.selected) : updater;
         const validIds = new Set(ALL_ENTRIES.map((entry) => entry.id));
         const filtered = nextSelected.filter((id) => validIds.has(id));
@@ -919,15 +923,14 @@ export const AncillariesPage: React.FC = () => {
     });
   }, [ancestryLevelEligible, availableEntries, evaluateEntryRequirements, filterTerm, selectedAncillaries, selectedCharacter, showEligibleOnly]);
 
-  const handleLockPsionAncillaries = () => {
-    if (!hasPsionAncillary) return;
+  const handleLockAncillaries = () => {
     setSelection((prev) => {
-      const nextFlags = { ...prev.flags, psionicsLockRequested: true };
+      const nextFlags = { ...prev.flags, locked: true, psionicsLockRequested: hasPsionAncillary };
       const nextState: AncillarySelectionState = { selected: prev.selected, metadata: prev.metadata, flags: nextFlags };
       persistAncillarySelection(selectedId, nextState);
       return nextState;
     });
-    navigate("/psionics");
+    if (hasPsionAncillary) navigate("/psionics");
   };
 
   const selectedDetails = selectedAncillaries
@@ -940,6 +943,7 @@ export const AncillariesPage: React.FC = () => {
       if (!isAncestryAllowedForCharacter(entry.ancestryGroupId, selectedCharacter)) return;
       if (!ancestryLevelEligible && !selectedAncillaries.includes(id)) return;
     }
+    if (ancillariesLocked) return;
     if (selectedAncillaries.includes(id)) {
       setSelectedAncillaries((prev) => prev.filter((existing) => existing !== id));
       return;
@@ -965,7 +969,7 @@ export const AncillariesPage: React.FC = () => {
       isWeaponMastery && (!weaponCategoryState || !weaponCategoryState.complete || !storedCategory);
 
     const disabled =
-      !showRemove && (isSelected || remaining <= 0 || ancestryBlocked || requirementsBlocked || weaponCategoryBlocked);
+      ancillariesLocked || (!showRemove && (isSelected || remaining <= 0 || ancestryBlocked || requirementsBlocked || weaponCategoryBlocked));
 
     return (
       <div key={entry.id} style={{ ...cardStyle, marginBottom: "0.75rem" }}>
@@ -1164,27 +1168,30 @@ export const AncillariesPage: React.FC = () => {
                 {selectedAncillaries.length}/{allowed}
               </span>
             </div>
-            {hasPsionAncillary && (
-              <div style={{ marginBottom: 10, display: "grid", gap: 6 }}>
-                <button
-                  type="button"
-                  onClick={handleLockPsionAncillaries}
-                  style={{
-                    padding: "0.55rem 0.9rem",
-                    borderRadius: 8,
-                    border: "1px solid #1d4ed8",
-                    background: "#2563eb",
-                    color: "#e6edf7",
-                    cursor: "pointer",
-                    fontWeight: 700
-                  }}
-                >
-                  Lock Psion Ancillaries
-                </button>
-                <div style={{ color: "#9ca3af", fontSize: 13 }}>
-                  Locks your selections and opens a Psionics prompt to choose ancillary abilities.
-                </div>
+            <div style={{ marginBottom: 10, display: "grid", gap: 6 }}>
+              <button
+                type="button"
+                onClick={handleLockAncillaries}
+                disabled={ancillariesLocked}
+                style={{
+                  padding: "0.55rem 0.9rem",
+                  borderRadius: 8,
+                  border: ancillariesLocked ? "1px solid #374151" : "1px solid #1d4ed8",
+                  background: ancillariesLocked ? "#111827" : "#2563eb",
+                  color: "#e6edf7",
+                  cursor: ancillariesLocked ? "not-allowed" : "pointer",
+                  fontWeight: 700
+                }}
+              >
+                {ancillariesLocked ? "Ancillaries Locked" : "Lock Ancillaries"}
+              </button>
+              <div style={{ color: "#9ca3af", fontSize: 13 }}>
+                Locks your ancillary selections so they cannot be changed or removed.
+                {hasPsionAncillary ? " Opens a Psionics prompt to pick ancillary abilities." : ""}
               </div>
+            </div>
+            {ancillariesLocked && (
+              <div style={{ color: "#fbbf24", fontSize: 13, marginBottom: 8 }}>Ancillary choices are locked.</div>
             )}
             {selectedDetails.length === 0 ? (
               <p style={{ margin: 0, color: "#94a3b8" }}>No ancillaries selected yet.</p>
