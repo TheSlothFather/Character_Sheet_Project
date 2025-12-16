@@ -266,8 +266,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const minimum = allocationMinimums[code] ?? 0;
     const bonus = skillBonuses[code] ?? 0;
     const total = allocated + bonus;
-    const disableInc = disableAllocation || remaining <= 0;
-    const disableDec = disableAllocation || allocated <= minimum;
+    const maxAllocatable = Math.max(minimum, allocated + Math.max(remaining, 0));
+
+    const handleSpinChange = (value: number) => {
+      if (Number.isNaN(value)) return;
+      const clamped = Math.min(Math.max(value, minimum), maxAllocatable);
+      const delta = clamped - allocated;
+      if (delta !== 0) {
+        onChangeAllocation(code, delta);
+      }
+    };
 
     return (
       <div
@@ -287,13 +295,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           <div style={{ fontWeight: 600 }}>{formatSkillName(skill.name)}</div>
         </div>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <button onClick={() => onChangeAllocation(code, -1)} disabled={disableDec} style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}>
-            -
-          </button>
-          <div style={{ width: 28, textAlign: "center" }}>{allocated}</div>
-          <button onClick={() => onChangeAllocation(code, 1)} disabled={disableInc} style={{ padding: "0.2rem 0.4rem", minWidth: 28 }}>
-            +
-          </button>
+          <input
+            type="number"
+            value={allocated}
+            min={minimum}
+            max={maxAllocatable}
+            step={1}
+            disabled={disableAllocation}
+            onChange={(e) => handleSpinChange(parseInt(e.target.value, 10))}
+            style={{
+              width: 76,
+              padding: "0.35rem 0.4rem",
+              borderRadius: 6,
+              border: "1px solid #2d343f",
+              background: disableAllocation ? "#11161f" : "#0c111a",
+              color: "#e8edf7"
+            }}
+          />
         </div>
         <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
       </div>
