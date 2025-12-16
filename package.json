@@ -7,7 +7,14 @@
     "client",
     "shared"
   ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
+    "build": "npm run build:client",
+    "build:client": "npm run build --workspace client",
+    "dev:client": "npm run dev --workspace client",
+    "preview:client": "npm run preview --workspace client",
     "lint": "echo \"add linter\"",
     "test": "echo \"add tests\""
   }
