@@ -51,7 +51,7 @@ const loadPersistedState = (storageKey: string | null, abilityIds: Set<string>):
   try {
     const raw = window.localStorage.getItem(storageKey);
     if (!raw) {
-      return { purchased: new Set(), backgroundPicks: new Set(), ancillaryPicks: {} };
+      return { purchased: new Set(), backgroundPicks: new Set(), ancillaryPicks: {}, lockedAncillaries: new Set() };
     }
     const parsed = JSON.parse(raw) as {
       purchased?: string[];
@@ -1202,7 +1202,7 @@ export const PsionicsPage: React.FC = () => {
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
               <button
-                onClick={openAncillaryModal}
+                onClick={startAncillaryModal}
                 disabled={psionAncillaryList.length === 0}
                 style={{
                   padding: "0.55rem 0.9rem",
