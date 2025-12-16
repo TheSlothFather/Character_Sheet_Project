@@ -22,3 +22,4 @@ This repo is now ready to ship the Vite React client to Cloudflare Pages and con
 - Node 20+ is required. Cloudflare Pages will pick up the `.node-version` file and install Node 20 automatically.
 - Server code remains in the repo for reference but is not part of the Pages deploy. If you add Pages Functions later, keep secrets there and never in client code.
 - A Supabase/Postgres migration script is available; see `docs/supabase-migration.md` for running instructions.
+- To deploy the client on Cloudflare Pages with Supabase, follow `docs/cloudflare-supabase.md`.
