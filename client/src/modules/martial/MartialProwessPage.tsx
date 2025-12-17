@@ -720,6 +720,7 @@ export const MartialProwessPage: React.FC = () => {
                       min={activeCategorySpent}
                       max={Math.max(activeCategoryAllocation + unassignedMp, activeCategorySpent)}
                       onChange={(e) => updateCategoryPool(activeCategory.key, Number(e.target.value) || 0)}
+                      onWheel={(e) => e.preventDefault()}
                       style={{
                         background: "#0c121a",
                         border: "1px solid #2b3747",

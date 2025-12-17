@@ -303,6 +303,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             step={1}
             disabled={disableAllocation}
             onChange={(e) => handleSpinChange(parseInt(e.target.value, 10))}
+            onWheel={(e) => e.preventDefault()}
             style={{
               width: 76,
               padding: "0.35rem 0.4rem",

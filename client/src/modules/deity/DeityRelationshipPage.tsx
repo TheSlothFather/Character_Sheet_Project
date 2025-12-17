@@ -276,6 +276,7 @@ export const DeityRelationshipPage: React.FC = () => {
               value={spiritualAttribute}
               min={0}
               onChange={(e) => setSpiritualAttribute(Number(e.target.value) || 0)}
+              onWheel={(e) => e.preventDefault()}
               style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
             />
           </label>
@@ -397,6 +398,7 @@ export const DeityRelationshipPage: React.FC = () => {
               value={timesPerformed}
               min={1}
               onChange={(e) => setTimesPerformed(Number(e.target.value) || 1)}
+              onWheel={(e) => e.preventDefault()}
               style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
             />
           </label>
