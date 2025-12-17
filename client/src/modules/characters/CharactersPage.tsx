@@ -146,6 +146,11 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
   const total = allocated + bonus;
   const maxAllocatable = Math.max(minimum, allocated + Math.max(remaining, 0));
 
+  const allocationRef = React.useRef<number>(allocated);
+  React.useEffect(() => {
+    allocationRef.current = allocations[code] ?? 0;
+  }, [allocations, code]);
+
   const repeatTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const repeatIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -170,7 +175,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
   };
 
   const applyDelta = (delta: number) => {
-    const current = allocations[code] ?? 0;
+    const current = allocationRef.current ?? 0;
     handleSpinChange(current + delta);
   };
 
