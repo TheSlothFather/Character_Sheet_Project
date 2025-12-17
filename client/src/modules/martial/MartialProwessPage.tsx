@@ -4,6 +4,7 @@ import weaponsCsv from "../../data/weapons.csv?raw";
 import { api, Character } from "../../api/client";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
 import { EquipmentKind, MartialAbility, parseMartialCsv } from "./martialUtils";
+import { NumberStepper } from "../common/NumberStepper";
 
 interface MartialState {
   categoryPools: Record<string, number>;
@@ -714,22 +715,13 @@ export const MartialProwessPage: React.FC = () => {
                     }}
                   >
                     <div style={{ color: "#c5ccd9", fontWeight: 600, fontSize: 13 }}>Category MP Allocation</div>
-                    <input
-                      type="number"
+                    <NumberStepper
                       value={activeCategoryAllocation}
                       min={activeCategorySpent}
                       max={Math.max(activeCategoryAllocation + unassignedMp, activeCategorySpent)}
-                      onChange={(e) => updateCategoryPool(activeCategory.key, Number(e.target.value) || 0)}
-                      onWheel={(e) => e.preventDefault()}
-                      style={{
-                        background: "#0c121a",
-                        border: "1px solid #2b3747",
-                        borderRadius: 8,
-                        padding: "0.45rem 0.55rem",
-                        color: "#e6edf7",
-                        fontSize: 15,
-                        fontWeight: 600
-                      }}
+                      onChange={(next) => updateCategoryPool(activeCategory.key, next)}
+                      ariaLabel="Category MP Allocation"
+                      inputStyle={{ fontSize: 15, fontWeight: 600 }}
                     />
                     <div style={{ fontSize: 12, color: "#7f8898" }}>
                       Requires at least {activeCategorySpent} MP to cover purchased abilities.

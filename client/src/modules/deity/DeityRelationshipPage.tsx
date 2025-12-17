@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import deityData from "../../data/deity_relationships.json";
 import { api, Character, RaceDetailProfile } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
+import { NumberStepper } from "../common/NumberStepper";
 
 type WorshipAction = {
   name: string;
@@ -271,14 +272,15 @@ export const DeityRelationshipPage: React.FC = () => {
           </label>
           <label style={{ display: "block", marginBottom: "0.5rem" }}>
             Spiritual Attribute
-            <input
-              type="number"
-              value={spiritualAttribute}
-              min={0}
-              onChange={(e) => setSpiritualAttribute(Number(e.target.value) || 0)}
-              onWheel={(e) => e.preventDefault()}
-              style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
-            />
+            <div style={{ marginTop: 4 }}>
+              <NumberStepper
+                value={spiritualAttribute}
+                min={0}
+                onChange={(next) => setSpiritualAttribute(next)}
+                ariaLabel="Spiritual Attribute"
+                inputStyle={{ background: "#111", border: "1px solid #444" }}
+              />
+            </div>
           </label>
           <label style={{ display: "block", marginBottom: "0.5rem" }}>
             Racial Cap Bonus
@@ -393,14 +395,15 @@ export const DeityRelationshipPage: React.FC = () => {
           </label>
           <label style={{ display: "block" }}>
             Times Performed
-            <input
-              type="number"
-              value={timesPerformed}
-              min={1}
-              onChange={(e) => setTimesPerformed(Number(e.target.value) || 1)}
-              onWheel={(e) => e.preventDefault()}
-              style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
-            />
+            <div style={{ marginTop: 4 }}>
+              <NumberStepper
+                value={timesPerformed}
+                min={1}
+                onChange={(next) => setTimesPerformed(next)}
+                ariaLabel="Times Performed"
+                inputStyle={{ background: "#111", border: "1px solid #444" }}
+              />
+            </div>
           </label>
         </div>
         <div style={{ marginTop: "0.75rem", display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
