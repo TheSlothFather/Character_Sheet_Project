@@ -91,7 +91,7 @@ interface CharacterSheetProps {
   allocations: Record<string, number>;
   allocationMinimums: Record<string, number>;
   skillBonuses: Record<string, number>;
-  onChangeAllocation: (skillCode: string, delta: number) => void;
+  onChangeAllocation: (skillCode: string, value: number) => void;
   onLockAllocations: () => void;
   disableAllocation: boolean;
   lockDisabled: boolean;
@@ -269,12 +269,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     const maxAllocatable = Math.max(minimum, allocated + Math.max(remaining, 0));
 
     const handleSpinChange = (value: number) => {
-      if (Number.isNaN(value)) return;
-      const clamped = Math.min(Math.max(value, minimum), maxAllocatable);
-      const delta = clamped - allocated;
-      if (delta !== 0) {
-        onChangeAllocation(code, delta);
-      }
+      if (!Number.isFinite(value)) return;
+      const sanitized = Math.floor(value);
+      const clamped = Math.min(Math.max(sanitized, minimum), maxAllocatable);
+      onChangeAllocation(code, clamped);
     };
 
     return (
@@ -737,7 +735,7 @@ export const CharactersPage: React.FC = () => {
     }
   };
 
-  const onChangeAllocation = async (skillCode: string, delta: number) => {
+  const onChangeAllocation = async (skillCode: string, desiredValue: number) => {
     if (!selectedId) return;
     const selectedCharacter = characters.find((c) => c.id === selectedId);
     if (!selectedCharacter) return;
@@ -747,11 +745,11 @@ export const CharactersPage: React.FC = () => {
     const minimums = selectedCharacter.skillAllocationMinimums ?? {};
     const currentValue = currentAllocations[skillCode] ?? 0;
     const floor = minimums[skillCode] ?? 0;
-    const nextValue = Math.max(floor, currentValue + delta);
+    const sanitizedDesired = Number.isFinite(desiredValue) ? Math.floor(desiredValue) : 0;
+    const desired = Math.max(floor, sanitizedDesired);
+    const available = pool - sumAllocations(currentAllocations) + currentValue;
+    const nextValue = Math.min(desired, Math.max(floor, available));
     if (nextValue === currentValue) return;
-    const currentTotal = sumAllocations(currentAllocations);
-    const proposedTotal = currentTotal - currentValue + nextValue;
-    if (proposedTotal > pool) return;
 
     const nextAllocations = {
       ...currentAllocations,
