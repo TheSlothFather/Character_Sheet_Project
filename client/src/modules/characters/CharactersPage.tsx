@@ -10,6 +10,13 @@ import { PSIONICS_STORAGE_KEY } from "../psionics/psionBackgrounds";
 import { getAncillaryStorageKey, readAncillarySelection } from "../ancillaries/storage";
 
 const DEFAULT_SKILL_POINT_POOL = 100;
+const ENERGY_OVERRIDE_ANCILLARIES = new Set([
+  "advanced-psion",
+  "heroic-psion",
+  "epic-psion",
+  "legendary-psion",
+  "mythic-psion"
+]);
 
 const isAllocationMap = (value: unknown): value is Record<string, number> => {
   if (!value || typeof value !== "object") return false;
@@ -151,6 +158,12 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
     allocationRef.current = allocations[code] ?? 0;
   }, [allocations, code]);
 
+  const [inputValue, setInputValue] = React.useState<string>(String(allocated));
+
+  React.useEffect(() => {
+    setInputValue(String(allocations[code] ?? 0));
+  }, [allocations, code]);
+
   const repeatTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const repeatIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -171,6 +184,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
     if (!Number.isFinite(value)) return;
     const sanitized = Math.floor(value);
     const clamped = Math.min(Math.max(sanitized, minimum), maxAllocatable);
+    setInputValue(String(clamped));
     onChangeAllocation(code, clamped);
   };
 
@@ -227,9 +241,16 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
         <input
           type="text"
           inputMode="numeric"
-          value={allocated}
+          value={inputValue}
           disabled={disableAllocation}
-          onChange={(e) => handleSpinChange(parseInt(e.target.value, 10))}
+          onChange={(e) => {
+            const next = e.target.value;
+            setInputValue(next);
+            if (next.trim() === "" || next === "-") return;
+            const parsed = Number.parseInt(next, 10);
+            if (Number.isFinite(parsed)) handleSpinChange(parsed);
+          }}
+          onBlur={() => setInputValue(String(allocations[code] ?? 0))}
           onWheel={(e) => {
             e.preventDefault();
             e.currentTarget.blur();
@@ -308,6 +329,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
   const psionicAbilities = React.useMemo<PsionicAbility[]>(() => parsePsionicsCsv(psionicsCsv), []);
   const [unlockedPsionics, setUnlockedPsionics] = React.useState<PsionicAbility[]>([]);
+  const [psionicEnergyOverrides, setPsionicEnergyOverrides] = React.useState<Map<string, number>>(new Map());
   const storageKey = React.useMemo(() => `${PSIONICS_STORAGE_KEY}:${character.id}`, [character.id]);
 
   const [weaponNotes, setWeaponNotes] = React.useState<string>(character.weaponNotes ?? "");
@@ -393,22 +415,32 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   React.useEffect(() => {
     if (typeof window === "undefined") {
       setUnlockedPsionics([]);
+      setPsionicEnergyOverrides(new Map());
       return;
     }
     try {
       const raw = window.localStorage.getItem(storageKey);
       if (!raw) {
         setUnlockedPsionics([]);
+        setPsionicEnergyOverrides(new Map());
         return;
       }
       const parsed = JSON.parse(raw) as { purchased?: string[]; backgroundPicks?: string[]; ancillaryPicks?: Record<string, string[]> };
-      const ancillaryIds = Object.values(parsed.ancillaryPicks ?? {}).flat();
+      const ancillaryPicks = parsed.ancillaryPicks ?? {};
+      const ancillaryIds = Object.values(ancillaryPicks).flat();
       const unlockedIds = new Set([...(parsed.purchased ?? []), ...(parsed.backgroundPicks ?? []), ...ancillaryIds]);
       const unlocked = psionicAbilities.filter((ability) => unlockedIds.has(ability.id));
+      const overrides = new Map<string, number>();
+      Object.entries(ancillaryPicks).forEach(([ancillaryId, abilityIds]) => {
+        if (!ENERGY_OVERRIDE_ANCILLARIES.has(ancillaryId)) return;
+        abilityIds.forEach((abilityId) => overrides.set(abilityId, 1));
+      });
       setUnlockedPsionics(unlocked);
+      setPsionicEnergyOverrides(overrides);
     } catch (err) {
       console.warn("Unable to read psionics state", err);
       setUnlockedPsionics([]);
+      setPsionicEnergyOverrides(new Map());
     }
   }, [psionicAbilities, storageKey]);
 
@@ -710,7 +742,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                               <summary style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                                 <span style={{ fontWeight: 700 }}>{ability.name}</span>
                                 <span style={{ fontSize: 12, color: "#9aa3b5" }}>
-                                  Tier {ability.tier} • Energy {ability.energyCost}
+                                  {`Tier ${ability.tier} • Energy ${psionicEnergyOverrides.get(ability.id) ?? ability.energyCost}`}
                                 </span>
                               </summary>
                               <div style={{ marginTop: 6, color: "#cfd6e5", fontSize: 13, whiteSpace: "pre-wrap" }}>
