@@ -1,0 +1,30 @@
+.skill-allocation-input {
+  width: 76px;
+  padding: 0.35rem 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #2d343f;
+  background: #0c111a;
+  color: #e8edf7;
+  box-sizing: border-box;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.skill-allocation-input:disabled {
+  background: #11161f;
+  color: #8a94a3;
+  border-color: #1f2733;
+  cursor: not-allowed;
+}
+
+.skill-allocation-input:hover:not(:disabled),
+.skill-allocation-input:focus-visible {
+  border-color: #f38b2f;
+  box-shadow: 0 0 0 2px rgba(243, 139, 47, 0.2);
+  outline: none;
+  background: #101724;
+}
+
+.skill-allocation-input::-webkit-inner-spin-button,
+.skill-allocation-input::-webkit-outer-spin-button {
+  opacity: 1;
+}

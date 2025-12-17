@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { api, Character, ApiError, NamedDefinition } from "../../api/client";
+import "./CharactersPage.css";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
 import { AttributeKey, computeAttributeSkillBonuses, getSkillCode, groupSkillsByCategory } from "./skillMetadata";
@@ -304,14 +305,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             disabled={disableAllocation}
             onChange={(e) => handleSpinChange(parseInt(e.target.value, 10))}
             onWheel={(e) => e.preventDefault()}
-            style={{
-              width: 76,
-              padding: "0.35rem 0.4rem",
-              borderRadius: 6,
-              border: "1px solid #2d343f",
-              background: disableAllocation ? "#11161f" : "#0c111a",
-              color: "#e8edf7"
-            }}
+            className="skill-allocation-input"
           />
         </div>
         <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
