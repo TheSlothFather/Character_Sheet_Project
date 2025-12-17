@@ -118,6 +118,153 @@ const ATTRIBUTE_DISPLAY: { key: keyof Required<Character>["attributes"] | string
   { key: "WILL", label: "Will" }
 ];
 
+interface SkillAllocationRowProps {
+  skill: NamedDefinition;
+  showDivider?: boolean;
+  allocations: Record<string, number>;
+  allocationMinimums: Record<string, number>;
+  skillBonuses: Record<string, number>;
+  remaining: number;
+  disableAllocation: boolean;
+  onChangeAllocation: (skillCode: string, value: number) => void;
+}
+
+const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
+  skill,
+  showDivider = true,
+  allocations,
+  allocationMinimums,
+  skillBonuses,
+  remaining,
+  disableAllocation,
+  onChangeAllocation
+}) => {
+  const code = getSkillCode(skill);
+  const allocated = allocations[code] ?? 0;
+  const minimum = allocationMinimums[code] ?? 0;
+  const bonus = skillBonuses[code] ?? 0;
+  const total = allocated + bonus;
+  const maxAllocatable = Math.max(minimum, allocated + Math.max(remaining, 0));
+
+  const repeatTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const repeatIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const stopRepeating = React.useCallback(() => {
+    if (repeatTimeoutRef.current) {
+      clearTimeout(repeatTimeoutRef.current);
+      repeatTimeoutRef.current = null;
+    }
+    if (repeatIntervalRef.current) {
+      clearInterval(repeatIntervalRef.current);
+      repeatIntervalRef.current = null;
+    }
+  }, []);
+
+  React.useEffect(() => stopRepeating, [stopRepeating]);
+
+  const handleSpinChange = (value: number) => {
+    if (!Number.isFinite(value)) return;
+    const sanitized = Math.floor(value);
+    const clamped = Math.min(Math.max(sanitized, minimum), maxAllocatable);
+    onChangeAllocation(code, clamped);
+  };
+
+  const applyDelta = (delta: number) => {
+    const current = allocations[code] ?? 0;
+    handleSpinChange(current + delta);
+  };
+
+  const startRepeating = (delta: number) => {
+    if (disableAllocation) return;
+    stopRepeating();
+    applyDelta(delta);
+    repeatTimeoutRef.current = setTimeout(() => {
+      repeatIntervalRef.current = setInterval(() => applyDelta(delta), 125);
+    }, 350);
+  };
+
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "minmax(0, 1.4fr) 150px 80px",
+        alignItems: "center",
+        gap: "0.45rem",
+        padding: "0.4rem 0.25rem",
+        borderBottom: showDivider ? "1px solid #161b23" : "none",
+        background: "#0c0f14",
+        borderRadius: 6
+      }}
+    >
+      <div style={{ wordBreak: "break-word" }}>
+        <div style={{ fontWeight: 600 }}>{formatSkillName(skill.name)}</div>
+      </div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <button
+          type="button"
+          onPointerDown={() => startRepeating(-1)}
+          onPointerUp={stopRepeating}
+          onPointerLeave={stopRepeating}
+          onPointerCancel={stopRepeating}
+          disabled={disableAllocation || allocated <= minimum}
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 6,
+            border: "1px solid #2d343f",
+            background: disableAllocation ? "#11161f" : "#0c111a",
+            color: "#e8edf7",
+            cursor: disableAllocation ? "not-allowed" : "pointer"
+          }}
+        >
+          −
+        </button>
+        <input
+          type="text"
+          inputMode="numeric"
+          value={allocated}
+          disabled={disableAllocation}
+          onChange={(e) => handleSpinChange(parseInt(e.target.value, 10))}
+          onWheel={(e) => {
+            e.preventDefault();
+            e.currentTarget.blur();
+          }}
+          onMouseUp={(e) => e.currentTarget.blur()}
+          style={{
+            width: 64,
+            padding: "0.35rem 0.4rem",
+            borderRadius: 6,
+            border: "1px solid #2d343f",
+            background: disableAllocation ? "#11161f" : "#0c111a",
+            color: "#e8edf7",
+            textAlign: "center"
+          }}
+        />
+        <button
+          type="button"
+          onPointerDown={() => startRepeating(1)}
+          onPointerUp={stopRepeating}
+          onPointerLeave={stopRepeating}
+          onPointerCancel={stopRepeating}
+          disabled={disableAllocation || allocated >= maxAllocatable}
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 6,
+            border: "1px solid #2d343f",
+            background: disableAllocation ? "#11161f" : "#0c111a",
+            color: "#e8edf7",
+            cursor: disableAllocation ? "not-allowed" : "pointer"
+          }}
+        >
+          +
+        </button>
+      </div>
+      <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
+    </div>
+  );
+};
+
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
   character,
   skills,
@@ -259,67 +406,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       setUnlockedPsionics([]);
     }
   }, [psionicAbilities, storageKey]);
-
-  const renderSkillAllocationRow = (skill: NamedDefinition, showDivider = true) => {
-    const code = getSkillCode(skill);
-    const allocated = allocations[code] ?? 0;
-    const minimum = allocationMinimums[code] ?? 0;
-    const bonus = skillBonuses[code] ?? 0;
-    const total = allocated + bonus;
-    const maxAllocatable = Math.max(minimum, allocated + Math.max(remaining, 0));
-
-    const handleSpinChange = (value: number) => {
-      if (!Number.isFinite(value)) return;
-      const sanitized = Math.floor(value);
-      const clamped = Math.min(Math.max(sanitized, minimum), maxAllocatable);
-      onChangeAllocation(code, clamped);
-    };
-
-    return (
-      <div
-        key={code}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1.4fr) 150px 80px",
-          alignItems: "center",
-          gap: "0.45rem",
-          padding: "0.4rem 0.25rem",
-          borderBottom: showDivider ? "1px solid #161b23" : "none",
-          background: "#0c0f14",
-          borderRadius: 6
-        }}
-      >
-        <div style={{ wordBreak: "break-word" }}>
-          <div style={{ fontWeight: 600 }}>{formatSkillName(skill.name)}</div>
-        </div>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <input
-            type="number"
-            value={allocated}
-            min={minimum}
-            max={maxAllocatable}
-            step={1}
-            disabled={disableAllocation}
-            onChange={(e) => handleSpinChange(parseInt(e.target.value, 10))}
-            onWheel={(e) => {
-              e.preventDefault();
-              e.currentTarget.blur();
-            }}
-            onMouseUp={(e) => e.currentTarget.blur()}
-            style={{
-              width: 76,
-              padding: "0.35rem 0.4rem",
-              borderRadius: 6,
-              border: "1px solid #2d343f",
-              background: disableAllocation ? "#11161f" : "#0c111a",
-              color: "#e8edf7"
-            }}
-          />
-        </div>
-        <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
-      </div>
-    );
-  };
 
   const groupedPsionics = React.useMemo(() => {
     const groups = new Map<string, PsionicAbility[]>();
@@ -527,7 +613,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                         gap: 6
                       }}
                     >
-                      {renderSkillAllocationRow(skill, false)}
+                      <SkillAllocationRow
+                        skill={skill}
+                        showDivider={false}
+                        allocations={allocations}
+                        allocationMinimums={allocationMinimums}
+                        skillBonuses={skillBonuses}
+                        remaining={remaining}
+                        disableAllocation={disableAllocation}
+                        onChangeAllocation={onChangeAllocation}
+                      />
                     </div>
                   ))}
                   {groupedSkills.map((group) => (
@@ -545,9 +640,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                     >
                       <div style={{ fontWeight: 700, color: "#e8edf7" }}>{group.label}</div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        {[...group.skills]
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((skill, idx, arr) => renderSkillAllocationRow(skill, idx < arr.length - 1))}
+                          {[...group.skills]
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                          .map((skill, idx, arr) => (
+                            <SkillAllocationRow
+                              key={getSkillCode(skill)}
+                              skill={skill}
+                              showDivider={idx < arr.length - 1}
+                              allocations={allocations}
+                              allocationMinimums={allocationMinimums}
+                              skillBonuses={skillBonuses}
+                              remaining={remaining}
+                              disableAllocation={disableAllocation}
+                              onChangeAllocation={onChangeAllocation}
+                            />
+                          ))}
                       </div>
                     </div>
                   ))}
