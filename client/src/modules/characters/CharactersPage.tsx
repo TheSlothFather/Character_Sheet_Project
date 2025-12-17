@@ -305,6 +305,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               e.preventDefault();
               e.currentTarget.blur();
             }}
+            onMouseUp={(e) => e.currentTarget.blur()}
             style={{
               width: 76,
               padding: "0.35rem 0.4rem",
