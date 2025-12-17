@@ -713,24 +713,48 @@ export const AncillariesPage: React.FC = () => {
     () => readAncillarySelection(selectedId)
   );
 
-  const ancillariesLocked = Boolean((flags as { locked?: boolean } | undefined)?.locked);
+  const legacyLockedCountRef = React.useRef<number | null>(null);
+
+  const getLockedCount = React.useCallback(
+    (flagState: AncillarySelectionState["flags"], selected: string[]) => {
+      const lockFlags = (flagState as { locked?: boolean; lockedCount?: number }) ?? {};
+      if (typeof lockFlags.lockedCount === "number" && lockFlags.lockedCount >= 0) {
+        return Math.min(lockFlags.lockedCount, selected.length);
+      }
+      if (lockFlags.locked) {
+        if (legacyLockedCountRef.current === null) {
+          legacyLockedCountRef.current = selected.length;
+        }
+        return Math.min(legacyLockedCountRef.current, selected.length);
+      }
+      legacyLockedCountRef.current = null;
+      return 0;
+    },
+    []
+  );
 
   const setSelectedAncillaries = React.useCallback(
     (updater: React.SetStateAction<string[]>) => {
       setSelection((prev) => {
-        if ((prev.flags as { locked?: boolean } | undefined)?.locked) return prev;
+        const lockedCount = getLockedCount(prev.flags, prev.selected);
+        const lockedSelections = prev.selected.slice(0, lockedCount);
         const nextSelected = typeof updater === "function" ? (updater as (ids: string[]) => string[])(prev.selected) : updater;
         const validIds = new Set(ALL_ENTRIES.map((entry) => entry.id));
         const filtered = nextSelected.filter((id) => validIds.has(id));
+        const unlocked = filtered.filter((id) => !lockedSelections.includes(id));
+        const combined = [...lockedSelections, ...unlocked];
         const nextMetadata: AncillaryMetadata = {};
-        filtered.forEach((id) => {
+        combined.forEach((id) => {
           if (prev.metadata[id]) nextMetadata[id] = prev.metadata[id];
         });
-        return { selected: filtered, metadata: nextMetadata, flags: prev.flags ?? {} };
+        return { selected: combined, metadata: nextMetadata, flags: prev.flags ?? {} };
       });
     },
-    []
+    [getLockedCount]
   );
+
+  const lockedCount = getLockedCount(flags, selectedAncillaries);
+  const unlockedSelections = selectedAncillaries.slice(lockedCount);
 
   const updateMetadata = React.useCallback((id: string, data: Record<string, unknown>) => {
     setSelection((prev) => ({
@@ -925,8 +949,16 @@ export const AncillariesPage: React.FC = () => {
 
   const handleLockAncillaries = () => {
     setSelection((prev) => {
-      const nextFlags = { ...prev.flags, locked: true, psionicsLockRequested: hasPsionAncillary };
-      const nextState: AncillarySelectionState = { selected: prev.selected, metadata: prev.metadata, flags: nextFlags };
+      const nextLockedCount = Math.min(prev.selected.length, allowed);
+      legacyLockedCountRef.current = nextLockedCount;
+      const nextFlags = {
+        ...prev.flags,
+        lockedCount: nextLockedCount,
+        locked: false,
+        psionicsLockRequested: hasPsionAncillary
+      };
+      const { locked: _legacyLocked, ...cleanFlags } = nextFlags as { locked?: boolean };
+      const nextState: AncillarySelectionState = { selected: prev.selected, metadata: prev.metadata, flags: cleanFlags };
       persistAncillarySelection(selectedId, nextState);
       return nextState;
     });
@@ -943,8 +975,9 @@ export const AncillariesPage: React.FC = () => {
       if (!isAncestryAllowedForCharacter(entry.ancestryGroupId, selectedCharacter)) return;
       if (!ancestryLevelEligible && !selectedAncillaries.includes(id)) return;
     }
-    if (ancillariesLocked) return;
     if (selectedAncillaries.includes(id)) {
+      const index = selectedAncillaries.indexOf(id);
+      if (index > -1 && index < lockedCount) return;
       setSelectedAncillaries((prev) => prev.filter((existing) => existing !== id));
       return;
     }
@@ -954,7 +987,8 @@ export const AncillariesPage: React.FC = () => {
 
   const renderAncillaryCard = (entry: AncillaryEntry, showRemove: boolean) => {
     const isSelected = selectedAncillaries.includes(entry.id);
-    const buttonLabel = showRemove || isSelected ? "Remove" : "Add";
+    const isLocked = isSelected && selectedAncillaries.indexOf(entry.id) < lockedCount;
+    const buttonLabel = showRemove || isSelected ? (isLocked ? "Locked" : "Remove") : "Add";
     const ancestryBlocked =
       entry.category === "ancestry" &&
       (!isAncestryAllowedForCharacter(entry.ancestryGroupId, selectedCharacter) || (!ancestryLevelEligible && !isSelected));
@@ -968,8 +1002,9 @@ export const AncillariesPage: React.FC = () => {
     const weaponCategoryBlocked =
       isWeaponMastery && (!weaponCategoryState || !weaponCategoryState.complete || !storedCategory);
 
-    const disabled =
-      ancillariesLocked || (!showRemove && (isSelected || remaining <= 0 || ancestryBlocked || requirementsBlocked || weaponCategoryBlocked));
+    const disabled = showRemove
+      ? isLocked
+      : isSelected || remaining <= 0 || ancestryBlocked || requirementsBlocked || weaponCategoryBlocked;
 
     return (
       <div key={entry.id} style={{ ...cardStyle, marginBottom: "0.75rem" }}>
@@ -1053,9 +1088,13 @@ export const AncillariesPage: React.FC = () => {
               style={{
                 padding: "0.4rem 0.75rem",
                 borderRadius: 8,
-                border: showRemove || isSelected ? "1px solid #b91c1c" : "1px solid #374151",
-                background: showRemove || isSelected ? "#2c1515" : "#142031",
-                color: showRemove || isSelected ? "#fecaca" : "#e5e7eb",
+                border: showRemove || isSelected
+                  ? isLocked
+                    ? "1px solid #374151"
+                    : "1px solid #b91c1c"
+                  : "1px solid #374151",
+                background: showRemove || isSelected ? (isLocked ? "#1f2937" : "#2c1515") : "#142031",
+                color: showRemove || isSelected ? (isLocked ? "#9ca3af" : "#fecaca") : "#e5e7eb",
                 cursor: disabled ? "not-allowed" : "pointer",
                 minWidth: 90
               }}
@@ -1172,26 +1211,30 @@ export const AncillariesPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleLockAncillaries}
-                disabled={ancillariesLocked}
+                disabled={unlockedSelections.length === 0}
                 style={{
                   padding: "0.55rem 0.9rem",
                   borderRadius: 8,
-                  border: ancillariesLocked ? "1px solid #374151" : "1px solid #1d4ed8",
-                  background: ancillariesLocked ? "#111827" : "#2563eb",
+                  border: unlockedSelections.length === 0 ? "1px solid #374151" : "1px solid #1d4ed8",
+                  background: unlockedSelections.length === 0 ? "#111827" : "#2563eb",
                   color: "#e6edf7",
-                  cursor: ancillariesLocked ? "not-allowed" : "pointer",
+                  cursor: unlockedSelections.length === 0 ? "not-allowed" : "pointer",
                   fontWeight: 700
                 }}
               >
-                {ancillariesLocked ? "Ancillaries Locked" : "Lock Ancillaries"}
+                {unlockedSelections.length === 0 ? "Ancillaries Locked" : "Lock Ancillaries"}
               </button>
               <div style={{ color: "#9ca3af", fontSize: 13 }}>
-                Locks your ancillary selections so they cannot be changed or removed.
+                Locks your new ancillary selections so they cannot be changed or removed.
                 {hasPsionAncillary ? " Opens a Psionics prompt to pick ancillary abilities." : ""}
               </div>
             </div>
-            {ancillariesLocked && (
-              <div style={{ color: "#fbbf24", fontSize: 13, marginBottom: 8 }}>Ancillary choices are locked.</div>
+            {lockedCount > 0 && (
+              <div style={{ color: "#fbbf24", fontSize: 13, marginBottom: 8 }}>
+                {lockedCount} ancillary{lockedCount === 1 ? " is" : "ies are"} locked. You can add
+                {" "}
+                {Math.max(allowed - selectedAncillaries.length, 0)} more when you gain new slots.
+              </div>
             )}
             {selectedDetails.length === 0 ? (
               <p style={{ margin: 0, color: "#94a3b8" }}>No ancillaries selected yet.</p>
