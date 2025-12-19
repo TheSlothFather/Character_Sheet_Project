@@ -78,6 +78,7 @@ export const JoinCampaignPage: React.FC = () => {
   const [password, setPassword] = React.useState("");
   const [authError, setAuthError] = React.useState<string | null>(null);
   const [authNotice, setAuthNotice] = React.useState<string | null>(null);
+  const [anonLoading, setAnonLoading] = React.useState(false);
 
   React.useEffect(() => {
     setSelectedCharacterId(selectedId);
@@ -192,6 +193,22 @@ export const JoinCampaignPage: React.FC = () => {
     setAuthNotice("Check your email to confirm the account, then sign in.");
   };
 
+  const handleAnonSignIn = async () => {
+    setAuthError(null);
+    setAuthNotice(null);
+    setAnonLoading(true);
+    try {
+      const { error } = await client.auth.signInAnonymously();
+      if (error) {
+        setAuthError(error.message);
+        return;
+      }
+      setAuthNotice("Signed in anonymously.");
+    } finally {
+      setAnonLoading(false);
+    }
+  };
+
   const handleJoin = async () => {
     if (!invite) {
       setError("Invite data is missing.");
@@ -304,6 +321,9 @@ export const JoinCampaignPage: React.FC = () => {
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
               <button type="submit" style={buttonStyle}>
                 {authMode === "sign-in" ? "Sign In" : "Create Account"}
+              </button>
+              <button type="button" style={secondaryButtonStyle} onClick={handleAnonSignIn} disabled={anonLoading}>
+                {anonLoading ? "Signing in..." : "Continue as Guest"}
               </button>
               <button
                 type="button"
