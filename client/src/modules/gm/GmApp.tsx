@@ -1,6 +1,6 @@
 import React from "react";
 import type { User } from "@supabase/supabase-js";
-import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { getSupabaseClient } from "../../api/supabaseClient";
 import { CampaignsPage } from "./CampaignsPage";
 import { BestiaryPage } from "./BestiaryPage";
@@ -8,6 +8,7 @@ import { NpcHubPage } from "./NpcHubPage";
 import { SettingInfoPage } from "./SettingInfoPage";
 import { PlayerCharactersPage } from "./PlayerCharactersPage";
 import { CombatPage } from "./CombatPage";
+import { GmCampaignLayout } from "./GmCampaignLayout";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -198,6 +199,10 @@ export const GmApp: React.FC = () => {
     );
   }
 
+  const location = useLocation();
+  const campaignMatch = location.pathname.match(/^\/gm\/campaigns\/([^/]+)/);
+  const campaignId = campaignMatch?.[1] ?? null;
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#0b0f16", color: "#e5e7eb" }}>
       <nav
@@ -229,45 +234,66 @@ export const GmApp: React.FC = () => {
             Sign Out
           </button>
         </div>
-        <NavLink to="/gm/campaigns" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+        <NavLink to="/gm" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
           Campaigns
         </NavLink>
-        <NavLink to="/gm/bestiary" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
-          Bestiary
-        </NavLink>
-        <NavLink to="/gm/combat" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
-          Combat
-        </NavLink>
-        <NavLink to="/gm/npc-hub" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
-          NPC Hub
-        </NavLink>
-        <NavLink to="/gm/setting-info" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
-          Setting Info
-        </NavLink>
-        <div
-          style={{
-            marginTop: "1rem",
-            fontSize: 12,
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            color: "#94a3b8"
-          }}
-        >
-          Player Views
-        </div>
-        <NavLink to="/gm/player-characters" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
-          Player Characters
-        </NavLink>
+        {campaignId && (
+          <>
+            <NavLink
+              to={`/gm/campaigns/${campaignId}/bestiary`}
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              Bestiary
+            </NavLink>
+            <NavLink
+              to={`/gm/campaigns/${campaignId}/combat`}
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              Combat
+            </NavLink>
+            <NavLink
+              to={`/gm/campaigns/${campaignId}/npc-hub`}
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              NPC Hub
+            </NavLink>
+            <NavLink
+              to={`/gm/campaigns/${campaignId}/setting-info`}
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              Setting Info
+            </NavLink>
+            <div
+              style={{
+                marginTop: "1rem",
+                fontSize: 12,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "#94a3b8"
+              }}
+            >
+              Player Views
+            </div>
+            <NavLink
+              to={`/gm/campaigns/${campaignId}/player-characters`}
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              Player Characters
+            </NavLink>
+          </>
+        )}
       </nav>
       <main style={{ flex: 1, padding: "1rem" }}>
         <Routes>
-          <Route path="/gm" element={<Navigate to="/gm/campaigns" replace />} />
-          <Route path="/gm/campaigns" element={<CampaignsPage />} />
-          <Route path="/gm/bestiary" element={<BestiaryPage />} />
-          <Route path="/gm/combat" element={<CombatPage />} />
-          <Route path="/gm/npc-hub" element={<NpcHubPage />} />
-          <Route path="/gm/setting-info" element={<SettingInfoPage />} />
-          <Route path="/gm/player-characters" element={<PlayerCharactersPage />} />
+          <Route index element={<CampaignsPage />} />
+          <Route path="campaigns/:campaignId" element={<GmCampaignLayout />}>
+            <Route index element={<Navigate to="bestiary" replace />} />
+            <Route path="bestiary" element={<BestiaryPage />} />
+            <Route path="combat" element={<CombatPage />} />
+            <Route path="npc-hub" element={<NpcHubPage />} />
+            <Route path="setting-info" element={<SettingInfoPage />} />
+            <Route path="player-characters" element={<PlayerCharactersPage />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
