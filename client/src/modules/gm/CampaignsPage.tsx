@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { gmApi, type Campaign, type CampaignInvite } from "../../api/gm";
 
 const cardStyle: React.CSSProperties = {
@@ -21,6 +22,20 @@ const inputStyle: React.CSSProperties = {
 const buildInviteLink = (inviteCode: string) => {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://adurun.app";
   return `${origin}/join/${inviteCode}`;
+};
+
+const linkButtonStyle: React.CSSProperties = {
+  padding: "0.45rem 0.8rem",
+  borderRadius: 8,
+  border: "1px solid #1d4ed8",
+  background: "#2563eb",
+  color: "#e6edf7",
+  fontWeight: 600,
+  cursor: "pointer",
+  textDecoration: "none",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center"
 };
 
 export const CampaignsPage: React.FC = () => {
@@ -223,6 +238,9 @@ export const CampaignsPage: React.FC = () => {
                     <span style={{ color: "#e5e7eb" }}>{link ?? "Generate an invite to share."}</span>
                   </div>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <Link to={`/gm/campaigns/${campaign.id}`} style={linkButtonStyle}>
+                      Open Campaign
+                    </Link>
                     <button
                       type="button"
                       onClick={() => link && handleCopy(link)}

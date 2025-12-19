@@ -1,4 +1,5 @@
 import React from "react";
+import { useParams } from "react-router-dom";
 import { gmApi, type BestiaryEntry as ApiBestiaryEntry, type Campaign } from "../../api/gm";
 
 const cardStyle: React.CSSProperties = {
@@ -52,8 +53,9 @@ const toStatsSkills = (entry: BestiaryEntry): Record<string, string> => {
 };
 
 export const BestiaryPage: React.FC = () => {
+  const { campaignId } = useParams<{ campaignId: string }>();
   const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
-  const [selectedCampaignId, setSelectedCampaignId] = React.useState<string>("");
+  const [selectedCampaignId, setSelectedCampaignId] = React.useState<string>(campaignId ?? "");
   const [entries, setEntries] = React.useState<BestiaryEntry[]>([]);
   const [name, setName] = React.useState("");
   const [type, setType] = React.useState("");
@@ -72,6 +74,10 @@ export const BestiaryPage: React.FC = () => {
   };
 
   React.useEffect(() => {
+    if (campaignId) {
+      setSelectedCampaignId(campaignId);
+      return;
+    }
     let active = true;
     const loadCampaigns = async () => {
       setLoading(true);
@@ -92,7 +98,7 @@ export const BestiaryPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, []);
+  }, [campaignId]);
 
   React.useEffect(() => {
     if (!selectedCampaignId) {
@@ -196,24 +202,26 @@ export const BestiaryPage: React.FC = () => {
         <h3 style={{ marginTop: 0 }}>Add Creature</h3>
         {error && <div style={{ marginBottom: "0.75rem", color: "#fca5a5" }}>{error}</div>}
         {loading && <div style={{ marginBottom: "0.75rem", color: "#94a3b8" }}>Loading...</div>}
-        {campaigns.length === 0 ? (
+        {!campaignId && campaigns.length === 0 ? (
           <p style={{ color: "#94a3b8", margin: 0 }}>Create a campaign first to manage a bestiary.</p>
         ) : (
         <form onSubmit={handleCreate} style={{ display: "grid", gap: "0.75rem" }}>
-          <label style={{ display: "grid", gap: "0.35rem" }}>
-            <span style={{ fontWeight: 700 }}>Campaign</span>
-            <select
-              value={selectedCampaignId}
-              onChange={(event) => setSelectedCampaignId(event.target.value)}
-              style={inputStyle}
-            >
-              {campaigns.map((campaign) => (
-                <option key={campaign.id} value={campaign.id}>
-                  {campaign.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          {!campaignId && (
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Campaign</span>
+              <select
+                value={selectedCampaignId}
+                onChange={(event) => setSelectedCampaignId(event.target.value)}
+                style={inputStyle}
+              >
+                {campaigns.map((campaign) => (
+                  <option key={campaign.id} value={campaign.id}>
+                    {campaign.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label style={{ display: "grid", gap: "0.35rem" }}>
             <span style={{ fontWeight: 700 }}>Name</span>
             <input
