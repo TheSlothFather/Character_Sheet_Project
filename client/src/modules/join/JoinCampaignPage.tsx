@@ -41,6 +41,16 @@ const secondaryButtonStyle: React.CSSProperties = {
   color: "#e5e7eb"
 };
 
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "0.6rem 0.75rem",
+  borderRadius: 8,
+  border: "1px solid #2f3542",
+  background: "#0b1017",
+  color: "#e5e7eb",
+  boxSizing: "border-box"
+};
+
 const ACTIVE_CAMPAIGN_STORAGE_KEY = "active_campaign_id";
 
 type CampaignInviteRow = {
@@ -63,6 +73,11 @@ export const JoinCampaignPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
   const [selectedCharacterId, setSelectedCharacterId] = React.useState<string | null>(selectedId);
+  const [authMode, setAuthMode] = React.useState<"sign-in" | "sign-up">("sign-in");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [authError, setAuthError] = React.useState<string | null>(null);
+  const [authNotice, setAuthNotice] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setSelectedCharacterId(selectedId);
@@ -70,6 +85,9 @@ export const JoinCampaignPage: React.FC = () => {
 
   React.useEffect(() => {
     let active = true;
+    const { data } = client.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
     const loadData = async () => {
       setLoading(true);
@@ -138,8 +156,41 @@ export const JoinCampaignPage: React.FC = () => {
 
     return () => {
       active = false;
+      data.subscription.unsubscribe();
     };
   }, [client, token]);
+
+  const handleAuth = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setAuthError(null);
+    setAuthNotice(null);
+
+    if (!email.trim() || !password) {
+      setAuthError("Email and password are required.");
+      return;
+    }
+
+    if (authMode === "sign-in") {
+      const { error: signInError } = await client.auth.signInWithPassword({
+        email: email.trim(),
+        password
+      });
+      if (signInError) {
+        setAuthError(signInError.message);
+      }
+      return;
+    }
+
+    const { error: signUpError } = await client.auth.signUp({
+      email: email.trim(),
+      password
+    });
+    if (signUpError) {
+      setAuthError(signUpError.message);
+      return;
+    }
+    setAuthNotice("Check your email to confirm the account, then sign in.");
+  };
 
   const handleJoin = async () => {
     if (!invite) {
@@ -223,10 +274,50 @@ export const JoinCampaignPage: React.FC = () => {
         </p>
         {error && <div style={{ color: "#fca5a5", marginBottom: "1rem" }}>{error}</div>}
         {notice && <div style={{ color: "#9ae6b4", marginBottom: "1rem" }}>{notice}</div>}
-        {!user && !error && (
-          <div style={{ color: "#fbbf24", marginBottom: "1rem" }}>
-            You are not signed in. Sign in with Supabase to complete the join.
-          </div>
+        {!user && (
+          <form onSubmit={handleAuth} style={{ marginBottom: "1.5rem" }}>
+            <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
+              {authMode === "sign-in" ? "Sign in to join" : "Create an account to join"}
+            </div>
+            {authError && <div style={{ color: "#fca5a5", marginBottom: "0.75rem" }}>{authError}</div>}
+            {authNotice && <div style={{ color: "#9ae6b4", marginBottom: "0.75rem" }}>{authNotice}</div>}
+            <label style={{ display: "grid", gap: "0.35rem", marginBottom: "0.75rem" }}>
+              <span style={{ fontWeight: 600 }}>Email</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                style={inputStyle}
+                autoComplete="email"
+              />
+            </label>
+            <label style={{ display: "grid", gap: "0.35rem", marginBottom: "1rem" }}>
+              <span style={{ fontWeight: 600 }}>Password</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                style={inputStyle}
+                autoComplete={authMode === "sign-in" ? "current-password" : "new-password"}
+              />
+            </label>
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+              <button type="submit" style={buttonStyle}>
+                {authMode === "sign-in" ? "Sign In" : "Create Account"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode(authMode === "sign-in" ? "sign-up" : "sign-in");
+                  setAuthError(null);
+                  setAuthNotice(null);
+                }}
+                style={secondaryButtonStyle}
+              >
+                {authMode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+              </button>
+            </div>
+          </form>
         )}
         <div style={{ marginBottom: "1.5rem" }}>
           <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>Choose a character (optional)</div>
