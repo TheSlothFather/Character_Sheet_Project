@@ -126,6 +126,14 @@ function createToken(): string {
   return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 }
 
+const DEFAULT_INVITE_TTL_DAYS = 7;
+
+function defaultInviteExpiry(): string {
+  const expiry = new Date();
+  expiry.setDate(expiry.getDate() + DEFAULT_INVITE_TTL_DAYS);
+  return expiry.toISOString();
+}
+
 function mapCampaign(row: CampaignRow): Campaign {
   return {
     id: row.id,
@@ -317,7 +325,8 @@ async function createCampaignInvite(payload: Partial<CampaignInvite>): Promise<C
   const record = toInvitePayload({
     ...payload,
     token: payload.token ?? createToken(),
-    createdBy
+    createdBy,
+    expiresAt: payload.expiresAt ?? defaultInviteExpiry()
   });
   const { data, error } = (await client
     .from("campaign_invites")
