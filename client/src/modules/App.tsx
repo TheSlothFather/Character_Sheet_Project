@@ -10,6 +10,10 @@ import { PsionicsPage } from "./psionics/PsionicsPage";
 import { MagicFacultiesPage } from "./magic/MagicFacultiesPage";
 import { SpellCreationPage } from "./magic/SpellCreationPage";
 import { DeityRelationshipPage } from "./deity/DeityRelationshipPage";
+import { CampaignsPage } from "./gm/CampaignsPage";
+import { BestiaryPage } from "./gm/BestiaryPage";
+import { NpcHubPage } from "./gm/NpcHubPage";
+import { SettingInfoPage } from "./gm/SettingInfoPage";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -77,6 +81,21 @@ export const App: React.FC = () => {
             >
               Deity Relationship
             </NavLink>
+            <div style={{ marginTop: "1rem", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: "#94a3b8" }}>
+              GM Tools
+            </div>
+            <NavLink to="/gm/campaigns" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+              Campaigns
+            </NavLink>
+            <NavLink to="/gm/bestiary" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+              Bestiary
+            </NavLink>
+            <NavLink to="/gm/npc-hub" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+              NPC Hub
+            </NavLink>
+            <NavLink to="/gm/setting-info" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+              Setting Info
+            </NavLink>
           </nav>
           <main style={{ flex: 1, padding: "1rem" }}>
             <Routes>
@@ -89,6 +108,11 @@ export const App: React.FC = () => {
               <Route path="/magic-faculties" element={<MagicFacultiesPage />} />
               <Route path="/spell-creation" element={<SpellCreationPage />} />
               <Route path="/deity-relationship" element={<DeityRelationshipPage />} />
+              <Route path="/gm" element={<Navigate to="/gm/campaigns" replace />} />
+              <Route path="/gm/campaigns" element={<CampaignsPage />} />
+              <Route path="/gm/bestiary" element={<BestiaryPage />} />
+              <Route path="/gm/npc-hub" element={<NpcHubPage />} />
+              <Route path="/gm/setting-info" element={<SettingInfoPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
@@ -97,4 +121,3 @@ export const App: React.FC = () => {
     </DefinitionsProvider>
   );
 };
-
