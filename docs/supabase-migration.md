@@ -55,3 +55,27 @@ create table if not exists public.characters (
 ```
 
 If you use Row Level Security, add policies that allow the anon key to read and write these rows for your project.
+
+## Bestiary entries table
+
+The GM tools expect a `bestiary_entries` table. Create it (or alter your existing table) with the new JSONB fields for attributes, skills, and abilities:
+
+```sql
+create table if not exists public.bestiary_entries (
+  id uuid primary key default gen_random_uuid(),
+  campaign_id uuid not null,
+  name text not null,
+  stats_skills jsonb,
+  attributes jsonb,
+  skills jsonb,
+  abilities jsonb,
+  tags jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.bestiary_entries
+  add column if not exists attributes jsonb,
+  add column if not exists skills jsonb,
+  add column if not exists abilities jsonb;
+```
