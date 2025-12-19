@@ -12,6 +12,10 @@ import { SpellCreationPage } from "./magic/SpellCreationPage";
 import { DeityRelationshipPage } from "./deity/DeityRelationshipPage";
 import { GmApp } from "./gm/GmApp";
 import { JoinCampaignPage } from "./join/JoinCampaignPage";
+import { CampaignHubLayout } from "./campaigns/CampaignHubLayout";
+import { CampaignCharactersPage } from "./campaigns/CampaignCharactersPage";
+import { CampaignSettingsPage } from "./campaigns/CampaignSettingsPage";
+import { ACTIVE_CAMPAIGN_STORAGE_KEY } from "./campaigns/campaignStorage";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -76,6 +80,18 @@ const StartPage: React.FC = () => {
 };
 
 const PlayerApp: React.FC = () => {
+  const [activeCampaignId, setActiveCampaignId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const readActiveCampaign = () => {
+      setActiveCampaignId(window.localStorage.getItem(ACTIVE_CAMPAIGN_STORAGE_KEY));
+    };
+    readActiveCampaign();
+    window.addEventListener("storage", readActiveCampaign);
+    return () => window.removeEventListener("storage", readActiveCampaign);
+  }, []);
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#111", color: "#eee" }}>
       <nav
@@ -93,6 +109,14 @@ const PlayerApp: React.FC = () => {
         >
           Characters
         </NavLink>
+        {activeCampaignId && (
+          <NavLink
+            to={`/player/campaigns/${activeCampaignId}`}
+            style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+          >
+            Campaign Hub
+          </NavLink>
+        )}
         <NavLink
           to="/player/character-creation"
           style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
@@ -133,6 +157,11 @@ const PlayerApp: React.FC = () => {
       <main style={{ flex: 1, padding: "1rem" }}>
         <Routes>
           <Route path="/" element={<Navigate to="characters" replace />} />
+          <Route path="campaigns/:campaignId" element={<CampaignHubLayout />}>
+            <Route index element={<Navigate to="characters" replace />} />
+            <Route path="characters" element={<CampaignCharactersPage />} />
+            <Route path="settings" element={<CampaignSettingsPage />} />
+          </Route>
           <Route path="characters" element={<CharactersPage />} />
           <Route path="character-creation" element={<CharacterCreationPage />} />
           <Route path="ancillaries" element={<AncillariesPage />} />

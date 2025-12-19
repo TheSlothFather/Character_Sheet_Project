@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { api, Character, ApiError, NamedDefinition } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
@@ -176,7 +176,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
       clearInterval(repeatIntervalRef.current);
       repeatIntervalRef.current = null;
     }
-  }, []);
+  }, [activeCampaignId]);
 
   React.useEffect(() => stopRepeating, [stopRepeating]);
 
@@ -774,7 +774,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   );
 };
 
-export const CharactersPage: React.FC = () => {
+type CharactersPageProps = {
+  campaignId?: string;
+};
+
+export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) => {
   const [characters, setCharacters] = React.useState<Character[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -786,6 +790,13 @@ export const CharactersPage: React.FC = () => {
 
   const { selectedId, setSelectedId } = useSelectedCharacter();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const campaignIdFromQuery = searchParams.get("campaignId")?.trim() || undefined;
+  const activeCampaignId = campaignId ?? campaignIdFromQuery;
+
+  const createCharacterPath = activeCampaignId
+    ? `/player/character-creation?campaignId=${activeCampaignId}`
+    : "/player/character-creation";
 
   const {
     data: definitions,
@@ -798,8 +809,8 @@ export const CharactersPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    api
-      .listCharacters()
+    const loadCharacters = activeCampaignId ? api.listCampaignCharacters(activeCampaignId) : api.listCharacters();
+    loadCharacters
       .then((data) => {
         if (!isMounted) return;
         if (!isCharacterArray(data)) {
@@ -847,7 +858,7 @@ export const CharactersPage: React.FC = () => {
         const nextSelected = selectedId === id ? next[0]?.id ?? null : selectedId;
         setSelectedId(nextSelected ?? null);
         if (!nextSelected) {
-          navigate("/character-creation");
+          navigate(createCharacterPath);
         }
         return next;
       });
@@ -1097,6 +1108,21 @@ export const CharactersPage: React.FC = () => {
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            onClick={() => navigate(createCharacterPath)}
+            style={{
+              padding: "0.45rem 0.75rem",
+              borderRadius: 8,
+              border: "1px solid #1d4ed8",
+              background: "#2563eb",
+              color: "#e6edf7",
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            New Character
+          </button>
           <button
             onClick={() => selectedId && handleDeleteCharacter(selectedId)}
             disabled={!selectedId || deletingId === selectedId || loadingAny}

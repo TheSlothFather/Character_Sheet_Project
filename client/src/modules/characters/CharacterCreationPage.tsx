@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import backgroundsData from "../../data/backgrounds.json";
 import { api, BackgroundSelection, AttributeScores, ModifierWithSource, RaceDetailProfile } from "../../api/client";
 import psionicsCsv from "../../data/psionics.csv?raw";
@@ -177,6 +177,9 @@ const cardStyle: React.CSSProperties = {
 
 export const CharacterCreationPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const campaignId = searchParams.get("campaignId")?.trim() || undefined;
+  const returnPath = campaignId ? `/player/campaigns/${campaignId}/characters` : "/player/characters";
   const { setSelectedId } = useSelectedCharacter();
   const { data: definitions, loading: definitionsLoading, error: definitionsError } = useDefinitions();
   const raceDetails = (definitions?.raceDetails ?? {}) as Record<string, RaceDetailProfile>;
@@ -370,7 +373,7 @@ export const CharacterCreationPage: React.FC = () => {
     if (!psionicsModal) return;
     if (typeof window === "undefined") {
       setPsionicsModal(null);
-      navigate("/characters");
+      navigate(returnPath);
       return;
     }
 
@@ -403,12 +406,12 @@ export const CharacterCreationPage: React.FC = () => {
     }
 
     setPsionicsModal(null);
-    navigate("/characters");
+    navigate(returnPath);
   };
 
   const closePsionicsModal = () => {
     setPsionicsModal(null);
-    navigate("/characters");
+    navigate(returnPath);
   };
 
   const attributeTotal = Object.values(attributes).reduce((acc, v) => acc + v, 0);
@@ -518,6 +521,7 @@ export const CharacterCreationPage: React.FC = () => {
       const created = await api.createCharacter({
         name: name.trim(),
         level: 1,
+        campaignId,
         raceKey: raceKey || undefined,
         subraceKey: subraceKey || undefined,
         attributePointsAvailable: 0,
@@ -534,7 +538,7 @@ export const CharacterCreationPage: React.FC = () => {
       if (modalState) {
         setPsionicsModal(modalState);
       } else {
-        navigate("/characters");
+        navigate(returnPath);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to create character";

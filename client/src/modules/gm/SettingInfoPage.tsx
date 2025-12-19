@@ -1,4 +1,5 @@
 import React from "react";
+import { gmApi, type Campaign, type CampaignSetting } from "../../api/gm";
 
 const cardStyle: React.CSSProperties = {
   background: "#0f131a",
@@ -17,63 +18,149 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box"
 };
 
-type SettingEntry = {
-  id: string;
-  title: string;
-  category: string;
-  content: string;
+const parseTags = (value: string): string[] | undefined => {
+  const tags = value
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+  return tags.length ? tags : undefined;
 };
 
-const createId = () => `setting-${Math.random().toString(36).slice(2, 10)}`;
+const formatTags = (tags?: string[]): string => (tags && tags.length ? tags.join(", ") : "");
 
 export const SettingInfoPage: React.FC = () => {
-  const [entries, setEntries] = React.useState<SettingEntry[]>([]);
+  const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = React.useState<string>("");
+  const [entries, setEntries] = React.useState<CampaignSetting[]>([]);
   const [title, setTitle] = React.useState("");
-  const [category, setCategory] = React.useState("");
+  const [tagsInput, setTagsInput] = React.useState("");
   const [content, setContent] = React.useState("");
+  const [isPlayerVisible, setIsPlayerVisible] = React.useState(false);
   const [editingId, setEditingId] = React.useState<string | null>(null);
-  const [editDraft, setEditDraft] = React.useState<SettingEntry | null>(null);
+  const [editDraft, setEditDraft] = React.useState<CampaignSetting | null>(null);
+  const [editTags, setEditTags] = React.useState("");
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   const resetForm = () => {
     setTitle("");
-    setCategory("");
+    setTagsInput("");
     setContent("");
+    setIsPlayerVisible(false);
   };
 
-  const handleCreate = (event: React.FormEvent) => {
+  React.useEffect(() => {
+    let active = true;
+    const loadCampaigns = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await gmApi.listCampaigns();
+        if (!active) return;
+        setCampaigns(data);
+        setSelectedCampaignId((current) => current || data[0]?.id || "");
+      } catch (loadError) {
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : "Failed to load campaigns.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadCampaigns();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!selectedCampaignId) {
+      setEntries([]);
+      return;
+    }
+    let active = true;
+    const loadEntries = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await gmApi.listSettings(selectedCampaignId);
+        if (!active) return;
+        setEntries(data);
+      } catch (loadError) {
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : "Failed to load setting notes.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadEntries();
+    return () => {
+      active = false;
+    };
+  }, [selectedCampaignId]);
+
+  const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!selectedCampaignId) {
+      setError("Select a campaign before adding entries.");
+      return;
+    }
     const trimmed = title.trim();
     if (!trimmed) return;
-    const newEntry: SettingEntry = {
-      id: createId(),
-      title: trimmed,
-      category: category.trim(),
-      content: content.trim()
-    };
-    setEntries((prev) => [newEntry, ...prev]);
-    resetForm();
+    setError(null);
+    try {
+      const created = await gmApi.createSetting({
+        campaignId: selectedCampaignId,
+        title: trimmed,
+        body: content.trim() || undefined,
+        tags: parseTags(tagsInput),
+        isPlayerVisible
+      });
+      setEntries((prev) => [created, ...prev]);
+      resetForm();
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : "Failed to create setting note.");
+    }
   };
 
-  const startEdit = (entry: SettingEntry) => {
+  const startEdit = (entry: CampaignSetting) => {
     setEditingId(entry.id);
     setEditDraft({ ...entry });
+    setEditTags(formatTags(entry.tags));
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditDraft(null);
+    setEditTags("");
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editDraft) return;
     if (!editDraft.title.trim()) return;
-    setEntries((prev) => prev.map((entry) => (entry.id === editDraft.id ? { ...editDraft, title: editDraft.title.trim() } : entry)));
-    cancelEdit();
+    setError(null);
+    try {
+      const updated = await gmApi.updateSetting(editDraft.id, {
+        title: editDraft.title.trim(),
+        body: editDraft.body?.trim() || undefined,
+        tags: parseTags(editTags),
+        isPlayerVisible: editDraft.isPlayerVisible
+      });
+      setEntries((prev) => prev.map((entry) => (entry.id === updated.id ? updated : entry)));
+      cancelEdit();
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to update setting note.");
+    }
   };
 
-  const deleteEntry = (id: string) => {
-    setEntries((prev) => prev.filter((entry) => entry.id !== id));
-    if (editingId === id) cancelEdit();
+  const deleteEntry = async (id: string) => {
+    setError(null);
+    try {
+      await gmApi.deleteSetting(id);
+      setEntries((prev) => prev.filter((entry) => entry.id !== id));
+      if (editingId === id) cancelEdit();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Failed to delete setting note.");
+    }
   };
 
   return (
@@ -87,51 +174,79 @@ export const SettingInfoPage: React.FC = () => {
 
       <section style={cardStyle}>
         <h3 style={{ marginTop: 0 }}>Add Setting Note</h3>
-        <form onSubmit={handleCreate} style={{ display: "grid", gap: "0.75rem" }}>
-          <label style={{ display: "grid", gap: "0.35rem" }}>
-            <span style={{ fontWeight: 700 }}>Title</span>
-            <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Shatterglass Accord"
-              style={inputStyle}
-            />
-          </label>
-          <label style={{ display: "grid", gap: "0.35rem" }}>
-            <span style={{ fontWeight: 700 }}>Category</span>
-            <input
-              value={category}
-              onChange={(event) => setCategory(event.target.value)}
-              placeholder="Factions / Politics"
-              style={inputStyle}
-            />
-          </label>
-          <label style={{ display: "grid", gap: "0.35rem" }}>
-            <span style={{ fontWeight: 700 }}>Content</span>
-            <textarea
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
-              rows={4}
-              placeholder="Three city-states bound by a fragile alliance..."
-              style={{ ...inputStyle, resize: "vertical" }}
-            />
-          </label>
-          <button
-            type="submit"
-            style={{
-              padding: "0.6rem 0.9rem",
-              borderRadius: 8,
-              border: "1px solid #1d4ed8",
-              background: "#2563eb",
-              color: "#e6edf7",
-              fontWeight: 700,
-              width: "fit-content",
-              cursor: "pointer"
-            }}
-          >
-            Add Note
-          </button>
-        </form>
+        {error && <div style={{ marginBottom: "0.75rem", color: "#fca5a5" }}>{error}</div>}
+        {loading && <div style={{ marginBottom: "0.75rem", color: "#94a3b8" }}>Loading...</div>}
+        {campaigns.length === 0 ? (
+          <p style={{ color: "#94a3b8", margin: 0 }}>Create a campaign first to manage setting notes.</p>
+        ) : (
+          <form onSubmit={handleCreate} style={{ display: "grid", gap: "0.75rem" }}>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Campaign</span>
+              <select
+                value={selectedCampaignId}
+                onChange={(event) => setSelectedCampaignId(event.target.value)}
+                style={inputStyle}
+              >
+                {campaigns.map((campaign) => (
+                  <option key={campaign.id} value={campaign.id}>
+                    {campaign.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Title</span>
+              <input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="Shatterglass Accord"
+                style={inputStyle}
+              />
+            </label>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Tags</span>
+              <input
+                value={tagsInput}
+                onChange={(event) => setTagsInput(event.target.value)}
+                placeholder="Factions, Politics"
+                style={inputStyle}
+              />
+            </label>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Content</span>
+              <textarea
+                value={content}
+                onChange={(event) => setContent(event.target.value)}
+                rows={4}
+                placeholder="Three city-states bound by a fragile alliance..."
+                style={{ ...inputStyle, resize: "vertical" }}
+              />
+            </label>
+            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 600 }}>
+              <input
+                type="checkbox"
+                checked={isPlayerVisible}
+                onChange={(event) => setIsPlayerVisible(event.target.checked)}
+              />
+              Share with players
+            </label>
+            <button
+              type="submit"
+              style={{
+                padding: "0.6rem 0.9rem",
+                borderRadius: 8,
+                border: "1px solid #1d4ed8",
+                background: "#2563eb",
+                color: "#e6edf7",
+                fontWeight: 700,
+                width: "fit-content",
+                cursor: "pointer"
+              }}
+            >
+              Add Note
+            </button>
+          </form>
+        )}
       </section>
 
       <section style={cardStyle}>
@@ -162,18 +277,31 @@ export const SettingInfoPage: React.FC = () => {
                         style={inputStyle}
                       />
                       <input
-                        value={editDraft.category}
-                        onChange={(event) => setEditDraft({ ...editDraft, category: event.target.value })}
-                        placeholder="Category"
+                        value={editTags}
+                        onChange={(event) => setEditTags(event.target.value)}
+                        placeholder="Tags"
                         style={inputStyle}
                       />
                       <textarea
-                        value={editDraft.content}
-                        onChange={(event) => setEditDraft({ ...editDraft, content: event.target.value })}
+                        value={editDraft.body ?? ""}
+                        onChange={(event) => setEditDraft({ ...editDraft, body: event.target.value })}
                         rows={4}
                         placeholder="Content"
                         style={{ ...inputStyle, resize: "vertical" }}
                       />
+                      <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 600 }}>
+                        <input
+                          type="checkbox"
+                          checked={editDraft.isPlayerVisible ?? false}
+                          onChange={(event) =>
+                            setEditDraft({
+                              ...editDraft,
+                              isPlayerVisible: event.target.checked
+                            })
+                          }
+                        />
+                        Share with players
+                      </label>
                       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                         <button
                           type="button"
@@ -212,7 +340,12 @@ export const SettingInfoPage: React.FC = () => {
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
                         <div>
                           <div style={{ fontWeight: 700 }}>{entry.title}</div>
-                          <div style={{ color: "#9ca3af", fontSize: 13 }}>{entry.category || "Uncategorized"}</div>
+                          <div style={{ color: "#9ca3af", fontSize: 13 }}>
+                            {entry.tags?.length ? entry.tags.join(" · ") : "Uncategorized"}
+                          </div>
+                          <div style={{ color: entry.isPlayerVisible ? "#86efac" : "#94a3b8", fontSize: 12 }}>
+                            {entry.isPlayerVisible ? "Shared with players" : "GM only"}
+                          </div>
                         </div>
                         <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
                           <button
@@ -247,9 +380,7 @@ export const SettingInfoPage: React.FC = () => {
                           </button>
                         </div>
                       </div>
-                      {entry.content && (
-                        <p style={{ margin: 0, color: "#cbd5e1", fontSize: 14 }}>{entry.content}</p>
-                      )}
+                      {entry.body && <p style={{ margin: 0, color: "#cbd5e1", fontSize: 14 }}>{entry.body}</p>}
                     </>
                   )}
                 </div>
