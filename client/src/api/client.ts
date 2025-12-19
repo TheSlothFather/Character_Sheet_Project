@@ -162,7 +162,6 @@ type PsionicAbilityRow = {
   prerequisite?: string | null;
   description?: string | null;
   energy_cost?: number | string | null;
-  formula?: string | null;
 };
 
 type SupabaseResult<T> = { data: T; error: null } | { data: null; error: { message: string } };
@@ -486,7 +485,7 @@ async function listPsionicAbilities(): Promise<PsionicAbilityRow[]> {
   const client = getSupabaseClient();
   const { data, error } = (await client
     .from("psionic_abilities")
-    .select("ability_tree, ability, tier, prerequisite, description, energy_cost, formula")) as SupabaseResult<
+    .select("ability_tree, ability, tier, prerequisite, description, energy_cost")) as SupabaseResult<
     PsionicAbilityRow[]
   >;
   if (error) {

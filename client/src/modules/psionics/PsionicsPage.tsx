@@ -536,7 +536,7 @@ export const PsionicsPage: React.FC = () => {
             prerequisite: row.prerequisite ?? null,
             description: row.description ?? "",
             energyCost: row.energy_cost ?? 0,
-            formula: row.formula ?? null
+            formula: null
           }))
         );
         setAbilities(parsed);
