@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import { api, type Character } from "../../api/client";
 import { getSupabaseClient } from "../../api/supabaseClient";
+import { ACTIVE_CAMPAIGN_STORAGE_KEY } from "../campaigns/campaignStorage";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
 
 const pageStyle: React.CSSProperties = {
@@ -50,8 +51,6 @@ const inputStyle: React.CSSProperties = {
   color: "#e5e7eb",
   boxSizing: "border-box"
 };
-
-const ACTIVE_CAMPAIGN_STORAGE_KEY = "active_campaign_id";
 
 type CampaignInviteRow = {
   token: string;
@@ -267,6 +266,7 @@ export const JoinCampaignPage: React.FC = () => {
         window.localStorage.setItem(ACTIVE_CAMPAIGN_STORAGE_KEY, invite.campaign_id);
       }
       setNotice("Joined campaign successfully.");
+      navigate(`/player/campaigns/${invite.campaign_id}`);
     } catch (joinError) {
       setError(joinError instanceof Error ? joinError.message : "Failed to join campaign.");
     } finally {

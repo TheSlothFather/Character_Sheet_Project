@@ -1,5 +1,7 @@
 export interface Character {
   id: string;
+  campaignId?: string;
+  userId?: string;
   name: string;
   level: number;
   raceKey?: string;
@@ -131,6 +133,8 @@ type RaceDetailRow = {
 
 type CharacterRow = {
   id: string;
+  campaign_id?: string | null;
+  user_id?: string | null;
   name: string;
   level: number;
   race_key?: string | null;
@@ -340,6 +344,8 @@ async function getDefinitionsFromSupabase(): Promise<DefinitionsResponse> {
 function mapCharacterRow(row: CharacterRow): Character {
   return {
     id: row.id,
+    campaignId: row.campaign_id ?? undefined,
+    userId: row.user_id ?? undefined,
     name: row.name,
     level: row.level,
     raceKey: row.race_key ?? undefined,
@@ -368,6 +374,8 @@ function toCharacterPayload(payload: Partial<Character>): Partial<CharacterRow> 
 
   if (payload.name !== undefined) record.name = payload.name;
   if (payload.level !== undefined) record.level = payload.level;
+  if (payload.campaignId !== undefined) record.campaign_id = payload.campaignId ?? null;
+  if (payload.userId !== undefined) record.user_id = payload.userId ?? null;
   if (payload.raceKey !== undefined) record.race_key = payload.raceKey ?? null;
   if (payload.subraceKey !== undefined) record.subrace_key = payload.subraceKey ?? null;
   if (payload.notes !== undefined) record.notes = payload.notes ?? null;
@@ -397,6 +405,20 @@ async function listCharacters(): Promise<Character[]> {
     .order("created_at", { ascending: true })) as SupabaseResult<CharacterRow[]>;
   if (error) {
     throw new ApiError(0, `Failed to load characters: ${error.message}`);
+  }
+  return (data ?? []).map(mapCharacterRow);
+}
+
+async function listCampaignCharacters(campaignId: string): Promise<Character[]> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const { data, error } = (await client
+    .from("characters")
+    .select("*")
+    .eq("campaign_id", campaignId)
+    .order("created_at", { ascending: true })) as SupabaseResult<CharacterRow[]>;
+  if (error) {
+    throw new ApiError(0, `Failed to load campaign characters: ${error.message}`);
   }
   return (data ?? []).map(mapCharacterRow);
 }
@@ -451,6 +473,7 @@ async function deleteCharacter(id: string): Promise<void> {
 
 export const api = {
   listCharacters,
+  listCampaignCharacters,
   createCharacter,
   updateCharacter,
   deleteCharacter,

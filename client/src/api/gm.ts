@@ -43,6 +43,7 @@ export interface CampaignSetting {
   title: string;
   body?: string;
   tags?: string[];
+  isPlayerVisible?: boolean;
 }
 
 type CampaignRow = {
@@ -87,6 +88,7 @@ type CampaignSettingRow = {
   title: string;
   body?: string | null;
   tags?: string[] | null;
+  is_player_visible?: boolean | null;
 };
 
 type SupabaseResult<T> = { data: T; error: null } | { data: null; error: { message: string } };
@@ -178,7 +180,8 @@ function mapSetting(row: CampaignSettingRow): CampaignSetting {
     campaignId: row.campaign_id,
     title: row.title,
     body: row.body ?? undefined,
-    tags: row.tags ?? undefined
+    tags: row.tags ?? undefined,
+    isPlayerVisible: row.is_player_visible ?? undefined
   };
 }
 
@@ -240,6 +243,7 @@ function toSettingPayload(payload: Partial<CampaignSetting>): Partial<CampaignSe
   if (payload.title !== undefined) record.title = payload.title;
   if (payload.body !== undefined) record.body = payload.body ?? null;
   if (payload.tags !== undefined) record.tags = payload.tags ?? null;
+  if (payload.isPlayerVisible !== undefined) record.is_player_visible = payload.isPlayerVisible ?? null;
 
   return record;
 }
@@ -478,7 +482,7 @@ async function listSettings(campaignId: string): Promise<CampaignSetting[]> {
   const client = getSupabaseClient();
   const { data, error } = (await client
     .from("setting_entries")
-    .select("id, campaign_id, title, body, tags")
+    .select("id, campaign_id, title, body, tags, is_player_visible")
     .eq("campaign_id", campaignId)
     .order("title", { ascending: true })) as SupabaseResult<CampaignSettingRow[]>;
   if (error) {
@@ -497,7 +501,7 @@ async function createSetting(payload: Partial<CampaignSetting>): Promise<Campaig
   const { data, error } = (await client
     .from("setting_entries")
     .insert(record)
-    .select("id, campaign_id, title, body, tags")
+    .select("id, campaign_id, title, body, tags, is_player_visible")
     .single()) as SupabaseResult<CampaignSettingRow>;
   if (error || !data) {
     throw new ApiError(0, `Failed to create setting: ${error?.message ?? "unknown error"}`);
@@ -513,7 +517,7 @@ async function updateSetting(id: string, payload: Partial<CampaignSetting>): Pro
     .from("setting_entries")
     .update(record)
     .eq("id", id)
-    .select("id, campaign_id, title, body, tags")
+    .select("id, campaign_id, title, body, tags, is_player_visible")
     .single()) as SupabaseResult<CampaignSettingRow>;
   if (error || !data) {
     throw new ApiError(0, `Failed to update setting: ${error?.message ?? "unknown error"}`);
