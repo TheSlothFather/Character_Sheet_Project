@@ -7,6 +7,7 @@ import { BestiaryPage } from "./BestiaryPage";
 import { NpcHubPage } from "./NpcHubPage";
 import { SettingInfoPage } from "./SettingInfoPage";
 import { PlayerCharactersPage } from "./PlayerCharactersPage";
+import { CombatPage } from "./CombatPage";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -234,6 +235,9 @@ export const GmApp: React.FC = () => {
         <NavLink to="/gm/bestiary" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
           Bestiary
         </NavLink>
+        <NavLink to="/gm/combat" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+          Combat
+        </NavLink>
         <NavLink to="/gm/npc-hub" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
           NPC Hub
         </NavLink>
@@ -260,6 +264,7 @@ export const GmApp: React.FC = () => {
           <Route path="/" element={<Navigate to="/gm/campaigns" replace />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/bestiary" element={<BestiaryPage />} />
+          <Route path="/combat" element={<CombatPage />} />
           <Route path="/npc-hub" element={<NpcHubPage />} />
           <Route path="/setting-info" element={<SettingInfoPage />} />
           <Route path="/player-characters" element={<PlayerCharactersPage />} />
