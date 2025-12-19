@@ -962,7 +962,7 @@ export const AncillariesPage: React.FC = () => {
       persistAncillarySelection(selectedId, nextState);
       return nextState;
     });
-    if (hasPsionAncillary) navigate("/psionics");
+    if (hasPsionAncillary) navigate("/player/psionics");
   };
 
   const selectedDetails = selectedAncillaries
