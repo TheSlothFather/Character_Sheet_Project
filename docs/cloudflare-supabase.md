@@ -12,6 +12,40 @@ You do **not** need to run the Express server on Cloudflare to use Supabase. Dep
 2) Build output: `dist`
 3) Node version: `20` (set `NODE_VERSION` or use the Cloudflare UI).
 
+## Live campaign events via Durable Objects
+This repo includes a Cloudflare Worker with a Durable Object per campaign for WebSocket live updates.
+
+### Files
+- `functions/_worker.ts` defines the Durable Object (`CampaignDurableObject`) and routes:
+  - `GET /api/campaigns/:id/connect` (WebSocket upgrade)
+  - `POST /api/campaigns/:id/roll`
+  - `POST /api/campaigns/:id/contest`
+- `wrangler.toml` registers the Durable Object binding (`CAMPAIGN_DO`).
+
+### Local dev
+```bash
+npx wrangler dev
+```
+
+### Deploy
+```bash
+npx wrangler deploy
+```
+
+### Example usage
+```bash
+# WebSocket connect (with optional ?user= handle)
+wscat -c "ws://localhost:8787/api/campaigns/demo/connect?user=gm"
+
+# Broadcast a roll
+curl -X POST "http://localhost:8787/api/campaigns/demo/roll" \
+  -H "content-type: application/json" \
+  -d '{"roller":"gm","result":17}'
+```
+
+The Durable Object guarantees ordered event sequencing, tracks presence, and broadcasts updates to every
+connected client for the same campaign ID.
+
 ## Set environment variables in Cloudflare Pages
 Set these in **Production** and **Preview**:
 - `VITE_SUPABASE_URL` = your Supabase project URL.
