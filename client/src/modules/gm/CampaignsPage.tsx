@@ -1,4 +1,5 @@
 import React from "react";
+import { gmApi, type Campaign, type CampaignInvite } from "../../api/gm";
 
 const cardStyle: React.CSSProperties = {
   background: "#0f131a",
@@ -17,23 +18,6 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box"
 };
 
-type Campaign = {
-  id: string;
-  name: string;
-  description: string;
-  inviteCode: string;
-  createdAt: string;
-};
-
-const createId = () => {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `campaign-${Math.random().toString(36).slice(2, 10)}`;
-};
-
-const createInviteCode = () => Math.random().toString(36).slice(2, 8).toUpperCase();
-
 const buildInviteLink = (inviteCode: string) => {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://adurun.app";
   return `${origin}/gm/join/${inviteCode}`;
@@ -42,23 +26,77 @@ const buildInviteLink = (inviteCode: string) => {
 export const CampaignsPage: React.FC = () => {
   const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
   const [name, setName] = React.useState("");
-  const [description, setDescription] = React.useState("");
   const [copyNotice, setCopyNotice] = React.useState<string | null>(null);
+  const [inviteByCampaign, setInviteByCampaign] = React.useState<Record<string, CampaignInvite | null>>({});
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleCreate = (event: React.FormEvent) => {
+  React.useEffect(() => {
+    let active = true;
+    const loadCampaigns = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await gmApi.listCampaigns();
+        if (!active) return;
+        setCampaigns(data);
+      } catch (loadError) {
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : "Failed to load campaigns.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadCampaigns();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    let active = true;
+    const loadInvites = async () => {
+      const inviteEntries = await Promise.all(
+        campaigns.map(async (campaign) => {
+          try {
+            const invites = await gmApi.listCampaignInvites(campaign.id);
+            return [campaign.id, invites[0] ?? null] as const;
+          } catch {
+            return [campaign.id, null] as const;
+          }
+        })
+      );
+      if (!active) return;
+      setInviteByCampaign((prev) => {
+        const next = { ...prev };
+        inviteEntries.forEach(([campaignId, invite]) => {
+          next[campaignId] = invite;
+        });
+        return next;
+      });
+    };
+    if (campaigns.length > 0) {
+      loadInvites();
+    } else {
+      setInviteByCampaign({});
+    }
+    return () => {
+      active = false;
+    };
+  }, [campaigns]);
+
+  const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();
+    setError(null);
     const trimmed = name.trim();
     if (!trimmed) return;
-    const newCampaign: Campaign = {
-      id: createId(),
-      name: trimmed,
-      description: description.trim(),
-      inviteCode: createInviteCode(),
-      createdAt: new Date().toLocaleDateString()
-    };
-    setCampaigns((prev) => [newCampaign, ...prev]);
-    setName("");
-    setDescription("");
+    try {
+      const created = await gmApi.createCampaign({ name: trimmed });
+      setCampaigns((prev) => [created, ...prev]);
+      setName("");
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : "Failed to create campaign.");
+    }
   };
 
   const handleCopy = async (link: string) => {
@@ -71,17 +109,28 @@ export const CampaignsPage: React.FC = () => {
     setCopyNotice("Clipboard unavailable. Copy manually.");
   };
 
-  const handleRotateLink = (id: string) => {
-    setCampaigns((prev) =>
-      prev.map((campaign) =>
-        campaign.id === id
-          ? {
-              ...campaign,
-              inviteCode: createInviteCode()
-            }
-          : campaign
-      )
-    );
+  const handleRotateLink = async (campaignId: string) => {
+    setError(null);
+    try {
+      const existingInvite = inviteByCampaign[campaignId];
+      if (existingInvite?.token) {
+        await gmApi.revokeCampaignInvite(existingInvite.token);
+      }
+      const nextInvite = await gmApi.createCampaignInvite({ campaignId });
+      setInviteByCampaign((prev) => ({ ...prev, [campaignId]: nextInvite }));
+    } catch (inviteError) {
+      setError(inviteError instanceof Error ? inviteError.message : "Failed to regenerate invite.");
+    }
+  };
+
+  const handleCreateInvite = async (campaignId: string) => {
+    setError(null);
+    try {
+      const invite = await gmApi.createCampaignInvite({ campaignId });
+      setInviteByCampaign((prev) => ({ ...prev, [campaignId]: invite }));
+    } catch (inviteError) {
+      setError(inviteError instanceof Error ? inviteError.message : "Failed to create invite.");
+    }
   };
 
   return (
@@ -105,16 +154,6 @@ export const CampaignsPage: React.FC = () => {
               style={inputStyle}
             />
           </label>
-          <label style={{ display: "grid", gap: "0.35rem" }}>
-            <span style={{ fontWeight: 700 }}>Description</span>
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              rows={3}
-              placeholder="High seas intrigue and forgotten gods."
-              style={{ ...inputStyle, resize: "vertical" }}
-            />
-          </label>
           <button
             type="submit"
             style={{
@@ -135,13 +174,17 @@ export const CampaignsPage: React.FC = () => {
 
       <section style={cardStyle}>
         <h3 style={{ marginTop: 0 }}>Active Campaigns</h3>
+        {error && <div style={{ marginBottom: 8, color: "#fca5a5" }}>{error}</div>}
         {copyNotice && <div style={{ marginBottom: 8, color: "#9ae6b4" }}>{copyNotice}</div>}
-        {campaigns.length === 0 ? (
+        {loading ? (
+          <p style={{ color: "#94a3b8", margin: 0 }}>Loading campaigns...</p>
+        ) : campaigns.length === 0 ? (
           <p style={{ color: "#94a3b8", margin: 0 }}>No campaigns yet. Create one above.</p>
         ) : (
           <div style={{ display: "grid", gap: "0.75rem" }}>
             {campaigns.map((campaign) => {
-              const link = buildInviteLink(campaign.inviteCode);
+              const invite = inviteByCampaign[campaign.id];
+              const link = invite ? buildInviteLink(invite.token) : null;
               return (
                 <div
                   key={campaign.id}
@@ -157,13 +200,16 @@ export const CampaignsPage: React.FC = () => {
                   <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem" }}>
                     <div>
                       <div style={{ fontWeight: 700 }}>{campaign.name}</div>
-                      <div style={{ color: "#9ca3af", fontSize: 13 }}>Created {campaign.createdAt}</div>
+                      {campaign.createdAt && (
+                        <div style={{ color: "#9ca3af", fontSize: 13 }}>
+                          Created {new Date(campaign.createdAt).toLocaleDateString()}
+                        </div>
+                      )}
                     </div>
-                    <span style={{ color: "#9ae6b4", fontSize: 12, fontWeight: 700 }}>INVITE READY</span>
+                    <span style={{ color: "#9ae6b4", fontSize: 12, fontWeight: 700 }}>
+                      {invite ? "INVITE READY" : "NO INVITE"}
+                    </span>
                   </div>
-                  {campaign.description && (
-                    <p style={{ margin: 0, color: "#cbd5e1", fontSize: 14 }}>{campaign.description}</p>
-                  )}
                   <div
                     style={{
                       display: "flex",
@@ -174,12 +220,13 @@ export const CampaignsPage: React.FC = () => {
                     }}
                   >
                     <span style={{ color: "#9ca3af" }}>Invite Link:</span>
-                    <span style={{ color: "#e5e7eb" }}>{link}</span>
+                    <span style={{ color: "#e5e7eb" }}>{link ?? "Generate an invite to share."}</span>
                   </div>
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                     <button
                       type="button"
-                      onClick={() => handleCopy(link)}
+                      onClick={() => link && handleCopy(link)}
+                      disabled={!link}
                       style={{
                         padding: "0.45rem 0.8rem",
                         borderRadius: 8,
@@ -207,6 +254,23 @@ export const CampaignsPage: React.FC = () => {
                     >
                       Regenerate Link
                     </button>
+                    {!invite && (
+                      <button
+                        type="button"
+                        onClick={() => handleCreateInvite(campaign.id)}
+                        style={{
+                          padding: "0.45rem 0.8rem",
+                          borderRadius: 8,
+                          border: "1px solid #1d4ed8",
+                          background: "#2563eb",
+                          color: "#e6edf7",
+                          fontWeight: 600,
+                          cursor: "pointer"
+                        }}
+                      >
+                        Create Invite
+                      </button>
+                    )}
                   </div>
                 </div>
               );
