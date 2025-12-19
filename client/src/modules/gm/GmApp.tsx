@@ -261,13 +261,13 @@ export const GmApp: React.FC = () => {
       </nav>
       <main style={{ flex: 1, padding: "1rem" }}>
         <Routes>
-          <Route path="/" element={<Navigate to="/gm/campaigns" replace />} />
-          <Route path="/campaigns" element={<CampaignsPage />} />
-          <Route path="/bestiary" element={<BestiaryPage />} />
-          <Route path="/combat" element={<CombatPage />} />
-          <Route path="/npc-hub" element={<NpcHubPage />} />
-          <Route path="/setting-info" element={<SettingInfoPage />} />
-          <Route path="/player-characters" element={<PlayerCharactersPage />} />
+          <Route path="/" element={<Navigate to="campaigns" replace />} />
+          <Route path="campaigns" element={<CampaignsPage />} />
+          <Route path="bestiary" element={<BestiaryPage />} />
+          <Route path="combat" element={<CombatPage />} />
+          <Route path="npc-hub" element={<NpcHubPage />} />
+          <Route path="setting-info" element={<SettingInfoPage />} />
+          <Route path="player-characters" element={<PlayerCharactersPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
