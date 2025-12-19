@@ -1,0 +1,11 @@
+name = "adurun-character-sheet"
+compatibility_date = "2024-10-01"
+pages_build_output_dir = "dist"
+
+[[durable_objects.bindings]]
+name = "CAMPAIGN_SESSION"
+class_name = "CampaignSession"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["CampaignSession"]

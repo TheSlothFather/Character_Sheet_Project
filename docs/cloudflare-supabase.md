@@ -31,3 +31,51 @@ If you want Cloudflare to run the migration during CI (not recommended in the ru
 ## Avoid
 - Trying to open a Postgres TCP connection from Cloudflare Workers/Pages Functions with `pg`; Workers cannot open raw sockets. Use HTTPS via `@supabase/supabase-js` from the client instead.
 - Injecting the Postgres connection string into the client bundle. Keep it server-side only for migrations.
+
+## Cloudflare Pages Functions + Durable Object for campaigns
+This repo includes a Pages Functions worker (`functions/_worker.ts`) with a Durable Object named `CampaignSession` for real-time campaign sessions.
+
+### What it does
+- Tracks connected players/GM per campaign.
+- Receives roll/contest submissions.
+- Computes outcomes in-order inside the Durable Object and broadcasts results to every connected participant.
+
+### API routes
+The Pages Function routes requests to the Durable Object based on campaign ID:
+- `GET /api/campaigns/:id/connect` → upgrades to WebSocket.
+- `POST /api/campaigns/:id/roll` → roll payload (HTTP fallback).
+- `POST /api/campaigns/:id/contest` → contest payload (HTTP fallback).
+
+### WebSocket usage (recommended)
+Connect once and send messages over the socket for strict ordering:
+```json
+{ "type": "join", "userId": "player-1", "role": "player" }
+{ "type": "roll", "userId": "player-1", "dice": { "sides": 20, "count": 1 }, "modifier": 3 }
+{ "type": "contest", "challengerId": "player-1", "defenderId": "npc-1", "dice": { "sides": 20 }, "challengerModifier": 2, "defenderModifier": 1 }
+```
+
+### Wrangler/Pages setup
+The Durable Object binding lives in `wrangler.toml`:
+```toml
+name = "adurun-character-sheet"
+compatibility_date = "2024-10-01"
+pages_build_output_dir = "dist"
+
+[[durable_objects.bindings]]
+name = "CAMPAIGN_SESSION"
+class_name = "CampaignSession"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["CampaignSession"]
+```
+
+### Local dev
+Use Wrangler to run Pages Functions + DO locally (Pages build output stays the same):
+```bash
+npx wrangler pages dev dist --compatibility-date=2024-10-01 --d1=false
+```
+
+### Notes
+- The client should prefer WebSockets (`/connect`) for real-time updates and strict ordering.
+- `POST /roll` and `POST /contest` are provided for non-WS clients or testing.
