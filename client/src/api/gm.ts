@@ -28,7 +28,18 @@ export interface BestiaryEntry {
   campaignId: string;
   name: string;
   statsSkills?: Record<string, unknown>;
+  attributes?: Record<string, unknown>;
+  skills?: Record<string, number>;
+  abilities?: BestiaryAbility[];
   tags?: string[];
+}
+
+export interface BestiaryAbility {
+  type: string;
+  tree?: string;
+  category?: string;
+  key?: string;
+  name?: string;
 }
 
 export interface BestiaryPin {
@@ -73,6 +84,9 @@ type BestiaryEntryRow = {
   campaign_id: string;
   name: string;
   stats_skills?: Record<string, unknown> | null;
+  attributes?: Record<string, unknown> | null;
+  skills?: Record<string, number> | null;
+  abilities?: BestiaryAbility[] | null;
   tags?: string[] | null;
 };
 
@@ -170,6 +184,9 @@ function mapBestiaryEntry(row: BestiaryEntryRow): BestiaryEntry {
     campaignId: row.campaign_id,
     name: row.name,
     statsSkills: row.stats_skills ?? undefined,
+    attributes: row.attributes ?? undefined,
+    skills: row.skills ?? undefined,
+    abilities: row.abilities ?? undefined,
     tags: row.tags ?? undefined
   };
 }
@@ -221,6 +238,9 @@ function toBestiaryPayload(payload: Partial<BestiaryEntry>): Partial<BestiaryEnt
   if (payload.campaignId !== undefined) record.campaign_id = payload.campaignId;
   if (payload.name !== undefined) record.name = payload.name;
   if (payload.statsSkills !== undefined) record.stats_skills = payload.statsSkills ?? null;
+  if (payload.attributes !== undefined) record.attributes = payload.attributes ?? null;
+  if (payload.skills !== undefined) record.skills = payload.skills ?? null;
+  if (payload.abilities !== undefined) record.abilities = payload.abilities ?? null;
   if (payload.tags !== undefined) record.tags = payload.tags ?? null;
 
   return record;
@@ -402,7 +422,7 @@ async function listBestiaryEntries(campaignId: string): Promise<BestiaryEntry[]>
   const client = getSupabaseClient();
   const { data, error } = (await client
     .from("bestiary_entries")
-    .select("id, campaign_id, name, stats_skills, tags")
+    .select("id, campaign_id, name, stats_skills, attributes, skills, abilities, tags")
     .eq("campaign_id", campaignId)
     .order("name", { ascending: true })) as SupabaseResult<BestiaryEntryRow[]>;
   if (error) {
@@ -421,7 +441,7 @@ async function createBestiaryEntry(payload: Partial<BestiaryEntry>): Promise<Bes
   const { data, error } = (await client
     .from("bestiary_entries")
     .insert(record)
-    .select("id, campaign_id, name, stats_skills, tags")
+    .select("id, campaign_id, name, stats_skills, attributes, skills, abilities, tags")
     .single()) as SupabaseResult<BestiaryEntryRow>;
   if (error || !data) {
     throw new ApiError(0, `Failed to create bestiary entry: ${error?.message ?? "unknown error"}`);
@@ -437,7 +457,7 @@ async function updateBestiaryEntry(id: string, payload: Partial<BestiaryEntry>):
     .from("bestiary_entries")
     .update(record)
     .eq("id", id)
-    .select("id, campaign_id, name, stats_skills, tags")
+    .select("id, campaign_id, name, stats_skills, attributes, skills, abilities, tags")
     .single()) as SupabaseResult<BestiaryEntryRow>;
   if (error || !data) {
     throw new ApiError(0, `Failed to update bestiary entry: ${error?.message ?? "unknown error"}`);
