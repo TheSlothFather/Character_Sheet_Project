@@ -176,7 +176,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
       clearInterval(repeatIntervalRef.current);
       repeatIntervalRef.current = null;
     }
-  }, [activeCampaignId]);
+  }, []);
 
   React.useEffect(() => stopRepeating, [stopRepeating]);
 
