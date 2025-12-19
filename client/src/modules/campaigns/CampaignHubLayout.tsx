@@ -86,6 +86,9 @@ export const CampaignHubLayout: React.FC = () => {
         >
           Characters
         </NavLink>
+        <NavLink to="combat" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+          Combat
+        </NavLink>
         <NavLink
           to="settings"
           style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
