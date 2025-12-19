@@ -159,6 +159,26 @@ const refreshSupabase = () => {
       disciplines: details.disciplines ?? {},
       deity_cap_per_spirit: details.deityCapPerSpirit ?? null
     })),
+    psionic_abilities: [
+      {
+        ability_tree: "Telepathy",
+        ability: "Telepathy",
+        tier: 1,
+        prerequisite: null,
+        description: "Starter telepathy",
+        energy_cost: 5,
+        formula: null
+      },
+      {
+        ability_tree: "Telepathy",
+        ability: "Interfere",
+        tier: 2,
+        prerequisite: "Telepathy",
+        description: "Interrupt psionics",
+        energy_cost: 10,
+        formula: null
+      }
+    ],
     characters: [toCharacterRow(mockCharacter)]
   };
 

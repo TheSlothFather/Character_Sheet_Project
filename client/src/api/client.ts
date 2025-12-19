@@ -155,6 +155,15 @@ type CharacterRow = {
   updated_at?: string | null;
 };
 
+type PsionicAbilityRow = {
+  ability_tree: string;
+  ability: string;
+  tier?: number | null;
+  prerequisite?: string | null;
+  description?: string | null;
+  energy_cost?: number | string | null;
+};
+
 type SupabaseResult<T> = { data: T; error: null } | { data: null; error: { message: string } };
 
 const REQUIRED_ENV_VARS = ["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"] as const;
@@ -471,11 +480,26 @@ async function deleteCharacter(id: string): Promise<void> {
   }
 }
 
+async function listPsionicAbilities(): Promise<PsionicAbilityRow[]> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const { data, error } = (await client
+    .from("psionic_abilities")
+    .select("ability_tree, ability, tier, prerequisite, description, energy_cost")) as SupabaseResult<
+    PsionicAbilityRow[]
+  >;
+  if (error) {
+    throw new ApiError(0, `Failed to load psionic abilities: ${error.message}`);
+  }
+  return data ?? [];
+}
+
 export const api = {
   listCharacters,
   listCampaignCharacters,
   createCharacter,
   updateCharacter,
   deleteCharacter,
-  getDefinitions: getDefinitionsFromSupabase
+  getDefinitions: getDefinitionsFromSupabase,
+  listPsionicAbilities
 };
