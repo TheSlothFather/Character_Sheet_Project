@@ -1,4 +1,5 @@
 import React from "react";
+import { gmApi, type BestiaryEntry as ApiBestiaryEntry, type Campaign } from "../../api/gm";
 
 const cardStyle: React.CSSProperties = {
   background: "#0f131a",
@@ -25,9 +26,34 @@ type BestiaryEntry = {
   description: string;
 };
 
-const createId = () => `bestiary-${Math.random().toString(36).slice(2, 10)}`;
+const mapApiEntry = (entry: ApiBestiaryEntry): BestiaryEntry => {
+  const statsSkills = entry.statsSkills;
+  const type = typeof statsSkills?.type === "string" ? statsSkills.type : "";
+  const threat = typeof statsSkills?.threat === "string" ? statsSkills.threat : "";
+  const description = typeof statsSkills?.description === "string" ? statsSkills.description : "";
+  return {
+    id: entry.id,
+    name: entry.name,
+    type,
+    threat,
+    description
+  };
+};
+
+const toStatsSkills = (entry: BestiaryEntry): Record<string, string> => {
+  const statsSkills: Record<string, string> = {};
+  const type = entry.type.trim();
+  const threat = entry.threat.trim();
+  const description = entry.description.trim();
+  if (type) statsSkills.type = type;
+  if (threat) statsSkills.threat = threat;
+  if (description) statsSkills.description = description;
+  return statsSkills;
+};
 
 export const BestiaryPage: React.FC = () => {
+  const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = React.useState<string>("");
   const [entries, setEntries] = React.useState<BestiaryEntry[]>([]);
   const [name, setName] = React.useState("");
   const [type, setType] = React.useState("");
@@ -35,6 +61,8 @@ export const BestiaryPage: React.FC = () => {
   const [description, setDescription] = React.useState("");
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editDraft, setEditDraft] = React.useState<BestiaryEntry | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   const resetForm = () => {
     setName("");
@@ -43,19 +71,79 @@ export const BestiaryPage: React.FC = () => {
     setDescription("");
   };
 
-  const handleCreate = (event: React.FormEvent) => {
+  React.useEffect(() => {
+    let active = true;
+    const loadCampaigns = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await gmApi.listCampaigns();
+        if (!active) return;
+        setCampaigns(data);
+        setSelectedCampaignId((current) => current || data[0]?.id || "");
+      } catch (loadError) {
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : "Failed to load campaigns.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadCampaigns();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!selectedCampaignId) {
+      setEntries([]);
+      return;
+    }
+    let active = true;
+    const loadEntries = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await gmApi.listBestiaryEntries(selectedCampaignId);
+        if (!active) return;
+        setEntries(data.map(mapApiEntry));
+      } catch (loadError) {
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : "Failed to load bestiary entries.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadEntries();
+    return () => {
+      active = false;
+    };
+  }, [selectedCampaignId]);
+
+  const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!selectedCampaignId) {
+      setError("Select a campaign before adding entries.");
+      return;
+    }
+    setError(null);
     const trimmed = name.trim();
     if (!trimmed) return;
-    const newEntry: BestiaryEntry = {
-      id: createId(),
-      name: trimmed,
-      type: type.trim(),
-      threat: threat.trim(),
-      description: description.trim()
-    };
-    setEntries((prev) => [newEntry, ...prev]);
-    resetForm();
+    try {
+      const created = await gmApi.createBestiaryEntry({
+        campaignId: selectedCampaignId,
+        name: trimmed,
+        statsSkills: {
+          type: type.trim(),
+          threat: threat.trim(),
+          description: description.trim()
+        }
+      });
+      setEntries((prev) => [mapApiEntry(created), ...prev]);
+      resetForm();
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : "Failed to create bestiary entry.");
+    }
   };
 
   const startEdit = (entry: BestiaryEntry) => {
@@ -68,16 +156,31 @@ export const BestiaryPage: React.FC = () => {
     setEditDraft(null);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editDraft) return;
     if (!editDraft.name.trim()) return;
-    setEntries((prev) => prev.map((entry) => (entry.id === editDraft.id ? { ...editDraft, name: editDraft.name.trim() } : entry)));
-    cancelEdit();
+    setError(null);
+    try {
+      const updated = await gmApi.updateBestiaryEntry(editDraft.id, {
+        name: editDraft.name.trim(),
+        statsSkills: toStatsSkills(editDraft)
+      });
+      setEntries((prev) => prev.map((entry) => (entry.id === updated.id ? mapApiEntry(updated) : entry)));
+      cancelEdit();
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to update bestiary entry.");
+    }
   };
 
-  const deleteEntry = (id: string) => {
-    setEntries((prev) => prev.filter((entry) => entry.id !== id));
-    if (editingId === id) cancelEdit();
+  const deleteEntry = async (id: string) => {
+    setError(null);
+    try {
+      await gmApi.deleteBestiaryEntry(id);
+      setEntries((prev) => prev.filter((entry) => entry.id !== id));
+      if (editingId === id) cancelEdit();
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "Failed to delete bestiary entry.");
+    }
   };
 
   return (
@@ -91,7 +194,26 @@ export const BestiaryPage: React.FC = () => {
 
       <section style={cardStyle}>
         <h3 style={{ marginTop: 0 }}>Add Creature</h3>
+        {error && <div style={{ marginBottom: "0.75rem", color: "#fca5a5" }}>{error}</div>}
+        {loading && <div style={{ marginBottom: "0.75rem", color: "#94a3b8" }}>Loading...</div>}
+        {campaigns.length === 0 ? (
+          <p style={{ color: "#94a3b8", margin: 0 }}>Create a campaign first to manage a bestiary.</p>
+        ) : (
         <form onSubmit={handleCreate} style={{ display: "grid", gap: "0.75rem" }}>
+          <label style={{ display: "grid", gap: "0.35rem" }}>
+            <span style={{ fontWeight: 700 }}>Campaign</span>
+            <select
+              value={selectedCampaignId}
+              onChange={(event) => setSelectedCampaignId(event.target.value)}
+              style={inputStyle}
+            >
+              {campaigns.map((campaign) => (
+                <option key={campaign.id} value={campaign.id}>
+                  {campaign.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <label style={{ display: "grid", gap: "0.35rem" }}>
             <span style={{ fontWeight: 700 }}>Name</span>
             <input
@@ -147,6 +269,7 @@ export const BestiaryPage: React.FC = () => {
             Add Entry
           </button>
         </form>
+        )}
       </section>
 
       <section style={cardStyle}>
