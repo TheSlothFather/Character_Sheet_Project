@@ -63,6 +63,10 @@ export const JoinCampaignPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
   const [selectedCharacterId, setSelectedCharacterId] = React.useState<string | null>(selectedId);
+  const [newCharacterName, setNewCharacterName] = React.useState("");
+  const [newCharacterLevel, setNewCharacterLevel] = React.useState(1);
+  const [createLoading, setCreateLoading] = React.useState(false);
+  const [createError, setCreateError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setSelectedCharacterId(selectedId);
@@ -211,6 +215,34 @@ export const JoinCampaignPage: React.FC = () => {
     }
   };
 
+  const handleCreateCharacter = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setCreateError(null);
+    const trimmedName = newCharacterName.trim();
+    if (!trimmedName) {
+      setCreateError("Character name is required.");
+      return;
+    }
+    if (!Number.isFinite(newCharacterLevel) || newCharacterLevel < 1) {
+      setCreateError("Character level must be at least 1.");
+      return;
+    }
+
+    setCreateLoading(true);
+    try {
+      const created = await api.createCharacter({ name: trimmedName, level: newCharacterLevel });
+      setCharacters((prev) => [created, ...prev]);
+      setSelectedCharacterId(created.id);
+      setSelectedId(created.id);
+      setNewCharacterName("");
+      setNewCharacterLevel(1);
+    } catch (createError) {
+      setCreateError(createError instanceof Error ? createError.message : "Failed to create character.");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div style={pageStyle}>
@@ -236,7 +268,7 @@ export const JoinCampaignPage: React.FC = () => {
         <div style={{ marginBottom: "1.5rem" }}>
           <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>Choose a character</div>
           {characters.length === 0 ? (
-            <div style={{ color: "#94a3b8" }}>No characters found. Create one first.</div>
+            <div style={{ color: "#94a3b8" }}>No characters found. Create one below.</div>
           ) : (
             <div style={{ display: "grid", gap: "0.75rem" }}>
               {characters.map((character) => (
@@ -271,6 +303,44 @@ export const JoinCampaignPage: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+        <div style={{ marginBottom: "1.5rem" }}>
+          <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>Create a new character</div>
+          {createError && <div style={{ color: "#fca5a5", marginBottom: "0.5rem" }}>{createError}</div>}
+          <form
+            onSubmit={handleCreateCharacter}
+            style={{ display: "grid", gap: "0.75rem", alignItems: "center", gridTemplateColumns: "1fr 140px auto" }}
+          >
+            <input
+              type="text"
+              placeholder="Character name"
+              value={newCharacterName}
+              onChange={(event) => setNewCharacterName(event.target.value)}
+              style={{
+                padding: "0.6rem 0.75rem",
+                borderRadius: 8,
+                border: "1px solid #2f3542",
+                background: "#0b1017",
+                color: "#e5e7eb"
+              }}
+            />
+            <input
+              type="number"
+              min={1}
+              value={newCharacterLevel}
+              onChange={(event) => setNewCharacterLevel(Number(event.target.value))}
+              style={{
+                padding: "0.6rem 0.75rem",
+                borderRadius: 8,
+                border: "1px solid #2f3542",
+                background: "#0b1017",
+                color: "#e5e7eb"
+              }}
+            />
+            <button type="submit" style={buttonStyle} disabled={createLoading}>
+              {createLoading ? "Creating..." : "Create"}
+            </button>
+          </form>
         </div>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           <button type="button" style={buttonStyle} onClick={handleJoin} disabled={joinLoading}>
