@@ -7,4 +7,4 @@ bindings = [{ name = "CAMPAIGN_DO", class_name = "CampaignDurableObject" }]
 
 [[migrations]]
 tag = "v1"
-new_classes = ["CampaignDurableObject"]
+new_sqlite_classes = ["CampaignDurableObject"]
