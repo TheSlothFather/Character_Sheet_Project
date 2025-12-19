@@ -1,5 +1,7 @@
 interface Env {
   CAMPAIGN_DO: DurableObjectNamespace;
+  SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
 }
 
 type CampaignEvent = {
@@ -21,15 +23,67 @@ type StoredPresence = {
   connectedAt: string;
 };
 
+type RollRequestPayload = {
+  playerId: string;
+  playerName?: string;
+  modifier?: number;
+  label?: string;
+  skill?: string;
+  requestId?: string;
+};
+
+type ContestSelectionPayload = {
+  requestId: string;
+  gmId: string;
+  gmName?: string;
+  npcName?: string;
+  npcModifier?: number;
+  contestId?: string;
+};
+
+type RollRequestRecord = {
+  id: string;
+  campaignId: string;
+  playerId: string;
+  playerName?: string;
+  modifier: number;
+  roll: number;
+  total: number;
+  label?: string;
+  skill?: string;
+  createdAt: string;
+  status: "pending" | "contested";
+  contestId?: string;
+};
+
+type ContestRecord = {
+  id: string;
+  campaignId: string;
+  requestId: string;
+  gmId: string;
+  gmName?: string;
+  npcName?: string;
+  npcModifier: number;
+  npcRoll: number;
+  npcTotal: number;
+  playerRoll: number;
+  playerModifier: number;
+  playerTotal: number;
+  outcome: "player" | "npc" | "tie";
+  createdAt: string;
+};
+
 export class CampaignDurableObject {
   private state: DurableObjectState;
+  private env: Env;
   private sessions = new Map<string, WebSocket>();
   private presence = new Map<string, StoredPresence>();
   private sequence = 0;
   private ready: Promise<void>;
 
-  constructor(state: DurableObjectState) {
+  constructor(state: DurableObjectState, env: Env) {
     this.state = state;
+    this.env = env;
     this.ready = this.state.blockConcurrencyWhile(async () => {
       const storedSequence = await this.state.storage.get<number>("sequence");
       if (typeof storedSequence === "number") {
@@ -62,18 +116,15 @@ export class CampaignDurableObject {
       return body;
     }
 
-    const sequence = await this.nextSequence();
-    const event: CampaignEvent = {
-      type: action,
-      campaignId,
-      sequence,
-      timestamp: new Date().toISOString(),
-      payload: body,
-    };
+    if (action === "roll") {
+      return this.handleRollRequest(campaignId, body);
+    }
 
-    this.broadcast(event);
+    if (action === "contest") {
+      return this.handleContestRequest(campaignId, body);
+    }
 
-    return jsonResponse({ ok: true, sequence });
+    return jsonResponse({ error: "Not found" }, 404);
   }
 
   private async handleConnect(request: Request, campaignId: string): Promise<Response> {
@@ -194,6 +245,135 @@ export class CampaignDurableObject {
     return next;
   }
 
+  private async handleRollRequest(campaignId: string, body: unknown): Promise<Response> {
+    const parsed = parseRollRequest(body);
+    if (parsed instanceof Response) {
+      return parsed;
+    }
+
+    const requestId = parsed.requestId ?? crypto.randomUUID();
+    const roll = rollD100();
+    const modifier = parsed.modifier ?? 0;
+    const total = roll + modifier;
+    const createdAt = new Date().toISOString();
+
+    const record: RollRequestRecord = {
+      id: requestId,
+      campaignId,
+      playerId: parsed.playerId,
+      playerName: parsed.playerName,
+      modifier,
+      roll,
+      total,
+      label: parsed.label,
+      skill: parsed.skill,
+      createdAt,
+      status: "pending",
+    };
+
+    const persistenceError = await this.persistSupabase(
+      "roll_requests",
+      mapRollRequestForSupabase(record),
+      { upsert: true },
+    );
+    if (persistenceError) {
+      return persistenceError;
+    }
+
+    await this.state.storage.put(this.rollRequestKey(requestId), record);
+
+    const sequence = await this.nextSequence();
+    const event: CampaignEvent = {
+      type: "roll",
+      campaignId,
+      sequence,
+      timestamp: createdAt,
+      payload: { request: record },
+    };
+
+    this.broadcast(event);
+
+    return jsonResponse({ ok: true, sequence, request: record });
+  }
+
+  private async handleContestRequest(campaignId: string, body: unknown): Promise<Response> {
+    const parsed = parseContestSelection(body);
+    if (parsed instanceof Response) {
+      return parsed;
+    }
+
+    const requestKey = this.rollRequestKey(parsed.requestId);
+    const request = await this.state.storage.get<RollRequestRecord>(requestKey);
+    if (!request) {
+      return jsonResponse({ error: "Roll request not found." }, 404);
+    }
+
+    const contestId = parsed.contestId ?? crypto.randomUUID();
+    const npcRoll = rollD100();
+    const npcModifier = parsed.npcModifier ?? 0;
+    const npcTotal = npcRoll + npcModifier;
+    const createdAt = new Date().toISOString();
+    const outcome =
+      request.total === npcTotal ? "tie" : request.total > npcTotal ? "player" : "npc";
+
+    const contest: ContestRecord = {
+      id: contestId,
+      campaignId,
+      requestId: request.id,
+      gmId: parsed.gmId,
+      gmName: parsed.gmName,
+      npcName: parsed.npcName,
+      npcModifier,
+      npcRoll,
+      npcTotal,
+      playerRoll: request.roll,
+      playerModifier: request.modifier,
+      playerTotal: request.total,
+      outcome,
+      createdAt,
+    };
+
+    const updatedRequest: RollRequestRecord = {
+      ...request,
+      status: "contested",
+      contestId,
+    };
+
+    const persistenceError = await this.persistSupabase(
+      "roll_contests",
+      mapContestForSupabase(contest),
+      { upsert: true },
+    );
+    if (persistenceError) {
+      return persistenceError;
+    }
+
+    const requestUpdateError = await this.persistSupabase(
+      "roll_requests",
+      mapRollRequestForSupabase(updatedRequest),
+      { upsert: true },
+    );
+    if (requestUpdateError) {
+      return requestUpdateError;
+    }
+
+    await this.state.storage.put(requestKey, updatedRequest);
+    await this.state.storage.put(this.rollContestKey(contestId), contest);
+
+    const sequence = await this.nextSequence();
+    const event: CampaignEvent = {
+      type: "contest",
+      campaignId,
+      sequence,
+      timestamp: createdAt,
+      payload: { request: updatedRequest, contest },
+    };
+
+    this.broadcast(event);
+
+    return jsonResponse({ ok: true, sequence, contest });
+  }
+
   private broadcast(event: CampaignEvent) {
     const message = JSON.stringify(event);
     for (const [connectionId, socket] of this.sessions) {
@@ -221,6 +401,60 @@ export class CampaignDurableObject {
       connectedAt: presence?.connectedAt ?? new Date().toISOString(),
     };
   }
+
+  private rollRequestKey(requestId: string) {
+    return `roll_request:${requestId}`;
+  }
+
+  private rollContestKey(contestId: string) {
+    return `roll_contest:${contestId}`;
+  }
+
+  private supabaseConfig(): { url: string; key: string } | Response {
+    if (!this.env.SUPABASE_URL || !this.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return jsonResponse({ error: "Supabase configuration missing." }, 500);
+    }
+
+    return { url: this.env.SUPABASE_URL, key: this.env.SUPABASE_SERVICE_ROLE_KEY };
+  }
+
+  private async persistSupabase(
+    table: "roll_requests" | "roll_contests",
+    payload: Record<string, unknown>,
+    options?: { upsert?: boolean },
+  ): Promise<Response | null> {
+    const config = this.supabaseConfig();
+    if (config instanceof Response) {
+      return config;
+    }
+
+    const url = new URL(`/rest/v1/${table}`, config.url);
+    if (options?.upsert) {
+      url.searchParams.set("on_conflict", "id");
+    }
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        apikey: config.key,
+        authorization: `Bearer ${config.key}`,
+        Prefer: options?.upsert
+          ? "resolution=merge-duplicates, return=minimal"
+          : "return=minimal",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return jsonResponse(
+        { error: `Supabase insert failed for ${table}.`, details: errorText },
+        500,
+      );
+    }
+
+    return null;
+  }
 }
 
 function jsonResponse(body: unknown, status = 200, headers?: HeadersInit) {
@@ -243,6 +477,192 @@ async function readJsonBody(request: Request): Promise<unknown | Response> {
   } catch {
     return jsonResponse({ error: "Invalid JSON" }, 400);
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function parseStringField(
+  value: unknown,
+  field: string,
+  required = false,
+): string | Response | undefined {
+  if (value == null) {
+    if (required) {
+      return jsonResponse({ error: `Missing ${field}.` }, 400);
+    }
+    return undefined;
+  }
+
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return jsonResponse({ error: `Invalid ${field}.` }, 400);
+  }
+
+  return value;
+}
+
+function parseRequiredStringField(value: unknown, field: string): string | Response {
+  const parsed = parseStringField(value, field, true);
+  if (parsed instanceof Response) {
+    return parsed;
+  }
+  return parsed as string;
+}
+
+function parseNumberField(
+  value: unknown,
+  field: string,
+  fallback = 0,
+): number | Response {
+  if (value == null) {
+    return fallback;
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return jsonResponse({ error: `Invalid ${field}.` }, 400);
+}
+
+function parseRollRequest(body: unknown): RollRequestPayload | Response {
+  if (!isRecord(body)) {
+    return jsonResponse({ error: "Invalid payload." }, 400);
+  }
+
+  const playerId = parseRequiredStringField(body.playerId, "playerId");
+  if (playerId instanceof Response) {
+    return playerId;
+  }
+
+  const modifier = parseNumberField(body.modifier, "modifier");
+  if (modifier instanceof Response) {
+    return modifier;
+  }
+
+  const playerName = parseStringField(body.playerName, "playerName");
+  if (playerName instanceof Response) {
+    return playerName;
+  }
+
+  const label = parseStringField(body.label, "label");
+  if (label instanceof Response) {
+    return label;
+  }
+
+  const skill = parseStringField(body.skill, "skill");
+  if (skill instanceof Response) {
+    return skill;
+  }
+
+  const requestId = parseStringField(body.requestId, "requestId");
+  if (requestId instanceof Response) {
+    return requestId;
+  }
+
+  return {
+    playerId,
+    playerName,
+    modifier,
+    label,
+    skill,
+    requestId,
+  };
+}
+
+function parseContestSelection(body: unknown): ContestSelectionPayload | Response {
+  if (!isRecord(body)) {
+    return jsonResponse({ error: "Invalid payload." }, 400);
+  }
+
+  const requestId = parseRequiredStringField(body.requestId, "requestId");
+  if (requestId instanceof Response) {
+    return requestId;
+  }
+
+  const gmId = parseRequiredStringField(body.gmId, "gmId");
+  if (gmId instanceof Response) {
+    return gmId;
+  }
+
+  const npcModifier = parseNumberField(body.npcModifier, "npcModifier");
+  if (npcModifier instanceof Response) {
+    return npcModifier;
+  }
+
+  const gmName = parseStringField(body.gmName, "gmName");
+  if (gmName instanceof Response) {
+    return gmName;
+  }
+
+  const npcName = parseStringField(body.npcName, "npcName");
+  if (npcName instanceof Response) {
+    return npcName;
+  }
+
+  const contestId = parseStringField(body.contestId, "contestId");
+  if (contestId instanceof Response) {
+    return contestId;
+  }
+
+  return {
+    requestId,
+    gmId,
+    gmName,
+    npcName,
+    npcModifier,
+    contestId,
+  };
+}
+
+function rollD100(): number {
+  const buffer = new Uint32Array(1);
+  crypto.getRandomValues(buffer);
+  return (buffer[0] % 100) + 1;
+}
+
+function mapRollRequestForSupabase(record: RollRequestRecord): Record<string, unknown> {
+  return {
+    id: record.id,
+    campaign_id: record.campaignId,
+    player_id: record.playerId,
+    player_name: record.playerName ?? null,
+    roll: record.roll,
+    modifier: record.modifier,
+    total: record.total,
+    label: record.label ?? null,
+    skill: record.skill ?? null,
+    status: record.status,
+    contest_id: record.contestId ?? null,
+    created_at: record.createdAt,
+  };
+}
+
+function mapContestForSupabase(record: ContestRecord): Record<string, unknown> {
+  return {
+    id: record.id,
+    campaign_id: record.campaignId,
+    roll_request_id: record.requestId,
+    gm_id: record.gmId,
+    gm_name: record.gmName ?? null,
+    npc_name: record.npcName ?? null,
+    npc_modifier: record.npcModifier,
+    npc_roll: record.npcRoll,
+    npc_total: record.npcTotal,
+    player_roll: record.playerRoll,
+    player_modifier: record.playerModifier,
+    player_total: record.playerTotal,
+    outcome: record.outcome,
+    created_at: record.createdAt,
+  };
 }
 
 export default {
