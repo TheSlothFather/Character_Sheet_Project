@@ -2,13 +2,12 @@ import React from "react";
 import { api, Character, RaceDetailProfile } from "../../api/client";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
 import { useDefinitions } from "../definitions/DefinitionsContext";
-import psionicsCsv from "../../data/psionics.csv?raw";
 import {
   DEFAULT_PSI_POINTS,
   PsionicAbility,
   evaluateFormula,
   isAbilityUnlocked,
-  parsePsionicsCsv,
+  parsePsionicsRows,
   replaceMentalAttributePlaceholders
 } from "./psionicsUtils";
 import { PSION_BACKGROUND_CONFIG, PSIONICS_STORAGE_KEY } from "./psionBackgrounds";
@@ -498,7 +497,9 @@ const SkillTree: React.FC<{
 };
 
 export const PsionicsPage: React.FC = () => {
-  const abilities = React.useMemo(() => parsePsionicsCsv(psionicsCsv), []);
+  const [abilities, setAbilities] = React.useState<PsionicAbility[]>([]);
+  const [abilitiesError, setAbilitiesError] = React.useState<string | null>(null);
+  const [loadingAbilities, setLoadingAbilities] = React.useState(true);
   const abilityIds = React.useMemo(() => new Set(abilities.map((a) => a.id)), [abilities]);
   const abilityCostMap = React.useMemo(() => new Map(abilities.map((a) => [a.id, a.tier])), [abilities]);
   const abilityById = React.useMemo(() => new Map(abilities.map((a) => [a.id, a])), [abilities]);
@@ -518,6 +519,42 @@ export const PsionicsPage: React.FC = () => {
   const [ancillaryChoices, setAncillaryChoices] = React.useState<Record<string, Set<string>>>({});
   const [pendingAncillaries, setPendingAncillaries] = React.useState<string[]>([]);
   const [activeAncillaryId, setActiveAncillaryId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    setLoadingAbilities(true);
+    setAbilitiesError(null);
+    api
+      .listPsionicAbilities()
+      .then((rows) => {
+        if (!active) return;
+        const parsed = parsePsionicsRows(
+          rows.map((row) => ({
+            tree: row.ability_tree,
+            name: row.ability,
+            tier: row.tier ?? 0,
+            prerequisite: row.prerequisite ?? null,
+            description: row.description ?? "",
+            energyCost: row.energy_cost ?? 0,
+            formula: row.formula ?? null
+          }))
+        );
+        setAbilities(parsed);
+      })
+      .catch((err) => {
+        if (!active) return;
+        const message = err instanceof Error ? err.message : "Failed to load psionic abilities.";
+        setAbilitiesError(message);
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoadingAbilities(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const storageKey = React.useMemo(() => (selectedId ? `${PSIONICS_STORAGE_KEY}:${selectedId}` : null), [selectedId]);
   const backgroundBenefits = React.useMemo(() => {
@@ -916,6 +953,18 @@ export const PsionicsPage: React.FC = () => {
 
   if (!selectedCharacter) {
     return <p>Selected character could not be found.</p>;
+  }
+
+  if (loadingAbilities) {
+    return <p>Loading psionic abilities...</p>;
+  }
+
+  if (abilitiesError) {
+    return <p style={{ color: "#f55" }}>{abilitiesError}</p>;
+  }
+
+  if (abilities.length === 0) {
+    return <p>No psionic abilities are available yet.</p>;
   }
 
   return (

@@ -22,6 +22,16 @@ interface PsionicsCsvRow {
   Formula?: string;
 }
 
+export type PsionicsDataRow = {
+  tree: string;
+  name: string;
+  tier?: number | string | null;
+  prerequisite?: string | null;
+  description?: string | null;
+  energyCost?: number | string | null;
+  formula?: string | null;
+};
+
 export const DEFAULT_PSI_POINTS = 0;
 
 export const evaluateFormula = (formula: string, mental: number): number | null => {
@@ -66,26 +76,17 @@ const parsePrerequisites = (value: string | undefined): string[] => {
     .filter(Boolean);
 };
 
-export const parsePsionicsCsv = (csvText: string): PsionicAbility[] => {
-  const parsed = Papa.parse<PsionicsCsvRow>(csvText, {
-    header: true,
-    skipEmptyLines: true
-  });
-
-  if (parsed.errors.length) {
-    console.warn("Errors while parsing psionics CSV", parsed.errors);
-  }
-
+export const parsePsionicsRows = (rows: PsionicsDataRow[]): PsionicAbility[] => {
   const abilityBuckets = new Map<string, PsionicAbility[]>();
   const abilities: PsionicAbility[] = [];
 
-  for (const row of parsed.data || []) {
-    if (!row.Ability) continue;
-    const tree = row["Ability Tree"];
-    const name = row.Ability;
+  for (const row of rows) {
+    if (!row.name) continue;
+    const tree = row.tree;
+    const name = row.name;
     const key = `${tree}:${name}`;
 
-    const prerequisiteNames = parsePrerequisites(row.Prerequisite);
+    const prerequisiteNames = parsePrerequisites(row.prerequisite ?? undefined);
 
     const priorEntries = abilityBuckets.get(key) ?? [];
     const occurrence = priorEntries.length + 1;
@@ -104,12 +105,12 @@ export const parsePsionicsCsv = (csvText: string): PsionicAbility[] => {
       id,
       tree,
       name,
-      tier: Number(row.Tier),
+      tier: Number.isFinite(Number(row.tier)) ? Number(row.tier) : 0,
       prerequisiteNames,
       prerequisiteIds,
-      description: row.Description,
-      energyCost: Number(row["Energy Cost"]),
-      formula: row.Formula?.trim() || undefined
+      description: row.description ?? "",
+      energyCost: Number.isFinite(Number(row.energyCost)) ? Number(row.energyCost) : 0,
+      formula: row.formula?.trim() || undefined
     };
 
     abilities.push(ability);
@@ -124,6 +125,29 @@ export const parsePsionicsCsv = (csvText: string): PsionicAbility[] => {
     }
     return a.tree.localeCompare(b.tree);
   });
+};
+
+export const parsePsionicsCsv = (csvText: string): PsionicAbility[] => {
+  const parsed = Papa.parse<PsionicsCsvRow>(csvText, {
+    header: true,
+    skipEmptyLines: true
+  });
+
+  if (parsed.errors.length) {
+    console.warn("Errors while parsing psionics CSV", parsed.errors);
+  }
+
+  const rows = (parsed.data ?? []).map((row) => ({
+    tree: row["Ability Tree"],
+    name: row.Ability,
+    tier: row.Tier,
+    prerequisite: row.Prerequisite ?? null,
+    description: row.Description ?? "",
+    energyCost: row["Energy Cost"],
+    formula: row.Formula ?? null
+  }));
+
+  return parsePsionicsRows(rows);
 };
 
 export const isAbilityUnlocked = (
