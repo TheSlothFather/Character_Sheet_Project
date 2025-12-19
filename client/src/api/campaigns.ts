@@ -16,6 +16,13 @@ export interface PlayerCampaignSetting {
   tags?: string[];
 }
 
+export interface PlayerCombatant {
+  id: string;
+  name: string;
+  faction?: string;
+  combatStatus?: string;
+}
+
 type CampaignRow = {
   id: string;
   name: string;
@@ -30,6 +37,12 @@ type CampaignSettingRow = {
   body?: string | null;
   tags?: string[] | null;
   is_player_visible?: boolean | null;
+};
+
+type BestiaryEntryRow = {
+  id: string;
+  name: string;
+  stats_skills?: Record<string, unknown> | null;
 };
 
 type SupabaseResult<T> = { data: T; error: null } | { data: null; error: { message: string } };
@@ -69,6 +82,18 @@ function mapSetting(row: CampaignSettingRow): PlayerCampaignSetting {
   };
 }
 
+function mapCombatant(row: BestiaryEntryRow): PlayerCombatant {
+  const stats = row.stats_skills ?? {};
+  const faction = typeof stats.faction === "string" ? stats.faction : undefined;
+  const combatStatus = typeof stats.combat_status === "string" ? stats.combat_status : undefined;
+  return {
+    id: row.id,
+    name: row.name,
+    faction,
+    combatStatus
+  };
+}
+
 export async function getCampaign(campaignId: string): Promise<PlayerCampaign> {
   ensureSupabaseEnv();
   const client = getSupabaseClient();
@@ -99,4 +124,19 @@ export async function listSharedSettings(campaignId: string): Promise<PlayerCamp
     throw new ApiError(0, `Failed to load setting notes: ${error.message}`);
   }
   return (data ?? []).map(mapSetting);
+}
+
+export async function listActiveCombatants(campaignId: string): Promise<PlayerCombatant[]> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const { data, error } = (await client
+    .from("bestiary_entries")
+    .select("id, name, stats_skills")
+    .eq("campaign_id", campaignId)
+    .eq("stats_skills->>combat_status", "active")
+    .order("name", { ascending: true })) as SupabaseResult<BestiaryEntryRow[]>;
+  if (error) {
+    throw new ApiError(0, `Failed to load combatants: ${error.message}`);
+  }
+  return (data ?? []).map(mapCombatant);
 }

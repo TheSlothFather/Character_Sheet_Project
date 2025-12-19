@@ -16,6 +16,7 @@ import { CampaignHubLayout } from "./campaigns/CampaignHubLayout";
 import { CampaignCharactersPage } from "./campaigns/CampaignCharactersPage";
 import { CampaignSettingsPage } from "./campaigns/CampaignSettingsPage";
 import { ACTIVE_CAMPAIGN_STORAGE_KEY } from "./campaigns/campaignStorage";
+import { CombatPage } from "./characters/CombatPage";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -110,12 +111,20 @@ const PlayerApp: React.FC = () => {
           Characters
         </NavLink>
         {activeCampaignId && (
-          <NavLink
-            to={`/player/campaigns/${activeCampaignId}`}
-            style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
-          >
-            Campaign Hub
-          </NavLink>
+          <>
+            <NavLink
+              to={`/player/campaigns/${activeCampaignId}`}
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              Campaign Hub
+            </NavLink>
+            <NavLink
+              to={`/player/campaigns/${activeCampaignId}/combat`}
+              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+            >
+              Combat
+            </NavLink>
+          </>
         )}
         <NavLink
           to="/player/character-creation"
@@ -161,6 +170,7 @@ const PlayerApp: React.FC = () => {
             <Route index element={<Navigate to="characters" replace />} />
             <Route path="characters" element={<CampaignCharactersPage />} />
             <Route path="settings" element={<CampaignSettingsPage />} />
+            <Route path="combat" element={<CombatPage />} />
           </Route>
           <Route path="characters" element={<CharactersPage />} />
           <Route path="character-creation" element={<CharacterCreationPage />} />
