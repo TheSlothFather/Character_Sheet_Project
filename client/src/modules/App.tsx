@@ -11,6 +11,7 @@ import { MagicFacultiesPage } from "./magic/MagicFacultiesPage";
 import { SpellCreationPage } from "./magic/SpellCreationPage";
 import { DeityRelationshipPage } from "./deity/DeityRelationshipPage";
 import { GmApp } from "./gm/GmApp";
+import { JoinCampaignPage } from "./join/JoinCampaignPage";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -153,6 +154,7 @@ export const App: React.FC = () => {
       <SelectedCharacterProvider>
         <Routes>
           <Route path="/" element={<StartPage />} />
+          <Route path="/join/:token" element={<JoinCampaignPage />} />
           <Route path="/gm/*" element={<GmApp />} />
           <Route path="/player/*" element={<PlayerApp />} />
           <Route path="*" element={<NotFound />} />

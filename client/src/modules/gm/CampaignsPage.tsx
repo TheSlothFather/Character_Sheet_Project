@@ -20,7 +20,7 @@ const inputStyle: React.CSSProperties = {
 
 const buildInviteLink = (inviteCode: string) => {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://adurun.app";
-  return `${origin}/gm/join/${inviteCode}`;
+  return `${origin}/join/${inviteCode}`;
 };
 
 export const CampaignsPage: React.FC = () => {
