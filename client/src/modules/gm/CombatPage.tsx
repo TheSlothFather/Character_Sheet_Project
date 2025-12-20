@@ -1,6 +1,11 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { gmApi, type BestiaryEntry as ApiBestiaryEntry, type Campaign } from "../../api/gm";
+import {
+  gmApi,
+  type Campaign,
+  type CampaignCombatant,
+  type BestiaryEntry as ApiBestiaryEntry
+} from "../../api/gm";
 
 const cardStyle: React.CSSProperties = {
   background: "#0f131a",
@@ -19,63 +24,58 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box"
 };
 
-type CombatStatus = "active" | "inactive";
-
 type CombatFaction = "ally" | "enemy";
 
-type CombatEntry = {
-  id: string;
-  name: string;
-  combatStatus: CombatStatus;
+type CombatEntry = CampaignCombatant & {
   faction: CombatFaction;
-  statsSkills: Record<string, unknown>;
+  isActive: boolean;
 };
 
-const readString = (value: unknown) => (typeof value === "string" ? value : "");
+const readNumber = (value: unknown): number | undefined => (typeof value === "number" && !Number.isNaN(value) ? value : undefined);
 
-const normalizeCombatStatus = (value: string): CombatStatus => {
-  const lowered = value.trim().toLowerCase();
-  if (lowered === "active") return "active";
-  if (lowered === "inactive") return "inactive";
-  return "inactive";
-};
-
-const normalizeFaction = (value: string): CombatFaction => {
-  const lowered = value.trim().toLowerCase();
+const normalizeFaction = (value?: string): CombatFaction => {
+  const lowered = value?.trim().toLowerCase() ?? "";
   if (lowered.startsWith("ally")) return "ally";
-  if (lowered.startsWith("enemy")) return "enemy";
   return "enemy";
 };
 
-const mapApiEntry = (entry: ApiBestiaryEntry): CombatEntry => {
-  const statsSkills = entry.statsSkills ?? {};
-  return {
-    id: entry.id,
-    name: entry.name,
-    combatStatus: normalizeCombatStatus(readString(statsSkills.combat_status)),
-    faction: normalizeFaction(readString(statsSkills.faction)),
-    statsSkills
-  };
+const mapCombatant = (combatant: CampaignCombatant): CombatEntry => ({
+  ...combatant,
+  faction: normalizeFaction(combatant.faction),
+  isActive: combatant.isActive ?? false
+});
+
+const deriveTier = (entry: ApiBestiaryEntry): number | undefined => {
+  const stats = entry.statsSkills ?? {};
+  const attributes = entry.attributes ?? {};
+  return readNumber(stats.tier) ?? readNumber(attributes.tier);
 };
 
-const updateStatsSkills = (entry: CombatEntry, updates: Partial<Pick<CombatEntry, "combatStatus" | "faction">>) => {
-  const next = { ...entry.statsSkills };
-  if (updates.combatStatus) next.combat_status = updates.combatStatus;
-  if (updates.faction) next.faction = updates.faction;
-  return next;
+const deriveEnergy = (entry: ApiBestiaryEntry): number | undefined => {
+  const attributes = entry.attributes ?? {};
+  return readNumber(attributes.energy);
+};
+
+const deriveAp = (entry: ApiBestiaryEntry): number | undefined => {
+  const attributes = entry.attributes ?? {};
+  return readNumber(attributes.ap);
 };
 
 export const CombatPage: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
   const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = React.useState<string>(campaignId ?? "");
-  const [entries, setEntries] = React.useState<CombatEntry[]>([]);
+  const [combatants, setCombatants] = React.useState<CombatEntry[]>([]);
+  const [bestiaryEntries, setBestiaryEntries] = React.useState<ApiBestiaryEntry[]>([]);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
   const [showInactive, setShowInactive] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [bulkUpdating, setBulkUpdating] = React.useState(false);
   const [updatingIds, setUpdatingIds] = React.useState<string[]>([]);
   const [error, setError] = React.useState<string | null>(null);
+  const [addingId, setAddingId] = React.useState<string>("");
+  const [addingFaction, setAddingFaction] = React.useState<CombatFaction>("enemy");
+  const [addingActive, setAddingActive] = React.useState(true);
 
   React.useEffect(() => {
     if (campaignId) {
@@ -106,7 +106,8 @@ export const CombatPage: React.FC = () => {
 
   React.useEffect(() => {
     if (!selectedCampaignId) {
-      setEntries([]);
+      setCombatants([]);
+      setBestiaryEntries([]);
       return;
     }
     let active = true;
@@ -114,9 +115,13 @@ export const CombatPage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await gmApi.listBestiaryEntries(selectedCampaignId);
+        const [combatantData, bestiaryData] = await Promise.all([
+          gmApi.listCombatants(selectedCampaignId),
+          gmApi.listBestiaryEntries(selectedCampaignId)
+        ]);
         if (!active) return;
-        setEntries(data.map(mapApiEntry));
+        setCombatants(combatantData.map(mapCombatant));
+        setBestiaryEntries(bestiaryData);
       } catch (loadError) {
         if (!active) return;
         setError(loadError instanceof Error ? loadError.message : "Failed to load combat entries.");
@@ -142,42 +147,32 @@ export const CombatPage: React.FC = () => {
     });
   };
 
-  const updateEntry = async (entryId: string, updates: Partial<Pick<CombatEntry, "combatStatus" | "faction">>) => {
-    const target = entries.find((entry) => entry.id === entryId);
-    if (!target) return;
-    setUpdatingIds((prev) => (prev.includes(entryId) ? prev : [...prev, entryId]));
+  const updateCombatant = async (combatantId: string, updates: Partial<CampaignCombatant>) => {
+    setUpdatingIds((prev) => (prev.includes(combatantId) ? prev : [...prev, combatantId]));
     setError(null);
     try {
-      const updated = await gmApi.updateBestiaryEntry(entryId, {
-        statsSkills: updateStatsSkills(target, updates)
-      });
-      const mapped = mapApiEntry(updated);
-      setEntries((prev) => prev.map((entry) => (entry.id === entryId ? mapped : entry)));
+      const updated = await gmApi.updateCombatant(combatantId, updates);
+      const mapped = mapCombatant(updated);
+      setCombatants((prev) => prev.map((entry) => (entry.id === combatantId ? mapped : entry)));
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "Failed to update combat status.");
+      setError(updateError instanceof Error ? updateError.message : "Failed to update combatant.");
     } finally {
-      setUpdatingIds((prev) => prev.filter((id) => id !== entryId));
+      setUpdatingIds((prev) => prev.filter((id) => id !== combatantId));
     }
   };
 
-  const updateSelectedStatus = async (status: CombatStatus) => {
+  const updateSelectedStatus = async (isActive: boolean) => {
     if (selectedIds.size === 0) return;
     setBulkUpdating(true);
     setError(null);
     try {
       const updates = await Promise.all(
-        Array.from(selectedIds).map(async (entryId) => {
-          const entry = entries.find((item) => item.id === entryId);
-          if (!entry) return null;
-          const updated = await gmApi.updateBestiaryEntry(entryId, {
-            statsSkills: updateStatsSkills(entry, { combatStatus: status })
-          });
-          return mapApiEntry(updated);
+        Array.from(selectedIds).map(async (combatantId) => {
+          const updated = await gmApi.updateCombatant(combatantId, { isActive });
+          return mapCombatant(updated);
         })
       );
-      setEntries((prev) =>
-        prev.map((entry) => updates.find((update) => update?.id === entry.id) ?? entry)
-      );
+      setCombatants((prev) => prev.map((entry) => updates.find((update) => update.id === entry.id) ?? entry));
       setSelectedIds(new Set());
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "Failed to update selected combatants.");
@@ -186,7 +181,30 @@ export const CombatPage: React.FC = () => {
     }
   };
 
-  const filteredEntries = showInactive ? entries : entries.filter((entry) => entry.combatStatus === "active");
+  const handleAddCombatant = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!selectedCampaignId || !addingId) return;
+    setError(null);
+    const entry = bestiaryEntries.find((item) => item.id === addingId);
+    if (!entry) return;
+    try {
+      const created = await gmApi.createCombatant({
+        campaignId: selectedCampaignId,
+        bestiaryEntryId: entry.id,
+        faction: addingFaction,
+        isActive: addingActive,
+        tier: deriveTier(entry),
+        energyCurrent: deriveEnergy(entry),
+        apCurrent: deriveAp(entry)
+      });
+      setCombatants((prev) => [mapCombatant(created), ...prev]);
+      setAddingId("");
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : "Failed to add combatant.");
+    }
+  };
+
+  const filteredEntries = showInactive ? combatants : combatants.filter((entry) => entry.isActive);
   const allies = filteredEntries.filter((entry) => entry.faction === "ally");
   const enemies = filteredEntries.filter((entry) => entry.faction === "enemy");
 
@@ -245,11 +263,11 @@ export const CombatPage: React.FC = () => {
           {loading && <div style={{ color: "#94a3b8" }}>Loading combat roster...</div>}
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center" }}>
             <span style={{ color: "#94a3b8", fontSize: 13 }}>
-              Selected: {selectedIds.size} | Active: {entries.filter((entry) => entry.combatStatus === "active").length}
+              Selected: {selectedIds.size} | Active: {combatants.filter((entry) => entry.isActive).length}
             </span>
             <button
               type="button"
-              onClick={() => updateSelectedStatus("active")}
+              onClick={() => updateSelectedStatus(true)}
               disabled={selectedIds.size === 0 || bulkUpdating}
               style={{
                 padding: "0.45rem 0.8rem",
@@ -266,7 +284,7 @@ export const CombatPage: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => updateSelectedStatus("inactive")}
+              onClick={() => updateSelectedStatus(false)}
               disabled={selectedIds.size === 0 || bulkUpdating}
               style={{
                 padding: "0.45rem 0.8rem",
@@ -285,6 +303,64 @@ export const CombatPage: React.FC = () => {
         </div>
       </section>
 
+      <section style={cardStyle}>
+        <h3 style={{ marginTop: 0 }}>Add Combatant</h3>
+        <form onSubmit={handleAddCombatant} style={{ display: "grid", gap: "0.75rem" }}>
+          <label style={{ display: "grid", gap: "0.35rem" }}>
+            <span style={{ fontWeight: 700 }}>Bestiary Entry</span>
+            <select value={addingId} onChange={(event) => setAddingId(event.target.value)} style={inputStyle}>
+              <option value="">Select an entry</option>
+              {bestiaryEntries.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem" }}>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Faction</span>
+              <select
+                value={addingFaction}
+                onChange={(event) => setAddingFaction(event.target.value as CombatFaction)}
+                style={inputStyle}
+              >
+                <option value="ally">Ally</option>
+                <option value="enemy">Enemy</option>
+              </select>
+            </label>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Active</span>
+              <select
+                value={addingActive ? "active" : "inactive"}
+                onChange={(event) => setAddingActive(event.target.value === "active")}
+                style={inputStyle}
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </label>
+          </div>
+          <button
+            type="submit"
+            disabled={!addingId}
+            style={{
+              padding: "0.6rem 0.9rem",
+              borderRadius: 8,
+              border: "1px solid #1d4ed8",
+              background: "#2563eb",
+              color: "#e6edf7",
+              fontWeight: 700,
+              width: "fit-content",
+              cursor: addingId ? "pointer" : "not-allowed",
+              opacity: addingId ? 1 : 0.6
+            }}
+          >
+            Add Combatant
+          </button>
+        </form>
+      </section>
+
       <section style={{ display: "grid", gap: "1rem" }}>
         {[{ title: "Allies", data: allies }, { title: "Enemies", data: enemies }].map((group) => (
           <div key={group.title} style={cardStyle}>
@@ -296,13 +372,13 @@ export const CombatPage: React.FC = () => {
                 style={{
                   display: "grid",
                   gap: "0.75rem",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))"
+                  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))"
                 }}
               >
                 {group.data.map((entry) => {
                   const isSelected = selectedIds.has(entry.id);
                   const isUpdating = updatingIds.includes(entry.id) || bulkUpdating;
-                  const statusColor = entry.combatStatus === "active" ? "#9ae6b4" : "#fbbf24";
+                  const statusColor = entry.isActive ? "#9ae6b4" : "#fbbf24";
                   return (
                     <div
                       key={entry.id}
@@ -326,14 +402,14 @@ export const CombatPage: React.FC = () => {
                           <span style={{ fontWeight: 700 }}>{entry.name}</span>
                         </label>
                         <span style={{ fontSize: 12, fontWeight: 700, color: statusColor }}>
-                          {entry.combatStatus === "active" ? "Active" : "Inactive"}
+                          {entry.isActive ? "Active" : "Inactive"}
                         </span>
                       </div>
                       <label style={{ display: "grid", gap: "0.35rem" }}>
                         <span style={{ fontSize: 12, color: "#94a3b8" }}>Faction</span>
                         <select
                           value={entry.faction}
-                          onChange={(event) => updateEntry(entry.id, { faction: event.target.value as CombatFaction })}
+                          onChange={(event) => updateCombatant(entry.id, { faction: event.target.value })}
                           style={inputStyle}
                           disabled={isUpdating}
                         >
@@ -344,14 +420,68 @@ export const CombatPage: React.FC = () => {
                       <label style={{ display: "grid", gap: "0.35rem" }}>
                         <span style={{ fontSize: 12, color: "#94a3b8" }}>Combat status</span>
                         <select
-                          value={entry.combatStatus}
-                          onChange={(event) => updateEntry(entry.id, { combatStatus: event.target.value as CombatStatus })}
+                          value={entry.isActive ? "active" : "inactive"}
+                          onChange={(event) => updateCombatant(entry.id, { isActive: event.target.value === "active" })}
                           style={inputStyle}
                           disabled={isUpdating}
                         >
                           <option value="active">Active</option>
                           <option value="inactive">Inactive</option>
                         </select>
+                      </label>
+                      <label style={{ display: "grid", gap: "0.35rem" }}>
+                        <span style={{ fontSize: 12, color: "#94a3b8" }}>Initiative</span>
+                        <input
+                          type="number"
+                          value={entry.initiative ?? ""}
+                          onChange={(event) =>
+                            updateCombatant(entry.id, {
+                              initiative: event.target.value === "" ? null : Number(event.target.value)
+                            })
+                          }
+                          style={inputStyle}
+                          disabled={isUpdating}
+                        />
+                      </label>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.5rem" }}>
+                        <label style={{ display: "grid", gap: "0.35rem" }}>
+                          <span style={{ fontSize: 12, color: "#94a3b8" }}>Energy</span>
+                          <input
+                            type="number"
+                            value={entry.energyCurrent ?? ""}
+                            onChange={(event) =>
+                              updateCombatant(entry.id, {
+                                energyCurrent: event.target.value === "" ? null : Number(event.target.value)
+                              })
+                            }
+                            style={inputStyle}
+                            disabled={isUpdating}
+                          />
+                        </label>
+                        <label style={{ display: "grid", gap: "0.35rem" }}>
+                          <span style={{ fontSize: 12, color: "#94a3b8" }}>AP</span>
+                          <input
+                            type="number"
+                            value={entry.apCurrent ?? ""}
+                            onChange={(event) =>
+                              updateCombatant(entry.id, {
+                                apCurrent: event.target.value === "" ? null : Number(event.target.value)
+                              })
+                            }
+                            style={inputStyle}
+                            disabled={isUpdating}
+                          />
+                        </label>
+                      </div>
+                      <label style={{ display: "grid", gap: "0.35rem" }}>
+                        <span style={{ fontSize: 12, color: "#94a3b8" }}>Notes</span>
+                        <textarea
+                          value={entry.notes ?? ""}
+                          onChange={(event) => updateCombatant(entry.id, { notes: event.target.value })}
+                          rows={2}
+                          style={{ ...inputStyle, resize: "vertical" }}
+                          disabled={isUpdating}
+                        />
                       </label>
                     </div>
                   );

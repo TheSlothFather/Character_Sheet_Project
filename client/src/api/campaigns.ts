@@ -39,10 +39,13 @@ type CampaignSettingRow = {
   is_player_visible?: boolean | null;
 };
 
-type BestiaryEntryRow = {
+type CombatantRow = {
   id: string;
+  campaign_id: string;
+  bestiary_entry_id: string;
+  faction?: string | null;
+  is_active?: boolean | null;
   name: string;
-  stats_skills?: Record<string, unknown> | null;
 };
 
 type SupabaseResult<T> = { data: T; error: null } | { data: null; error: { message: string } };
@@ -82,15 +85,12 @@ function mapSetting(row: CampaignSettingRow): PlayerCampaignSetting {
   };
 }
 
-function mapCombatant(row: BestiaryEntryRow): PlayerCombatant {
-  const stats = row.stats_skills ?? {};
-  const faction = typeof stats.faction === "string" ? stats.faction : undefined;
-  const combatStatus = typeof stats.combat_status === "string" ? stats.combat_status : undefined;
+function mapCombatant(row: CombatantRow): PlayerCombatant {
   return {
-    id: row.id,
+    id: row.bestiary_entry_id,
     name: row.name,
-    faction,
-    combatStatus
+    faction: row.faction ?? undefined,
+    combatStatus: row.is_active ? "active" : "inactive"
   };
 }
 
@@ -130,13 +130,16 @@ export async function listActiveCombatants(campaignId: string): Promise<PlayerCo
   ensureSupabaseEnv();
   const client = getSupabaseClient();
   const { data, error } = (await client
-    .from("bestiary_entries")
-    .select("id, name, stats_skills")
+    .from("campaign_combatants")
+    .select("id, campaign_id, bestiary_entry_id, faction, is_active, bestiary_entries(name)")
     .eq("campaign_id", campaignId)
-    .eq("stats_skills->>combat_status", "active")
-    .order("name", { ascending: true })) as SupabaseResult<BestiaryEntryRow[]>;
+    .eq("is_active", true)
+    .order("initiative", { ascending: false })) as SupabaseResult<CombatantRow[]>;
   if (error) {
     throw new ApiError(0, `Failed to load combatants: ${error.message}`);
   }
-  return (data ?? []).map(mapCombatant);
+  return (data ?? []).map((row) => {
+    const name = (row as CombatantRow & { bestiary_entries?: { name: string } | null }).bestiary_entries?.name ?? "Unknown";
+    return mapCombatant({ ...row, name });
+  });
 }
