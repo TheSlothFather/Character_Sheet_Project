@@ -21,9 +21,6 @@
 
 .app-theme-toggle__select {
   border-radius: 999px;
-  border: var(--border-width) solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
   padding: 0.2rem 0.6rem;
   font-size: 12px;
   font-weight: 600;
@@ -62,22 +59,8 @@
 .app-start__link {
   padding: 0.9rem 1.2rem;
   border-radius: var(--border-radius-lg);
-  font-weight: 700;
   text-decoration: none;
   text-align: center;
-  border: var(--border-width) solid transparent;
-}
-
-.app-start__link--player {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-contrast);
-}
-
-.app-start__link--gm {
-  background: var(--surface-2);
-  border-color: var(--border);
-  color: var(--text);
 }
 
 .app-shell {

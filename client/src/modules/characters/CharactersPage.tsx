@@ -218,7 +218,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
           onPointerLeave={stopRepeating}
           onPointerCancel={stopRepeating}
           disabled={disableAllocation || allocated <= minimum}
-          className="characters__skill-button"
+          className="btn characters__skill-button"
         >
           −
         </button>
@@ -240,7 +240,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
             e.currentTarget.blur();
           }}
           onMouseUp={(e) => e.currentTarget.blur()}
-          className="characters__skill-input"
+          className="input characters__skill-input"
         />
         <button
           type="button"
@@ -249,7 +249,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
           onPointerLeave={stopRepeating}
           onPointerCancel={stopRepeating}
           disabled={disableAllocation || allocated >= maxAllocatable}
-          className="characters__skill-button"
+          className="btn characters__skill-button"
         >
           +
         </button>
@@ -418,7 +418,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         onBlur={() => handleNoteBlur(field, value)}
         rows={8}
         disabled={isUpdating}
-        className="characters__notes-textarea"
+        className="textarea characters__notes-textarea"
       />
       <div className="characters__notes-hint">Changes are saved on blur.</div>
     </div>
@@ -473,7 +473,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 <button
                   onClick={() => onSpendAttributePoint(attr.key as AttributeKey)}
                   disabled={attributePointsAvailable <= 0 || isUpdating}
-                  className="characters__pill-button"
+                  className="btn characters__pill-button"
                 >
                   +1
                 </button>
@@ -534,7 +534,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 <button
                   onClick={onLockAllocations}
                   disabled={lockDisabled || isLocking}
-                  className="characters__lock-button"
+                  className="btn btn--secondary characters__lock-button"
                 >
                   {isLocking ? "Locking..." : "Lock Skill Points"}
                 </button>
@@ -604,7 +604,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`characters__tab${activeTab === tab ? " characters__tab--active" : ""}`}
+                className={`btn characters__tab${activeTab === tab ? " characters__tab--active" : ""}`}
               >
                 {tab}
               </button>
@@ -983,7 +983,7 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
             value={selectedId ?? ""}
             onChange={(e) => setSelectedId(e.target.value || null)}
             disabled={loadingAny || characters.length === 0}
-            className="characters-page__select"
+            className="select characters-page__select"
           >
             {characters.length === 0 && <option value="">No characters</option>}
             {characters.map((c) => (
@@ -995,21 +995,21 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
           <button
             type="button"
             onClick={() => navigate(createCharacterPath)}
-            className="characters-page__button characters-page__button--primary"
+            className="btn btn--primary"
           >
             New Character
           </button>
           <button
             onClick={() => selectedId && handleDeleteCharacter(selectedId)}
             disabled={!selectedId || deletingId === selectedId || loadingAny}
-            className="characters-page__button characters-page__button--danger"
+            className="btn btn--danger"
           >
             {deletingId === selectedId ? "Deleting..." : "Delete Character"}
           </button>
           <button
             onClick={handleLevelUp}
             disabled={!selectedId || loadingAny || levelUpdatingId === selectedId || remaining > 0}
-            className="characters-page__button"
+            className="btn btn--secondary"
           >
             {levelUpdatingId === selectedId ? "Leveling..." : "Level Up"}
           </button>

@@ -39,7 +39,7 @@ const ThemeToggle: React.FC = () => {
         id="theme-toggle"
         value={theme}
         onChange={(event) => setTheme(event.target.value as "parchment" | "dark-fantasy")}
-        className="app-theme-toggle__select"
+        className="select app-theme-toggle__select"
       >
         <option value="parchment">Parchment</option>
         <option value="dark-fantasy">Dark Fantasy</option>
@@ -59,13 +59,13 @@ const StartPage: React.FC = () => {
         <div className="app-start__actions">
           <NavLink
             to="/player/characters"
-            className="app-start__link app-start__link--player"
+            className="btn btn--primary app-start__link app-start__link--player"
           >
             I am a Player
           </NavLink>
           <NavLink
             to="/gm/campaigns"
-            className="app-start__link app-start__link--gm"
+            className="btn app-start__link app-start__link--gm"
           >
             I am the GM
           </NavLink>

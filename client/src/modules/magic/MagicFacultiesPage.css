@@ -104,26 +104,14 @@
 .magic-faculties__table {
   width: 100%;
   margin-top: 0.75rem;
-  border-collapse: collapse;
-  color: var(--text);
 }
 
 .magic-faculties__table-scroll {
   overflow-x: auto;
 }
 
-.magic-faculties__table-header {
-  text-align: left;
-  border-bottom: var(--border-width) solid var(--border);
-  padding-bottom: 4px;
-}
-
 .magic-faculties__table-header--spaced {
   padding: 6px 4px;
-}
-
-.magic-faculties__table-cell {
-  padding: 4px 0;
 }
 
 .magic-faculties__table-cell--strong {
@@ -213,12 +201,8 @@
 }
 
 .magic-faculties__toggle {
-  padding: 0.4rem 0.75rem;
   border-radius: var(--border-radius-sm);
-  border: var(--border-width) solid var(--border);
   color: var(--accent-contrast);
-  font-weight: 700;
-  cursor: pointer;
 }
 
 .magic-faculties__toggle--unlocked {
@@ -266,9 +250,6 @@
 .magic-faculties__select {
   padding: 0.35rem 0.5rem;
   border-radius: var(--border-radius-sm);
-  background: var(--surface-2);
-  color: var(--text);
-  border: var(--border-width) solid var(--border);
 }
 
 .magic-faculties__totals {
