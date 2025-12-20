@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { api, Character, ApiError, NamedDefinition } from "../../api/client";
+import { getSupabaseClient } from "../../api/supabaseClient";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
 import { AttributeKey, computeAttributeSkillBonuses, getSkillCode, groupSkillsByCategory } from "./skillMetadata";
@@ -89,6 +90,18 @@ const mergeAttributeSkillBonuses = (
   return merged;
 };
 
+type ArmorOption = {
+  id: number;
+  name: string;
+  armorType?: string | null;
+  damageReduction: number;
+};
+
+type WeaponCategoryOption = {
+  category: string;
+  damage?: string | null;
+};
+
 interface CharacterSheetProps {
   character: Character;
   skills: NamedDefinition[];
@@ -125,6 +138,12 @@ const ATTRIBUTE_DISPLAY: { key: keyof Required<Character>["attributes"] | string
   { key: "SPIRITUAL", label: "Spiritual" },
   { key: "WILL", label: "Will" }
 ];
+
+const parseDamageValue = (raw: string | null | undefined): number => {
+  if (!raw) return 0;
+  const match = raw.match(/-?\d+(\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+};
 
 interface SkillAllocationRowProps {
   skill: NamedDefinition;
@@ -304,6 +323,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [defenseNotes, setDefenseNotes] = React.useState<string>(character.defenseNotes ?? "");
   const [gearNotes, setGearNotes] = React.useState<string>(character.gearNotes ?? "");
   const [ancillarySelection, setAncillarySelection] = React.useState(() => readAncillarySelection(character.id));
+  const [armorOptions, setArmorOptions] = React.useState<ArmorOption[]>([]);
+  const [weaponOptions, setWeaponOptions] = React.useState<WeaponCategoryOption[]>([]);
+  const [equipmentError, setEquipmentError] = React.useState<string | null>(null);
+  const [selectedArmorId, setSelectedArmorId] = React.useState<number | "">("");
+  const [selectedWeaponCategory, setSelectedWeaponCategory] = React.useState<string>("");
+  const equipmentStorageKey = React.useMemo(() => `characters:equipment:${character.id}`, [character.id]);
 
   React.useEffect(() => {
     setAncillarySelection(readAncillarySelection(character.id));
@@ -321,16 +346,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     };
   }, [character.id]);
 
-  const levelCards = Array.from({ length: 5 }, (_, idx) => idx + 1);
   const energyBase = character.raceKey === "ANZ" ? 140 : 100;
   const energyPerLevel = character.raceKey === "ANZ" ? 14 : 10;
   const energeticMultiplier = ancillarySelection.selected.includes("energetic")
     ? 1 + 0.1 * character.level
     : 1;
   const energy = Math.round((energyBase + energyPerLevel * (character.level - 1)) * energeticMultiplier);
-  const damageReduction = 0;
   const fatePoints = character.fatePoints ?? 0;
   const attributeValues = character.attributes ?? {};
+  const physicalAttribute = attributeValues?.PHYSICAL ?? 0;
+  const speed = Math.max(3, physicalAttribute);
+  const selectedArmor = armorOptions.find((armor) => armor.id === selectedArmorId);
+  const damageReduction = selectedArmor?.damageReduction ?? 0;
+  const selectedWeapon = weaponOptions.find((weapon) => weapon.category === selectedWeaponCategory);
+  const weaponDamageBase = parseDamageValue(selectedWeapon?.damage);
+  const totalDamage = weaponDamageBase + physicalAttribute;
 
   const martialBonus = React.useMemo(() => {
     return ancillarySelection.selected.reduce(
@@ -348,6 +378,89 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     setDefenseNotes(character.defenseNotes ?? "");
     setGearNotes(character.gearNotes ?? "");
   }, [character.defenseNotes, character.gearNotes, character.id, character.weaponNotes]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = window.localStorage.getItem(equipmentStorageKey);
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as { armorId?: number; weaponCategory?: string };
+      if (typeof parsed.armorId === "number") setSelectedArmorId(parsed.armorId);
+      if (typeof parsed.weaponCategory === "string") setSelectedWeaponCategory(parsed.weaponCategory);
+    } catch (err) {
+      console.warn("Unable to read equipment selection", err);
+    }
+  }, [equipmentStorageKey]);
+
+  const persistEquipment = React.useCallback(
+    (next: { armorId?: number | ""; weaponCategory?: string }) => {
+      const payload = {
+        armorId: next.armorId ?? selectedArmorId,
+        weaponCategory: next.weaponCategory ?? selectedWeaponCategory
+      };
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(equipmentStorageKey, JSON.stringify(payload));
+      }
+    },
+    [equipmentStorageKey, selectedArmorId, selectedWeaponCategory]
+  );
+
+  React.useEffect(() => {
+    let isMounted = true;
+    setEquipmentError(null);
+
+    if (typeof window === "undefined") return () => undefined;
+
+    const loadEquipment = async () => {
+      try {
+        const client = getSupabaseClient();
+        const [{ data: armorData, error: armorError }, { data: weaponData, error: weaponError }] =
+          await Promise.all([
+            client
+              .from("armors")
+              .select("id, armor_name, armor_type, damage_reduction")
+              .order("armor_name", { ascending: true }),
+            client
+              .from("weapon_abilities")
+              .select("id, category, damage")
+              .order("category", { ascending: true })
+          ]);
+
+        if (armorError) throw new Error(armorError.message);
+        if (weaponError) throw new Error(weaponError.message);
+
+        const nextArmors = (armorData ?? []).map((row) => ({
+          id: row.id,
+          name: row.armor_name,
+          armorType: row.armor_type ?? undefined,
+          damageReduction: row.damage_reduction ?? 0
+        }));
+
+        const weaponMap = new Map<string, string | null>();
+        (weaponData ?? []).forEach((row) => {
+          if (!row.category) return;
+          if (!weaponMap.has(row.category)) {
+            weaponMap.set(row.category, row.damage ?? null);
+          }
+        });
+        const nextWeapons = Array.from(weaponMap.entries()).map(([category, damage]) => ({ category, damage }));
+
+        if (!isMounted) return;
+        setArmorOptions(nextArmors);
+        setWeaponOptions(nextWeapons);
+      } catch (err) {
+        if (!isMounted) return;
+        const message = err instanceof Error ? err.message : "Failed to load equipment";
+        setEquipmentError(message);
+      }
+    };
+
+    loadEquipment();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   React.useEffect(() => {
     if (typeof window === "undefined") {
@@ -436,10 +549,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           <strong>{character.level}</strong>
         </div>
         <div className="characters__pill">
-          <span>XP</span>
-          <strong>—</strong>
-        </div>
-        <div className="characters__pill">
           <span>Race</span>
           <strong>{raceName || "Unselected"}</strong>
         </div>
@@ -449,7 +558,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
         <div className="characters__pill">
           <span>Speed</span>
-          <strong>—</strong>
+          <strong>{speed}</strong>
         </div>
       </div>
 
@@ -485,21 +594,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
       <div className="grid characters__layout">
         <div className="stack characters__column">
-          {levelCards.map((lvl) => (
-            <div key={lvl} className="card">
-              <div className="characters__level-label">Level {lvl}</div>
-              <div className="characters__level-slot">
-                Future feat slots
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="stack characters__column">
           <div className="grid characters__metrics">
             <div className="characters__pill">
               <span>Damage Reduction</span>
               <strong>{damageReduction}</strong>
+            </div>
+            <div className="characters__pill characters__pill--stacked">
+              <div className="characters__pill-stack-header">
+                <span>Damage</span>
+                <strong>{totalDamage}</strong>
+              </div>
+              <div className="characters__pill-hint">Base {weaponDamageBase} + Physical {physicalAttribute}</div>
             </div>
             <div className="characters__pill">
               <span>Fate</span>
@@ -508,6 +613,48 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
             <div className="characters__pill">
               <span>Energy</span>
               <strong>{energy}</strong>
+            </div>
+            <div className="characters__pill characters__pill--stacked">
+              <span className="characters__pill-label">Weapon Category</span>
+              <select
+                className="select characters__pill-select"
+                value={selectedWeaponCategory}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setSelectedWeaponCategory(value);
+                  persistEquipment({ weaponCategory: value });
+                }}
+                disabled={weaponOptions.length === 0}
+              >
+                <option value="">Unarmed/None</option>
+                {weaponOptions.map((weapon) => (
+                  <option key={weapon.category} value={weapon.category}>
+                    {weapon.category}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="characters__pill characters__pill--stacked">
+              <span className="characters__pill-label">Armor Type</span>
+              <select
+                className="select characters__pill-select"
+                value={selectedArmorId === "" ? "" : String(selectedArmorId)}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  const nextId = value ? Number(value) : "";
+                  setSelectedArmorId(nextId);
+                  persistEquipment({ armorId: nextId });
+                }}
+                disabled={armorOptions.length === 0}
+              >
+                <option value="">No armor</option>
+                {armorOptions.map((armor) => (
+                  <option key={armor.id} value={armor.id}>
+                    {armor.name}
+                    {armor.armorType ? ` (${armor.armorType})` : ""}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="characters__pill characters__pill--stacked">
               <div className="characters__pill-stack-header">
@@ -521,6 +668,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               )}
             </div>
           </div>
+          {equipmentError && <div className="characters__equipment-error">{equipmentError}</div>}
           <div className="card characters__card--flush">
             <div className="characters__skill-header">
               <div>
