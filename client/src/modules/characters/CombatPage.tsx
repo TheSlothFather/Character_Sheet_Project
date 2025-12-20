@@ -1,23 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { listActiveCombatants, type PlayerCombatant } from "../../api/campaigns";
-
-const cardStyle: React.CSSProperties = {
-  background: "#0f131a",
-  border: "1px solid #1f2935",
-  borderRadius: 12,
-  padding: "1rem"
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: "0.6rem 0.9rem",
-  borderRadius: 8,
-  border: "1px solid #1d4ed8",
-  background: "#2563eb",
-  color: "#e6edf7",
-  fontWeight: 700,
-  cursor: "pointer"
-};
+import "./CombatPage.css";
 
 const normalizeFaction = (value?: string) => {
   if (!value) return "Unknown";
@@ -74,23 +58,21 @@ export const CombatPage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="combat-page">
       <header>
-        <h2 style={{ margin: 0 }}>Combat Targets</h2>
-        <p style={{ margin: "0.25rem 0 0", color: "#cbd5e1" }}>
-          Select an active target and submit a roll request to the GM.
-        </p>
+        <h2 className="combat-page__title">Combat Targets</h2>
+        <p className="combat-page__subtitle">Select an active target and submit a roll request to the GM.</p>
       </header>
 
-      <section style={cardStyle}>
-        {error && <div style={{ color: "#f87171", marginBottom: 8 }}>{error}</div>}
-        {notice && <div style={{ color: "#9ae6b4", marginBottom: 8 }}>{notice}</div>}
+      <section className="combat-page__card">
+        {error && <div className="combat-page__message combat-page__message--error">{error}</div>}
+        {notice && <div className="combat-page__message combat-page__message--success">{notice}</div>}
         {loading ? (
-          <p style={{ color: "#94a3b8", margin: 0 }}>Loading combatants...</p>
+          <p className="combat-page__status">Loading combatants...</p>
         ) : combatants.length === 0 ? (
-          <p style={{ color: "#94a3b8", margin: 0 }}>No active combatants yet.</p>
+          <p className="combat-page__status">No active combatants yet.</p>
         ) : (
-          <div style={{ display: "grid", gap: "0.75rem" }}>
+          <div className="combat-page__list">
             {combatants.map((combatant) => {
               const isSelected = combatant.id === selectedId;
               return (
@@ -98,20 +80,10 @@ export const CombatPage: React.FC = () => {
                   key={combatant.id}
                   type="button"
                   onClick={() => setSelectedId(combatant.id)}
-                  style={{
-                    textAlign: "left",
-                    border: isSelected ? "1px solid #2563eb" : "1px solid #1f2935",
-                    background: isSelected ? "#101a2c" : "#0c111a",
-                    color: "#e5e7eb",
-                    padding: "0.75rem",
-                    borderRadius: 10,
-                    cursor: "pointer",
-                    display: "grid",
-                    gap: "0.35rem"
-                  }}
+                  className={`combat-page__target${isSelected ? " combat-page__target--selected" : ""}`}
                 >
-                  <div style={{ fontWeight: 700 }}>{combatant.name}</div>
-                  <div style={{ fontSize: 12, color: "#9ca3af" }}>{normalizeFaction(combatant.faction)}</div>
+                  <div className="combat-page__target-name">{combatant.name}</div>
+                  <div className="combat-page__target-faction">{normalizeFaction(combatant.faction)}</div>
                 </button>
               );
             })}
@@ -119,12 +91,15 @@ export const CombatPage: React.FC = () => {
         )}
       </section>
 
-      <section style={cardStyle}>
-        <h3 style={{ marginTop: 0 }}>Roll Request</h3>
-        <p style={{ margin: "0 0 0.75rem", color: "#9ca3af" }}>
-          Target: {selected ? selected.name : "Select a combatant to roll against."}
-        </p>
-        <button type="button" onClick={handleSubmit} disabled={!selected} style={{ ...buttonStyle, opacity: selected ? 1 : 0.6 }}>
+      <section className="combat-page__card">
+        <h3 className="combat-page__section-title">Roll Request</h3>
+        <p className="combat-page__helper">Target: {selected ? selected.name : "Select a combatant to roll against."}</p>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!selected}
+          className="combat-page__button"
+        >
           Submit Roll Request
         </button>
       </section>
