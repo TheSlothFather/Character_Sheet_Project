@@ -11,6 +11,7 @@
   font-weight: 700;
   cursor: pointer;
   text-decoration: none;
+  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease, color 150ms ease;
 }
 
 .btn:hover {
@@ -21,14 +22,9 @@
   background: color-mix(in srgb, var(--surface-3) 75%, var(--surface-2));
 }
 
-.btn:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
 .btn:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .btn--primary {
@@ -74,6 +70,7 @@
   background: var(--surface-2);
   color: var(--text);
   font-family: inherit;
+  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease, color 150ms ease;
 }
 
 .input:hover,
@@ -88,18 +85,11 @@
   border-color: var(--accent);
 }
 
-.input:focus-visible,
-.select:focus-visible,
-.textarea:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
 .input:disabled,
 .select:disabled,
 .textarea:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .textarea {
@@ -130,7 +120,6 @@
   background: var(--surface-3);
 }
 
-.table__row:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+.card {
+  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
