@@ -78,7 +78,7 @@ const FacultyCard: React.FC<{
           <button
             onClick={onToggle}
             disabled={disabled || (!unlocked && !canAfford)}
-            className={`magic-faculties__toggle magic-faculties__toggle--${buttonState}`}
+            className={`btn magic-faculties__toggle magic-faculties__toggle--${buttonState}`}
             title={unlocked ? "Remove this Faculty" : canAfford ? "Unlock this Faculty" : "Not enough Ildakar points"}
           >
             {unlocked ? "Remove" : canAfford ? "Unlock" : "Insufficient"}
@@ -328,18 +328,18 @@ export const MagicFacultiesPage: React.FC = () => {
             AP and Energy costs are additive across all six aspects. Example: one Tier 2 aspect with five Tier 1 aspects costs
             14 AP/E; one Tier 3 with five Tier 1 costs 33 AP/E.
           </p>
-          <table className="magic-faculties__table">
+          <table className="table magic-faculties__table">
             <thead>
-              <tr>
-                <th className="magic-faculties__table-header">Tier</th>
-                <th className="magic-faculties__table-header">AP & Energy Cost</th>
+              <tr className="table__row">
+                <th className="table__header magic-faculties__table-header">Tier</th>
+                <th className="table__header magic-faculties__table-header">AP & Energy Cost</th>
               </tr>
             </thead>
             <tbody>
               {ASPECT_COSTS.map((row) => (
-                <tr key={row.tier}>
-                  <td className="magic-faculties__table-cell">Tier {row.tier}</td>
-                  <td className="magic-faculties__table-cell">{row.cost}</td>
+                <tr key={row.tier} className="table__row">
+                  <td className="table__cell magic-faculties__table-cell">Tier {row.tier}</td>
+                  <td className="table__cell magic-faculties__table-cell">{row.cost}</td>
                 </tr>
               ))}
             </tbody>
@@ -364,12 +364,12 @@ export const MagicFacultiesPage: React.FC = () => {
         <div className="magic-faculties__panel">
           <h2 className="magic-faculties__panel-title">Aspect Scaling</h2>
           <div className="magic-faculties__table-scroll">
-            <table className="magic-faculties__table">
+            <table className="table magic-faculties__table">
               <thead>
-                <tr>
-                  <th className="magic-faculties__table-header magic-faculties__table-header--spaced">Aspect</th>
+                <tr className="table__row">
+                  <th className="table__header magic-faculties__table-header magic-faculties__table-header--spaced">Aspect</th>
                   {ASPECT_COSTS.map((row) => (
-                    <th key={row.tier} className="magic-faculties__table-header magic-faculties__table-header--spaced">
+                    <th key={row.tier} className="table__header magic-faculties__table-header magic-faculties__table-header--spaced">
                       Tier {row.tier}
                     </th>
                   ))}
@@ -377,10 +377,10 @@ export const MagicFacultiesPage: React.FC = () => {
               </thead>
               <tbody>
                 {Object.entries(ASPECT_SCALE).map(([aspect, values]) => (
-                  <tr key={aspect}>
-                    <td className="magic-faculties__table-cell magic-faculties__table-cell--strong">{aspect}</td>
+                  <tr key={aspect} className="table__row">
+                    <td className="table__cell magic-faculties__table-cell magic-faculties__table-cell--strong">{aspect}</td>
                     {values.map((value, idx) => (
-                      <td key={idx} className="magic-faculties__table-cell">{value}</td>
+                      <td key={idx} className="table__cell magic-faculties__table-cell">{value}</td>
                     ))}
                   </tr>
                 ))}
@@ -408,7 +408,7 @@ export const MagicFacultiesPage: React.FC = () => {
                     [aspect]: Number(e.target.value)
                   }))
                 }
-                className="magic-faculties__select"
+                className="select magic-faculties__select"
               >
                 {ASPECT_COSTS.map((row) => (
                   <option key={row.tier} value={row.tier}>

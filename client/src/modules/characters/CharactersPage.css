@@ -32,38 +32,6 @@
 
 .characters-page__select {
   min-width: 240px;
-  padding: 0.45rem 0.6rem;
-  border-radius: var(--border-radius-md);
-  border: var(--border-width) solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
-}
-
-.characters-page__button {
-  padding: 0.45rem 0.75rem;
-  border-radius: var(--border-radius-md);
-  border: var(--border-width) solid var(--border);
-  background: var(--surface-3);
-  color: var(--text);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.characters-page__button:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.characters-page__button--primary {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--accent-contrast);
-}
-
-.characters-page__button--danger {
-  border-color: color-mix(in srgb, var(--danger) 60%, var(--border));
-  background: color-mix(in srgb, var(--danger) 30%, var(--surface-2));
-  color: var(--danger);
 }
 
 .characters-page__status {
@@ -161,9 +129,6 @@
 .characters__pill-button {
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
-  border: var(--border-width) solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
 }
 
 .characters__pill--stacked {
@@ -254,16 +219,6 @@
 .characters__lock-button {
   padding: 0.35rem 0.6rem;
   border-radius: var(--border-radius-sm);
-  border: var(--border-width) solid var(--border);
-  background: var(--surface-3);
-  color: var(--text);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.characters__lock-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .characters__skill-warning {
@@ -342,29 +297,14 @@
   width: 32px;
   height: 32px;
   border-radius: var(--border-radius-sm);
-  border: var(--border-width) solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
-  cursor: pointer;
-}
-
-.characters__skill-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
+  padding: 0;
 }
 
 .characters__skill-input {
   width: 64px;
   padding: 0.35rem 0.4rem;
   border-radius: var(--border-radius-sm);
-  border: var(--border-width) solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
   text-align: center;
-}
-
-.characters__skill-input:disabled {
-  opacity: 0.7;
 }
 
 .characters__skill-total {
@@ -379,12 +319,7 @@
 }
 
 .characters__tab {
-  padding: 0.45rem 0.75rem;
   border-radius: var(--border-radius-sm);
-  border: var(--border-width) solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
-  cursor: pointer;
 }
 
 .characters__tab--active {
@@ -484,16 +419,8 @@
 
 .characters__notes-textarea {
   width: 100%;
-  background: var(--surface-3);
-  color: var(--text);
-  border: var(--border-width) solid var(--border);
   border-radius: var(--border-radius-md);
   padding: 0.6rem 0.7rem;
-  resize: vertical;
-}
-
-.characters__notes-textarea:disabled {
-  opacity: 0.7;
 }
 
 .characters__notes-hint {
