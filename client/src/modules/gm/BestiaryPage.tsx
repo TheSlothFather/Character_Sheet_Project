@@ -2,6 +2,7 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import { gmApi, type BestiaryEntry as ApiBestiaryEntry, type Campaign } from "../../api/gm";
 import { useDefinitions } from "../definitions/DefinitionsContext";
+import { parseBestiaryImport, type ParsedBestiaryEntry, type BestiaryParseMessage } from "./bestiaryImport";
 import { AttributeKey, computeAttributeSkillBonuses, getSkillCode, normalizeSkillCode } from "../characters/skillMetadata";
 import styles from "./BestiaryPage.module.css";
 
@@ -14,12 +15,16 @@ type BestiaryEntry = {
   tier: string;
   maxEnergy: string;
   maxAp: string;
+  dr: string;
+  armorType: string;
+  energyBars: string;
   attributes: Record<AttributeKey, string>;
   skills: Record<string, string>;
   abilityType: string;
   customAbilityName: string;
   customAbilityEnergy: string;
   customAbilityAp: string;
+  abilities: ApiBestiaryEntry["abilities"];
   lieutenantId: string;
   heroId: string;
 };
@@ -127,6 +132,9 @@ export const BestiaryPage: React.FC = () => {
   const [tier, setTier] = React.useState("");
   const [maxEnergy, setMaxEnergy] = React.useState("");
   const [maxAp, setMaxAp] = React.useState("");
+  const [dr, setDr] = React.useState("");
+  const [armorType, setArmorType] = React.useState("");
+  const [energyBars, setEnergyBars] = React.useState("");
   const [attributes, setAttributes] = React.useState<Record<AttributeKey, string>>({
     PHYSICAL: "",
     MENTAL: "",
@@ -146,6 +154,11 @@ export const BestiaryPage: React.FC = () => {
   const [filterRank, setFilterRank] = React.useState("All");
   const [filterType, setFilterType] = React.useState("");
   const [filterTier, setFilterTier] = React.useState("");
+  const [importText, setImportText] = React.useState("");
+  const [importPreview, setImportPreview] = React.useState<ParsedBestiaryEntry[]>([]);
+  const [importMessages, setImportMessages] = React.useState<BestiaryParseMessage[]>([]);
+  const [importGroupName, setImportGroupName] = React.useState<string | undefined>(undefined);
+  const [importing, setImporting] = React.useState(false);
   const [panelState, setPanelState] = React.useState<Record<PanelKey, boolean>>({
     core: true,
     stats: true,
@@ -166,6 +179,9 @@ export const BestiaryPage: React.FC = () => {
     setTier("");
     setMaxEnergy("");
     setMaxAp("");
+    setDr("");
+    setArmorType("");
+    setEnergyBars("");
     setAttributes({ PHYSICAL: "", MENTAL: "", SPIRITUAL: "", WILL: "" });
     setSkills((prev) => {
       const next: Record<string, string> = {};
@@ -259,6 +275,9 @@ export const BestiaryPage: React.FC = () => {
       const tier = readNumberString(statsSkills?.tier ?? attributesPayload?.tier);
       const maxEnergy = readNumberString(attributesPayload?.energy);
       const maxAp = readNumberString(attributesPayload?.ap);
+      const drValue = readNumberString(attributesPayload?.dr ?? entry.dr);
+      const armorTypeValue = typeof entry.armorType === "string" ? entry.armorType : "";
+      const energyBarsValue = readNumberString(attributesPayload?.energy_bars ?? entry.energyBars);
       const rankValue = typeof entry.rank === "string" ? entry.rank : "NPC";
       const attributesValues = ATTRIBUTE_KEYS.reduce<Record<AttributeKey, string>>((acc, key) => {
         acc[key] = readNumberString((attributesPayload as Record<string, unknown>)[key]);
@@ -299,12 +318,16 @@ export const BestiaryPage: React.FC = () => {
         tier,
         maxEnergy,
         maxAp,
+        dr: drValue,
+        armorType: armorTypeValue,
+        energyBars: energyBarsValue,
         attributes: attributesValues,
         skills: skillsValues,
         abilityType: abilityTypeValue,
         customAbilityName: customAbilityNameValue,
         customAbilityEnergy: customAbilityEnergyValue,
         customAbilityAp: customAbilityApValue,
+        abilities: entry.abilities ?? [],
         lieutenantId: entry.lieutenantId ?? "",
         heroId: entry.heroId ?? ""
       };
@@ -328,6 +351,191 @@ export const BestiaryPage: React.FC = () => {
       return true;
     });
   }, [entries, searchQuery, filterRank, filterType, filterTier]);
+
+  const validateImportHierarchy = React.useCallback((entriesToCheck: ParsedBestiaryEntry[]) => {
+    const heroNames = new Set(entriesToCheck.filter((entry) => entry.rank.toLowerCase() === "hero").map((entry) => entry.name));
+    const lieutenantNames = new Set(
+      entriesToCheck.filter((entry) => entry.rank.toLowerCase() === "lieutenant").map((entry) => entry.name)
+    );
+    const messages: BestiaryParseMessage[] = [];
+    entriesToCheck.forEach((entry, index) => {
+      const rank = entry.rank.toLowerCase();
+      if (rank === "lieutenant") {
+        if (entry.heroName) {
+          if (!heroNames.has(entry.heroName)) {
+            messages.push({
+              blockIndex: index,
+              entryName: entry.name,
+              message: `Lieutenant references unknown hero '${entry.heroName}'.`,
+              block: entry.name,
+              level: "error"
+            });
+          }
+        } else if (heroNames.size === 1) {
+          entry.heroName = Array.from(heroNames)[0];
+        } else {
+          messages.push({
+            blockIndex: index,
+            entryName: entry.name,
+            message: "Lieutenant requires a Hero reference when multiple heroes are present.",
+            block: entry.name,
+            level: "error"
+          });
+        }
+      }
+      if (rank === "minion") {
+        if (entry.lieutenantName) {
+          if (!lieutenantNames.has(entry.lieutenantName)) {
+            messages.push({
+              blockIndex: index,
+              entryName: entry.name,
+              message: `Minion references unknown lieutenant '${entry.lieutenantName}'.`,
+              block: entry.name,
+              level: "error"
+            });
+          }
+        } else if (lieutenantNames.size === 1) {
+          entry.lieutenantName = Array.from(lieutenantNames)[0];
+        } else {
+          messages.push({
+            blockIndex: index,
+            entryName: entry.name,
+            message: "Minion requires a Lieutenant reference when multiple lieutenants are present.",
+            block: entry.name,
+            level: "error"
+          });
+        }
+      }
+    });
+    return messages;
+  }, []);
+
+  const handleParseImport = React.useCallback(() => {
+    const knownSkillCodes = skillDefinitions.map((skill) => normalizeSkillCode(skill));
+    const result = parseBestiaryImport(importText, { knownSkillCodes });
+    const hierarchyMessages = validateImportHierarchy(result.entries);
+    setImportPreview(result.entries);
+    setImportGroupName(result.groupName);
+    setImportMessages([...result.messages, ...hierarchyMessages]);
+  }, [importText, skillDefinitions, validateImportHierarchy]);
+
+  const buildAttributesPayload = (entry: ParsedBestiaryEntry): Record<string, number> | undefined => {
+    const attributesPayload = Object.fromEntries(
+      Object.entries(entry.attributes).filter(([, value]) => typeof value === "number" && Number.isFinite(value))
+    ) as Record<string, number>;
+    return Object.keys(attributesPayload).length ? attributesPayload : undefined;
+  };
+
+  const buildSkillsPayload = (entry: ParsedBestiaryEntry): Record<string, number> | undefined => {
+    const skillsPayload = Object.fromEntries(
+      Object.entries(entry.skills).filter(([, value]) => typeof value === "number" && Number.isFinite(value))
+    ) as Record<string, number>;
+    return Object.keys(skillsPayload).length ? skillsPayload : undefined;
+  };
+
+  const normalizeRank = (rankValue: string): string => {
+    const lower = rankValue.toLowerCase();
+    if (lower === "hero") return "Hero";
+    if (lower === "lieutenant") return "Lieutenant";
+    if (lower === "minion") return "Minion";
+    return "NPC";
+  };
+
+  const handleCreateImport = async () => {
+    if (!selectedCampaignId) {
+      setError("Select a campaign before importing entries.");
+      return;
+    }
+    if (!importPreview.length) {
+      setError("Parse the import text before creating entries.");
+      return;
+    }
+    if (importMessages.some((message) => message.level === "error")) {
+      setError("Resolve import errors before creating entries.");
+      return;
+    }
+    setError(null);
+    setImporting(true);
+    try {
+      const heroes = importPreview.filter((entry) => entry.rank.toLowerCase() === "hero");
+      const lieutenants = importPreview.filter((entry) => entry.rank.toLowerCase() === "lieutenant");
+      const minions = importPreview.filter((entry) => entry.rank.toLowerCase() === "minion");
+
+      const heroIdByName = new Map<string, string>();
+      const lieutenantIdByName = new Map<string, string>();
+
+      for (const entry of heroes) {
+        const created = await gmApi.createBestiaryEntry({
+          campaignId: selectedCampaignId,
+          name: entry.name,
+          statsSkills: entry.groupName || entry.description ? { type: entry.groupName, description: entry.description } : undefined,
+          attributes: buildAttributesPayload(entry),
+          skills: buildSkillsPayload(entry),
+          abilities: entry.abilities,
+          tags: entry.tags,
+          rank: normalizeRank(entry.rank),
+          dr: entry.attributes.dr,
+          armorType: entry.armorType,
+          energyBars: entry.energyBars
+        });
+        heroIdByName.set(entry.name, created.id);
+      }
+
+      for (const entry of lieutenants) {
+        const heroName = entry.heroName;
+        if (!heroName || !heroIdByName.has(heroName)) {
+          throw new Error(`Lieutenant ${entry.name} missing Hero reference.`);
+        }
+        const created = await gmApi.createBestiaryEntry({
+          campaignId: selectedCampaignId,
+          name: entry.name,
+          statsSkills: entry.groupName || entry.description ? { type: entry.groupName, description: entry.description } : undefined,
+          attributes: buildAttributesPayload(entry),
+          skills: buildSkillsPayload(entry),
+          abilities: entry.abilities,
+          tags: entry.tags,
+          rank: normalizeRank(entry.rank),
+          dr: entry.attributes.dr,
+          armorType: entry.armorType,
+          energyBars: entry.energyBars,
+          heroId: heroIdByName.get(heroName)
+        });
+        lieutenantIdByName.set(entry.name, created.id);
+      }
+
+      for (const entry of minions) {
+        const lieutenantName = entry.lieutenantName;
+        if (!lieutenantName || !lieutenantIdByName.has(lieutenantName)) {
+          throw new Error(`Minion ${entry.name} missing Lieutenant reference.`);
+        }
+        await gmApi.createBestiaryEntry({
+          campaignId: selectedCampaignId,
+          name: entry.name,
+          statsSkills: entry.groupName || entry.description ? { type: entry.groupName, description: entry.description } : undefined,
+          attributes: buildAttributesPayload(entry),
+          skills: buildSkillsPayload(entry),
+          abilities: entry.abilities,
+          tags: entry.tags,
+          rank: normalizeRank(entry.rank),
+          dr: entry.attributes.dr,
+          armorType: entry.armorType,
+          energyBars: entry.energyBars,
+          lieutenantId: lieutenantIdByName.get(lieutenantName)
+        });
+      }
+
+      setImportText("");
+      setImportPreview([]);
+      setImportMessages([]);
+      setImportGroupName(undefined);
+      const refreshed = await gmApi.listBestiaryEntries(selectedCampaignId);
+      setApiEntries(refreshed);
+    } catch (createError) {
+      setError(createError instanceof Error ? createError.message : "Failed to import bestiary entries.");
+    } finally {
+      setImporting(false);
+    }
+  };
 
   React.useEffect(() => {
     if (isCreating) return;
@@ -357,6 +565,16 @@ export const BestiaryPage: React.FC = () => {
     const maxApParsed = parseIntegerField("Max AP", maxAp);
     if (maxApParsed.error) {
       setError(maxApParsed.error);
+      return;
+    }
+    const drParsed = parseIntegerField("DR", dr);
+    if (drParsed.error) {
+      setError(drParsed.error);
+      return;
+    }
+    const energyBarsParsed = parseIntegerField("Energy Bars", energyBars);
+    if (energyBarsParsed.error) {
+      setError(energyBarsParsed.error);
       return;
     }
     if (!RANK_OPTIONS.includes(rank)) {
@@ -407,6 +625,8 @@ export const BestiaryPage: React.FC = () => {
     }
     if (maxEnergyParsed.value !== undefined) attributesPayload.energy = maxEnergyParsed.value;
     if (maxApParsed.value !== undefined) attributesPayload.ap = maxApParsed.value;
+    if (drParsed.value !== undefined) attributesPayload.dr = drParsed.value;
+    if (energyBarsParsed.value !== undefined) attributesPayload.energy_bars = energyBarsParsed.value;
     const bonuses = computeAttributeSkillBonuses(attributeNumbers, skillDefinitions);
     const skillsPayload: Record<string, number> = {};
     skillDefinitions.forEach((skill) => {
@@ -448,12 +668,16 @@ export const BestiaryPage: React.FC = () => {
         tier,
         maxEnergy,
         maxAp,
+        dr,
+        armorType,
+        energyBars,
         attributes,
         skills,
         abilityType,
         customAbilityName,
         customAbilityEnergy,
         customAbilityAp,
+        abilities: abilitiesPayload ?? [],
         lieutenantId,
         heroId
       };
@@ -465,6 +689,9 @@ export const BestiaryPage: React.FC = () => {
         skills: Object.keys(skillsPayload).length ? skillsPayload : undefined,
         abilities: abilitiesPayload,
         rank,
+        dr: drParsed.value,
+        armorType: armorType.trim() || undefined,
+        energyBars: energyBarsParsed.value,
         lieutenantId: rank === "Minion" ? lieutenantId : undefined,
         heroId: rank === "Lieutenant" ? heroId : undefined
       });
@@ -527,6 +754,16 @@ export const BestiaryPage: React.FC = () => {
       setError(maxApParsed.error);
       return;
     }
+    const drParsed = parseIntegerField("DR", editDraft.dr);
+    if (drParsed.error) {
+      setError(drParsed.error);
+      return;
+    }
+    const energyBarsParsed = parseIntegerField("Energy Bars", editDraft.energyBars);
+    if (energyBarsParsed.error) {
+      setError(energyBarsParsed.error);
+      return;
+    }
     if (!RANK_OPTIONS.includes(editDraft.rank)) {
       setError("Rank must be NPC, Minion, Lieutenant, or Hero.");
       return;
@@ -575,6 +812,8 @@ export const BestiaryPage: React.FC = () => {
     }
     if (maxEnergyParsed.value !== undefined) attributesPayload.energy = maxEnergyParsed.value;
     if (maxApParsed.value !== undefined) attributesPayload.ap = maxApParsed.value;
+    if (drParsed.value !== undefined) attributesPayload.dr = drParsed.value;
+    if (energyBarsParsed.value !== undefined) attributesPayload.energy_bars = energyBarsParsed.value;
     const bonuses = computeAttributeSkillBonuses(attributeNumbers, skillDefinitions);
     const skillsPayload: Record<string, number> = {};
     skillDefinitions.forEach((skill) => {
@@ -615,6 +854,9 @@ export const BestiaryPage: React.FC = () => {
         skills: Object.keys(skillsPayload).length ? skillsPayload : undefined,
         abilities: abilitiesPayload,
         rank: editDraft.rank,
+        dr: drParsed.value,
+        armorType: editDraft.armorType.trim() || null,
+        energyBars: energyBarsParsed.value,
         lieutenantId: editDraft.rank === "Minion" ? editDraft.lieutenantId : null,
         heroId: editDraft.rank === "Lieutenant" ? editDraft.heroId : null
       });
@@ -813,6 +1055,86 @@ export const BestiaryPage: React.FC = () => {
         </section>
 
         <section className={`${styles.card} ${styles.detailPanel}`}>
+          <div className={styles.detailSection}>
+            <div className={styles.rowBetween}>
+              <div>
+                <h3 className={styles.title}>Bulk Import</h3>
+                <p className={styles.mutedTextSmall}>
+                  Paste formatted bestiary blocks. Add “Hero:” or “Lieutenant:” lines to link hierarchy when needed.
+                </p>
+              </div>
+              <div className={styles.rowWrap}>
+                <button type="button" className={styles.secondaryButton} onClick={handleParseImport}>
+                  Parse Preview
+                </button>
+                <button
+                  type="button"
+                  className={styles.actionButton}
+                  onClick={handleCreateImport}
+                  disabled={importing || importPreview.length === 0 || importMessages.some((msg) => msg.level === "error")}
+                >
+                  {importing ? "Creating..." : "Create Entries"}
+                </button>
+              </div>
+            </div>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>Formatted Import</span>
+              <textarea
+                value={importText}
+                onChange={(event) => setImportText(event.target.value)}
+                rows={10}
+                placeholder="Feudal Army\n\nKnight (Rank 1 Mortal Hero, Aligned)\n100 energy x3 bars, 9 AP\n15 DR (plate)\n..."
+                className={`${styles.input} ${styles.textarea}`}
+              />
+            </label>
+            {importGroupName && (
+              <div className={styles.mutedTextSmall}>Detected group: {importGroupName}</div>
+            )}
+            {importMessages.length > 0 && (
+              <div className={styles.detailSection}>
+                <div className={styles.sectionTitle}>Preview Messages</div>
+                <div className={styles.gridTwo}>
+                  {importMessages.map((message, index) => (
+                    <div key={`${message.blockIndex}-${index}`} className={styles.skillCard}>
+                      <span className={styles.fieldLabelMedium}>
+                        {message.level === "error" ? "Error" : "Warning"}
+                        {message.entryName ? `: ${message.entryName}` : ""}
+                      </span>
+                      <span className={styles.mutedTextSmall}>{message.message}</span>
+                      {message.block && <span className={styles.mutedTextSmall}>Source: {message.block}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {importPreview.length > 0 && (
+              <div className={styles.detailSection}>
+                <div className={styles.sectionTitle}>Parsed Entries</div>
+                <div className={styles.gridTwo}>
+                  {importPreview.map((entry) => (
+                    <div key={entry.name} className={styles.skillCard}>
+                      <span className={styles.fieldLabelMedium}>
+                        {entry.name} • {normalizeRank(entry.rank)}
+                      </span>
+                      <span className={styles.mutedTextSmall}>
+                        Attributes: {Object.keys(entry.attributes).length} • Skills: {Object.keys(entry.skills).length} • Abilities:{" "}
+                        {entry.abilities.length}
+                      </span>
+                      {entry.attributes.dr !== undefined && (
+                        <span className={styles.mutedTextSmall}>DR: {entry.attributes.dr}</span>
+                      )}
+                      {entry.armorType && <span className={styles.mutedTextSmall}>Armor: {entry.armorType}</span>}
+                      {entry.energyBars !== undefined && (
+                        <span className={styles.mutedTextSmall}>Energy Bars: {entry.energyBars}</span>
+                      )}
+                      {entry.heroName && <span className={styles.mutedTextSmall}>Hero: {entry.heroName}</span>}
+                      {entry.lieutenantName && <span className={styles.mutedTextSmall}>Lieutenant: {entry.lieutenantName}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           {!campaignId && campaigns.length === 0 ? (
             <p className={`${styles.mutedText} ${styles.title}`}>Create a campaign first to manage a bestiary.</p>
           ) : !selectedCampaignId ? (
@@ -929,6 +1251,35 @@ export const BestiaryPage: React.FC = () => {
                       value={maxAp}
                       onChange={(event) => setMaxAp(event.target.value)}
                       placeholder="6"
+                      className={styles.input}
+                      inputMode="numeric"
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>DR</span>
+                    <input
+                      value={dr}
+                      onChange={(event) => setDr(event.target.value)}
+                      placeholder="10"
+                      className={styles.input}
+                      inputMode="numeric"
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Armor Type</span>
+                    <input
+                      value={armorType}
+                      onChange={(event) => setArmorType(event.target.value)}
+                      placeholder="Plate"
+                      className={styles.input}
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Energy Bars</span>
+                    <input
+                      value={energyBars}
+                      onChange={(event) => setEnergyBars(event.target.value)}
+                      placeholder="3"
                       className={styles.input}
                       inputMode="numeric"
                     />
@@ -1168,6 +1519,26 @@ export const BestiaryPage: React.FC = () => {
                       className={styles.input}
                       inputMode="numeric"
                     />
+                    <input
+                      value={editDraft.dr}
+                      onChange={(event) => setEditDraft({ ...editDraft, dr: event.target.value })}
+                      placeholder="DR"
+                      className={styles.input}
+                      inputMode="numeric"
+                    />
+                    <input
+                      value={editDraft.armorType}
+                      onChange={(event) => setEditDraft({ ...editDraft, armorType: event.target.value })}
+                      placeholder="Armor Type"
+                      className={styles.input}
+                    />
+                    <input
+                      value={editDraft.energyBars}
+                      onChange={(event) => setEditDraft({ ...editDraft, energyBars: event.target.value })}
+                      placeholder="Energy Bars"
+                      className={styles.input}
+                      inputMode="numeric"
+                    />
                   </div>
                   <textarea
                     value={editDraft.description}
@@ -1362,6 +1733,17 @@ export const BestiaryPage: React.FC = () => {
                         <div className={styles.statValue}>{selectedEntry.maxAp || "—"}</div>
                       </div>
                       <div>
+                        <div className={styles.statLabel}>DR</div>
+                        <div className={styles.statValue}>{selectedEntry.dr || "—"}</div>
+                        {selectedEntry.armorType && (
+                          <div className={styles.mutedTextSmall}>{selectedEntry.armorType}</div>
+                        )}
+                      </div>
+                      <div>
+                        <div className={styles.statLabel}>Energy Bars</div>
+                        <div className={styles.statValue}>{selectedEntry.energyBars || "—"}</div>
+                      </div>
+                      <div>
                         <div className={styles.statLabel}>Ability</div>
                         <div className={styles.statValue}>
                           {selectedEntry.abilityType
@@ -1406,6 +1788,34 @@ export const BestiaryPage: React.FC = () => {
                           </div>
                         ))}
                       </div>
+                    )}
+                  </div>
+                  <div className={styles.detailSection}>
+                    <div className={styles.sectionTitle}>Abilities</div>
+                    {selectedEntry.abilities && selectedEntry.abilities.length > 0 ? (
+                      <div className={styles.gridTwo}>
+                        {selectedEntry.abilities.map((ability, index) => {
+                          const label = ability.name || ability.key || ability.type || `Ability ${index + 1}`;
+                          const metaParts = [ability.phase, ability.range, ability.damage]
+                            .filter((value) => value && value.trim())
+                            .join(" • ");
+                          return (
+                            <div key={`${label}-${index}`} className={styles.skillCard}>
+                              <span className={styles.fieldLabelMedium}>{label}</span>
+                              {ability.type && <span className={styles.mutedTextSmall}>Type: {ability.type}</span>}
+                              {metaParts && <span className={styles.mutedTextSmall}>{metaParts}</span>}
+                              {(ability.description || ability.rules) && (
+                                <span className={styles.mutedTextSmall}>{ability.description ?? ability.rules}</span>
+                              )}
+                              {ability.tags && ability.tags.length > 0 && (
+                                <span className={styles.mutedTextSmall}>Tags: {ability.tags.join(", ")}</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className={styles.mutedTextMedium}>No abilities listed.</div>
                     )}
                   </div>
                 </div>

@@ -33,6 +33,9 @@ export interface BestiaryEntry {
   abilities?: BestiaryAbility[];
   tags?: string[];
   rank?: string;
+  dr?: number;
+  armorType?: string;
+  energyBars?: number;
   lieutenantId?: string;
   heroId?: string;
 }
@@ -59,6 +62,12 @@ export interface BestiaryAbility {
   category?: string;
   key?: string;
   name?: string;
+  description?: string;
+  phase?: string;
+  range?: string;
+  damage?: string;
+  rules?: string;
+  tags?: string[];
   energyCost?: number;
   apCost?: number;
 }
@@ -110,6 +119,9 @@ type BestiaryEntryRow = {
   abilities?: BestiaryAbility[] | null;
   tags?: string[] | null;
   rank?: string | null;
+  dr?: number | null;
+  armor_type?: string | null;
+  energy_bars?: number | null;
   lieutenant_id?: string | null;
   hero_id?: string | null;
 };
@@ -232,6 +244,9 @@ function mapBestiaryEntry(row: BestiaryEntryRow): BestiaryEntry {
     abilities: row.abilities ?? undefined,
     tags: row.tags ?? undefined,
     rank: row.rank ?? undefined,
+    dr: row.dr ?? undefined,
+    armorType: row.armor_type ?? undefined,
+    energyBars: row.energy_bars ?? undefined,
     lieutenantId: row.lieutenant_id ?? undefined,
     heroId: row.hero_id ?? undefined
   };
@@ -307,6 +322,9 @@ function toBestiaryPayload(payload: Partial<BestiaryEntry>): Partial<BestiaryEnt
   if (payload.abilities !== undefined) record.abilities = payload.abilities ?? null;
   if (payload.tags !== undefined) record.tags = payload.tags ?? null;
   if (payload.rank !== undefined) record.rank = payload.rank ?? null;
+  if (payload.dr !== undefined) record.dr = payload.dr ?? null;
+  if (payload.armorType !== undefined) record.armor_type = payload.armorType ?? null;
+  if (payload.energyBars !== undefined) record.energy_bars = payload.energyBars ?? null;
   if (payload.lieutenantId !== undefined) record.lieutenant_id = payload.lieutenantId ?? null;
   if (payload.heroId !== undefined) record.hero_id = payload.heroId ?? null;
 
@@ -507,7 +525,9 @@ async function listBestiaryEntries(campaignId: string): Promise<BestiaryEntry[]>
   const client = getSupabaseClient();
   const { data, error } = (await client
     .from("bestiary_entries")
-    .select("id, campaign_id, name, stats_skills, attributes, skills, abilities, tags, rank, lieutenant_id, hero_id")
+    .select(
+      "id, campaign_id, name, stats_skills, attributes, skills, abilities, tags, rank, dr, armor_type, energy_bars, lieutenant_id, hero_id"
+    )
     .eq("campaign_id", campaignId)
     .order("name", { ascending: true })) as SupabaseResult<BestiaryEntryRow[]>;
   if (error) {
@@ -526,7 +546,9 @@ async function createBestiaryEntry(payload: Partial<BestiaryEntry>): Promise<Bes
   const { data, error } = (await client
     .from("bestiary_entries")
     .insert(record)
-    .select("id, campaign_id, name, stats_skills, attributes, skills, abilities, tags, rank, lieutenant_id, hero_id")
+    .select(
+      "id, campaign_id, name, stats_skills, attributes, skills, abilities, tags, rank, dr, armor_type, energy_bars, lieutenant_id, hero_id"
+    )
     .single()) as SupabaseResult<BestiaryEntryRow>;
   if (error || !data) {
     throw new ApiError(0, `Failed to create bestiary entry: ${error?.message ?? "unknown error"}`);
@@ -542,7 +564,9 @@ async function updateBestiaryEntry(id: string, payload: Partial<BestiaryEntry>):
     .from("bestiary_entries")
     .update(record)
     .eq("id", id)
-    .select("id, campaign_id, name, stats_skills, attributes, skills, abilities, tags, rank, lieutenant_id, hero_id")
+    .select(
+      "id, campaign_id, name, stats_skills, attributes, skills, abilities, tags, rank, dr, armor_type, energy_bars, lieutenant_id, hero_id"
+    )
     .single()) as SupabaseResult<BestiaryEntryRow>;
   if (error || !data) {
     throw new ApiError(0, `Failed to update bestiary entry: ${error?.message ?? "unknown error"}`);
