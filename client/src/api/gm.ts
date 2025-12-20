@@ -56,6 +56,8 @@ export interface BestiaryAbility {
   category?: string;
   key?: string;
   name?: string;
+  energyCost?: number;
+  apCost?: number;
 }
 
 export interface BestiaryPin {
