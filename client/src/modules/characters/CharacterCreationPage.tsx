@@ -8,6 +8,7 @@ import { parsePsionicsCsv } from "../psionics/psionicsUtils";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { useSelectedCharacter } from "./SelectedCharacterContext";
 import { applyModifiers } from "@shared/rules/modifiers";
+import "./CharacterCreationPage.css";
 import {
   AttributeKey,
   getSkillCode,
@@ -166,14 +167,6 @@ const computeBackgroundSkillBonuses = (
 };
 
 const HIDDEN_SKILL_CODES = new Set(["MARTIAL_PROWESS", "ILDAKAR_FACULTY"]);
-
-const cardStyle: React.CSSProperties = {
-  background: "#12141a",
-  border: "1px solid #2d343f",
-  borderRadius: 10,
-  padding: "0.75rem",
-  color: "#e8edf7"
-};
 
 export const CharacterCreationPage: React.FC = () => {
   const navigate = useNavigate();
@@ -573,16 +566,16 @@ export const CharacterCreationPage: React.FC = () => {
     });
 
     return (
-      <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="character-creation__card character-creation__section">
+        <div className="character-creation__section-header">
           <div>
-            <div style={{ fontSize: 12, color: "#9aa3b5" }}>{stage}</div>
-            <div style={{ fontWeight: 700 }}>
+            <div className="character-creation__section-title">{stage}</div>
+            <div className="character-creation__section-subtitle">
               Choose {limit} ({multi ? `${(selected as string[] | undefined)?.length ?? 0}` : selected ? 1 : 0}/{limit})
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div className="character-creation__control-row">
           <input
             value={backgroundSearch[stage] ?? ""}
             onChange={(e) =>
@@ -592,13 +585,13 @@ export const CharacterCreationPage: React.FC = () => {
               }))
             }
             placeholder={`Search ${stage.toLowerCase()}...`}
-            style={{ flex: 1 }}
+            className="character-creation__input character-creation__input--grow"
           />
           {stage === "Adulthood" && (
             <select
               value={adulthoodCategoryFilter}
               onChange={(e) => setAdulthoodCategoryFilter(e.target.value)}
-              style={{ minWidth: 180 }}
+              className="character-creation__select character-creation__select--compact"
             >
               <option value="">All categories</option>
               {adulthoodCategories.map((cat) => (
@@ -609,8 +602,8 @@ export const CharacterCreationPage: React.FC = () => {
             </select>
           )}
         </div>
-        {filteredOptions.length === 0 && <div style={{ color: "#9aa3b5" }}>No options found.</div>}
-        <div style={{ maxHeight: 260, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
+        {filteredOptions.length === 0 && <div className="character-creation__muted">No options found.</div>}
+        <div className="character-creation__options">
           {filteredOptions.map((opt) => {
             const checked = multi
               ? (selected as string[] | undefined)?.includes(opt.name)
@@ -618,16 +611,7 @@ export const CharacterCreationPage: React.FC = () => {
             return (
               <label
                 key={`${stage}-${opt.name}`}
-                style={{
-                  border: checked ? "1px solid #f38b2f" : "1px solid #2d343f",
-                  borderRadius: 8,
-                  padding: "0.5rem 0.6rem",
-                  display: "flex",
-                  gap: 10,
-                  alignItems: "flex-start",
-                  background: checked ? "#1f2a33" : "#14171d",
-                  cursor: "pointer"
-                }}
+                className={`character-creation__option${checked ? " character-creation__option--selected" : ""}`}
               >
                 <input
                   type={multi ? "checkbox" : "radio"}
@@ -638,48 +622,35 @@ export const CharacterCreationPage: React.FC = () => {
                       ? handleMultiSelect(key as "adulthood" | "flaws", opt.name, limit)
                       : handleSingleSelect(key, opt.name)
                   }
-                  style={{ marginTop: 4 }}
+                  className="character-creation__option-input"
                 />
-                <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <div className="character-creation__option-body">
+                  <div className="character-creation__option-header">
                     <div>
-                      <div style={{ fontWeight: 700 }}>{opt.name}</div>
+                      <div className="character-creation__option-title">{opt.name}</div>
                       {stage === "Adulthood" && opt.category && (
-                        <div
-                          style={{
-                            display: "inline-block",
-                            background: "#1f2a33",
-                            border: "1px solid #2d343f",
-                            borderRadius: 6,
-                            padding: "2px 6px",
-                            fontSize: 11,
-                            marginTop: 4,
-                            color: "#c8d0e0"
-                          }}
-                        >
-                          {opt.category}
-                        </div>
+                        <div className="character-creation__tag">{opt.category}</div>
                       )}
                     </div>
                     {opt.fateBonus > 0 && (
-                      <div style={{ color: "#9ae6b4", fontSize: 12, fontWeight: 700 }}>
+                      <div className="character-creation__bonus character-creation__bonus--positive">
                         +{opt.fateBonus} Fate Point(s)
                       </div>
                     )}
                   </div>
-                  <div style={{ fontSize: 13, color: "#b7c0d3", whiteSpace: "pre-wrap" }}>{opt.details}</div>
+                  <div className="character-creation__option-details">{opt.details}</div>
                   {stage === "Adulthood" && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 6 }}>
-                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>
-                        <strong style={{ color: "#e8edf7" }}>Starting Wealth: </strong>
+                    <div className="character-creation__option-meta">
+                      <div>
+                        <strong>Starting Wealth: </strong>
                         {opt.startingWealth || "Not specified"}
                       </div>
-                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>
-                        <strong style={{ color: "#e8edf7" }}>Starting Equipment: </strong>
+                      <div>
+                        <strong>Starting Equipment: </strong>
                         {opt.startingEquipment || "Not specified"}
                       </div>
-                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>
-                        <strong style={{ color: "#e8edf7" }}>Feature: </strong>
+                      <div>
+                        <strong>Feature: </strong>
                         {opt.feature || "Not specified"}
                       </div>
                     </div>
@@ -696,45 +667,51 @@ export const CharacterCreationPage: React.FC = () => {
   const renderAttributeRow = (key: (typeof ATTRIBUTE_KEYS)[number]) => {
     const value = attributes[key];
     return (
-      <div
-        key={key}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "120px 1fr 1fr",
-          gap: 8,
-          alignItems: "center"
-        }}
-      >
-        <div style={{ fontWeight: 700 }}>{key}</div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button onClick={() => adjustAttribute(key, -1)} disabled={value <= ATTRIBUTE_MIN}>
+      <div key={key} className="character-creation__attribute-row">
+        <div className="character-creation__attribute-label">{key}</div>
+        <div className="character-creation__attribute-controls">
+          <button
+            onClick={() => adjustAttribute(key, -1)}
+            disabled={value <= ATTRIBUTE_MIN}
+            className="character-creation__mini-button"
+          >
             -
           </button>
-          <div style={{ width: 32, textAlign: "center" }}>{value}</div>
-          <button onClick={() => adjustAttribute(key, 1)} disabled={value >= ATTRIBUTE_MAX || attributeRemaining <= 0}>
+          <div className="character-creation__attribute-value">{value}</div>
+          <button
+            onClick={() => adjustAttribute(key, 1)}
+            disabled={value >= ATTRIBUTE_MAX || attributeRemaining <= 0}
+            className="character-creation__mini-button"
+          >
             +
           </button>
         </div>
-        <div style={{ fontSize: 13, color: "#9aa3b5" }}>Affects linked skills by ±10 per point</div>
+        <div className="character-creation__muted">Affects linked skills by ±10 per point</div>
       </div>
     );
   };
 
   return (
     <>
-      <div>
-        <h2 style={{ marginBottom: "0.5rem" }}>Character Creation</h2>
+      <div className="character-creation">
+        <h2 className="character-creation__title">Character Creation</h2>
         {(definitionsError || backgroundsError || submitError) && (
-          <p style={{ color: "#f55" }}>{definitionsError || backgroundsError || submitError}</p>
+          <p className="character-creation__error">{definitionsError || backgroundsError || submitError}</p>
         )}
-        <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: "1rem" }}>
-          <aside style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="character-creation__layout">
+          <aside className="character-creation__card character-creation__sidebar">
             <div>
-              <div style={{ fontSize: 12, color: "#9aa3b5", marginBottom: 4 }}>Name</div>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Character name" disabled={submitting} />
+              <div className="character-creation__label">Name</div>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Character name"
+                disabled={submitting}
+                className="character-creation__input"
+              />
             </div>
             <div>
-              <div style={{ fontSize: 12, color: "#9aa3b5", marginBottom: 4 }}>Race</div>
+              <div className="character-creation__label">Race</div>
               <select
                 value={raceKey}
                 onChange={(e) => {
@@ -742,7 +719,7 @@ export const CharacterCreationPage: React.FC = () => {
                   setSubraceKey("");
                 }}
                 disabled={definitionsLoading || submitting}
-                style={{ width: "100%" }}
+                className="character-creation__select"
               >
                 <option value="">Select race</option>
                 {(definitions?.races ?? []).map((r) => (
@@ -753,12 +730,12 @@ export const CharacterCreationPage: React.FC = () => {
               </select>
             </div>
             <div>
-              <div style={{ fontSize: 12, color: "#9aa3b5", marginBottom: 4 }}>Subrace</div>
+              <div className="character-creation__label">Subrace</div>
               <select
                 value={subraceKey}
                 onChange={(e) => setSubraceKey(e.target.value)}
                 disabled={definitionsLoading || submitting}
-                style={{ width: "100%" }}
+                className="character-creation__select"
               >
                 <option value="">Select subrace</option>
                 {availableSubraces.map((s) => (
@@ -769,52 +746,59 @@ export const CharacterCreationPage: React.FC = () => {
               </select>
             </div>
             {(selectedRaceDetail || selectedSubraceDetail) && (
-              <div style={{ ...cardStyle, background: "#0e1116", borderColor: "#1f2a33" }}>
-                <div style={{ fontSize: 12, color: "#9aa3b5", marginBottom: 6 }}>Discipline Bonuses</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 6 }}>
+              <div className="character-creation__card character-creation__card--subtle">
+                <div className="character-creation__label character-creation__label--tight">Discipline Bonuses</div>
+                <div className="character-creation__discipline-grid">
                   <div>
-                    <div style={{ color: "#9aa3b5", fontSize: 13 }}>Martial Prowess</div>
-                    <div style={{ fontWeight: 700 }}>{combinedDisciplines.martialProwess}</div>
+                    <div className="character-creation__muted">Martial Prowess</div>
+                    <div className="character-creation__value">{combinedDisciplines.martialProwess}</div>
                   </div>
                   <div>
-                    <div style={{ color: "#9aa3b5", fontSize: 13 }}>Ildakar Faculty</div>
-                    <div style={{ fontWeight: 700 }}>{combinedDisciplines.ildakarFaculty}</div>
+                    <div className="character-creation__muted">Ildakar Faculty</div>
+                    <div className="character-creation__value">{combinedDisciplines.ildakarFaculty}</div>
                   </div>
                   <div>
-                    <div style={{ color: "#9aa3b5", fontSize: 13 }}>Psi-Points</div>
-                    <div style={{ fontWeight: 700 }}>{combinedDisciplines.psiPoints}</div>
+                    <div className="character-creation__muted">Psi-Points</div>
+                    <div className="character-creation__value">{combinedDisciplines.psiPoints}</div>
                   </div>
                   <div>
-                    <div style={{ color: "#9aa3b5", fontSize: 13 }}>Deity Cap / Spiritual</div>
-                    <div style={{ fontWeight: 700 }}>{combinedDisciplines.deityCapPerSpirit}</div>
+                    <div className="character-creation__muted">Deity Cap / Spiritual</div>
+                    <div className="character-creation__value">{combinedDisciplines.deityCapPerSpirit}</div>
                   </div>
                 </div>
               </div>
             )}
             <div>
-              <div style={{ fontSize: 12, color: "#9aa3b5", marginBottom: 4 }}>Attribute Points</div>
-              <div style={{ fontWeight: 700, color: attributeRemaining === 0 ? "#9ae6b4" : "#f7a046" }}>
+              <div className="character-creation__label">Attribute Points</div>
+              <div
+                className={`character-creation__status${
+                  attributeRemaining === 0 ? " character-creation__status--good" : " character-creation__status--warn"
+                }`}
+              >
                 {attributeRemaining} remaining (min {ATTRIBUTE_MIN}, max {ATTRIBUTE_MAX})
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 12, color: "#9aa3b5", marginBottom: 4 }}>Fate Points</div>
-              <div style={{ fontWeight: 700 }}>
-                Base 3 {bonusFatePoints > 0 ? `+ ${bonusFatePoints} from backgrounds = ${totalFatePoints}` : `= ${totalFatePoints}`}
+              <div className="character-creation__label">Fate Points</div>
+              <div className="character-creation__value">
+                Base 3{" "}
+                {bonusFatePoints > 0 ? `+ ${bonusFatePoints} from backgrounds = ${totalFatePoints}` : `= ${totalFatePoints}`}
               </div>
             </div>
-            <button onClick={onSubmit} disabled={!canSubmit || submitting} style={{ padding: "0.6rem 0.8rem" }}>
+            <button
+              onClick={onSubmit}
+              disabled={!canSubmit || submitting}
+              className="character-creation__button character-creation__button--primary"
+            >
               {submitting ? "Creating..." : "Create Character"}
             </button>
             {missingStages.length > 0 && (
-              <div style={{ fontSize: 12, color: "#f7a046" }}>
-                Select required options: {missingStages.join(", ")}
-              </div>
+              <div className="character-creation__warning">Select required options: {missingStages.join(", ")}</div>
             )}
           </aside>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+          <div className="character-creation__content">
+            <div className="character-creation__grid">
               {renderBackgroundSection("Family", "family", STAGE_REQUIREMENTS.Family)}
               {renderBackgroundSection("Childhood", "childhood", STAGE_REQUIREMENTS.Childhood)}
               {renderBackgroundSection("Adolescence", "adolescence", STAGE_REQUIREMENTS.Adolescence)}
@@ -823,39 +807,41 @@ export const CharacterCreationPage: React.FC = () => {
               {renderBackgroundSection("Inciting Incident", "incitingIncident", STAGE_REQUIREMENTS["Inciting Incident"])}
             </div>
 
-            <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div className="character-creation__card character-creation__section">
+              <div className="character-creation__section-header">
                 <div>
-                  <div style={{ fontSize: 12, color: "#9aa3b5" }}>Attributes</div>
-                  <div style={{ fontWeight: 700 }}>
+                  <div className="character-creation__section-title">Attributes</div>
+                  <div className="character-creation__section-subtitle">
                     Distribute {ATTRIBUTE_POINT_POOL} points (min {ATTRIBUTE_MIN}, max {ATTRIBUTE_MAX})
                   </div>
                 </div>
-                <div style={{ fontSize: 13, color: attributeRemaining === 0 ? "#9ae6b4" : "#f7a046" }}>
+                <div
+                  className={`character-creation__status${
+                    attributeRemaining === 0 ? " character-creation__status--good" : " character-creation__status--warn"
+                  }`}
+                >
                   Remaining: {attributeRemaining}
                 </div>
               </div>
               {ATTRIBUTE_KEYS.map(renderAttributeRow)}
             </div>
 
-            <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ fontSize: 12, color: "#9aa3b5" }}>Skill Adjustments</div>
-              <div style={{ maxHeight: 300, overflowY: "auto" }}>
+            <div className="character-creation__card character-creation__section">
+              <div className="character-creation__section-title">Skill Adjustments</div>
+              <div className="character-creation__skill-list">
                 {sortedSkills
                   .map((skill) => ({ skill, bonus: skillBonuses[getSkillCode(skill)] ?? 0 }))
                   .map(({ skill, bonus }) => (
                     <div
                       key={skill.id}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 120px",
-                        padding: "0.35rem 0.25rem",
-                        borderBottom: "1px solid #1f242d",
-                        alignItems: "center"
-                      }}
+                      className="character-creation__skill-row"
                     >
-                      <div style={{ fontWeight: 600 }}>{skill.name}</div>
-                      <div style={{ fontWeight: 700, color: bonus >= 0 ? "#9ae6b4" : "#f7a046", textAlign: "right" }}>
+                      <div className="character-creation__skill-name">{skill.name}</div>
+                      <div
+                        className={`character-creation__bonus${
+                          bonus >= 0 ? " character-creation__bonus--positive" : " character-creation__bonus--negative"
+                        } character-creation__skill-bonus`}
+                      >
                         {bonus >= 0 ? "+" : ""}
                         {bonus}
                       </div>
@@ -868,32 +854,13 @@ export const CharacterCreationPage: React.FC = () => {
       </div>
 
       {psionicsModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            padding: "1rem"
-          }}
-        >
-          <div
-            style={{
-              ...cardStyle,
-              width: "min(960px, 95vw)",
-              maxHeight: "85vh",
-              overflowY: "auto",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.45)"
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div className="character-creation__modal-overlay">
+          <div className="character-creation__modal">
+            <div className="character-creation__modal-header">
               <div>
-                <div style={{ fontSize: 12, color: "#9aa3b5" }}>Psionic unlocks</div>
-                <h3 style={{ margin: 0 }}>Select Psionic Abilities</h3>
-                <p style={{ margin: "4px 0", color: "#c5ccd9" }}>
+                <div className="character-creation__muted">Psionic unlocks</div>
+                <h3 className="character-creation__modal-title">Select Psionic Abilities</h3>
+                <p className="character-creation__modal-subtitle">
                   {psionicsModal.characterName} qualifies for additional psionic techniques. Choose the required options now or
                   keep the defaults to pick later.
                 </p>
@@ -901,13 +868,13 @@ export const CharacterCreationPage: React.FC = () => {
             </div>
 
             {psionicsModal.baseAbilityIds.length > 0 && (
-              <div style={{ ...cardStyle, background: "#0e1318", borderColor: "#1f2935", marginBottom: 12 }}>
+              <div className="character-creation__card character-creation__card--subtle character-creation__modal-auto">
                 <strong>Automatically granted:</strong>
-                <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
+                <ul className="character-creation__list">
                   {psionicsModal.baseAbilityIds.map((id) => {
                     const ability = psionicAbilityById.get(id);
                     return (
-                      <li key={id} style={{ color: "#c5ccd9" }}>
+                      <li key={id} className="character-creation__modal-list-item">
                         {ability ? `${ability.name} (${ability.tree})` : id}
                       </li>
                     );
@@ -916,19 +883,22 @@ export const CharacterCreationPage: React.FC = () => {
               </div>
             )}
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="character-creation__modal-grid">
               {psionicsModal.choices.map((choice, idx) => (
-                <div key={`${choice.backgroundName}-${idx}`} style={{ ...cardStyle, background: "#0f151d", borderColor: "#1f2a33" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <div
+                  key={`${choice.backgroundName}-${idx}`}
+                  className="character-creation__card character-creation__card--subtle"
+                >
+                  <div className="character-creation__modal-choice-header">
                     <div>
-                      <div style={{ fontSize: 12, color: "#9aa3b5" }}>Background</div>
-                      <div style={{ fontWeight: 700 }}>{choice.backgroundName}</div>
+                      <div className="character-creation__muted">Background</div>
+                      <div className="character-creation__value">{choice.backgroundName}</div>
                     </div>
-                    <div style={{ fontSize: 13, color: "#c5ccd9" }}>
+                    <div className="character-creation__muted">
                       Choose {choice.selectedIds.length}/{choice.required}
                     </div>
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 8 }}>
+                  <div className="character-creation__modal-options">
                     {choice.options.map((option) => {
                       const ability = psionicAbilityById.get(option.id);
                       const isSelected = choice.selectedIds.includes(option.id);
@@ -936,28 +906,23 @@ export const CharacterCreationPage: React.FC = () => {
                       return (
                         <label
                           key={option.id}
-                          style={{
-                            border: isSelected ? "1px solid #f38b2f" : "1px solid #2d343f",
-                            borderRadius: 8,
-                            padding: "0.5rem 0.6rem",
-                            background: isSelected ? "#1f2a33" : "#14171d",
-                            display: "flex",
-                            gap: 8,
-                            cursor: disableNewSelection ? "not-allowed" : "pointer"
-                          }}
+                          className={`character-creation__option character-creation__option--psionic${
+                            isSelected ? " character-creation__option--selected" : ""
+                          }`}
+                          style={{ cursor: disableNewSelection ? "not-allowed" : "pointer" }}
                         >
                           <input
                             type="checkbox"
                             checked={isSelected}
                             disabled={disableNewSelection}
                             onChange={() => handleTogglePsionicOption(idx, option.id)}
-                            style={{ marginTop: 4 }}
+                            className="character-creation__option-input"
                           />
                           <div>
-                            <div style={{ fontWeight: 700 }}>{ability?.name ?? option.name}</div>
-                            <div style={{ fontSize: 12, color: "#9aa3b5" }}>{ability?.tree ?? option.tree}</div>
+                            <div className="character-creation__option-title">{ability?.name ?? option.name}</div>
+                            <div className="character-creation__muted">{ability?.tree ?? option.tree}</div>
                             {ability?.description && (
-                              <div style={{ fontSize: 12, color: "#c5ccd9", marginTop: 4 }}>
+                              <div className="character-creation__option-description">
                                 {ability.description.length > 180
                                   ? `${ability.description.slice(0, 180)}...`
                                   : ability.description}
@@ -972,14 +937,14 @@ export const CharacterCreationPage: React.FC = () => {
               ))}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
-              <button onClick={closePsionicsModal} style={{ padding: "0.55rem 0.9rem" }}>
+            <div className="character-creation__modal-actions">
+              <button onClick={closePsionicsModal} className="character-creation__button">
                 Decide later
               </button>
               <button
                 onClick={persistPsionicChoices}
                 disabled={!psionicsModalComplete}
-                style={{ padding: "0.55rem 0.9rem", fontWeight: 700 }}
+                className="character-creation__button character-creation__button--primary"
               >
                 Save psionic picks
               </button>
