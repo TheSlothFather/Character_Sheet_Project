@@ -18,18 +18,7 @@ import { CampaignSettingsPage } from "./campaigns/CampaignSettingsPage";
 import { ACTIVE_CAMPAIGN_STORAGE_KEY } from "./campaigns/campaignStorage";
 import { CombatPage } from "./characters/CombatPage";
 import { useTheme } from "../hooks/useTheme";
-
-const linkStyle: React.CSSProperties = {
-  display: "block",
-  padding: "0.5rem 0",
-  color: "#eee",
-  textDecoration: "none"
-};
-
-const activeLinkStyle: React.CSSProperties = {
-  fontWeight: 700,
-  color: "#9ae6b4"
-};
+import "./App.css";
 
 const NotFound: React.FC = () => (
   <div>
@@ -42,39 +31,15 @@ const ThemeToggle: React.FC = () => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "1rem",
-        right: "1rem",
-        zIndex: 999,
-        display: "flex",
-        alignItems: "center",
-        gap: "0.5rem",
-        padding: "0.4rem 0.6rem",
-        borderRadius: 999,
-        border: "1px solid var(--border)",
-        background: "var(--surface-1)",
-        color: "var(--text)",
-        boxShadow: "var(--shadow-depth-1)"
-      }}
-    >
-      <label htmlFor="theme-toggle" style={{ fontSize: 12, fontWeight: 600 }}>
+    <div className="app-theme-toggle">
+      <label htmlFor="theme-toggle" className="app-theme-toggle__label">
         Theme
       </label>
       <select
         id="theme-toggle"
         value={theme}
         onChange={(event) => setTheme(event.target.value as "parchment" | "dark-fantasy")}
-        style={{
-          borderRadius: 999,
-          border: "1px solid var(--border)",
-          background: "var(--surface-2)",
-          color: "var(--text)",
-          padding: "0.2rem 0.6rem",
-          fontSize: 12,
-          fontWeight: 600
-        }}
+        className="app-theme-toggle__select"
       >
         <option value="parchment">Parchment</option>
         <option value="dark-fantasy">Dark Fantasy</option>
@@ -85,38 +50,22 @@ const ThemeToggle: React.FC = () => {
 
 const StartPage: React.FC = () => {
   return (
-    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#0b0f16", color: "#e5e7eb" }}>
-      <div style={{ maxWidth: 560, width: "100%", padding: "2rem", textAlign: "center" }}>
-        <h1 style={{ marginBottom: "0.5rem" }}>Adûrun Builder</h1>
-        <p style={{ color: "#cbd5e1", marginTop: 0 }}>
+    <div className="app-start">
+      <div className="app-start__content">
+        <h1 className="app-start__title">Adûrun Builder</h1>
+        <p className="app-start__subtitle">
           Choose your role to launch the correct workspace.
         </p>
-        <div style={{ display: "grid", gap: "1rem", marginTop: "2rem" }}>
+        <div className="app-start__actions">
           <NavLink
             to="/player/characters"
-            style={{
-              padding: "0.9rem 1.2rem",
-              borderRadius: 12,
-              border: "1px solid #1d4ed8",
-              background: "#2563eb",
-              color: "#e6edf7",
-              fontWeight: 700,
-              textDecoration: "none"
-            }}
+            className="app-start__link app-start__link--player"
           >
             I am a Player
           </NavLink>
           <NavLink
             to="/gm/campaigns"
-            style={{
-              padding: "0.9rem 1.2rem",
-              borderRadius: 12,
-              border: "1px solid #2f3542",
-              background: "#111827",
-              color: "#e5e7eb",
-              fontWeight: 700,
-              textDecoration: "none"
-            }}
+            className="app-start__link app-start__link--gm"
           >
             I am the GM
           </NavLink>
@@ -140,19 +89,12 @@ const PlayerApp: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#111", color: "#eee" }}>
-      <nav
-        style={{
-          width: 220,
-          borderRight: "1px solid #333",
-          padding: "1rem",
-          boxSizing: "border-box"
-        }}
-      >
-        <h1 style={{ fontSize: 18, marginBottom: "1rem" }}>Adûrun Builder</h1>
+    <div className="app-shell">
+      <nav className="app-shell__nav">
+        <h1 className="app-shell__title">Adûrun Builder</h1>
         <NavLink
           to="/player/characters"
-          style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+          className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
         >
           Characters
         </NavLink>
@@ -160,13 +102,13 @@ const PlayerApp: React.FC = () => {
           <>
             <NavLink
               to={`/player/campaigns/${activeCampaignId}`}
-              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+              className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
             >
               Campaign Hub
             </NavLink>
             <NavLink
               to={`/player/campaigns/${activeCampaignId}/combat`}
-              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+              className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
             >
               Combat
             </NavLink>
@@ -174,42 +116,48 @@ const PlayerApp: React.FC = () => {
         )}
         <NavLink
           to="/player/character-creation"
-          style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+          className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
         >
           Character Creation
         </NavLink>
         <NavLink
           to="/player/ancillaries"
-          style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+          className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
         >
           Ancillaries
         </NavLink>
-        <NavLink to="/player/martial" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+        <NavLink
+          to="/player/martial"
+          className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
+        >
           Martial Prowess
         </NavLink>
-        <NavLink to="/player/psionics" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+        <NavLink
+          to="/player/psionics"
+          className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
+        >
           Psionics
         </NavLink>
         <NavLink
           to="/player/magic-faculties"
-          style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+          className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
         >
           Magic Faculties
         </NavLink>
         <NavLink
           to="/player/spell-creation"
-          style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+          className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
         >
           Spell Creation
         </NavLink>
         <NavLink
           to="/player/deity-relationship"
-          style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+          className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}
         >
           Deity Relationship
         </NavLink>
       </nav>
-      <main style={{ flex: 1, padding: "1rem" }}>
+      <main className="app-shell__main">
         <Routes>
           <Route path="/" element={<Navigate to="characters" replace />} />
           <Route path="campaigns/:campaignId" element={<CampaignHubLayout />}>
