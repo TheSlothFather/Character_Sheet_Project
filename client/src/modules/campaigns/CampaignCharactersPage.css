@@ -16,13 +16,9 @@
   gap: var(--space-3);
 }
 
-.campaign-characters__title {
-  margin: 0;
-}
 
 .campaign-characters__subtitle {
-  margin: 0.25rem 0 0;
-  color: var(--muted);
+  margin: 0;
 }
 
 .campaign-characters__button {

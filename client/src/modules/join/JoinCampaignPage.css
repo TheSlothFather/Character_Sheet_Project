@@ -22,12 +22,6 @@
 }
 
 .join-campaign__title {
-  margin-top: 0;
-}
-
-.join-campaign__subtitle {
-  color: var(--muted);
-  margin-top: 0;
 }
 
 .join-campaign__message {
@@ -49,7 +43,6 @@
 
 .join-campaign__auth-title {
   font-weight: 700;
-  margin-bottom: var(--space-2);
 }
 
 .join-campaign__field {
@@ -109,11 +102,6 @@
 
 .join-campaign__characters-title {
   font-weight: 700;
-  margin-bottom: var(--space-2);
-}
-
-.join-campaign__muted {
-  color: var(--muted);
 }
 
 .join-campaign__character-list {
@@ -139,9 +127,4 @@
 
 .join-campaign__character-name {
   font-weight: 700;
-}
-
-.join-campaign__character-meta {
-  color: var(--muted);
-  font-size: 0.9rem;
 }

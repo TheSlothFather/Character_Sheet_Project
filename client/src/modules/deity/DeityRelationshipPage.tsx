@@ -238,8 +238,8 @@ export const DeityRelationshipPage: React.FC = () => {
   return (
     <div className="deity-page">
       <header className="deity-header">
-        <h1 className="deity-title">Deity Relationship</h1>
-        <p className="deity-intro">
+        <h1 className="deity-title h1">Deity Relationship</h1>
+        <p className="deity-intro subtitle muted">
           Manage Deity Relationship Points (DR), cap tiers, worship generation, beseech options, and sect-specific
           deities.
         </p>
@@ -253,7 +253,7 @@ export const DeityRelationshipPage: React.FC = () => {
 
       <section className="deity-grid">
         <div className="deity-card">
-          <h2 className="deity-card-title">Inputs</h2>
+          <h2 className="deity-card-title h2">Inputs</h2>
           <label className="deity-label">
             Character
             <select
@@ -306,7 +306,7 @@ export const DeityRelationshipPage: React.FC = () => {
         </div>
 
         <div className="deity-card">
-          <h2 className="deity-card-title">Cap & Currency</h2>
+          <h2 className="deity-card-title h2">Cap & Currency</h2>
           <div className="deity-cap">{cap}</div>
           <div className="deity-muted deity-spacing">
             {safeData.currency.name}: {safeData.currency.currentKey} / {safeData.currency.capKey}
@@ -321,7 +321,7 @@ export const DeityRelationshipPage: React.FC = () => {
         </div>
 
         <div className="deity-card">
-          <h2 className="deity-card-title">Worship Generation</h2>
+          <h2 className="deity-card-title h2">Worship Generation</h2>
           <ul className="deity-list">
             <li>
               Passive: {safeData.mechanics.worshipGeneration.passive} ⇒ {3 * spiritualAttribute} DR
@@ -333,10 +333,10 @@ export const DeityRelationshipPage: React.FC = () => {
       </section>
 
       <section className="deity-card">
-        <h2 className="deity-heading">Mechanics & Gear</h2>
+        <h2 className="deity-heading h2">Mechanics & Gear</h2>
         <div className="deity-gear-grid">
           <div>
-            <h3 className="deity-heading">Rules</h3>
+            <h3 className="deity-heading h3">Rules</h3>
             <ul className="deity-list">
               <li>{safeData.mechanics.apostasy}</li>
               <li>{safeData.mechanics.spiritualLimit}</li>
@@ -345,7 +345,7 @@ export const DeityRelationshipPage: React.FC = () => {
             </ul>
           </div>
           <div>
-            <h3 className="deity-heading">Gear Integration</h3>
+            <h3 className="deity-heading h3">Gear Integration</h3>
             <ul className="deity-list">
               {safeData.mechanics.gearIntegration.equipmentSlots.map((slot) => (
                 <li key={slot}>
@@ -355,14 +355,14 @@ export const DeityRelationshipPage: React.FC = () => {
             </ul>
           </div>
           <div>
-            <h3 className="deity-heading">Worship Tracker</h3>
+            <h3 className="deity-heading h3">Worship Tracker</h3>
             <p className="deity-paragraph">{safeData.mechanics.worshipTracker}</p>
           </div>
         </div>
       </section>
 
       <section className="deity-card">
-        <h2 className="deity-heading">Worship Log</h2>
+        <h2 className="deity-heading h2">Worship Log</h2>
         <div className="deity-grid-tight">
           <label className="deity-label">
             Deity
@@ -468,11 +468,11 @@ export const DeityRelationshipPage: React.FC = () => {
       </section>
 
       <section className="deity-card">
-        <h2 className="deity-heading">Sects & Deities</h2>
+        <h2 className="deity-heading h2">Sects & Deities</h2>
         <div className="deity-sect-grid">
           {groupedDeities.map((group) => (
             <div key={group.sect} className="deity-sect-card">
-              <h3 className="deity-sect-title">{group.sect}</h3>
+              <h3 className="deity-sect-title h3">{group.sect}</h3>
               <div className="deity-sect-meta">
                 Alignment: {safeData.sects.find((sect) => sect.name === group.sect)?.alignment ?? ""}
               </div>
@@ -484,7 +484,7 @@ export const DeityRelationshipPage: React.FC = () => {
                     <span className="deity-sect-alignment">{deity.alignment}</span>
                   </div>
                   <div className="deity-section-spacing">
-                    <div className="deity-section-heading">Worship</div>
+                    <div className="deity-section-heading subtitle">Worship</div>
                     <ul className="deity-list-tight">
                       {deity.worship.map((action) => (
                         <li key={action.name}>
@@ -497,7 +497,7 @@ export const DeityRelationshipPage: React.FC = () => {
                     </ul>
                   </div>
                   <div className="deity-section-spacing">
-                    <div className="deity-section-heading">Divine Interventions</div>
+                    <div className="deity-section-heading subtitle">Divine Interventions</div>
                     {Array.isArray(deity.divineInterventions) ? (
                       <ul className="deity-list-tight">
                         {deity.divineInterventions.map((spell) => (

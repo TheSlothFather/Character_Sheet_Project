@@ -9,13 +9,8 @@
   padding-bottom: 0.5rem;
 }
 
-.deity-title {
-  margin: 0;
-}
-
 .deity-intro {
-  margin: 0.5rem 0;
-  color: var(--muted);
+  margin: 0;
 }
 
 .deity-warning {
@@ -34,10 +29,6 @@
   padding: 1rem;
   border-radius: var(--border-radius-sm);
   background: var(--surface-1);
-}
-
-.deity-card-title {
-  margin-top: 0;
 }
 
 .deity-label {
@@ -210,7 +201,6 @@
 }
 
 .deity-section-heading {
-  font-size: 13px;
   color: var(--success);
 }
 

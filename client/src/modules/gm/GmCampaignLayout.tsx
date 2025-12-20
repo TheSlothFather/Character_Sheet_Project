@@ -50,11 +50,11 @@ export const GmCampaignLayout: React.FC = () => {
   return (
     <div className="gm-campaign">
       <header className="gm-campaign__header">
-        <h2 className="gm-campaign__title">GM Campaign</h2>
-        <p className="gm-campaign__subtitle">
+        <h2 className="gm-campaign__title h2">GM Campaign</h2>
+        <p className="gm-campaign__subtitle subtitle muted">
           {loading ? "Loading campaign..." : campaign?.name || "Unnamed campaign"}
         </p>
-        {error && <p className="gm-campaign__error">{error}</p>}
+        {error && <p className="gm-campaign__error body">{error}</p>}
       </header>
       <Outlet />
     </div>

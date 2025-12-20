@@ -381,28 +381,28 @@ export const MartialProwessPage: React.FC = () => {
   };
 
   if (!selectedId) {
-    return <p>Please select a character on the Characters page to view martial prowess.</p>;
+    return <p className="body">Please select a character on the Characters page to view martial prowess.</p>;
   }
 
   if (loadingCharacter) {
-    return <p>Loading character...</p>;
+    return <p className="body muted">Loading character...</p>;
   }
 
   if (characterError) {
-    return <p className="martial-page__error">{characterError}</p>;
+    return <p className="martial-page__error body">{characterError}</p>;
   }
 
   if (!selectedCharacter) {
-    return <p>Selected character could not be found.</p>;
+    return <p className="body">Selected character could not be found.</p>;
   }
 
   return (
     <div className="martial-page">
       <header className="martial-page__header">
         <div className="martial-page__header-text">
-          <h1 className="martial-page__title">Martial Prowess</h1>
-          <p className="martial-page__subtitle">Character: {selectedCharacter.name}</p>
-          <p className="martial-page__hint">
+          <h1 className="martial-page__title h1">Martial Prowess</h1>
+          <p className="martial-page__subtitle subtitle muted">Character: {selectedCharacter.name}</p>
+          <p className="martial-page__hint caption muted">
             Assign MP to a category, then buy abilities from that category's pool.
           </p>
         </div>
@@ -433,7 +433,7 @@ export const MartialProwessPage: React.FC = () => {
       <div className="martial-page__layout">
         <aside className="martial-page__sidebar">
           <div className="martial-page__sidebar-header">
-            <div className="martial-page__sidebar-title">Categories</div>
+            <div className="martial-page__sidebar-title h3">Categories</div>
             <div className="martial-page__sidebar-count">{categoryEntries.length} total</div>
           </div>
 
@@ -492,18 +492,18 @@ export const MartialProwessPage: React.FC = () => {
               <div className="martial-page__detail-header">
                 <div className="martial-page__detail-info">
                   <div className="martial-page__detail-title">
-                    <h2 className="martial-page__detail-name">
+                    <h2 className="martial-page__detail-name h2">
                       {activeCategory.category}
                     </h2>
                     <span className="martial-page__detail-kind">
                       {activeCategory.kind}
                     </span>
                   </div>
-                  <span className="martial-page__detail-hint">
+                  <span className="martial-page__detail-hint body muted">
                     Allocate MP to this discipline, then spend that pool on the abilities you want to master.
                   </span>
                   <label className="martial-page__allocation">
-                    <div className="martial-page__allocation-title">Category MP Allocation</div>
+                    <div className="martial-page__allocation-title h3">Category MP Allocation</div>
                     <input
                       type="number"
                       value={activeCategoryAllocation}
@@ -513,7 +513,7 @@ export const MartialProwessPage: React.FC = () => {
                       onWheel={(e) => e.preventDefault()}
                       className="martial-page__allocation-input"
                     />
-                    <div className="martial-page__allocation-note">
+                    <div className="martial-page__allocation-note caption muted">
                       Requires at least {activeCategorySpent} MP to cover purchased abilities.
                     </div>
                   </label>

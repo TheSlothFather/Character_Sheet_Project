@@ -569,8 +569,8 @@ export const CharacterCreationPage: React.FC = () => {
       <div className="character-creation__card character-creation__section">
         <div className="character-creation__section-header">
           <div>
-            <div className="character-creation__section-title">{stage}</div>
-            <div className="character-creation__section-subtitle">
+            <div className="character-creation__section-title caption muted">{stage}</div>
+            <div className="character-creation__section-subtitle h3">
               Choose {limit} ({multi ? `${(selected as string[] | undefined)?.length ?? 0}` : selected ? 1 : 0}/{limit})
             </div>
           </div>
@@ -694,7 +694,7 @@ export const CharacterCreationPage: React.FC = () => {
   return (
     <>
       <div className="character-creation">
-        <h2 className="character-creation__title">Character Creation</h2>
+        <h2 className="character-creation__title h2">Character Creation</h2>
         {(definitionsError || backgroundsError || submitError) && (
           <p className="character-creation__error">{definitionsError || backgroundsError || submitError}</p>
         )}
@@ -810,8 +810,8 @@ export const CharacterCreationPage: React.FC = () => {
             <div className="character-creation__card character-creation__section">
               <div className="character-creation__section-header">
                 <div>
-                  <div className="character-creation__section-title">Attributes</div>
-                  <div className="character-creation__section-subtitle">
+                  <div className="character-creation__section-title caption muted">Attributes</div>
+                  <div className="character-creation__section-subtitle h3">
                     Distribute {ATTRIBUTE_POINT_POOL} points (min {ATTRIBUTE_MIN}, max {ATTRIBUTE_MAX})
                   </div>
                 </div>
@@ -827,7 +827,7 @@ export const CharacterCreationPage: React.FC = () => {
             </div>
 
             <div className="character-creation__card character-creation__section">
-              <div className="character-creation__section-title">Skill Adjustments</div>
+              <div className="character-creation__section-title caption muted">Skill Adjustments</div>
               <div className="character-creation__skill-list">
                 {sortedSkills
                   .map((skill) => ({ skill, bonus: skillBonuses[getSkillCode(skill)] ?? 0 }))
@@ -859,8 +859,8 @@ export const CharacterCreationPage: React.FC = () => {
             <div className="character-creation__modal-header">
               <div>
                 <div className="character-creation__muted">Psionic unlocks</div>
-                <h3 className="character-creation__modal-title">Select Psionic Abilities</h3>
-                <p className="character-creation__modal-subtitle">
+                <h3 className="character-creation__modal-title h2">Select Psionic Abilities</h3>
+                <p className="character-creation__modal-subtitle subtitle muted">
                   {psionicsModal.characterName} qualifies for additional psionic techniques. Choose the required options now or
                   keep the defaults to pick later.
                 </p>

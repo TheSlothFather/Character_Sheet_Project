@@ -2,14 +2,8 @@
   color: var(--text);
 }
 
-.magic-faculties__title {
-  margin-top: 0;
-  margin-bottom: var(--space-2);
-}
-
 .magic-faculties__intro {
   margin-top: 0;
-  color: var(--muted);
 }
 
 .magic-faculties__summary {
@@ -24,10 +18,6 @@
 
 .magic-faculties__panel--spaced {
   margin-top: var(--space-4);
-}
-
-.magic-faculties__panel-title {
-  margin: 0 0 var(--space-2);
 }
 
 .magic-faculties__panel-text {

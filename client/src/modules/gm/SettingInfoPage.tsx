@@ -156,14 +156,14 @@ export const SettingInfoPage: React.FC = () => {
   return (
     <div className="gm-setting-info">
       <header>
-        <h2 className="gm-setting-info__title">Setting Info</h2>
-        <p className="gm-setting-info__subtitle">
+        <h2 className="gm-setting-info__title h2">Setting Info</h2>
+        <p className="gm-setting-info__subtitle subtitle muted">
           Create and maintain campaign setting notes for quick reference.
         </p>
       </header>
 
       <section className="gm-setting-info__card">
-        <h3 className="gm-setting-info__card-title">Add Setting Note</h3>
+        <h3 className="gm-setting-info__card-title h3">Add Setting Note</h3>
         {error && <div className="gm-setting-info__message gm-setting-info__message--error">{error}</div>}
         {loading && <div className="gm-setting-info__message gm-setting-info__message--loading">Loading...</div>}
         {!campaignId && campaigns.length === 0 ? (
@@ -233,7 +233,7 @@ export const SettingInfoPage: React.FC = () => {
       </section>
 
       <section className="gm-setting-info__card">
-        <h3 className="gm-setting-info__card-title">Setting Notes</h3>
+        <h3 className="gm-setting-info__card-title h3">Setting Notes</h3>
         {entries.length === 0 ? (
           <p className="gm-setting-info__muted">No setting notes yet.</p>
         ) : (

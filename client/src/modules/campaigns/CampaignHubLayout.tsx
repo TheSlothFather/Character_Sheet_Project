@@ -46,11 +46,11 @@ export const CampaignHubLayout: React.FC = () => {
   return (
     <div className="campaign-hub">
       <header className="campaign-hub__header">
-        <h2 className="campaign-hub__title">Campaign Hub</h2>
-        <p className="campaign-hub__subtitle">
+        <h2 className="campaign-hub__title h2">Campaign Hub</h2>
+        <p className="campaign-hub__subtitle subtitle muted">
           {loading ? "Loading campaign..." : campaignName || "Unnamed campaign"}
         </p>
-        {error && <p className="campaign-hub__error">{error}</p>}
+        {error && <p className="campaign-hub__error body">{error}</p>}
       </header>
       <nav className="campaign-hub__nav">
         <NavLink

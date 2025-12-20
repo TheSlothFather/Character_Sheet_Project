@@ -102,8 +102,8 @@ export const GmApp: React.FC = () => {
       <div className="gm-app__center">
         <form onSubmit={handleAuth} className="gm-app__auth">
           <div className="gm-app__card">
-            <h2 className="gm-app__card-title">{authMode === "sign-in" ? "GM Sign In" : "Create GM Account"}</h2>
-            <p className="gm-app__subtitle">
+            <h2 className="gm-app__card-title h2">{authMode === "sign-in" ? "GM Sign In" : "Create GM Account"}</h2>
+            <p className="gm-app__subtitle subtitle muted">
               You must be signed in for GM actions (campaigns, invites, bestiary, settings).
             </p>
             {error && <div className="gm-app__message gm-app__message--error">{error}</div>}
@@ -158,8 +158,8 @@ export const GmApp: React.FC = () => {
   return (
     <div className="gm-app">
       <nav className="gm-app__nav">
-        <h1 className="gm-app__title">GM Console</h1>
-        <div className="gm-app__meta">
+        <h1 className="gm-app__title h2">GM Console</h1>
+        <div className="gm-app__meta caption muted">
           {user.email ?? "Signed in"}
           <button
             type="button"
@@ -198,7 +198,7 @@ export const GmApp: React.FC = () => {
             >
               Setting Info
             </NavLink>
-            <div className="gm-app__section-label">
+            <div className="gm-app__section-label caption muted">
               Player Views
             </div>
             <NavLink

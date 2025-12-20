@@ -2,10 +2,6 @@
   color: var(--text);
 }
 
-.characters-page__title {
-  margin-bottom: var(--space-3);
-}
-
 .characters-page__error {
   color: var(--danger);
 }

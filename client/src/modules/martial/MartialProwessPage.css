@@ -27,21 +27,12 @@
   gap: 6px;
 }
 
-.martial-page__title {
-  margin: 0;
-  letter-spacing: 0.4px;
-}
-
 .martial-page__subtitle {
   margin: 0;
-  color: var(--muted);
-  font-size: 14px;
 }
 
 .martial-page__hint {
   margin: 0;
-  color: var(--muted);
-  font-size: 12px;
 }
 
 .martial-page__summary {
@@ -264,9 +255,6 @@
 
 .martial-page__detail-name {
   margin: 0;
-  color: var(--text);
-  font-size: 18px;
-  letter-spacing: 0.3px;
 }
 
 .martial-page__detail-kind {
@@ -278,11 +266,6 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-}
-
-.martial-page__detail-hint {
-  color: var(--muted);
-  font-size: 13px;
 }
 
 .martial-page__allocation {
@@ -297,9 +280,7 @@
 }
 
 .martial-page__allocation-title {
-  color: var(--text);
   font-weight: 600;
-  font-size: 13px;
 }
 
 .martial-page__allocation-input {
@@ -312,10 +293,6 @@
   font-weight: 600;
 }
 
-.martial-page__allocation-note {
-  font-size: 12px;
-  color: var(--muted);
-}
 
 .martial-page__detail-stats {
   display: grid;

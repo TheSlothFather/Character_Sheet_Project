@@ -28,3 +28,57 @@ h6 {
 a {
   color: var(--accent);
 }
+
+.h1,
+.h2,
+.h3 {
+  font-family: var(--font-heading);
+  color: var(--text-heading);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.h1 {
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-tight);
+  margin: 0 0 var(--space-3);
+}
+
+.h2 {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-tight);
+  margin: 0 0 var(--space-2);
+}
+
+.h3 {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-tight);
+  margin: 0 0 var(--space-2);
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--text-body);
+  margin: 0 0 var(--space-3);
+}
+
+.body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--text-body);
+  margin: 0 0 var(--space-3);
+}
+
+.caption {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+  color: var(--text-body);
+  margin: 0;
+}
+
+.muted {
+  color: var(--muted);
+}
