@@ -45,6 +45,11 @@ const mapCombatant = (combatant: CampaignCombatant): CombatEntry => ({
   isActive: combatant.isActive ?? false
 });
 
+const fallbackNumber = (value?: number | null, fallback = 0): number =>
+  typeof value === "number" && !Number.isNaN(value) ? value : fallback;
+
+const calculateEnergyGain = (ap: number, tier: number): number => ap * tier * 3;
+
 const deriveTier = (entry: ApiBestiaryEntry): number | undefined => {
   const stats = entry.statsSkills ?? {};
   const attributes = entry.attributes ?? {};
@@ -76,6 +81,7 @@ export const CombatPage: React.FC = () => {
   const [addingId, setAddingId] = React.useState<string>("");
   const [addingFaction, setAddingFaction] = React.useState<CombatFaction>("enemy");
   const [addingActive, setAddingActive] = React.useState(true);
+  const [endTurnSpend, setEndTurnSpend] = React.useState<Record<string, string>>({});
 
   React.useEffect(() => {
     if (campaignId) {
@@ -202,6 +208,34 @@ export const CombatPage: React.FC = () => {
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "Failed to add combatant.");
     }
+  };
+
+  const handleStartTurn = async (entry: CombatEntry) => {
+    const apCurrent = fallbackNumber(entry.apCurrent);
+    const tier = fallbackNumber(entry.tier);
+    if (apCurrent <= 0 || tier <= 0) return;
+    const energyCurrent = fallbackNumber(entry.energyCurrent);
+    const energyGain = calculateEnergyGain(apCurrent, tier);
+    await updateCombatant(entry.id, {
+      energyCurrent: energyCurrent + energyGain
+    });
+  };
+
+  const handleEndTurn = async (entry: CombatEntry) => {
+    const apCurrent = fallbackNumber(entry.apCurrent);
+    const tier = fallbackNumber(entry.tier);
+    if (apCurrent <= 0 || tier <= 0) return;
+    const rawSpend = endTurnSpend[entry.id];
+    const spendValue = rawSpend === "" || rawSpend === undefined ? 0 : Number(rawSpend);
+    if (!Number.isFinite(spendValue) || spendValue <= 0) return;
+    const clampedSpend = Math.min(Math.max(spendValue, 0), apCurrent);
+    const energyCurrent = fallbackNumber(entry.energyCurrent);
+    const energyGain = calculateEnergyGain(clampedSpend, tier);
+    await updateCombatant(entry.id, {
+      apCurrent: apCurrent - clampedSpend,
+      energyCurrent: energyCurrent + energyGain
+    });
+    setEndTurnSpend((prev) => ({ ...prev, [entry.id]: "" }));
   };
 
   const filteredEntries = showInactive ? combatants : combatants.filter((entry) => entry.isActive);
@@ -379,6 +413,16 @@ export const CombatPage: React.FC = () => {
                   const isSelected = selectedIds.has(entry.id);
                   const isUpdating = updatingIds.includes(entry.id) || bulkUpdating;
                   const statusColor = entry.isActive ? "#9ae6b4" : "#fbbf24";
+                  const energyCurrent = fallbackNumber(entry.energyCurrent);
+                  const apCurrent = fallbackNumber(entry.apCurrent);
+                  const energyMax = entry.energyMax ?? null;
+                  const apMax = entry.apMax ?? null;
+                  const tier = fallbackNumber(entry.tier);
+                  const startTurnGain = entry.isActive && apCurrent > 0 && tier > 0 ? calculateEnergyGain(apCurrent, tier) : 0;
+                  const rawSpend = endTurnSpend[entry.id] ?? "";
+                  const spendValue = rawSpend === "" ? 0 : Number(rawSpend);
+                  const clampedSpend = Number.isFinite(spendValue) ? Math.min(Math.max(spendValue, 0), apCurrent) : 0;
+                  const endTurnGain = entry.isActive && clampedSpend > 0 && tier > 0 ? calculateEnergyGain(clampedSpend, tier) : 0;
                   return (
                     <div
                       key={entry.id}
@@ -405,6 +449,24 @@ export const CombatPage: React.FC = () => {
                           {entry.isActive ? "Active" : "Inactive"}
                         </span>
                       </div>
+                      {entry.isActive && (
+                        <div style={{ display: "grid", gap: "0.35rem", color: "#cbd5e1", fontSize: 13 }}>
+                          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                            <span>
+                              <strong>Energy:</strong> {energyCurrent}
+                              {energyMax !== null ? ` / ${energyMax}` : ""}
+                            </span>
+                            <span>
+                              <strong>AP:</strong> {apCurrent}
+                              {apMax !== null ? ` / ${apMax}` : ""}
+                            </span>
+                            <span>
+                              <strong>Tier:</strong> {tier > 0 ? tier : "—"}
+                            </span>
+                          </div>
+                          <span style={{ color: "#94a3b8" }}>Formula: energy gain = AP × Tier × 3</span>
+                        </div>
+                      )}
                       <label style={{ display: "grid", gap: "0.35rem" }}>
                         <span style={{ fontSize: 12, color: "#94a3b8" }}>Faction</span>
                         <select
@@ -473,6 +535,72 @@ export const CombatPage: React.FC = () => {
                           />
                         </label>
                       </div>
+                      {entry.isActive && (
+                        <div style={{ display: "grid", gap: "0.5rem", padding: "0.6rem", borderRadius: 10, border: "1px solid #1f2935" }}>
+                          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+                            <button
+                              type="button"
+                              onClick={() => handleStartTurn(entry)}
+                              disabled={isUpdating || apCurrent <= 0 || tier <= 0}
+                              style={{
+                                padding: "0.45rem 0.8rem",
+                                borderRadius: 8,
+                                border: "1px solid #2563eb",
+                                background: "#1d4ed8",
+                                color: "#e0f2fe",
+                                fontWeight: 700,
+                                cursor: isUpdating || apCurrent <= 0 || tier <= 0 ? "not-allowed" : "pointer",
+                                opacity: isUpdating || apCurrent <= 0 || tier <= 0 ? 0.6 : 1
+                              }}
+                            >
+                              Start Turn
+                            </button>
+                            <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                              Gain {startTurnGain} energy = {apCurrent} × {tier || "?"} × 3
+                            </span>
+                          </div>
+                          <div style={{ display: "grid", gap: "0.45rem" }}>
+                            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+                              <input
+                                type="number"
+                                min={0}
+                                max={apCurrent}
+                                value={rawSpend}
+                                onChange={(event) =>
+                                  setEndTurnSpend((prev) => ({
+                                    ...prev,
+                                    [entry.id]: event.target.value
+                                  }))
+                                }
+                                placeholder="AP to spend"
+                                style={{ ...inputStyle, width: 140 }}
+                                disabled={isUpdating || apCurrent <= 0 || tier <= 0}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleEndTurn(entry)}
+                                disabled={isUpdating || apCurrent <= 0 || tier <= 0 || clampedSpend <= 0}
+                                style={{
+                                  padding: "0.45rem 0.8rem",
+                                  borderRadius: 8,
+                                  border: "1px solid #a855f7",
+                                  background: "#6b21a8",
+                                  color: "#f5d0fe",
+                                  fontWeight: 700,
+                                  cursor:
+                                    isUpdating || apCurrent <= 0 || tier <= 0 || clampedSpend <= 0 ? "not-allowed" : "pointer",
+                                  opacity: isUpdating || apCurrent <= 0 || tier <= 0 || clampedSpend <= 0 ? 0.6 : 1
+                                }}
+                              >
+                                End Turn
+                              </button>
+                            </div>
+                            <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                              Spend {clampedSpend} AP → gain {endTurnGain} energy = {clampedSpend} × {tier || "?"} × 3
+                            </span>
+                          </div>
+                        </div>
+                      )}
                       <label style={{ display: "grid", gap: "0.35rem" }}>
                         <span style={{ fontSize: 12, color: "#94a3b8" }}>Notes</span>
                         <textarea
