@@ -15,6 +15,9 @@ type BestiaryEntry = {
   tier: string;
   maxEnergy: string;
   maxAp: string;
+  dr: string;
+  armorType: string;
+  energyBars: string;
   attributes: Record<AttributeKey, string>;
   skills: Record<string, string>;
   abilityType: string;
@@ -129,6 +132,9 @@ export const BestiaryPage: React.FC = () => {
   const [tier, setTier] = React.useState("");
   const [maxEnergy, setMaxEnergy] = React.useState("");
   const [maxAp, setMaxAp] = React.useState("");
+  const [dr, setDr] = React.useState("");
+  const [armorType, setArmorType] = React.useState("");
+  const [energyBars, setEnergyBars] = React.useState("");
   const [attributes, setAttributes] = React.useState<Record<AttributeKey, string>>({
     PHYSICAL: "",
     MENTAL: "",
@@ -173,6 +179,9 @@ export const BestiaryPage: React.FC = () => {
     setTier("");
     setMaxEnergy("");
     setMaxAp("");
+    setDr("");
+    setArmorType("");
+    setEnergyBars("");
     setAttributes({ PHYSICAL: "", MENTAL: "", SPIRITUAL: "", WILL: "" });
     setSkills((prev) => {
       const next: Record<string, string> = {};
@@ -266,6 +275,9 @@ export const BestiaryPage: React.FC = () => {
       const tier = readNumberString(statsSkills?.tier ?? attributesPayload?.tier);
       const maxEnergy = readNumberString(attributesPayload?.energy);
       const maxAp = readNumberString(attributesPayload?.ap);
+      const drValue = readNumberString(attributesPayload?.dr ?? entry.dr);
+      const armorTypeValue = typeof entry.armorType === "string" ? entry.armorType : "";
+      const energyBarsValue = readNumberString(attributesPayload?.energy_bars ?? entry.energyBars);
       const rankValue = typeof entry.rank === "string" ? entry.rank : "NPC";
       const attributesValues = ATTRIBUTE_KEYS.reduce<Record<AttributeKey, string>>((acc, key) => {
         acc[key] = readNumberString((attributesPayload as Record<string, unknown>)[key]);
@@ -306,6 +318,9 @@ export const BestiaryPage: React.FC = () => {
         tier,
         maxEnergy,
         maxAp,
+        dr: drValue,
+        armorType: armorTypeValue,
+        energyBars: energyBarsValue,
         attributes: attributesValues,
         skills: skillsValues,
         abilityType: abilityTypeValue,
@@ -458,7 +473,10 @@ export const BestiaryPage: React.FC = () => {
           skills: buildSkillsPayload(entry),
           abilities: entry.abilities,
           tags: entry.tags,
-          rank: normalizeRank(entry.rank)
+          rank: normalizeRank(entry.rank),
+          dr: entry.attributes.dr,
+          armorType: entry.armorType,
+          energyBars: entry.energyBars
         });
         heroIdByName.set(entry.name, created.id);
       }
@@ -477,6 +495,9 @@ export const BestiaryPage: React.FC = () => {
           abilities: entry.abilities,
           tags: entry.tags,
           rank: normalizeRank(entry.rank),
+          dr: entry.attributes.dr,
+          armorType: entry.armorType,
+          energyBars: entry.energyBars,
           heroId: heroIdByName.get(heroName)
         });
         lieutenantIdByName.set(entry.name, created.id);
@@ -496,6 +517,9 @@ export const BestiaryPage: React.FC = () => {
           abilities: entry.abilities,
           tags: entry.tags,
           rank: normalizeRank(entry.rank),
+          dr: entry.attributes.dr,
+          armorType: entry.armorType,
+          energyBars: entry.energyBars,
           lieutenantId: lieutenantIdByName.get(lieutenantName)
         });
       }
@@ -541,6 +565,16 @@ export const BestiaryPage: React.FC = () => {
     const maxApParsed = parseIntegerField("Max AP", maxAp);
     if (maxApParsed.error) {
       setError(maxApParsed.error);
+      return;
+    }
+    const drParsed = parseIntegerField("DR", dr);
+    if (drParsed.error) {
+      setError(drParsed.error);
+      return;
+    }
+    const energyBarsParsed = parseIntegerField("Energy Bars", energyBars);
+    if (energyBarsParsed.error) {
+      setError(energyBarsParsed.error);
       return;
     }
     if (!RANK_OPTIONS.includes(rank)) {
@@ -591,6 +625,8 @@ export const BestiaryPage: React.FC = () => {
     }
     if (maxEnergyParsed.value !== undefined) attributesPayload.energy = maxEnergyParsed.value;
     if (maxApParsed.value !== undefined) attributesPayload.ap = maxApParsed.value;
+    if (drParsed.value !== undefined) attributesPayload.dr = drParsed.value;
+    if (energyBarsParsed.value !== undefined) attributesPayload.energy_bars = energyBarsParsed.value;
     const bonuses = computeAttributeSkillBonuses(attributeNumbers, skillDefinitions);
     const skillsPayload: Record<string, number> = {};
     skillDefinitions.forEach((skill) => {
@@ -632,6 +668,9 @@ export const BestiaryPage: React.FC = () => {
         tier,
         maxEnergy,
         maxAp,
+        dr,
+        armorType,
+        energyBars,
         attributes,
         skills,
         abilityType,
@@ -650,6 +689,9 @@ export const BestiaryPage: React.FC = () => {
         skills: Object.keys(skillsPayload).length ? skillsPayload : undefined,
         abilities: abilitiesPayload,
         rank,
+        dr: drParsed.value,
+        armorType: armorType.trim() || undefined,
+        energyBars: energyBarsParsed.value,
         lieutenantId: rank === "Minion" ? lieutenantId : undefined,
         heroId: rank === "Lieutenant" ? heroId : undefined
       });
@@ -712,6 +754,16 @@ export const BestiaryPage: React.FC = () => {
       setError(maxApParsed.error);
       return;
     }
+    const drParsed = parseIntegerField("DR", editDraft.dr);
+    if (drParsed.error) {
+      setError(drParsed.error);
+      return;
+    }
+    const energyBarsParsed = parseIntegerField("Energy Bars", editDraft.energyBars);
+    if (energyBarsParsed.error) {
+      setError(energyBarsParsed.error);
+      return;
+    }
     if (!RANK_OPTIONS.includes(editDraft.rank)) {
       setError("Rank must be NPC, Minion, Lieutenant, or Hero.");
       return;
@@ -760,6 +812,8 @@ export const BestiaryPage: React.FC = () => {
     }
     if (maxEnergyParsed.value !== undefined) attributesPayload.energy = maxEnergyParsed.value;
     if (maxApParsed.value !== undefined) attributesPayload.ap = maxApParsed.value;
+    if (drParsed.value !== undefined) attributesPayload.dr = drParsed.value;
+    if (energyBarsParsed.value !== undefined) attributesPayload.energy_bars = energyBarsParsed.value;
     const bonuses = computeAttributeSkillBonuses(attributeNumbers, skillDefinitions);
     const skillsPayload: Record<string, number> = {};
     skillDefinitions.forEach((skill) => {
@@ -800,6 +854,9 @@ export const BestiaryPage: React.FC = () => {
         skills: Object.keys(skillsPayload).length ? skillsPayload : undefined,
         abilities: abilitiesPayload,
         rank: editDraft.rank,
+        dr: drParsed.value,
+        armorType: editDraft.armorType.trim() || null,
+        energyBars: energyBarsParsed.value,
         lieutenantId: editDraft.rank === "Minion" ? editDraft.lieutenantId : null,
         heroId: editDraft.rank === "Lieutenant" ? editDraft.heroId : null
       });
@@ -1063,6 +1120,13 @@ export const BestiaryPage: React.FC = () => {
                         Attributes: {Object.keys(entry.attributes).length} • Skills: {Object.keys(entry.skills).length} • Abilities:{" "}
                         {entry.abilities.length}
                       </span>
+                      {entry.attributes.dr !== undefined && (
+                        <span className={styles.mutedTextSmall}>DR: {entry.attributes.dr}</span>
+                      )}
+                      {entry.armorType && <span className={styles.mutedTextSmall}>Armor: {entry.armorType}</span>}
+                      {entry.energyBars !== undefined && (
+                        <span className={styles.mutedTextSmall}>Energy Bars: {entry.energyBars}</span>
+                      )}
                       {entry.heroName && <span className={styles.mutedTextSmall}>Hero: {entry.heroName}</span>}
                       {entry.lieutenantName && <span className={styles.mutedTextSmall}>Lieutenant: {entry.lieutenantName}</span>}
                     </div>
@@ -1187,6 +1251,35 @@ export const BestiaryPage: React.FC = () => {
                       value={maxAp}
                       onChange={(event) => setMaxAp(event.target.value)}
                       placeholder="6"
+                      className={styles.input}
+                      inputMode="numeric"
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>DR</span>
+                    <input
+                      value={dr}
+                      onChange={(event) => setDr(event.target.value)}
+                      placeholder="10"
+                      className={styles.input}
+                      inputMode="numeric"
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Armor Type</span>
+                    <input
+                      value={armorType}
+                      onChange={(event) => setArmorType(event.target.value)}
+                      placeholder="Plate"
+                      className={styles.input}
+                    />
+                  </label>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Energy Bars</span>
+                    <input
+                      value={energyBars}
+                      onChange={(event) => setEnergyBars(event.target.value)}
+                      placeholder="3"
                       className={styles.input}
                       inputMode="numeric"
                     />
@@ -1426,6 +1519,26 @@ export const BestiaryPage: React.FC = () => {
                       className={styles.input}
                       inputMode="numeric"
                     />
+                    <input
+                      value={editDraft.dr}
+                      onChange={(event) => setEditDraft({ ...editDraft, dr: event.target.value })}
+                      placeholder="DR"
+                      className={styles.input}
+                      inputMode="numeric"
+                    />
+                    <input
+                      value={editDraft.armorType}
+                      onChange={(event) => setEditDraft({ ...editDraft, armorType: event.target.value })}
+                      placeholder="Armor Type"
+                      className={styles.input}
+                    />
+                    <input
+                      value={editDraft.energyBars}
+                      onChange={(event) => setEditDraft({ ...editDraft, energyBars: event.target.value })}
+                      placeholder="Energy Bars"
+                      className={styles.input}
+                      inputMode="numeric"
+                    />
                   </div>
                   <textarea
                     value={editDraft.description}
@@ -1618,6 +1731,17 @@ export const BestiaryPage: React.FC = () => {
                       <div>
                         <div className={styles.statLabel}>Max AP</div>
                         <div className={styles.statValue}>{selectedEntry.maxAp || "—"}</div>
+                      </div>
+                      <div>
+                        <div className={styles.statLabel}>DR</div>
+                        <div className={styles.statValue}>{selectedEntry.dr || "—"}</div>
+                        {selectedEntry.armorType && (
+                          <div className={styles.mutedTextSmall}>{selectedEntry.armorType}</div>
+                        )}
+                      </div>
+                      <div>
+                        <div className={styles.statLabel}>Energy Bars</div>
+                        <div className={styles.statValue}>{selectedEntry.energyBars || "—"}</div>
                       </div>
                       <div>
                         <div className={styles.statLabel}>Ability</div>

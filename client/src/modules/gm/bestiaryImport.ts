@@ -7,10 +7,13 @@ export type ParsedBestiaryEntry = {
   groupName?: string;
   heroName?: string;
   lieutenantName?: string;
+  armorType?: string;
+  energyBars?: number;
   attributes: Partial<Record<AttributeKey, number>> & {
     energy?: number;
     ap?: number;
     dr?: number;
+    energy_bars?: number;
   };
   skills: Record<string, number>;
   abilities: BestiaryAbility[];
@@ -99,6 +102,7 @@ const parseSkillLine = (
 const parseEnergyAp = (
   line: string,
   attributes: ParsedBestiaryEntry["attributes"],
+  entry: ParsedBestiaryEntry,
   messages: BestiaryParseMessage[],
   blockIndex: number,
   entryName: string
@@ -114,6 +118,14 @@ const parseEnergyAp = (
       block: line,
       level: "warning"
     });
+  }
+  const barsMatch = line.match(/x\s*(\d+)\s*bars?/i);
+  if (barsMatch) {
+    const barsValue = Number(barsMatch[1]);
+    if (Number.isFinite(barsValue)) {
+      entry.energyBars = barsValue;
+      attributes.energy_bars = barsValue;
+    }
   }
   const apMatch = line.match(/(\d+)\s*ap/i);
   if (apMatch) {
@@ -132,6 +144,7 @@ const parseEnergyAp = (
 const parseDr = (
   line: string,
   attributes: ParsedBestiaryEntry["attributes"],
+  entry: ParsedBestiaryEntry,
   messages: BestiaryParseMessage[],
   blockIndex: number,
   entryName: string
@@ -139,6 +152,10 @@ const parseDr = (
   const drMatch = line.match(/(\d+)\s*dr/i);
   if (drMatch) {
     attributes.dr = Number(drMatch[1]);
+    const armorMatch = line.match(/\(([^)]+)\)/);
+    if (armorMatch) {
+      entry.armorType = armorMatch[1].trim();
+    }
   } else if (/\bdr\b/i.test(line)) {
     messages.push({
       blockIndex,
@@ -233,6 +250,16 @@ export const parseBestiaryImport = (
     let section: "attributes" | "skills" | null = null;
     let currentPhase: string | null = null;
 
+    const entryRecord: ParsedBestiaryEntry = {
+      name: parsedHeader.name,
+      rank: parsedHeader.rank,
+      groupName,
+      attributes,
+      skills,
+      abilities,
+      tags: parsedHeader.tags
+    };
+
     let description: string | undefined;
     let heroName: string | undefined;
     let lieutenantName: string | undefined;
@@ -289,8 +316,8 @@ export const parseBestiaryImport = (
         continue;
       }
 
-      parseEnergyAp(line, attributes, messages, blockIndex, parsedHeader.name);
-      parseDr(line, attributes, messages, blockIndex, parsedHeader.name);
+      parseEnergyAp(line, attributes, entryRecord, messages, blockIndex, parsedHeader.name);
+      parseDr(line, attributes, entryRecord, messages, blockIndex, parsedHeader.name);
 
       const actionMatch = line.match(/^([^:]+):\s*(.+)$/);
       if (actionMatch) {
@@ -339,18 +366,19 @@ export const parseBestiaryImport = (
       }
     }
 
-    entries.push({
-      name: parsedHeader.name,
-      rank: parsedHeader.rank,
-      groupName,
-      heroName,
-      lieutenantName,
-      attributes,
-      skills,
-      abilities,
-      tags: parsedHeader.tags,
-      description
-    });
+    entryRecord.heroName = heroName;
+    entryRecord.lieutenantName = lieutenantName;
+    entryRecord.description = description;
+    if (entryRecord.energyBars && entryRecord.energyBars > 1) {
+      entryRecord.abilities.push(
+        buildAbility({
+          type: "phase-unlock",
+          name: "Phase Unlock",
+          rules: `Unlock the next phase each time energy reaches 0 (${entryRecord.energyBars} total bars).`
+        })
+      );
+    }
+    entries.push(entryRecord);
   });
 
   return { groupName, entries, messages };

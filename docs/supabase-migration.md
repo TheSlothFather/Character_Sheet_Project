@@ -70,6 +70,9 @@ create table if not exists public.bestiary_entries (
   skills jsonb,
   abilities jsonb,
   tags jsonb,
+  dr integer,
+  armor_type text,
+  energy_bars integer,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -77,5 +80,8 @@ create table if not exists public.bestiary_entries (
 alter table public.bestiary_entries
   add column if not exists attributes jsonb,
   add column if not exists skills jsonb,
-  add column if not exists abilities jsonb;
+  add column if not exists abilities jsonb,
+  add column if not exists dr integer,
+  add column if not exists armor_type text,
+  add column if not exists energy_bars integer;
 ```
