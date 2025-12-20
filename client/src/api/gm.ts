@@ -34,6 +34,22 @@ export interface BestiaryEntry {
   tags?: string[];
 }
 
+export interface CampaignCombatant {
+  id: string;
+  campaignId: string;
+  bestiaryEntryId: string;
+  name: string;
+  faction?: string;
+  isActive?: boolean;
+  initiative?: number;
+  notes?: string;
+  energyCurrent?: number;
+  apCurrent?: number;
+  tier?: number;
+  energyMax?: number;
+  apMax?: number;
+}
+
 export interface BestiaryAbility {
   type: string;
   tree?: string;
@@ -94,6 +110,25 @@ type BestiaryPinRow = {
   campaign_id: string;
   bestiary_entry_id: string;
   pinned_order?: number | null;
+};
+
+type CampaignCombatantRow = {
+  id: string;
+  campaign_id: string;
+  bestiary_entry_id: string;
+  faction?: string | null;
+  is_active?: boolean | null;
+  initiative?: number | null;
+  notes?: string | null;
+  energy_current?: number | null;
+  ap_current?: number | null;
+  tier?: number | null;
+  energy_max?: number | null;
+  ap_max?: number | null;
+  bestiary_entries?: {
+    id: string;
+    name: string;
+  } | null;
 };
 
 type CampaignSettingRow = {
@@ -202,6 +237,24 @@ function mapSetting(row: CampaignSettingRow): CampaignSetting {
   };
 }
 
+function mapCombatant(row: CampaignCombatantRow): CampaignCombatant {
+  return {
+    id: row.id,
+    campaignId: row.campaign_id,
+    bestiaryEntryId: row.bestiary_entry_id,
+    name: row.bestiary_entries?.name ?? "Unknown",
+    faction: row.faction ?? undefined,
+    isActive: row.is_active ?? undefined,
+    initiative: row.initiative ?? undefined,
+    notes: row.notes ?? undefined,
+    energyCurrent: row.energy_current ?? undefined,
+    apCurrent: row.ap_current ?? undefined,
+    tier: row.tier ?? undefined,
+    energyMax: row.energy_max ?? undefined,
+    apMax: row.ap_max ?? undefined
+  };
+}
+
 function toCampaignPayload(payload: Partial<Campaign>): Partial<CampaignRow> {
   const record: Partial<CampaignRow> = {};
 
@@ -252,6 +305,24 @@ function toPinPayload(payload: Partial<BestiaryPin>): Partial<BestiaryPinRow> {
   if (payload.campaignId !== undefined) record.campaign_id = payload.campaignId;
   if (payload.bestiaryEntryId !== undefined) record.bestiary_entry_id = payload.bestiaryEntryId;
   if (payload.pinnedOrder !== undefined) record.pinned_order = payload.pinnedOrder ?? null;
+
+  return record;
+}
+
+function toCombatantPayload(payload: Partial<CampaignCombatant>): Partial<CampaignCombatantRow> {
+  const record: Partial<CampaignCombatantRow> = {};
+
+  if (payload.campaignId !== undefined) record.campaign_id = payload.campaignId;
+  if (payload.bestiaryEntryId !== undefined) record.bestiary_entry_id = payload.bestiaryEntryId;
+  if (payload.faction !== undefined) record.faction = payload.faction ?? null;
+  if (payload.isActive !== undefined) record.is_active = payload.isActive ?? null;
+  if (payload.initiative !== undefined) record.initiative = payload.initiative ?? null;
+  if (payload.notes !== undefined) record.notes = payload.notes ?? null;
+  if (payload.energyCurrent !== undefined) record.energy_current = payload.energyCurrent ?? null;
+  if (payload.apCurrent !== undefined) record.ap_current = payload.apCurrent ?? null;
+  if (payload.tier !== undefined) record.tier = payload.tier ?? null;
+  if (payload.energyMax !== undefined) record.energy_max = payload.energyMax ?? null;
+  if (payload.apMax !== undefined) record.ap_max = payload.apMax ?? null;
 
   return record;
 }
@@ -497,6 +568,69 @@ async function unpinBestiaryEntry(campaignId: string, bestiaryEntryId: string): 
   }
 }
 
+async function listCombatants(campaignId: string): Promise<CampaignCombatant[]> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const { data, error } = (await client
+    .from("campaign_combatants")
+    .select(
+      "id, campaign_id, bestiary_entry_id, faction, is_active, initiative, notes, energy_current, ap_current, tier, energy_max, ap_max, bestiary_entries(id, name)"
+    )
+    .eq("campaign_id", campaignId)
+    .order("initiative", { ascending: false })) as SupabaseResult<CampaignCombatantRow[]>;
+  if (error) {
+    throw new ApiError(0, `Failed to load combatants: ${error.message}`);
+  }
+  return (data ?? []).map(mapCombatant);
+}
+
+async function createCombatant(payload: Partial<CampaignCombatant>): Promise<CampaignCombatant> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  if (!payload.campaignId || !payload.bestiaryEntryId) {
+    throw new ApiError(0, "campaignId and bestiaryEntryId are required to create a combatant");
+  }
+  const record = toCombatantPayload(payload);
+  const { data, error } = (await client
+    .from("campaign_combatants")
+    .insert(record)
+    .select(
+      "id, campaign_id, bestiary_entry_id, faction, is_active, initiative, notes, energy_current, ap_current, tier, energy_max, ap_max, bestiary_entries(id, name)"
+    )
+    .single()) as SupabaseResult<CampaignCombatantRow>;
+  if (error || !data) {
+    throw new ApiError(0, `Failed to create combatant: ${error?.message ?? "unknown error"}`);
+  }
+  return mapCombatant(data);
+}
+
+async function updateCombatant(id: string, payload: Partial<CampaignCombatant>): Promise<CampaignCombatant> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const record = toCombatantPayload(payload);
+  const { data, error } = (await client
+    .from("campaign_combatants")
+    .update(record)
+    .eq("id", id)
+    .select(
+      "id, campaign_id, bestiary_entry_id, faction, is_active, initiative, notes, energy_current, ap_current, tier, energy_max, ap_max, bestiary_entries(id, name)"
+    )
+    .single()) as SupabaseResult<CampaignCombatantRow>;
+  if (error || !data) {
+    throw new ApiError(0, `Failed to update combatant: ${error?.message ?? "unknown error"}`);
+  }
+  return mapCombatant(data);
+}
+
+async function deleteCombatant(id: string): Promise<void> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const { error } = (await client.from("campaign_combatants").delete().eq("id", id)) as SupabaseResult<null>;
+  if (error) {
+    throw new ApiError(0, `Failed to remove combatant: ${error.message}`);
+  }
+}
+
 async function listSettings(campaignId: string): Promise<CampaignSetting[]> {
   ensureSupabaseEnv();
   const client = getSupabaseClient();
@@ -571,6 +705,10 @@ export const gmApi = {
   deleteBestiaryEntry,
   pinBestiaryEntry,
   unpinBestiaryEntry,
+  listCombatants,
+  createCombatant,
+  updateCombatant,
+  deleteCombatant,
   listSettings,
   createSetting,
   updateSetting,

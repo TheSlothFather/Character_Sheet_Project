@@ -1,0 +1,67 @@
+import React from "react";
+import { Outlet, useParams } from "react-router-dom";
+import { gmApi, type Campaign } from "../../api/gm";
+
+const headerStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.35rem"
+};
+
+export const GmCampaignLayout: React.FC = () => {
+  const { campaignId } = useParams<{ campaignId: string }>();
+  const [campaign, setCampaign] = React.useState<Campaign | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!campaignId) {
+      setError("Campaign ID is missing.");
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+    const loadCampaign = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await gmApi.listCampaigns();
+        if (!active) return;
+        const match = data.find((item) => item.id === campaignId) ?? null;
+        setCampaign(match);
+        if (!match) {
+          setError("Campaign not found.");
+        }
+      } catch (loadError) {
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : "Failed to load campaign.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    loadCampaign();
+
+    return () => {
+      active = false;
+    };
+  }, [campaignId]);
+
+  if (!campaignId) {
+    return <div>Campaign not found.</div>;
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <header style={headerStyle}>
+        <h2 style={{ margin: 0 }}>GM Campaign</h2>
+        <p style={{ margin: 0, color: "#94a3b8" }}>
+          {loading ? "Loading campaign..." : campaign?.name || "Unnamed campaign"}
+        </p>
+        {error && <p style={{ margin: 0, color: "#fca5a5" }}>{error}</p>}
+      </header>
+      <Outlet />
+    </div>
+  );
+};
