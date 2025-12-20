@@ -10,6 +10,7 @@ import armorCsv from "../../data/armor.csv?raw";
 import { parseMartialCsv, MartialAbility } from "../martial/martialUtils";
 import { parseMagicFaculties } from "../magic/magicParser";
 import facultiesText from "../../data/magic-faculties.txt?raw";
+import "./AncillariesPage.css";
 import {
   AncillaryMetadata,
   AncillarySelectionState,
@@ -660,37 +661,6 @@ const isAncestryAllowedForCharacter = (groupId: string | undefined, character: C
   return true;
 };
 
-const cardStyle: React.CSSProperties = {
-  background: "#11151d",
-  border: "1px solid #2c3543",
-  borderRadius: 10,
-  padding: "1rem",
-  color: "#e8edf7"
-};
-
-const pillStyle: React.CSSProperties = {
-  background: "#0f141c",
-  border: "1px solid #2a3242",
-  borderRadius: 8,
-  padding: "0.5rem 0.75rem",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 10,
-  color: "#e8edf7"
-};
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-block",
-  background: "#1f2937",
-  border: "1px solid #374151",
-  color: "#c7d2fe",
-  borderRadius: 6,
-  padding: "0.15rem 0.5rem",
-  fontSize: 12,
-  fontWeight: 700
-};
-
 export const AncillariesPage: React.FC = () => {
   const { selectedId } = useSelectedCharacter();
   const { data: definitions } = useDefinitions();
@@ -1007,30 +977,28 @@ export const AncillariesPage: React.FC = () => {
       : isSelected || remaining <= 0 || ancestryBlocked || requirementsBlocked || weaponCategoryBlocked;
 
     return (
-      <div key={entry.id} style={{ ...cardStyle, marginBottom: "0.75rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
-              <h4 style={{ margin: 0 }}>{entry.name}</h4>
-              <span style={badgeStyle}>{entry.category === "general" ? "General" : "Ancestry"}</span>
+      <div key={entry.id} className="ancillaries__card">
+        <div className="ancillaries__card-header">
+          <div className="ancillaries__card-body">
+            <div className="ancillaries__card-title-row">
+              <h4 className="ancillaries__card-title">{entry.name}</h4>
+              <span className="ancillaries__badge">
+                {entry.category === "general" ? "General" : "Ancestry"}
+              </span>
               {entry.ancestryGroup && (
-                <span style={{ ...badgeStyle, color: "#a5f3fc", borderColor: "#155e75", background: "#0b1220" }}>
+                <span className="ancillaries__badge ancillaries__badge--ancestry">
                   {entry.ancestryGroup}
                 </span>
               )}
             </div>
             {entry.requirements.length > 0 && (
-              <div style={{ marginBottom: 6 }}>
-                <div style={{ fontWeight: 700, marginBottom: 2, fontSize: 13 }}>Requirements</div>
-                <ul style={{ margin: 0, paddingLeft: 18 }}>
+              <div className="ancillaries__requirements">
+                <div className="ancillaries__requirements-title">Requirements</div>
+                <ul className="ancillaries__requirements-list">
                   {requirementResults.map((req) => (
                     <li
                       key={`${entry.id}-${req.requirement}`}
-                      style={{
-                        marginBottom: 2,
-                        color: req.met ? "#34d399" : "#f87171",
-                        fontWeight: 600
-                      }}
+                      className={`ancillaries__requirement${req.met ? " ancillaries__requirement--met" : ""}`}
                     >
                       {req.requirement}
                       {!req.met && req.detail ? ` — ${req.detail}` : ""}
@@ -1039,23 +1007,19 @@ export const AncillariesPage: React.FC = () => {
                 </ul>
               </div>
             )}
-            <div style={{ whiteSpace: "pre-line", color: "#cbd5e1", fontSize: 14 }}>{entry.description}</div>
+            <div className="ancillaries__description">{entry.description}</div>
             {entry.category === "ancestry" && !ancestryLevelEligible && !isSelected && (
-              <div style={{ color: "#fbbf24", marginTop: 6, fontSize: 13 }}>Ancestry ancillaries can only be added at level 1.</div>
+              <div className="ancillaries__warning">
+                Ancestry ancillaries can only be added at level 1.
+              </div>
             )}
             {isWeaponMastery && (
-              <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
-                <label style={{ fontWeight: 700 }}>Choose Weapon Category</label>
+              <div className="ancillaries__weapon">
+                <label className="ancillaries__weapon-label">Choose Weapon Category</label>
                 <select
                   value={storedCategory}
                   onChange={(e) => updateMetadata(entry.id, { weaponCategory: e.target.value })}
-                  style={{
-                    padding: "0.45rem 0.6rem",
-                    borderRadius: 6,
-                    background: "#0b1017",
-                    color: "#e5e7eb",
-                    border: "1px solid #2f3542"
-                  }}
+                  className="ancillaries__select"
                 >
                   <option value="">Select a weapon category</option>
                   {weaponCategoryOptions.map((opt) => (
@@ -1065,7 +1029,11 @@ export const AncillariesPage: React.FC = () => {
                   ))}
                 </select>
                 {storedCategory && (
-                  <div style={{ fontSize: 13, color: weaponCategoryBlocked ? "#f87171" : "#34d399" }}>
+                  <div
+                    className={`ancillaries__weapon-status${
+                      weaponCategoryBlocked ? " ancillaries__weapon-status--blocked" : ""
+                    }`}
+                  >
                     {weaponCategoryState
                       ? weaponCategoryState.complete
                         ? "All abilities purchased."
@@ -1074,7 +1042,7 @@ export const AncillariesPage: React.FC = () => {
                   </div>
                 )}
                 {weaponCategoryBlocked && (
-                  <div style={{ color: "#f87171", fontSize: 13 }}>
+                  <div className="ancillaries__weapon-warning">
                     You must fully purchase a weapon category before taking Weapon Mastery.
                   </div>
                 )}
@@ -1085,19 +1053,13 @@ export const AncillariesPage: React.FC = () => {
             <button
               onClick={() => toggleSelect(entry.id)}
               disabled={disabled}
-              style={{
-                padding: "0.4rem 0.75rem",
-                borderRadius: 8,
-                border: showRemove || isSelected
+              className={`ancillaries__action${
+                showRemove || isSelected
                   ? isLocked
-                    ? "1px solid #374151"
-                    : "1px solid #b91c1c"
-                  : "1px solid #374151",
-                background: showRemove || isSelected ? (isLocked ? "#1f2937" : "#2c1515") : "#142031",
-                color: showRemove || isSelected ? (isLocked ? "#9ca3af" : "#fecaca") : "#e5e7eb",
-                cursor: disabled ? "not-allowed" : "pointer",
-                minWidth: 90
-              }}
+                    ? " ancillaries__action--locked"
+                    : " ancillaries__action--remove"
+                  : " ancillaries__action--add"
+              }`}
             >
               {buttonLabel}
             </button>
@@ -1108,146 +1070,122 @@ export const AncillariesPage: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2 style={{ marginBottom: "0.5rem" }}>Ancillaries</h2>
-      <p style={{ marginTop: 0, color: "#cbd5e1" }}>
+    <div className="ancillaries">
+      <h2 className="ancillaries__title">Ancillaries</h2>
+      <p className="ancillaries__intro">
         Choose 2 ancillaries at character creation. You gain 2 more picks at every Character Tier Advancement (levels 6, 11, 16,
         and so on). Entries stay locked until the listed prerequisites are satisfied for the selected character.
       </p>
-      <p style={{ marginTop: 0, color: "#cbd5e1" }}>
+      <p className="ancillaries__intro">
         Ancestry ancillaries are locked to your character’s race and subrace (when applicable) and can only be chosen at level 1.
       </p>
 
-      {error && <p style={{ color: "#f87171" }}>{error}</p>}
+      {error && <p className="ancillaries__error">{error}</p>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12, marginBottom: 12 }}>
-        <div style={pillStyle}>
+      <div className="ancillaries__summary">
+        <div className="ancillaries__pill">
           <div>
-            <div style={{ fontWeight: 700 }}>Selected Character</div>
-            <div style={{ color: "#9ca3af", fontSize: 14 }}>
+            <div className="ancillaries__pill-title">Selected Character</div>
+            <div className="ancillaries__pill-subtitle">
               {loading ? "Loading..." : selectedCharacter ? `${selectedCharacter.name} (Level ${selectedCharacter.level})` : "None"}
             </div>
             {selectedCharacter && (
-              <div style={{ color: "#9ca3af", fontSize: 13 }}>
+              <div className="ancillaries__pill-meta">
                 Race: {selectedRaceName ?? "Unknown"}
                 {selectedSubraceName ? ` / ${selectedSubraceName}` : ""}
               </div>
             )}
           </div>
         </div>
-        <div style={pillStyle}>
+        <div className="ancillaries__pill">
           <div>
-            <div style={{ fontWeight: 700 }}>Allowed Ancillaries</div>
-            <div style={{ color: "#9ca3af", fontSize: 14 }}>
+            <div className="ancillaries__pill-title">Allowed Ancillaries</div>
+            <div className="ancillaries__pill-subtitle">
               Base 2 + {tierAdvancements} tier advancements × 2
             </div>
           </div>
-          <div style={{ fontWeight: 800, color: remaining === 0 ? "#fbbf24" : "#34d399" }}>{allowed}</div>
+          <div className={`ancillaries__pill-value${remaining === 0 ? " ancillaries__pill-value--warn" : ""}`}>{allowed}</div>
         </div>
-        <div style={pillStyle}>
+        <div className="ancillaries__pill">
           <div>
-            <div style={{ fontWeight: 700 }}>Remaining Picks</div>
-            <div style={{ color: "#9ca3af", fontSize: 14 }}>Available to assign</div>
+            <div className="ancillaries__pill-title">Remaining Picks</div>
+            <div className="ancillaries__pill-subtitle">Available to assign</div>
           </div>
-          <div style={{ fontWeight: 800, color: remaining > 0 ? "#34d399" : "#f87171" }}>{remaining}</div>
+          <div className={`ancillaries__pill-value${remaining > 0 ? "" : " ancillaries__pill-value--danger"}`}>{remaining}</div>
         </div>
-        <div style={pillStyle}>
+        <div className="ancillaries__pill">
           <div>
-            <div style={{ fontWeight: 700 }}>Ancestry Access</div>
-            <div style={{ color: "#9ca3af", fontSize: 14 }}>{ancestryAvailabilityLabel}</div>
+            <div className="ancillaries__pill-title">Ancestry Access</div>
+            <div className="ancillaries__pill-subtitle">{ancestryAvailabilityLabel}</div>
           </div>
-          <div style={{ fontWeight: 800, color: ancestryLevelEligible ? "#34d399" : "#fbbf24" }}>
+          <div className={`ancillaries__pill-value${ancestryLevelEligible ? "" : " ancillaries__pill-value--warn"}`}>
             {ancestryLevelEligible ? "Level 1" : selectedCharacter ? `Level ${selectedCharacter.level}` : ""}
           </div>
         </div>
       </div>
 
-      <div style={{ ...cardStyle, marginBottom: "1rem" }}>
-        <label style={{ display: "block", marginBottom: 8, fontWeight: 700 }}>Search Ancillaries</label>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <div className="ancillaries__search">
+        <label className="ancillaries__search-label">Search Ancillaries</label>
+        <div className="ancillaries__search-row">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, requirement, or description"
-            style={{
-              flex: 1,
-              padding: "0.6rem 0.75rem",
-              borderRadius: 8,
-              border: "1px solid #2f3542",
-              background: "#0b1017",
-              color: "#e5e7eb"
-            }}
+            className="ancillaries__input"
           />
           <button
             type="button"
             onClick={() => setShowEligibleOnly((prev) => !prev)}
-            style={{
-              padding: "0.6rem 0.9rem",
-              borderRadius: 8,
-              border: showEligibleOnly ? "1px solid #10b981" : "1px solid #2f3542",
-              background: showEligibleOnly ? "#0b3b2a" : "#0b1017",
-              color: showEligibleOnly ? "#a7f3d0" : "#e5e7eb",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              fontWeight: 700
-            }}
+            className={`ancillaries__toggle${showEligibleOnly ? " ancillaries__toggle--active" : ""}`}
           >
             {showEligibleOnly ? "Showing Eligible" : "Show Eligible"}
           </button>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 12, alignItems: "start" }}>
+      <div className="ancillaries__layout">
         <div>
-          <div style={{ ...cardStyle, position: "sticky", top: 0 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <h3 style={{ margin: 0 }}>Chosen Ancillaries</h3>
-              <span style={{ ...badgeStyle, background: "#0f172a", borderColor: "#1f2937" }}>
+          <div className="ancillaries__panel ancillaries__panel--sticky">
+            <div className="ancillaries__panel-header">
+              <h3 className="ancillaries__panel-title">Chosen Ancillaries</h3>
+              <span className="ancillaries__badge ancillaries__badge--count">
                 {selectedAncillaries.length}/{allowed}
               </span>
             </div>
-            <div style={{ marginBottom: 10, display: "grid", gap: 6 }}>
+            <div className="ancillaries__lock">
               <button
                 type="button"
                 onClick={handleLockAncillaries}
                 disabled={unlockedSelections.length === 0}
-                style={{
-                  padding: "0.55rem 0.9rem",
-                  borderRadius: 8,
-                  border: unlockedSelections.length === 0 ? "1px solid #374151" : "1px solid #1d4ed8",
-                  background: unlockedSelections.length === 0 ? "#111827" : "#2563eb",
-                  color: "#e6edf7",
-                  cursor: unlockedSelections.length === 0 ? "not-allowed" : "pointer",
-                  fontWeight: 700
-                }}
+                className="ancillaries__button"
               >
                 {unlockedSelections.length === 0 ? "Ancillaries Locked" : "Lock Ancillaries"}
               </button>
-              <div style={{ color: "#9ca3af", fontSize: 13 }}>
+              <div className="ancillaries__lock-note">
                 Locks your new ancillary selections so they cannot be changed or removed.
                 {hasPsionAncillary ? " Opens a Psionics prompt to pick ancillary abilities." : ""}
               </div>
             </div>
             {lockedCount > 0 && (
-              <div style={{ color: "#fbbf24", fontSize: 13, marginBottom: 8 }}>
+              <div className="ancillaries__locked-note">
                 {lockedCount} ancillary{lockedCount === 1 ? " is" : "ies are"} locked. You can add
                 {" "}
                 {Math.max(allowed - selectedAncillaries.length, 0)} more when you gain new slots.
               </div>
             )}
             {selectedDetails.length === 0 ? (
-              <p style={{ margin: 0, color: "#94a3b8" }}>No ancillaries selected yet.</p>
+              <p className="ancillaries__empty">No ancillaries selected yet.</p>
             ) : (
               selectedDetails.map((entry) => renderAncillaryCard(entry, true))
             )}
           </div>
         </div>
         <div>
-          <div style={cardStyle}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <h3 style={{ margin: 0 }}>All Ancillaries</h3>
-              <span style={{ ...badgeStyle, background: "#0f172a", borderColor: "#1f2937" }}>{filtered.length}</span>
+          <div className="ancillaries__panel">
+            <div className="ancillaries__panel-header">
+              <h3 className="ancillaries__panel-title">All Ancillaries</h3>
+              <span className="ancillaries__badge ancillaries__badge--count">{filtered.length}</span>
             </div>
             {filtered.map((entry) => renderAncillaryCard(entry, false))}
           </div>

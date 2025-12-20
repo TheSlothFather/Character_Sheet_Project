@@ -8,6 +8,7 @@ import psionicsCsv from "../../data/psionics.csv?raw";
 import { parsePsionicsCsv, PsionicAbility, replaceMentalAttributePlaceholders } from "../psionics/psionicsUtils";
 import { PSIONICS_STORAGE_KEY } from "../psionics/psionBackgrounds";
 import { getAncillaryStorageKey, readAncillarySelection } from "../ancillaries/storage";
+import "./CharactersPage.css";
 
 const DEFAULT_SKILL_POINT_POOL = 100;
 const ENERGY_OVERRIDE_ANCILLARIES = new Set([
@@ -204,21 +205,12 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
 
   return (
     <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "minmax(0, 1.4fr) 150px 80px",
-        alignItems: "center",
-        gap: "0.45rem",
-        padding: "0.4rem 0.25rem",
-        borderBottom: showDivider ? "1px solid #161b23" : "none",
-        background: "#0c0f14",
-        borderRadius: 6
-      }}
+      className={`characters__skill-row${showDivider ? " characters__skill-row--divider" : ""}`}
     >
-      <div style={{ wordBreak: "break-word" }}>
-        <div style={{ fontWeight: 600 }}>{formatSkillName(skill.name)}</div>
+      <div className="characters__skill-name">
+        <div className="characters__skill-name-text">{formatSkillName(skill.name)}</div>
       </div>
-      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+      <div className="characters__skill-controls">
         <button
           type="button"
           onPointerDown={() => startRepeating(-1)}
@@ -226,15 +218,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
           onPointerLeave={stopRepeating}
           onPointerCancel={stopRepeating}
           disabled={disableAllocation || allocated <= minimum}
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 6,
-            border: "1px solid #2d343f",
-            background: disableAllocation ? "#11161f" : "#0c111a",
-            color: "#e8edf7",
-            cursor: disableAllocation ? "not-allowed" : "pointer"
-          }}
+          className="characters__skill-button"
         >
           −
         </button>
@@ -256,15 +240,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
             e.currentTarget.blur();
           }}
           onMouseUp={(e) => e.currentTarget.blur()}
-          style={{
-            width: 64,
-            padding: "0.35rem 0.4rem",
-            borderRadius: 6,
-            border: "1px solid #2d343f",
-            background: disableAllocation ? "#11161f" : "#0c111a",
-            color: "#e8edf7",
-            textAlign: "center"
-          }}
+          className="characters__skill-input"
         />
         <button
           type="button"
@@ -273,20 +249,12 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
           onPointerLeave={stopRepeating}
           onPointerCancel={stopRepeating}
           disabled={disableAllocation || allocated >= maxAllocatable}
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 6,
-            border: "1px solid #2d343f",
-            background: disableAllocation ? "#11161f" : "#0c111a",
-            color: "#e8edf7",
-            cursor: disableAllocation ? "not-allowed" : "pointer"
-          }}
+          className="characters__skill-button"
         >
           +
         </button>
       </div>
-      <div style={{ fontWeight: 700, textAlign: "right" }}>{total}</div>
+      <div className="characters__skill-total">{total}</div>
     </div>
   );
 };
@@ -352,37 +320,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       if (typeof window !== "undefined") window.removeEventListener("storage", handler);
     };
   }, [character.id]);
-
-  const summaryBarStyle: React.CSSProperties = {
-    background: "#1a1d24",
-    border: "1px solid #333",
-    borderRadius: 8,
-    padding: "0.75rem",
-    display: "grid",
-    gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-    gap: "0.75rem"
-  };
-
-  const cardStyle: React.CSSProperties = {
-    background: "#14171d",
-    border: "1px solid #2d343f",
-    borderRadius: 8,
-    padding: "0.75rem",
-    color: "#e8edf7",
-    boxSizing: "border-box"
-  };
-
-  const pillStyle: React.CSSProperties = {
-    background: "#0e1116",
-    border: "1px solid #2f3642",
-    borderRadius: 6,
-    padding: "0.5rem 0.75rem",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    color: "#e8edf7",
-    fontSize: 14
-  };
 
   const levelCards = Array.from({ length: 5 }, (_, idx) => idx + 1);
   const energyBase = character.raceKey === "ANZ" ? 140 : 100;
@@ -473,74 +410,70 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     setter: React.Dispatch<React.SetStateAction<string>>,
     field: "weaponNotes" | "defenseNotes" | "gearNotes"
   ) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <div style={{ fontSize: 12, color: "#9aa3b5" }}>{label}</div>
+    <div className="characters__notes">
+      <div className="characters__notes-label">{label}</div>
       <textarea
         value={value}
         onChange={(e) => setter(e.target.value)}
         onBlur={() => handleNoteBlur(field, value)}
         rows={8}
         disabled={isUpdating}
-        style={{
-          width: "100%",
-          background: "#0e1116",
-          color: "#e8edf7",
-          border: "1px solid #2d343f",
-          borderRadius: 8,
-          padding: "0.6rem 0.7rem",
-          resize: "vertical"
-        }}
+        className="characters__notes-textarea"
       />
-      <div style={{ fontSize: 12, color: "#9aa3b5" }}>Changes are saved on blur.</div>
+      <div className="characters__notes-hint">Changes are saved on blur.</div>
     </div>
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <div style={summaryBarStyle}>
-        <div style={pillStyle}>
+    <div className="characters__sheet">
+      <div className="characters__summary">
+        <div className="characters__pill">
           <span>Name</span>
           <strong>{character.name}</strong>
         </div>
-        <div style={pillStyle}>
+        <div className="characters__pill">
           <span>Level</span>
           <strong>{character.level}</strong>
         </div>
-        <div style={pillStyle}>
+        <div className="characters__pill">
           <span>XP</span>
           <strong>—</strong>
         </div>
-        <div style={pillStyle}>
+        <div className="characters__pill">
           <span>Race</span>
           <strong>{raceName || "Unselected"}</strong>
         </div>
-        <div style={pillStyle}>
+        <div className="characters__pill">
           <span>Subrace</span>
           <strong>{subraceName || "Unselected"}</strong>
         </div>
-        <div style={pillStyle}>
+        <div className="characters__pill">
           <span>Speed</span>
           <strong>—</strong>
         </div>
       </div>
 
-      <div style={{ ...cardStyle, padding: "0.65rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ fontSize: 12, color: "#9aa3b5" }}>Attribute Points Available</div>
-          <div style={{ fontWeight: 700, color: attributePointsAvailable > 0 ? "#9ae6b4" : "#e8edf7" }}>
+      <div className="characters__card characters__attributes">
+        <div className="characters__attributes-header">
+          <div className="characters__attributes-label">Attribute Points Available</div>
+          <div
+            className={`characters__attributes-value${
+              attributePointsAvailable > 0 ? " characters__attributes-value--available" : ""
+            }`}
+          >
             {attributePointsAvailable}
           </div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.5rem" }}>
+        <div className="characters__attributes-grid">
           {ATTRIBUTE_DISPLAY.map((attr) => (
-            <div key={attr.key as string} style={{ ...pillStyle, margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+            <div key={attr.key as string} className="characters__pill characters__pill--compact">
               <span>{attr.label}</span>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div className="characters__pill-actions">
                 <strong>{attributeValues?.[attr.key as string] ?? 0}</strong>
                 <button
                   onClick={() => onSpendAttributePoint(attr.key as AttributeKey)}
                   disabled={attributePointsAvailable <= 0 || isUpdating}
-                  style={{ padding: "0.15rem 0.4rem", borderRadius: 4 }}
+                  className="characters__pill-button"
                 >
                   +1
                 </button>
@@ -550,105 +483,77 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "280px 960px 1fr", gap: "1rem" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+      <div className="characters__layout">
+        <div className="characters__column">
           {levelCards.map((lvl) => (
-            <div key={lvl} style={cardStyle}>
-              <div style={{ fontSize: 14, color: "#9aa3b5", marginBottom: 4 }}>Level {lvl}</div>
-              <div style={{ height: 48, border: "1px dashed #2f3642", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "#667" }}>
+            <div key={lvl} className="characters__card">
+              <div className="characters__level-label">Level {lvl}</div>
+              <div className="characters__level-slot">
                 Future feat slots
               </div>
             </div>
           ))}
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
-            <div style={pillStyle}>
+        <div className="characters__column">
+          <div className="characters__metrics">
+            <div className="characters__pill">
               <span>Damage Reduction</span>
               <strong>{damageReduction}</strong>
             </div>
-            <div style={pillStyle}>
+            <div className="characters__pill">
               <span>Fate</span>
               <strong>{fatePoints}</strong>
             </div>
-            <div style={pillStyle}>
+            <div className="characters__pill">
               <span>Energy</span>
               <strong>{energy}</strong>
             </div>
-            <div style={{ ...pillStyle, flexDirection: "column", alignItems: "flex-start", gap: 2 }}>
-              <div style={{ display: "flex", width: "100%", justifyContent: "space-between" }}>
+            <div className="characters__pill characters__pill--stacked">
+              <div className="characters__pill-stack-header">
                 <span>Martial Bonus AP</span>
                 <strong>{martialBonus.ap}</strong>
               </div>
               {martialBonus.notes.size > 0 && (
-                <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                <div className="characters__pill-hint">
                   {Array.from(martialBonus.notes).join(", ")}
                 </div>
               )}
             </div>
           </div>
-          <div style={{ ...cardStyle, padding: 0, display: "flex", flexDirection: "column", height: "100%" }}>
-            <div
-              style={{
-                padding: "0.75rem 1rem",
-                borderBottom: "1px solid #2d343f",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center"
-              }}
-            >
+          <div className="characters__card characters__card--flush">
+            <div className="characters__skill-header">
               <div>
-                <div style={{ fontSize: 12, color: "#9aa3b5" }}>Skill Points Remaining</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: remaining < 0 ? "#f55" : "#9ae6b4" }}>
+                <div className="characters__skill-label">Skill Points Remaining</div>
+                <div className={`characters__skill-remaining${remaining < 0 ? " characters__skill-remaining--over" : ""}`}>
                   {remaining}
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <div style={{ fontSize: 12, color: "#9aa3b5" }}>Pool: {skillPointPool}</div>
+              <div className="characters__skill-actions">
+                <div className="characters__skill-pool">Pool: {skillPointPool}</div>
                 <button
                   onClick={onLockAllocations}
                   disabled={lockDisabled || isLocking}
-                  style={{
-                    padding: "0.35rem 0.6rem",
-                    borderRadius: 6,
-                    border: "1px solid #374151",
-                    background: lockDisabled ? "#1a1d24" : "#253143",
-                    color: lockDisabled ? "#6b7280" : "#e8edf7",
-                    cursor: lockDisabled || isLocking ? "not-allowed" : "pointer",
-                    fontWeight: 700
-                  }}
+                  className="characters__lock-button"
                 >
                   {isLocking ? "Locking..." : "Lock Skill Points"}
                 </button>
               </div>
             </div>
-            <div style={{ fontSize: 12, color: "#f38b2f", padding: "0 1rem 0.35rem" }}>
+            <div className="characters__skill-warning">
               Spend all skill points at level up and lock your allocations when finished.
             </div>
-            <div style={{ overflowY: "auto", padding: "0.75rem", flex: 1 }}>
+            <div className="characters__skill-list">
               {skills.length === 0 ? (
-                <div style={{ padding: "0.5rem 0.25rem", color: "#9aa3b5" }}>No skills defined yet.</div>
+                <div className="characters__skill-empty">No skills defined yet.</div>
               ) : (
                 <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                    gap: "0.75rem"
-                  }}
+                  className="characters__skill-grid"
                 >
                   {specialSkills.map((skill) => (
                     <div
                       key={getSkillCode(skill)}
-                      style={{
-                        border: "1px solid #1f242d",
-                        borderRadius: 8,
-                        padding: "0.5rem 0.6rem",
-                        background: "#0e1118",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 6
-                      }}
+                      className="characters__skill-card"
                     >
                       <SkillAllocationRow
                         skill={skill}
@@ -665,18 +570,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   {groupedSkills.map((group) => (
                     <div
                       key={group.key}
-                      style={{
-                        border: "1px solid #1f242d",
-                        borderRadius: 8,
-                        padding: "0.5rem 0.6rem",
-                        background: "#0e1118",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 6
-                      }}
+                      className="characters__skill-card"
                     >
-                      <div style={{ fontWeight: 700, color: "#e8edf7" }}>{group.label}</div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <div className="characters__skill-group-title">{group.label}</div>
+                      <div className="characters__skill-group-list">
                           {[...group.skills]
                             .sort((a, b) => a.name.localeCompare(b.name))
                           .map((skill, idx, arr) => (
@@ -701,56 +598,49 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <div className="characters__column">
+          <div className="characters__tabs">
             {["Weapons", "Defense", "Gear", "Psionics", "Spells", "Details", "Feats", "Actions"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: "0.45rem 0.75rem",
-                  borderRadius: 6,
-                  border: activeTab === tab ? "1px solid #f38b2f" : "1px solid #2d343f",
-                  background: activeTab === tab ? "#1f2a33" : "#14171d",
-                  color: "#e8edf7",
-                  cursor: "pointer"
-                }}
+                className={`characters__tab${activeTab === tab ? " characters__tab--active" : ""}`}
               >
                 {tab}
               </button>
             ))}
           </div>
-          <div style={{ ...cardStyle, minHeight: 240 }}>
+          <div className="characters__card characters__tab-panel">
             {activeTab === "Weapons" && renderNotesArea("Weapons", weaponNotes, setWeaponNotes, "weaponNotes")}
             {activeTab === "Defense" && renderNotesArea("Defense", defenseNotes, setDefenseNotes, "defenseNotes")}
             {activeTab === "Gear" && renderNotesArea("Gear", gearNotes, setGearNotes, "gearNotes")}
             {activeTab === "Psionics" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+              <div className="characters__psionics">
+                <div className="characters__psionics-hint">
                   Unlocked psionic abilities are stored per character. Edit unlocks on the Psionics page; summaries appear here.
                 </div>
                 {unlockedPsionics.length === 0 ? (
-                  <div style={{ color: "#9aa3b5" }}>No psionic abilities unlocked yet.</div>
+                  <div className="characters__psionics-empty">No psionic abilities unlocked yet.</div>
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div className="characters__psionics-list">
                     {groupedPsionics.map(({ tree, abilities }) => (
-                      <div key={tree} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        <div style={{ fontWeight: 700, color: "#e8edf7" }}>{tree}</div>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 8 }}>
+                      <div key={tree} className="characters__psionics-tree">
+                        <div className="characters__psionics-tree-title">{tree}</div>
+                        <div className="characters__psionics-grid">
                           {abilities.map((ability) => (
-                            <details key={ability.id} style={{ border: "1px solid #1f242d", borderRadius: 8, padding: "0.5rem 0.6rem" }}>
-                              <summary style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                                <span style={{ fontWeight: 700 }}>{ability.name}</span>
-                                <span style={{ fontSize: 12, color: "#9aa3b5" }}>
+                            <details key={ability.id} className="characters__psionics-detail">
+                              <summary className="characters__psionics-summary">
+                                <span className="characters__psionics-name">{ability.name}</span>
+                                <span className="characters__psionics-meta">
                                   {`Tier ${ability.tier} • Energy ${psionicEnergyOverrides.get(ability.id) ?? ability.energyCost}`}
                                 </span>
                               </summary>
-                              <div style={{ marginTop: 6, color: "#cfd6e5", fontSize: 13, whiteSpace: "pre-wrap" }}>
-                                <div style={{ marginBottom: 4 }}>
+                              <div className="characters__psionics-description">
+                                <div className="characters__psionics-text">
                                   {replaceMentalAttributePlaceholders(ability.description, attributeValues?.MENTAL ?? 0)}
                                 </div>
                                 {ability.formula && (
-                                  <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                                  <div className="characters__psionics-formula">
                                     Formula: {replaceMentalAttributePlaceholders(ability.formula, attributeValues?.MENTAL ?? 0)}
                                   </div>
                                 )}
@@ -765,7 +655,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               </div>
             )}
             {!["Weapons", "Defense", "Gear", "Psionics"].includes(activeTab) && (
-              <div style={{ color: "#9aa3b5" }}>This tab is a placeholder for future content.</div>
+              <div className="characters__tab-placeholder">This tab is a placeholder for future content.</div>
             )}
           </div>
         </div>
@@ -1079,27 +969,21 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
   }, [definitions]);
 
   return (
-    <div>
-      <h2 style={{ marginBottom: "0.75rem" }}>Characters</h2>
+    <div className="characters-page">
+      <h2 className="characters-page__title">Characters</h2>
       {(definitionsError || error) && (
-        <p style={{ color: "#f55" }}>{definitionsError || error}</p>
+        <p className="characters-page__error">{definitionsError || error}</p>
       )}
       <main
-        style={{
-          background: "#0f1117",
-          border: "1px solid #2d343f",
-          borderRadius: 10,
-          padding: "1rem",
-          minHeight: 600
-        }}
+        className="characters-page__main"
       >
-        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
-          <div style={{ fontWeight: 700 }}>Selected character</div>
+        <div className="characters-page__toolbar">
+          <div className="characters-page__toolbar-label">Selected character</div>
           <select
             value={selectedId ?? ""}
             onChange={(e) => setSelectedId(e.target.value || null)}
             disabled={loadingAny || characters.length === 0}
-            style={{ minWidth: 240 }}
+            className="characters-page__select"
           >
             {characters.length === 0 && <option value="">No characters</option>}
             {characters.map((c) => (
@@ -1111,51 +995,27 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
           <button
             type="button"
             onClick={() => navigate(createCharacterPath)}
-            style={{
-              padding: "0.45rem 0.75rem",
-              borderRadius: 8,
-              border: "1px solid #1d4ed8",
-              background: "#2563eb",
-              color: "#e6edf7",
-              fontWeight: 700,
-              cursor: "pointer"
-            }}
+            className="characters-page__button characters-page__button--primary"
           >
             New Character
           </button>
           <button
             onClick={() => selectedId && handleDeleteCharacter(selectedId)}
             disabled={!selectedId || deletingId === selectedId || loadingAny}
-            style={{
-              padding: "0.45rem 0.75rem",
-              borderRadius: 8,
-              border: "1px solid #4a1d1d",
-              background: "#2c1515",
-              color: "#f87171",
-              fontWeight: 700,
-              cursor: !selectedId || deletingId === selectedId || loadingAny ? "not-allowed" : "pointer"
-            }}
+            className="characters-page__button characters-page__button--danger"
           >
             {deletingId === selectedId ? "Deleting..." : "Delete Character"}
           </button>
           <button
             onClick={handleLevelUp}
             disabled={!selectedId || loadingAny || levelUpdatingId === selectedId || remaining > 0}
-            style={{
-              padding: "0.45rem 0.75rem",
-              borderRadius: 8,
-              border: "1px solid #374151",
-              background: "#1b2431",
-              color: "#e5e7eb",
-              fontWeight: 700,
-              cursor: !selectedId || loadingAny || levelUpdatingId === selectedId ? "not-allowed" : "pointer"
-            }}
+            className="characters-page__button"
           >
             {levelUpdatingId === selectedId ? "Leveling..." : "Level Up"}
           </button>
         </div>
-        {loadingAny && <p style={{ margin: 0 }}>Loading sheet...</p>}
-        {!loadingAny && !selectedCharacter && <p style={{ margin: 0 }}>Select a character to view the sheet.</p>}
+        {loadingAny && <p className="characters-page__status">Loading sheet...</p>}
+        {!loadingAny && !selectedCharacter && <p className="characters-page__status">Select a character to view the sheet.</p>}
         {!loadingAny && selectedCharacter && definitions && (
           <CharacterSheet
             character={selectedCharacter}
