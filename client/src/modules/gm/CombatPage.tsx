@@ -4,8 +4,12 @@ import {
   gmApi,
   type Campaign,
   type CampaignCombatant,
-  type BestiaryEntry as ApiBestiaryEntry
+  type BestiaryEntry as ApiBestiaryEntry,
+  type CombatantStatusEffect,
+  type CombatantWound
 } from "../../api/gm";
+import { useDefinitions } from "../definitions/DefinitionsContext";
+import { getStatusWoundTick, WOUND_DEFINITIONS, type WoundType } from "@shared/rules/wounds";
 import "./CombatPage.css";
 
 type CombatFaction = "ally" | "enemy";
@@ -52,6 +56,7 @@ const deriveAp = (entry: ApiBestiaryEntry): number | undefined => {
 
 export const CombatPage: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
+  const { data: definitions } = useDefinitions();
   const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = React.useState<string>(campaignId ?? "");
   const [combatants, setCombatants] = React.useState<CombatEntry[]>([]);
@@ -66,6 +71,9 @@ export const CombatPage: React.FC = () => {
   const [addingFaction, setAddingFaction] = React.useState<CombatFaction>("enemy");
   const [addingActive, setAddingActive] = React.useState(true);
   const [endTurnSpend, setEndTurnSpend] = React.useState<Record<string, string>>({});
+  const [statusDrafts, setStatusDrafts] = React.useState<Record<string, { statusKey: string; duration: string; stacks: string }>>({});
+  const [statusEdits, setStatusEdits] = React.useState<Record<string, { duration: string; stacks: string }>>({});
+  const [woundDrafts, setWoundDrafts] = React.useState<Record<string, Record<string, string>>>({});
 
   React.useEffect(() => {
     if (campaignId) {
@@ -143,9 +151,99 @@ export const CombatPage: React.FC = () => {
     try {
       const updated = await gmApi.updateCombatant(combatantId, updates);
       const mapped = mapCombatant(updated);
-      setCombatants((prev) => prev.map((entry) => (entry.id === combatantId ? mapped : entry)));
+      setCombatants((prev) =>
+        prev.map((entry) =>
+          entry.id === combatantId
+            ? { ...mapped, statusEffects: entry.statusEffects ?? [], wounds: entry.wounds ?? [] }
+            : entry
+        )
+      );
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "Failed to update combatant.");
+    } finally {
+      setUpdatingIds((prev) => prev.filter((id) => id !== combatantId));
+    }
+  };
+
+  const updateCombatantStatus = async (
+    combatantId: string,
+    statusKey: string,
+    updates: Partial<CombatantStatusEffect>
+  ) => {
+    if (!selectedCampaignId) return;
+    setUpdatingIds((prev) => (prev.includes(combatantId) ? prev : [...prev, combatantId]));
+    setError(null);
+    try {
+      const updated = await gmApi.upsertCombatantStatusEffect({
+        campaignId: selectedCampaignId,
+        combatantId,
+        statusKey,
+        durationType: updates.durationType,
+        durationRemaining: updates.durationRemaining,
+        stacks: updates.stacks,
+        isActive: updates.isActive
+      });
+      setCombatants((prev) =>
+        prev.map((entry) => {
+          if (entry.id !== combatantId) return entry;
+          const existing = entry.statusEffects ?? [];
+          const next = existing.some((status) => status.statusKey === statusKey)
+            ? existing.map((status) => (status.statusKey === statusKey ? updated : status))
+            : [...existing, updated];
+          return { ...entry, statusEffects: next };
+        })
+      );
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to update status effect.");
+    } finally {
+      setUpdatingIds((prev) => prev.filter((id) => id !== combatantId));
+    }
+  };
+
+  const removeCombatantStatus = async (combatantId: string, statusId: string) => {
+    setUpdatingIds((prev) => (prev.includes(combatantId) ? prev : [...prev, combatantId]));
+    setError(null);
+    try {
+      await gmApi.removeCombatantStatusEffect(statusId);
+      setCombatants((prev) =>
+        prev.map((entry) => {
+          if (entry.id !== combatantId) return entry;
+          return {
+            ...entry,
+            statusEffects: (entry.statusEffects ?? []).filter((status) => status.id !== statusId)
+          };
+        })
+      );
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : "Failed to remove status effect.");
+    } finally {
+      setUpdatingIds((prev) => prev.filter((id) => id !== combatantId));
+    }
+  };
+
+  const updateCombatantWound = async (combatantId: string, woundType: WoundType, woundCount: number) => {
+    if (!selectedCampaignId) return;
+    setUpdatingIds((prev) => (prev.includes(combatantId) ? prev : [...prev, combatantId]));
+    setError(null);
+    try {
+      const updated = await gmApi.upsertCombatantWound({
+        campaignId: selectedCampaignId,
+        combatantId,
+        woundType,
+        woundCount
+      });
+      setCombatants((prev) =>
+        prev.map((entry) => {
+          if (entry.id !== combatantId) return entry;
+          const existing = entry.wounds ?? [];
+          const next = existing.some((wound) => wound.woundType === woundType)
+            ? existing.map((wound) => (wound.woundType === woundType ? updated : wound))
+            : [...existing, updated];
+          return { ...entry, wounds: next };
+        })
+      );
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to update wound.");
     } finally {
       setUpdatingIds((prev) => prev.filter((id) => id !== combatantId));
     }
@@ -159,7 +257,9 @@ export const CombatPage: React.FC = () => {
       const updates = await Promise.all(
         Array.from(selectedIds).map(async (combatantId) => {
           const updated = await gmApi.updateCombatant(combatantId, { isActive });
-          return mapCombatant(updated);
+          const mapped = mapCombatant(updated);
+          const existing = combatants.find((entry) => entry.id === combatantId);
+          return { ...mapped, statusEffects: existing?.statusEffects ?? [], wounds: existing?.wounds ?? [] };
         })
       );
       setCombatants((prev) => prev.map((entry) => updates.find((update) => update.id === entry.id) ?? entry));
@@ -222,9 +322,72 @@ export const CombatPage: React.FC = () => {
     setEndTurnSpend((prev) => ({ ...prev, [entry.id]: "" }));
   };
 
+  const handleAdvanceRound = async () => {
+    if (!selectedCampaignId) return;
+    setBulkUpdating(true);
+    setError(null);
+    try {
+      const updates: Promise<CombatantWound>[] = [];
+      const changes = new Map<string, Record<WoundType, number>>();
+
+      combatants.filter((entry) => entry.isActive).forEach((entry) => {
+        const statusEffects = entry.statusEffects ?? [];
+        statusEffects.forEach((status) => {
+          if (status.isActive === false) return;
+          const tick = getStatusWoundTick(status.statusKey);
+          if (!tick) return;
+          const entryChanges = changes.get(entry.id) ?? ({} as Record<WoundType, number>);
+          entryChanges[tick.woundType] = (entryChanges[tick.woundType] ?? 0) + tick.amount;
+          changes.set(entry.id, entryChanges);
+        });
+      });
+
+      changes.forEach((deltaMap, combatantId) => {
+        const entry = combatants.find((combatant) => combatant.id === combatantId);
+        if (!entry) return;
+        Object.entries(deltaMap).forEach(([woundType, increment]) => {
+          const current = (entry.wounds ?? []).find((wound) => wound.woundType === woundType)?.woundCount ?? 0;
+          const nextCount = current + increment;
+          updates.push(
+            gmApi.upsertCombatantWound({
+              campaignId: selectedCampaignId,
+              combatantId,
+              woundType: woundType as WoundType,
+              woundCount: nextCount
+            })
+          );
+        });
+      });
+
+      const results = await Promise.all(updates);
+      setCombatants((prev) =>
+        prev.map((entry) => {
+          const updated = results.filter((result) => result.combatantId === entry.id);
+          if (!updated.length) return entry;
+          const existing = entry.wounds ?? [];
+          const next = [...existing];
+          updated.forEach((item) => {
+            const idx = next.findIndex((wound) => wound.woundType === item.woundType);
+            if (idx >= 0) {
+              next[idx] = item;
+            } else {
+              next.push(item);
+            }
+          });
+          return { ...entry, wounds: next };
+        })
+      );
+    } catch (tickError) {
+      setError(tickError instanceof Error ? tickError.message : "Failed to apply round ticks.");
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
   const filteredEntries = showInactive ? combatants : combatants.filter((entry) => entry.isActive);
   const allies = filteredEntries.filter((entry) => entry.faction === "ally");
   const enemies = filteredEntries.filter((entry) => entry.faction === "enemy");
+  const statusOptions = definitions?.statusEffects ?? [];
 
   return (
     <div className="gm-combat">
@@ -233,6 +396,9 @@ export const CombatPage: React.FC = () => {
         <p className="gm-combat__subtitle subtitle muted">
           Track active combatants and mark allies versus enemies in the current scene.
         </p>
+        <button type="button" className="gm-combat__button" onClick={handleAdvanceRound} disabled={bulkUpdating}>
+          Advance Round
+        </button>
       </header>
 
       <section className="gm-combat__card">
@@ -365,6 +531,8 @@ export const CombatPage: React.FC = () => {
                   const spendValue = rawSpend === "" ? 0 : Number(rawSpend);
                   const clampedSpend = Number.isFinite(spendValue) ? Math.min(Math.max(spendValue, 0), apCurrent) : 0;
                   const endTurnGain = entry.isActive && clampedSpend > 0 && tier > 0 ? calculateEnergyGain(clampedSpend, tier) : 0;
+                  const statusDraft = statusDrafts[entry.id] ?? { statusKey: "", duration: "", stacks: "1" };
+                  const statusList = entry.statusEffects ?? [];
                   return (
                     <div
                       key={entry.id}
@@ -402,6 +570,144 @@ export const CombatPage: React.FC = () => {
                           <span className="gm-combat__formula">Formula: energy gain = AP × Tier × 3</span>
                         </div>
                       )}
+                      <div className="gm-combat__metrics">
+                        <label className="gm-combat__field">
+                          <span className="gm-combat__hint">Statuses</span>
+                          <div className="gm-combat__turn-stack">
+                            {statusList.length === 0 ? (
+                              <span className="gm-combat__muted body muted">No statuses.</span>
+                            ) : (
+                              statusList.map((status) => {
+                                const editKey = `${entry.id}:${status.statusKey}`;
+                                const edit = statusEdits[editKey] ?? {
+                                  duration: status.durationRemaining?.toString() ?? "",
+                                  stacks: status.stacks?.toString() ?? "1"
+                                };
+                                return (
+                                  <div key={status.id} className="gm-combat__turn-row">
+                                    <span className="gm-combat__hint">{status.statusKey}</span>
+                                    <input
+                                      type="number"
+                                      value={edit.duration}
+                                      placeholder="Duration"
+                                      onChange={(event) =>
+                                        setStatusEdits((prev) => ({
+                                          ...prev,
+                                          [editKey]: { ...edit, duration: event.target.value }
+                                        }))
+                                      }
+                                      onBlur={() =>
+                                        updateCombatantStatus(entry.id, status.statusKey, {
+                                          durationRemaining: edit.duration === "" ? undefined : Number(edit.duration),
+                                          stacks: edit.stacks === "" ? undefined : Number(edit.stacks)
+                                        })
+                                      }
+                                      className="gm-combat__input gm-combat__input--compact"
+                                      disabled={isUpdating}
+                                    />
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      value={edit.stacks}
+                                      placeholder="Stacks"
+                                      onChange={(event) =>
+                                        setStatusEdits((prev) => ({
+                                          ...prev,
+                                          [editKey]: { ...edit, stacks: event.target.value }
+                                        }))
+                                      }
+                                      onBlur={() =>
+                                        updateCombatantStatus(entry.id, status.statusKey, {
+                                          durationRemaining: edit.duration === "" ? undefined : Number(edit.duration),
+                                          stacks: edit.stacks === "" ? undefined : Number(edit.stacks)
+                                        })
+                                      }
+                                      className="gm-combat__input gm-combat__input--compact"
+                                      disabled={isUpdating}
+                                    />
+                                    <button
+                                      type="button"
+                                      className="gm-combat__action-button"
+                                      onClick={() => removeCombatantStatus(entry.id, status.id)}
+                                      disabled={isUpdating}
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        </label>
+                        <label className="gm-combat__field">
+                          <span className="gm-combat__hint">Add Status</span>
+                          <div className="gm-combat__turn-row">
+                            <select
+                              value={statusDraft.statusKey}
+                              onChange={(event) =>
+                                setStatusDrafts((prev) => ({
+                                  ...prev,
+                                  [entry.id]: { ...statusDraft, statusKey: event.target.value }
+                                }))
+                              }
+                              className="gm-combat__input gm-combat__input--compact"
+                              disabled={isUpdating}
+                            >
+                              <option value="">Select status</option>
+                              {statusOptions.map((status) => (
+                                <option key={status.id} value={status.id}>
+                                  {status.name}
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              type="number"
+                              value={statusDraft.duration}
+                              placeholder="Duration"
+                              onChange={(event) =>
+                                setStatusDrafts((prev) => ({
+                                  ...prev,
+                                  [entry.id]: { ...statusDraft, duration: event.target.value }
+                                }))
+                              }
+                              className="gm-combat__input gm-combat__input--compact"
+                              disabled={isUpdating}
+                            />
+                            <input
+                              type="number"
+                              min={1}
+                              value={statusDraft.stacks}
+                              placeholder="Stacks"
+                              onChange={(event) =>
+                                setStatusDrafts((prev) => ({
+                                  ...prev,
+                                  [entry.id]: { ...statusDraft, stacks: event.target.value }
+                                }))
+                              }
+                              className="gm-combat__input gm-combat__input--compact"
+                              disabled={isUpdating}
+                            />
+                            <button
+                              type="button"
+                              className="gm-combat__action-button"
+                              onClick={() => {
+                                if (!statusDraft.statusKey) return;
+                                updateCombatantStatus(entry.id, statusDraft.statusKey, {
+                                  durationRemaining: statusDraft.duration === "" ? undefined : Number(statusDraft.duration),
+                                  stacks: statusDraft.stacks === "" ? undefined : Number(statusDraft.stacks)
+                                });
+                                setStatusDrafts((prev) => ({
+                                  ...prev,
+                                  [entry.id]: { statusKey: "", duration: "", stacks: "1" }
+                                }));
+                              }}
+                              disabled={isUpdating || !statusDraft.statusKey}
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </label>
+                      </div>
                       <label className="gm-combat__field">
                         <span className="gm-combat__hint">Faction</span>
                         <select
@@ -469,6 +775,39 @@ export const CombatPage: React.FC = () => {
                             disabled={isUpdating}
                           />
                         </label>
+                      </div>
+                      <div className="gm-combat__metrics">
+                        <span className="gm-combat__hint">Wounds</span>
+                        {WOUND_DEFINITIONS.map((wound) => {
+                          const woundMap = woundDrafts[entry.id] ?? {};
+                          const current =
+                            woundMap[wound.key] ??
+                            (entry.wounds ?? []).find((item) => item.woundType === wound.key)?.woundCount?.toString() ??
+                            "0";
+                          return (
+                            <label key={wound.key} className="gm-combat__field">
+                              <span className="gm-combat__hint">{wound.label}</span>
+                              <input
+                                type="number"
+                                min={0}
+                                value={current}
+                                onChange={(event) =>
+                                  setWoundDrafts((prev) => ({
+                                    ...prev,
+                                    [entry.id]: { ...(prev[entry.id] ?? {}), [wound.key]: event.target.value }
+                                  }))
+                                }
+                                onBlur={() => {
+                                  const parsed = Number(current);
+                                  if (!Number.isFinite(parsed)) return;
+                                  updateCombatantWound(entry.id, wound.key, Math.max(parsed, 0));
+                                }}
+                                className="gm-combat__input gm-combat__input--compact"
+                                disabled={isUpdating}
+                              />
+                            </label>
+                          );
+                        })}
                       </div>
                       {entry.isActive && (
                         <div className="gm-combat__active-panel">

@@ -1,7 +1,7 @@
 {
   "ruleset": {
     "key": "adurun-core",
-    "name": "Adûrun Core"
+    "name": "Ad\u00fbrun Core"
   },
   "attributes": [
     {
@@ -231,17 +231,17 @@
     {
       "key": "ININ",
       "name": "Inin",
-      "description": "Inin Description: Inin stand at about 5-6 ft tall, weighing approximately 120-200 lbs on average. Inin have standard length pointed ears. Inin are the most numerous species by far on Adûrun, and thus the most varied in their appearances, cultures, and demeanors. Inin typically live 80-120 years. Inin seemingly have less survival instincts than average, and are oftentimes more warlike, but on the other side of that coin, are far more spirited and willing to endure hardship."
+      "description": "Inin Description: Inin stand at about 5-6 ft tall, weighing approximately 120-200 lbs on average. Inin have standard length pointed ears. Inin are the most numerous species by far on Ad\u00fbrun, and thus the most varied in their appearances, cultures, and demeanors. Inin typically live 80-120 years. Inin seemingly have less survival instincts than average, and are oftentimes more warlike, but on the other side of that coin, are far more spirited and willing to endure hardship."
     },
     {
       "key": "ANZ",
       "name": "Anz",
-      "description": "Anz Description: Anz stand at about 12-15 ft tall, and weigh approximately 600-700 lbs on average. Anz have long saber-like ears about the length of one’s forearm and white eyes with no irises or pupils. Anz have a naturally low fat content, broad features, coarse woolly black hair, caramel, coffee, or umber brown skin, and put on muscle faster than the other species. Anz value tranquility and are stoic in demeanor due to a quickness to anger that plagues them. Anz live about 60-100 years on average. Anz are a large creature."
+      "description": "Anz Description: Anz stand at about 12-15 ft tall, and weigh approximately 600-700 lbs on average. Anz have long saber-like ears about the length of one\u2019s forearm and white eyes with no irises or pupils. Anz have a naturally low fat content, broad features, coarse woolly black hair, caramel, coffee, or umber brown skin, and put on muscle faster than the other species. Anz value tranquility and are stoic in demeanor due to a quickness to anger that plagues them. Anz live about 60-100 years on average. Anz are a large creature."
     },
     {
       "key": "PHI_ILIN",
-      "name": "Phi’ilin",
-      "description": "Phi’ilin Description: A Phi’iel stands at about 6-8ft tall, and weighs approximately 300-400 lbs on average. Phi’ilin have long, knife-length pointed ears with fair features, and silver eyes and fine hair. Despite a lithe and slender visage, Phi’ilin are heavy due to extremely dense muscle mass, which gives them superior strength and speed for their size. Phi’ilin live for 800-1200 years on average. Phi’ilin maintain a graceful and haughty utilitarian-obsessed disposition that can slowly change to one of despair, chaos, and loathing with long memories to match their long lifespans."
+      "name": "Phi\u2019ilin",
+      "description": "Phi\u2019ilin Description: A Phi\u2019iel stands at about 6-8ft tall, and weighs approximately 300-400 lbs on average. Phi\u2019ilin have long, knife-length pointed ears with fair features, and silver eyes and fine hair. Despite a lithe and slender visage, Phi\u2019ilin are heavy due to extremely dense muscle mass, which gives them superior strength and speed for their size. Phi\u2019ilin live for 800-1200 years on average. Phi\u2019ilin maintain a graceful and haughty utilitarian-obsessed disposition that can slowly change to one of despair, chaos, and loathing with long memories to match their long lifespans."
     },
     {
       "key": "CEREVU",
@@ -251,12 +251,12 @@
     {
       "key": "VENII",
       "name": "Venii",
-      "description": "Venii Description: Venii usually stand at 6-8 ft tall, weighing approximately 120-200 lbs on average. Venii have jet black smooth chitinous skin, fine stark white hair, and glossy reflective eyes with arachnoid faces and pedipalps, which they almost always keep veiled or hidden from non-Venii. Venii have stringy, scrawny, tall, and slender builds, who otherwise seem like Phi’ilin. Venii typically live 150-200 years on average. Venii maintains an attempted pleasant attitude but suffers from a terribly awkward disposition."
+      "description": "Venii Description: Venii usually stand at 6-8 ft tall, weighing approximately 120-200 lbs on average. Venii have jet black smooth chitinous skin, fine stark white hair, and glossy reflective eyes with arachnoid faces and pedipalps, which they almost always keep veiled or hidden from non-Venii. Venii have stringy, scrawny, tall, and slender builds, who otherwise seem like Phi\u2019ilin. Venii typically live 150-200 years on average. Venii maintains an attempted pleasant attitude but suffers from a terribly awkward disposition."
     },
     {
       "key": "FREININ",
       "name": "Freinin",
-      "description": "Freinin Description: Freinin usually stand at about half an Inin’s height, weighing approximately a quarter as much on average as well. Freinin come in all shapes and sizes, but are considered small creatures. Freinin have a variety of skin, hair, and eye colors. Freinin typically live 60-80 years on average. Freinin, called “humans” or “mankind” in their own tongues and native to Adûrun, maintain a variety of demeanors, but generally speaking, tend to be characterized as frail and craven, or at least, quite risk-averse compared to the other species. Freinin cannot Link.\nLanguages: Two of the player’s choice"
+      "description": "Freinin Description: Freinin usually stand at about half an Inin\u2019s height, weighing approximately a quarter as much on average as well. Freinin come in all shapes and sizes, but are considered small creatures. Freinin have a variety of skin, hair, and eye colors. Freinin typically live 60-80 years on average. Freinin, called \u201chumans\u201d or \u201cmankind\u201d in their own tongues and native to Ad\u00fbrun, maintain a variety of demeanors, but generally speaking, tend to be characterized as frail and craven, or at least, quite risk-averse compared to the other species. Freinin cannot Link.\nLanguages: Two of the player\u2019s choice"
     }
   ],
   "subraces": [
@@ -264,13 +264,13 @@
       "key": "THAIRIN",
       "raceKey": "ININ",
       "name": "Thairin",
-      "description": "Appearance: Black curly hair, shorter and hairier than average, dark brown eyes, olive skin\nLanguages: Thairin, one of the player’s choice"
+      "description": "Appearance: Black curly hair, shorter and hairier than average, dark brown eyes, olive skin\nLanguages: Thairin, one of the player\u2019s choice"
     },
     {
       "key": "GRAZIN",
       "raceKey": "ININ",
       "name": "Grazin",
-      "description": "Appearance: Fine blonde hair, broader and taller than average, blue eyes, pale skin\nLanguages: Grazin, one of the player’s choice"
+      "description": "Appearance: Fine blonde hair, broader and taller than average, blue eyes, pale skin\nLanguages: Grazin, one of the player\u2019s choice"
     },
     {
       "key": "BRYONIN",
@@ -282,7 +282,7 @@
       "key": "JIININ",
       "raceKey": "ININ",
       "name": "Jiinin",
-      "description": "Fine black hair, almond-shaped brown eyes, less hairy than average, shorter and thinner on average, pale or olive skin\nLanguages: Yaich, one of the player’s choice"
+      "description": "Fine black hair, almond-shaped brown eyes, less hairy than average, shorter and thinner on average, pale or olive skin\nLanguages: Yaich, one of the player\u2019s choice"
     },
     {
       "key": "RIVANONIN",
@@ -294,7 +294,7 @@
       "key": "MELFARIONIN",
       "raceKey": "ININ",
       "name": "Melfarionin",
-      "description": "Appearance: Dirty blonde hair, bright golden eyes, pale or bronze skin\nLanguages: Melfaric, two languages of the player’s choice"
+      "description": "Appearance: Dirty blonde hair, bright golden eyes, pale or bronze skin\nLanguages: Melfaric, two languages of the player\u2019s choice"
     },
     {
       "key": "THUILIN",
@@ -311,7 +311,264 @@
   ],
   "feats": [],
   "items": [],
-  "statusEffects": [],
+  "statusEffects": [
+    {
+      "key": "BLESSED",
+      "name": "Blessed",
+      "description": "Under a positive Divine Intervention or a magic item's effect.",
+      "defaultDurationType": "scene"
+    },
+    {
+      "key": "BLINDED",
+      "name": "Blinded",
+      "description": "-100 to search, track, forage, interpret, identify, and navigate based on vision. -100 to battle if no special senses allow you to sense presences without clear vision.",
+      "defaultDurationType": "rounds",
+      "modifiers": [
+        {
+          "id": "STATUS_BLINDED_SEARCH",
+          "sourceType": "status_effect",
+          "sourceKey": "BLINDED",
+          "targetPath": "skills.SEARCH.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_BLINDED_TRACK",
+          "sourceType": "status_effect",
+          "sourceKey": "BLINDED",
+          "targetPath": "skills.TRACK.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_BLINDED_FORAGE",
+          "sourceType": "status_effect",
+          "sourceKey": "BLINDED",
+          "targetPath": "skills.FORAGE.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_BLINDED_INTERPRET",
+          "sourceType": "status_effect",
+          "sourceKey": "BLINDED",
+          "targetPath": "skills.INTERPRET.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_BLINDED_IDENTIFY",
+          "sourceType": "status_effect",
+          "sourceKey": "BLINDED",
+          "targetPath": "skills.IDENTIFY.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_BLINDED_NAVIGATE",
+          "sourceType": "status_effect",
+          "sourceKey": "BLINDED",
+          "targetPath": "skills.NAVIGATE.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        }
+      ]
+    },
+    {
+      "key": "BURNING",
+      "name": "Burning",
+      "description": "Gain 1 Burn Wound per round.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "CHARMED",
+      "name": "Charmed",
+      "description": "Magically allied to a creature.",
+      "defaultDurationType": "scene"
+    },
+    {
+      "key": "CRUSHING",
+      "name": "Crushing",
+      "description": "Gain 1 Blunt Wound per round.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "CURSED",
+      "name": "Cursed",
+      "description": "Under a negative Divine Intervention or a magic item's effect.",
+      "defaultDurationType": "scene"
+    },
+    {
+      "key": "DAZED",
+      "name": "Dazed",
+      "description": "Reduced to 0 Action Points.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "DEAFENED",
+      "name": "Deafened",
+      "description": "-100 to search, track, forage, interpret, identify, and navigate based on sound. -100 to battle if no special senses allow you to sense presences without clear hearing.",
+      "defaultDurationType": "rounds",
+      "modifiers": [
+        {
+          "id": "STATUS_DEAFENED_SEARCH",
+          "sourceType": "status_effect",
+          "sourceKey": "DEAFENED",
+          "targetPath": "skills.SEARCH.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_DEAFENED_TRACK",
+          "sourceType": "status_effect",
+          "sourceKey": "DEAFENED",
+          "targetPath": "skills.TRACK.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_DEAFENED_FORAGE",
+          "sourceType": "status_effect",
+          "sourceKey": "DEAFENED",
+          "targetPath": "skills.FORAGE.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_DEAFENED_INTERPRET",
+          "sourceType": "status_effect",
+          "sourceKey": "DEAFENED",
+          "targetPath": "skills.INTERPRET.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_DEAFENED_IDENTIFY",
+          "sourceType": "status_effect",
+          "sourceKey": "DEAFENED",
+          "targetPath": "skills.IDENTIFY.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        },
+        {
+          "id": "STATUS_DEAFENED_NAVIGATE",
+          "sourceType": "status_effect",
+          "sourceKey": "DEAFENED",
+          "targetPath": "skills.NAVIGATE.racialBonus",
+          "operation": "add",
+          "valueExpression": {
+            "type": "number",
+            "value": -100
+          }
+        }
+      ]
+    },
+    {
+      "key": "ENRAGED",
+      "name": "Enraged",
+      "description": "+25 to physical-based skills and -25 to mental-based skills; current morale penalties are ignored while enraged.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "FREEZING",
+      "name": "Freezing",
+      "description": "Gain 1 Freeze Wound per round.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "HASTENED",
+      "name": "Hastened",
+      "description": "Under an effect that increases action points.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "INTOXICATED",
+      "name": "Intoxicated",
+      "description": "-15 to all non-Will skills, +15 to Will skills.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "BLEEDING",
+      "name": "Bleeding",
+      "description": "Gain 1 Laceration Wound per round.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "PRONE",
+      "name": "Prone",
+      "description": "On ground. Movement takes 2 energy. -50 to battle against standing targets in melee. +50 to defending against ranged attacks and concealing self.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "RENDED",
+      "name": "Rended",
+      "description": "Gain 1 Spiritual Wound per round.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "ROTTING",
+      "name": "Rotting",
+      "description": "Gain 1 Necrosis Wound per round.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "SLOWED",
+      "name": "Slowed",
+      "description": "Under an effect that decreases action points.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "STUPIFICATION",
+      "name": "Stupification",
+      "description": "Gain 1 Mental Wound per round.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "SUFFOCATING",
+      "name": "Suffocating",
+      "description": "Increasing exhaustion/physical mod rounds.",
+      "defaultDurationType": "rounds"
+    },
+    {
+      "key": "UNCONSCIOUS",
+      "name": "Unconscious",
+      "description": "Unable to act or perceive your environment.",
+      "defaultDurationType": "scene"
+    }
+  ],
   "derivedStats": [],
   "modifiers": [
     {

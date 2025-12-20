@@ -21,6 +21,30 @@ export interface PlayerCombatant {
   name: string;
   faction?: string;
   combatStatus?: string;
+  statusEffects?: PlayerCombatantStatusEffect[];
+  wounds?: PlayerCombatantWound[];
+}
+
+export interface PlayerCombatantStatusEffect {
+  id: string;
+  campaignId: string;
+  combatantId: string;
+  statusKey: string;
+  durationType?: string;
+  durationRemaining?: number;
+  stacks?: number;
+  isActive?: boolean;
+  appliedAt?: string;
+  updatedAt?: string;
+}
+
+export interface PlayerCombatantWound {
+  id: string;
+  campaignId: string;
+  combatantId: string;
+  woundType: string;
+  woundCount: number;
+  updatedAt?: string;
 }
 
 type CampaignRow = {
@@ -46,6 +70,28 @@ type CombatantRow = {
   faction?: string | null;
   is_active?: boolean | null;
   name: string;
+};
+
+type CombatantStatusEffectRow = {
+  id: string;
+  campaign_id: string;
+  combatant_id: string;
+  status_key: string;
+  duration_type?: string | null;
+  duration_remaining?: number | null;
+  stacks?: number | null;
+  is_active?: boolean | null;
+  applied_at?: string | null;
+  updated_at?: string | null;
+};
+
+type CombatantWoundRow = {
+  id: string;
+  campaign_id: string;
+  combatant_id: string;
+  wound_type: string;
+  wound_count: number;
+  updated_at?: string | null;
 };
 
 type SupabaseResult<T> = { data: T; error: null } | { data: null; error: { message: string } };
@@ -87,10 +133,64 @@ function mapSetting(row: CampaignSettingRow): PlayerCampaignSetting {
 
 function mapCombatant(row: CombatantRow): PlayerCombatant {
   return {
-    id: row.bestiary_entry_id,
+    id: row.id,
     name: row.name,
     faction: row.faction ?? undefined,
     combatStatus: row.is_active ? "active" : "inactive"
+  };
+}
+
+function mapCombatantStatusEffect(row: CombatantStatusEffectRow): PlayerCombatantStatusEffect {
+  return {
+    id: row.id,
+    campaignId: row.campaign_id,
+    combatantId: row.combatant_id,
+    statusKey: row.status_key,
+    durationType: row.duration_type ?? undefined,
+    durationRemaining: row.duration_remaining ?? undefined,
+    stacks: row.stacks ?? undefined,
+    isActive: row.is_active ?? undefined,
+    appliedAt: row.applied_at ?? undefined,
+    updatedAt: row.updated_at ?? undefined
+  };
+}
+
+function mapCombatantWound(row: CombatantWoundRow): PlayerCombatantWound {
+  return {
+    id: row.id,
+    campaignId: row.campaign_id,
+    combatantId: row.combatant_id,
+    woundType: row.wound_type,
+    woundCount: row.wound_count,
+    updatedAt: row.updated_at ?? undefined
+  };
+}
+
+function toCombatantStatusPayload(
+  payload: Partial<PlayerCombatantStatusEffect> & { campaignId: string; combatantId: string; statusKey: string }
+): Partial<CombatantStatusEffectRow> {
+  return {
+    campaign_id: payload.campaignId,
+    combatant_id: payload.combatantId,
+    status_key: payload.statusKey,
+    duration_type: payload.durationType ?? null,
+    duration_remaining: payload.durationRemaining ?? null,
+    stacks: payload.stacks ?? 1,
+    is_active: payload.isActive ?? true,
+    applied_at: payload.appliedAt ?? null,
+    updated_at: payload.updatedAt ?? null
+  };
+}
+
+function toCombatantWoundPayload(
+  payload: Partial<PlayerCombatantWound> & { campaignId: string; combatantId: string; woundType: string }
+): Partial<CombatantWoundRow> {
+  return {
+    campaign_id: payload.campaignId,
+    combatant_id: payload.combatantId,
+    wound_type: payload.woundType,
+    wound_count: payload.woundCount ?? 0,
+    updated_at: payload.updatedAt ?? null
   };
 }
 
@@ -129,17 +229,128 @@ export async function listSharedSettings(campaignId: string): Promise<PlayerCamp
 export async function listActiveCombatants(campaignId: string): Promise<PlayerCombatant[]> {
   ensureSupabaseEnv();
   const client = getSupabaseClient();
-  const { data, error } = (await client
-    .from("campaign_combatants")
-    .select("id, campaign_id, bestiary_entry_id, faction, is_active, bestiary_entries(name)")
-    .eq("campaign_id", campaignId)
-    .eq("is_active", true)
-    .order("initiative", { ascending: false })) as SupabaseResult<CombatantRow[]>;
-  if (error) {
-    throw new ApiError(0, `Failed to load combatants: ${error.message}`);
+  const [combatantsRes, statusRes, woundRes] = (await Promise.all([
+    client
+      .from("campaign_combatants")
+      .select("id, campaign_id, bestiary_entry_id, faction, is_active, bestiary_entries(name)")
+      .eq("campaign_id", campaignId)
+      .eq("is_active", true)
+      .order("initiative", { ascending: false }),
+    client
+      .from("campaign_combatant_status_effects")
+      .select("id, campaign_id, combatant_id, status_key, duration_type, duration_remaining, stacks, is_active, applied_at, updated_at")
+      .eq("campaign_id", campaignId),
+    client
+      .from("campaign_combatant_wounds")
+      .select("id, campaign_id, combatant_id, wound_type, wound_count, updated_at")
+      .eq("campaign_id", campaignId)
+  ])) as [
+    SupabaseResult<CombatantRow[]>,
+    SupabaseResult<CombatantStatusEffectRow[]>,
+    SupabaseResult<CombatantWoundRow[]>
+  ];
+  if (combatantsRes.error) {
+    throw new ApiError(0, `Failed to load combatants: ${combatantsRes.error.message}`);
   }
-  return (data ?? []).map((row) => {
-    const name = (row as CombatantRow & { bestiary_entries?: { name: string } | null }).bestiary_entries?.name ?? "Unknown";
-    return mapCombatant({ ...row, name });
+  if (statusRes.error) {
+    throw new ApiError(0, `Failed to load combatant status effects: ${statusRes.error.message}`);
+  }
+  if (woundRes.error) {
+    throw new ApiError(0, `Failed to load combatant wounds: ${woundRes.error.message}`);
+  }
+
+  const statusByCombatant = new Map<string, PlayerCombatantStatusEffect[]>();
+  (statusRes.data ?? []).forEach((row) => {
+    const entry = mapCombatantStatusEffect(row);
+    const list = statusByCombatant.get(entry.combatantId) ?? [];
+    list.push(entry);
+    statusByCombatant.set(entry.combatantId, list);
   });
+
+  const woundsByCombatant = new Map<string, PlayerCombatantWound[]>();
+  (woundRes.data ?? []).forEach((row) => {
+    const entry = mapCombatantWound(row);
+    const list = woundsByCombatant.get(entry.combatantId) ?? [];
+    list.push(entry);
+    woundsByCombatant.set(entry.combatantId, list);
+  });
+
+  return (combatantsRes.data ?? []).map((row) => {
+    const name = (row as CombatantRow & { bestiary_entries?: { name: string } | null }).bestiary_entries?.name ?? "Unknown";
+    const combatant = mapCombatant({ ...row, name });
+    return {
+      ...combatant,
+      statusEffects: statusByCombatant.get(combatant.id) ?? [],
+      wounds: woundsByCombatant.get(combatant.id) ?? []
+    };
+  });
+}
+
+export async function listCombatantStatusEffects(campaignId: string): Promise<PlayerCombatantStatusEffect[]> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const { data, error } = (await client
+    .from("campaign_combatant_status_effects")
+    .select("id, campaign_id, combatant_id, status_key, duration_type, duration_remaining, stacks, is_active, applied_at, updated_at")
+    .eq("campaign_id", campaignId)) as SupabaseResult<CombatantStatusEffectRow[]>;
+  if (error) {
+    throw new ApiError(0, `Failed to load combatant status effects: ${error.message}`);
+  }
+  return (data ?? []).map(mapCombatantStatusEffect);
+}
+
+export async function upsertCombatantStatusEffect(
+  payload: Partial<PlayerCombatantStatusEffect> & { campaignId: string; combatantId: string; statusKey: string }
+): Promise<PlayerCombatantStatusEffect> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const record = toCombatantStatusPayload(payload);
+  const { data, error } = (await client
+    .from("campaign_combatant_status_effects")
+    .upsert(record, { onConflict: "combatant_id,status_key" })
+    .select("id, campaign_id, combatant_id, status_key, duration_type, duration_remaining, stacks, is_active, applied_at, updated_at")
+    .single()) as SupabaseResult<CombatantStatusEffectRow>;
+  if (error || !data) {
+    throw new ApiError(0, `Failed to upsert combatant status effect: ${error?.message ?? "unknown error"}`);
+  }
+  return mapCombatantStatusEffect(data);
+}
+
+export async function removeCombatantStatusEffect(id: string): Promise<void> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const { error } = (await client.from("campaign_combatant_status_effects").delete().eq("id", id)) as SupabaseResult<null>;
+  if (error) {
+    throw new ApiError(0, `Failed to remove combatant status effect: ${error.message}`);
+  }
+}
+
+export async function listCombatantWounds(campaignId: string): Promise<PlayerCombatantWound[]> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const { data, error } = (await client
+    .from("campaign_combatant_wounds")
+    .select("id, campaign_id, combatant_id, wound_type, wound_count, updated_at")
+    .eq("campaign_id", campaignId)) as SupabaseResult<CombatantWoundRow[]>;
+  if (error) {
+    throw new ApiError(0, `Failed to load combatant wounds: ${error.message}`);
+  }
+  return (data ?? []).map(mapCombatantWound);
+}
+
+export async function upsertCombatantWound(
+  payload: Partial<PlayerCombatantWound> & { campaignId: string; combatantId: string; woundType: string }
+): Promise<PlayerCombatantWound> {
+  ensureSupabaseEnv();
+  const client = getSupabaseClient();
+  const record = toCombatantWoundPayload(payload);
+  const { data, error } = (await client
+    .from("campaign_combatant_wounds")
+    .upsert(record, { onConflict: "combatant_id,wound_type" })
+    .select("id, campaign_id, combatant_id, wound_type, wound_count, updated_at")
+    .single()) as SupabaseResult<CombatantWoundRow>;
+  if (error || !data) {
+    throw new ApiError(0, `Failed to upsert combatant wound: ${error?.message ?? "unknown error"}`);
+  }
+  return mapCombatantWound(data);
 }
