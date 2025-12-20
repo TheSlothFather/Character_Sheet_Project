@@ -17,18 +17,17 @@ import { CampaignCharactersPage } from "./campaigns/CampaignCharactersPage";
 import { CampaignSettingsPage } from "./campaigns/CampaignSettingsPage";
 import { ACTIVE_CAMPAIGN_STORAGE_KEY } from "./campaigns/campaignStorage";
 import { CombatPage } from "./characters/CombatPage";
-import { useTheme } from "../hooks/useTheme";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
   padding: "0.5rem 0",
-  color: "var(--text)",
+  color: "#eee",
   textDecoration: "none"
 };
 
 const activeLinkStyle: React.CSSProperties = {
   fontWeight: 700,
-  color: "var(--success)"
+  color: "#9ae6b4"
 };
 
 const NotFound: React.FC = () => (
@@ -38,39 +37,12 @@ const NotFound: React.FC = () => (
   </div>
 );
 
-const ThemeToggle: React.FC = () => {
-  const { theme, setTheme } = useTheme();
-
-  return (
-    <div style={{ position: "fixed", top: 16, right: 16, zIndex: 1000 }}>
-      <label style={{ display: "grid", gap: 6, fontSize: 12, color: "var(--muted)" }}>
-        <span style={{ fontWeight: 600 }}>Theme</span>
-        <select
-          value={theme}
-          onChange={(event) => setTheme(event.target.value === "dark-fantasy" ? "dark-fantasy" : "parchment")}
-          style={{
-            padding: "0.4rem 0.6rem",
-            borderRadius: 8,
-            border: "1px solid var(--border)",
-            background: "var(--surface-2)",
-            color: "var(--text)",
-            cursor: "pointer"
-          }}
-        >
-          <option value="parchment">Parchment</option>
-          <option value="dark-fantasy">Dark Fantasy</option>
-        </select>
-      </label>
-    </div>
-  );
-};
-
 const StartPage: React.FC = () => {
   return (
-    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--background)", color: "var(--text)" }}>
+    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#0b0f16", color: "#e5e7eb" }}>
       <div style={{ maxWidth: 560, width: "100%", padding: "2rem", textAlign: "center" }}>
         <h1 style={{ marginBottom: "0.5rem" }}>Adûrun Builder</h1>
-        <p style={{ color: "var(--muted)", marginTop: 0 }}>
+        <p style={{ color: "#cbd5e1", marginTop: 0 }}>
           Choose your role to launch the correct workspace.
         </p>
         <div style={{ display: "grid", gap: "1rem", marginTop: "2rem" }}>
@@ -79,9 +51,9 @@ const StartPage: React.FC = () => {
             style={{
               padding: "0.9rem 1.2rem",
               borderRadius: 12,
-              border: "1px solid var(--accent)",
-              background: "var(--accent)",
-              color: "var(--text)",
+              border: "1px solid #1d4ed8",
+              background: "#2563eb",
+              color: "#e6edf7",
               fontWeight: 700,
               textDecoration: "none"
             }}
@@ -93,9 +65,9 @@ const StartPage: React.FC = () => {
             style={{
               padding: "0.9rem 1.2rem",
               borderRadius: 12,
-              border: "1px solid var(--border)",
-              background: "var(--surface-2)",
-              color: "var(--text)",
+              border: "1px solid #2f3542",
+              background: "#111827",
+              color: "#e5e7eb",
               fontWeight: 700,
               textDecoration: "none"
             }}
@@ -122,11 +94,11 @@ const PlayerApp: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--background)", color: "var(--text)" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#111", color: "#eee" }}>
       <nav
         style={{
           width: 220,
-          borderRight: "1px solid var(--border)",
+          borderRight: "1px solid #333",
           padding: "1rem",
           boxSizing: "border-box"
         }}
@@ -219,7 +191,6 @@ export const App: React.FC = () => {
   return (
     <DefinitionsProvider>
       <SelectedCharacterProvider>
-        <ThemeToggle />
         <Routes>
           <Route path="/" element={<StartPage />} />
           <Route path="/join/:token" element={<JoinCampaignPage />} />
