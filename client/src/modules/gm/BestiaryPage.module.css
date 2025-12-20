@@ -1,0 +1,428 @@
+.root {
+  --space-2xs: 0.2rem;
+  --space-xs: 0.35rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.title {
+  margin: 0;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.error {
+  color: var(--danger);
+}
+
+.loading {
+  color: var(--muted);
+}
+
+.mainLayout {
+  display: flex;
+  gap: var(--space-lg);
+  align-items: flex-start;
+}
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--space-lg);
+}
+
+.input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+.textarea {
+  resize: vertical;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.sectionToggle {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.collapsible {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: var(--space-md);
+  background: var(--surface-2);
+  display: grid;
+  gap: var(--space-md);
+}
+
+.collapsibleBody {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.sidebar {
+  width: 300px;
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.detailPanel {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.rowBetween {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.rowWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.rowTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.primaryButton {
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondaryButton {
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actionButton {
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actionButtonSecondary {
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dangerButton {
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  color: var(--danger);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.editButton {
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.fieldLabel {
+  font-weight: 700;
+}
+
+.fieldLabelMedium {
+  font-weight: 600;
+}
+
+.gridAuto120 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.6rem;
+}
+
+.gridAuto180 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-md);
+}
+
+.gridAuto160 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-md);
+}
+
+.gridAuto150 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.6rem;
+}
+
+.gridTwo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.gridTwoWide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.gridThree {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.gridThreeWide {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.gridAuto140 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-md);
+}
+
+.listPanel {
+  display: grid;
+  gap: var(--space-sm);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.emptyText {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.entryButton {
+  text-align: left;
+  border-radius: 8px;
+  padding: 0.6rem;
+  color: var(--text);
+  cursor: pointer;
+  display: grid;
+  gap: var(--space-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.entryName {
+  font-weight: 700;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+.rankChip {
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.inlineLink {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.entryMeta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.mutedText {
+  color: var(--muted);
+}
+
+.mutedTextSmall {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.mutedTextMedium {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.detailStack {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.detailActions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.summaryCard {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: var(--space-lg);
+  background: var(--surface-2);
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.detailSection {
+  display: grid;
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border);
+}
+
+.detailSection:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.sectionTitle {
+  font-weight: 700;
+}
+
+.infoStack {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.description {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 60ch;
+}
+
+.statLabel {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.statValue {
+  font-weight: 600;
+}
+
+.attributeCard {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: var(--space-sm);
+  background: var(--surface-2);
+}
+
+.skillCard {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: var(--space-sm);
+  background: var(--surface-2);
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.submitButton {
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 700;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.actionRow {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
