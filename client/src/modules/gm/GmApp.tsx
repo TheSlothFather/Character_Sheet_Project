@@ -9,18 +9,7 @@ import { SettingInfoPage } from "./SettingInfoPage";
 import { PlayerCharactersPage } from "./PlayerCharactersPage";
 import { CombatPage } from "./CombatPage";
 import { GmCampaignLayout } from "./GmCampaignLayout";
-
-const linkStyle: React.CSSProperties = {
-  display: "block",
-  padding: "0.5rem 0",
-  color: "var(--text)",
-  textDecoration: "none"
-};
-
-const activeLinkStyle: React.CSSProperties = {
-  fontWeight: 700,
-  color: "var(--success)"
-};
+import "./GmApp.css";
 
 const NotFound: React.FC = () => (
   <div>
@@ -28,24 +17,6 @@ const NotFound: React.FC = () => (
     <p>The GM page you are looking for does not exist.</p>
   </div>
 );
-
-const cardStyle: React.CSSProperties = {
-  background: "var(--surface-1)",
-  border: "1px solid var(--border)",
-  borderRadius: 12,
-  padding: "1.5rem",
-  boxShadow: "var(--shadow-depth-2)"
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.6rem 0.75rem",
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--surface-2)",
-  color: "var(--text)",
-  boxSizing: "border-box"
-};
 
 export const GmApp: React.FC = () => {
   const client = getSupabaseClient();
@@ -120,55 +91,46 @@ export const GmApp: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--background)", color: "var(--text)" }}>
-        <div>Checking session...</div>
+      <div className="gm-app__center">
+        <div className="gm-app__muted">Checking session...</div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--background)", color: "var(--text)" }}>
-        <form onSubmit={handleAuth} style={{ width: "100%", maxWidth: 420 }}>
-          <div style={cardStyle}>
-            <h2 style={{ marginTop: 0 }}>{authMode === "sign-in" ? "GM Sign In" : "Create GM Account"}</h2>
-            <p style={{ color: "var(--muted)", marginTop: 0 }}>
+      <div className="gm-app__center">
+        <form onSubmit={handleAuth} className="gm-app__auth">
+          <div className="gm-app__card">
+            <h2 className="gm-app__card-title">{authMode === "sign-in" ? "GM Sign In" : "Create GM Account"}</h2>
+            <p className="gm-app__subtitle">
               You must be signed in for GM actions (campaigns, invites, bestiary, settings).
             </p>
-            {error && <div style={{ color: "var(--danger)", marginBottom: "0.75rem" }}>{error}</div>}
-            {notice && <div style={{ color: "var(--success)", marginBottom: "0.75rem" }}>{notice}</div>}
-            <label style={{ display: "grid", gap: "0.35rem", marginBottom: "0.75rem" }}>
-              <span style={{ fontWeight: 600 }}>Email</span>
+            {error && <div className="gm-app__message gm-app__message--error">{error}</div>}
+            {notice && <div className="gm-app__message gm-app__message--success">{notice}</div>}
+            <label className="gm-app__field">
+              <span className="gm-app__label">Email</span>
               <input
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                style={inputStyle}
+                className="gm-app__input"
                 autoComplete="email"
               />
             </label>
-            <label style={{ display: "grid", gap: "0.35rem", marginBottom: "1rem" }}>
-              <span style={{ fontWeight: 600 }}>Password</span>
+            <label className="gm-app__field gm-app__field--spaced">
+              <span className="gm-app__label">Password</span>
               <input
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                style={inputStyle}
+                className="gm-app__input"
                 autoComplete={authMode === "sign-in" ? "current-password" : "new-password"}
               />
             </label>
             <button
               type="submit"
-              style={{
-                padding: "0.6rem 0.9rem",
-                borderRadius: 8,
-                border: "1px solid var(--accent)",
-                background: "var(--accent)",
-                color: "var(--surface-1)",
-                fontWeight: 700,
-                width: "100%",
-                cursor: "pointer"
-              }}
+              className="gm-app__button"
             >
               {authMode === "sign-in" ? "Sign In" : "Create Account"}
             </button>
@@ -179,17 +141,7 @@ export const GmApp: React.FC = () => {
                 setError(null);
                 setNotice(null);
               }}
-              style={{
-                marginTop: "0.75rem",
-                width: "100%",
-                padding: "0.55rem 0.9rem",
-                borderRadius: 8,
-                border: "1px solid var(--border)",
-                background: "var(--surface-3)",
-                color: "var(--text)",
-                fontWeight: 600,
-                cursor: "pointer"
-              }}
+              className="gm-app__button gm-app__button--secondary"
             >
               {authMode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
             </button>
@@ -204,86 +156,61 @@ export const GmApp: React.FC = () => {
   const campaignId = campaignMatch?.[1] ?? null;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--background)", color: "var(--text)" }}>
-      <nav
-        style={{
-          width: 240,
-          borderRight: "1px solid var(--border)",
-          padding: "1rem",
-          boxSizing: "border-box"
-        }}
-      >
-        <h1 style={{ fontSize: 18, marginBottom: "0.5rem" }}>GM Console</h1>
-        <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: "1rem" }}>
+    <div className="gm-app">
+      <nav className="gm-app__nav">
+        <h1 className="gm-app__title">GM Console</h1>
+        <div className="gm-app__meta">
           {user.email ?? "Signed in"}
           <button
             type="button"
             onClick={handleSignOut}
-            style={{
-              marginTop: "0.35rem",
-              width: "100%",
-              padding: "0.35rem 0.6rem",
-              borderRadius: 8,
-              border: "1px solid var(--border)",
-              background: "var(--surface-3)",
-              color: "var(--text)",
-              fontWeight: 600,
-              cursor: "pointer"
-            }}
+            className="gm-app__button gm-app__button--compact"
           >
             Sign Out
           </button>
         </div>
-        <NavLink to="/gm" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+        <NavLink to="/gm" className={({ isActive }) => (isActive ? "gm-app__link gm-app__link--active" : "gm-app__link")}>
           Campaigns
         </NavLink>
         {campaignId && (
           <>
             <NavLink
               to={`/gm/campaigns/${campaignId}/bestiary`}
-              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+              className={({ isActive }) => (isActive ? "gm-app__link gm-app__link--active" : "gm-app__link")}
             >
               Bestiary
             </NavLink>
             <NavLink
               to={`/gm/campaigns/${campaignId}/combat`}
-              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+              className={({ isActive }) => (isActive ? "gm-app__link gm-app__link--active" : "gm-app__link")}
             >
               Combat
             </NavLink>
             <NavLink
               to={`/gm/campaigns/${campaignId}/npc-hub`}
-              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+              className={({ isActive }) => (isActive ? "gm-app__link gm-app__link--active" : "gm-app__link")}
             >
               NPC Hub
             </NavLink>
             <NavLink
               to={`/gm/campaigns/${campaignId}/setting-info`}
-              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+              className={({ isActive }) => (isActive ? "gm-app__link gm-app__link--active" : "gm-app__link")}
             >
               Setting Info
             </NavLink>
-            <div
-              style={{
-                marginTop: "1rem",
-                fontSize: 12,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                color: "var(--muted)"
-              }}
-            >
+            <div className="gm-app__section-label">
               Player Views
             </div>
             <NavLink
               to={`/gm/campaigns/${campaignId}/player-characters`}
-              style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+              className={({ isActive }) => (isActive ? "gm-app__link gm-app__link--active" : "gm-app__link")}
             >
               Player Characters
             </NavLink>
           </>
         )}
       </nav>
-      <main style={{ flex: 1, padding: "1rem" }}>
+      <main className="gm-app__main">
         <Routes>
           <Route index element={<CampaignsPage />} />
           <Route path="campaigns/:campaignId" element={<GmCampaignLayout />}>

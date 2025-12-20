@@ -4,6 +4,7 @@ import weaponsCsv from "../../data/weapons.csv?raw";
 import { api, Character } from "../../api/client";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
 import { EquipmentKind, MartialAbility, parseMartialCsv } from "./martialUtils";
+import "./MartialProwessPage.css";
 
 interface MartialState {
   categoryPools: Record<string, number>;
@@ -81,122 +82,55 @@ const AbilityCard: React.FC<{
 }> = ({ ability, purchased, remainingMp, onPurchase }) => {
   const canAfford = remainingMp >= ability.mpCost;
   const statusLabel = purchased ? "Purchased" : canAfford ? "Unlocked" : "Insufficient MP";
+  const statusClass = purchased
+    ? "martial-ability__status martial-ability__status--purchased"
+    : canAfford
+    ? "martial-ability__status martial-ability__status--available"
+    : "martial-ability__status martial-ability__status--blocked";
 
   return (
     <button
       onClick={() => onPurchase(ability)}
       disabled={purchased || !canAfford}
-      style={{
-        width: "100%",
-        textAlign: "left",
-        background: purchased ? "linear-gradient(135deg, #142015, #0f171b)" : "#0f141c",
-        border: purchased ? "1px solid #7bdc70" : "1px solid #1f2b39",
-        borderRadius: 12,
-        padding: "0.75rem 0.85rem",
-        color: "#e6edf7",
-        cursor: purchased || !canAfford ? "not-allowed" : "pointer",
-        opacity: purchased ? 1 : canAfford ? 1 : 0.7,
-        transition: "border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease",
-        boxShadow: purchased
-          ? "0 6px 18px rgba(82, 255, 168, 0.12), 0 0 0 1px rgba(123, 220, 112, 0.25)"
-          : "0 10px 30px rgba(0,0,0,0.35)",
-        minHeight: 126,
-        alignItems: "stretch",
-        display: "flex"
-      }}
+      className={`martial-ability${purchased ? " martial-ability--purchased" : ""}${
+        !purchased && !canAfford ? " martial-ability--blocked" : ""
+      }`}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 12
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <div style={{ fontWeight: 800, fontSize: 15, letterSpacing: 0.2 }}>{ability.name}</div>
-            <div style={{ fontSize: 11, color: "#9aa3b5", textTransform: "uppercase" }}>{ability.abilityType}</div>
+      <div className="martial-ability__content">
+        <div className="martial-ability__header">
+          <div className="martial-ability__title-block">
+            <div className="martial-ability__title">{ability.name}</div>
+            <div className="martial-ability__type">{ability.abilityType}</div>
           </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+          <div className="martial-ability__tags">
             {ability.twoHanded && (
-              <span
-                style={{
-                  background: "#151d2a",
-                  border: "1px solid #293546",
-                  borderRadius: 999,
-                  padding: "0.2rem 0.55rem",
-                  fontSize: 11,
-                  color: "#f6c177",
-                  whiteSpace: "nowrap"
-                }}
-              >
+              <span className="martial-ability__tag martial-ability__tag--two-handed">
                 Two-Handed
               </span>
             )}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #10322c, #124257)",
-                border: "1px solid #1f4e5f",
-                borderRadius: 999,
-                padding: "0.2rem 0.55rem",
-                fontSize: 11,
-                color: "#9ae6b4",
-                whiteSpace: "nowrap"
-              }}
-            >
+            <span className="martial-ability__tag martial-ability__tag--cost">
               {ability.mpCost} MP
             </span>
           </div>
         </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
-            gap: 8
-          }}
-        >
+        <div className="martial-ability__stats">
           <StatPill label="Energy" value={ability.energyCost} />
           <StatPill label="Action" value={ability.actionPointCost} />
           <StatPill label="Damage" value={ability.damage} />
           <StatPill label="Type" value={ability.damageType} />
           <StatPill label="Range" value={ability.range} />
         </div>
-        <div style={{ fontSize: 13, color: "#d8deea", lineHeight: 1.5 }}>{ability.description}</div>
-        <div
-          style={{
-            fontSize: 11,
-            color: purchased ? "#8ee59f" : canAfford ? "#9aa3b5" : "#f09483",
-            textTransform: "uppercase",
-            letterSpacing: 0.4
-          }}
-        >
-          {statusLabel}
-        </div>
+        <div className="martial-ability__description">{ability.description}</div>
+        <div className={statusClass}>{statusLabel}</div>
       </div>
     </button>
   );
 };
 
 const StatPill: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div
-    style={{
-      background: "#0c121a",
-      border: "1px solid #1c2735",
-      borderRadius: 8,
-      padding: "0.4rem 0.55rem",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 6,
-      color: "#c5ccd9",
-      fontSize: 11,
-      lineHeight: 1.2,
-      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)"
-    }}
-  >
-    <span style={{ color: "#8d96a7", textTransform: "uppercase", letterSpacing: 0.3 }}>{label}</span>
-    <span style={{ fontWeight: 700 }}>{value}</span>
+  <div className="martial-stat">
+    <span className="martial-stat__label">{label}</span>
+    <span className="martial-stat__value">{value}</span>
   </div>
 );
 
@@ -455,7 +389,7 @@ export const MartialProwessPage: React.FC = () => {
   }
 
   if (characterError) {
-    return <p style={{ color: "#f55" }}>{characterError}</p>;
+    return <p className="martial-page__error">{characterError}</p>;
   }
 
   if (!selectedCharacter) {
@@ -463,121 +397,44 @@ export const MartialProwessPage: React.FC = () => {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "stretch",
-          gap: "1rem",
-          flexWrap: "wrap",
-          background: "linear-gradient(120deg, #0f141d, #0b1222)",
-          border: "1px solid #1d2634",
-          padding: "1rem 1.1rem",
-          borderRadius: 14,
-          boxShadow: "0 16px 42px rgba(0,0,0,0.35)"
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <h1 style={{ margin: 0, letterSpacing: 0.4 }}>Martial Prowess</h1>
-          <p style={{ margin: 0, color: "#c5ccd9", fontSize: 14 }}>Character: {selectedCharacter.name}</p>
-          <p style={{ margin: 0, color: "#7f8898", fontSize: 12 }}>
+    <div className="martial-page">
+      <header className="martial-page__header">
+        <div className="martial-page__header-text">
+          <h1 className="martial-page__title">Martial Prowess</h1>
+          <p className="martial-page__subtitle">Character: {selectedCharacter.name}</p>
+          <p className="martial-page__hint">
             Assign MP to a category, then buy abilities from that category's pool.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <div
-            style={{
-              background: "#0f1723",
-              border: "1px solid #223447",
-              borderRadius: 10,
-              padding: "0.9rem 1rem",
-              minWidth: 220,
-              color: "#c5ccd9",
-              display: "flex",
-              flexDirection: "column",
-              gap: 6,
-              boxShadow: "0 10px 28px rgba(0,0,0,0.25)"
-            }}
-          >
-            <span style={{ fontSize: 13, letterSpacing: 0.2, color: "#9aa3b5" }}>Martial Prowess MP</span>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#9ae6b4" }}>{martialProwessPool}</div>
-            <span style={{ fontSize: 12, color: "#7f8898" }}>
+        <div className="martial-page__summary">
+          <div className="martial-page__stat-card">
+            <span className="martial-page__stat-label">Martial Prowess MP</span>
+            <div className="martial-page__stat-value">{martialProwessPool}</div>
+            <span className="martial-page__stat-note">
               Linked to the Martial Prowess skill on the Characters page.
             </span>
           </div>
-          <div
-            style={{
-              background: "linear-gradient(135deg, #0d1f27, #0f2f36)",
-              border: "1px solid #1d3a43",
-              borderRadius: 12,
-              padding: "0.9rem 1.1rem",
-              minWidth: 200,
-              textAlign: "center",
-              color: "#d8deea",
-              boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              gap: 4
-            }}
-          >
-            <div style={{ fontSize: 13, color: "#9aa3b5", textTransform: "uppercase", letterSpacing: 1.2 }}>
+          <div className="martial-page__stat-card martial-page__stat-card--accent">
+            <div className="martial-page__stat-title">
               Unassigned MP
             </div>
-            <div style={{ fontSize: 30, fontWeight: 800, color: "#9ae6b4" }}>{unassignedMp}</div>
-            <div style={{ fontSize: 12, color: "#7f8898" }}>Allocate MP to categories before purchasing.</div>
+            <div className="martial-page__stat-value martial-page__stat-value--large">{unassignedMp}</div>
+            <div className="martial-page__stat-note">Allocate MP to categories before purchasing.</div>
           </div>
-          <div
-            style={{
-              background: "linear-gradient(135deg, #0d1f27, #0f2f36)",
-              border: "1px solid #1d3a43",
-              borderRadius: 12,
-              padding: "0.9rem 1.1rem",
-              minWidth: 200,
-              textAlign: "center",
-              color: "#d8deea",
-              boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              gap: 4
-            }}
-          >
-            <div style={{ fontSize: 13, color: "#9aa3b5", textTransform: "uppercase", letterSpacing: 1.2 }}>
+          <div className="martial-page__stat-card martial-page__stat-card--accent">
+            <div className="martial-page__stat-title">
               MP Remaining
             </div>
-            <div style={{ fontSize: 30, fontWeight: 800, color: "#9ae6b4" }}>{remainingMp}</div>
+            <div className="martial-page__stat-value martial-page__stat-value--large">{remainingMp}</div>
           </div>
         </div>
       </header>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(240px, 280px) 1fr",
-          gap: "1rem",
-          alignItems: "start"
-        }}
-      >
-        <aside
-          style={{
-            background: "#0b1018",
-            border: "1px solid #1b2634",
-            borderRadius: 14,
-            padding: "0.85rem 0.75rem 1rem",
-            boxShadow: "0 12px 32px rgba(0,0,0,0.28)",
-            position: "sticky",
-            top: 12,
-            alignSelf: "start",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.5rem"
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ color: "#e6edf7", fontWeight: 700, letterSpacing: 0.2 }}>Categories</div>
-            <div style={{ color: "#7f8898", fontSize: 12 }}>{categoryEntries.length} total</div>
+      <div className="martial-page__layout">
+        <aside className="martial-page__sidebar">
+          <div className="martial-page__sidebar-header">
+            <div className="martial-page__sidebar-title">Categories</div>
+            <div className="martial-page__sidebar-count">{categoryEntries.length} total</div>
           </div>
 
           {(["Weapon", "Armor"] as EquipmentKind[]).map((kind) => {
@@ -585,11 +442,11 @@ export const MartialProwessPage: React.FC = () => {
             if (options.length === 0) return null;
 
             return (
-              <div key={kind} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <div style={{ color: "#9aa3b5", fontSize: 12, letterSpacing: 0.3, textTransform: "uppercase" }}>
+              <div key={kind} className="martial-page__kind">
+                <div className="martial-page__kind-label">
                   {kind}
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div className="martial-page__kind-list">
                   {options.map((entry) => {
                     const purchasedCount = entry.abilities.filter((ability) => state.purchased.has(ability.id)).length;
                     const isActive = activeCategoryKey === entry.key;
@@ -601,47 +458,21 @@ export const MartialProwessPage: React.FC = () => {
                       <button
                         key={entry.key}
                         onClick={() => setActiveCategoryKey(entry.key)}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          background: isActive
-                            ? "linear-gradient(135deg, #123140, #0f2234)"
-                            : "#0f151f",
-                          border: isActive ? "1px solid #2b495b" : "1px solid #1d2837",
-                          color: "#d8deea",
-                          borderRadius: 10,
-                          padding: "0.55rem 0.65rem",
-                          cursor: "pointer",
-                          boxShadow: isActive ? "0 10px 24px rgba(0,0,0,0.28)" : "none",
-                          textAlign: "left",
-                          transition: "border-color 0.2s ease, background 0.2s ease"
-                        }}
+                        className={`martial-page__category${isActive ? " martial-page__category--active" : ""}`}
                       >
-                        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                          <div style={{ fontWeight: 700, fontSize: 14 }}>{entry.category}</div>
-                          <div style={{ color: "#9aa3b5", fontSize: 12 }}>
+                        <div className="martial-page__category-info">
+                          <div className="martial-page__category-name">{entry.category}</div>
+                          <div className="martial-page__category-meta">
                             {entry.abilities.length} abilities
                           </div>
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-                          <div
-                            style={{
-                              background: "#12202c",
-                              border: "1px solid #243547",
-                              borderRadius: 999,
-                              padding: "0.2rem 0.55rem",
-                              color: "#8ee59f",
-                              fontSize: 11,
-                              minWidth: 80,
-                              textAlign: "center"
-                            }}
-                          >
+                        <div className="martial-page__category-stats">
+                          <div className="martial-page__owned">
                             {purchasedCount} owned
                           </div>
-                          <div style={{ color: "#9aa3b5", fontSize: 11, textAlign: "right", lineHeight: 1.4 }}>
+                          <div className="martial-page__category-detail">
                             <div>{allocated} MP allocated</div>
-                            <div style={{ color: remainingInCategory > 0 ? "#9ae6b4" : "#f09483" }}>
+                            <div className={remainingInCategory > 0 ? "martial-page__remaining--ok" : "martial-page__remaining--low"}>
                               {remainingInCategory} MP left ({spentInCategory} spent)
                             </div>
                           </div>
@@ -655,65 +486,24 @@ export const MartialProwessPage: React.FC = () => {
           })}
         </aside>
 
-        <main style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <main className="martial-page__main">
           {activeCategory ? (
-            <section
-              style={{
-                background: "linear-gradient(160deg, rgba(16,20,27,0.94), rgba(11,16,23,0.96))",
-                border: "1px solid #18212d",
-                borderRadius: 14,
-                padding: "1rem 1.05rem 1.1rem",
-                boxShadow: "0 14px 40px rgba(0,0,0,0.35)",
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.9rem"
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: 12,
-                  flexWrap: "wrap"
-                }}
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                    <h2 style={{ margin: 0, color: "#e6edf7", fontSize: 18, letterSpacing: 0.3 }}>
+            <section className="martial-page__detail">
+              <div className="martial-page__detail-header">
+                <div className="martial-page__detail-info">
+                  <div className="martial-page__detail-title">
+                    <h2 className="martial-page__detail-name">
                       {activeCategory.category}
                     </h2>
-                    <span
-                      style={{
-                        background: "#152234",
-                        border: "1px solid #1f3042",
-                        color: "#9aa3b5",
-                        borderRadius: 999,
-                        padding: "0.2rem 0.6rem",
-                        fontSize: 12,
-                        textTransform: "uppercase",
-                        letterSpacing: 0.4
-                      }}
-                    >
+                    <span className="martial-page__detail-kind">
                       {activeCategory.kind}
                     </span>
                   </div>
-                  <span style={{ color: "#9aa3b5", fontSize: 13 }}>
+                  <span className="martial-page__detail-hint">
                     Allocate MP to this discipline, then spend that pool on the abilities you want to master.
                   </span>
-                  <label
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 6,
-                      background: "#0f1723",
-                      border: "1px solid #1d2736",
-                      borderRadius: 10,
-                      padding: "0.75rem 0.85rem",
-                      maxWidth: 360
-                    }}
-                  >
-                    <div style={{ color: "#c5ccd9", fontWeight: 600, fontSize: 13 }}>Category MP Allocation</div>
+                  <label className="martial-page__allocation">
+                    <div className="martial-page__allocation-title">Category MP Allocation</div>
                     <input
                       type="number"
                       value={activeCategoryAllocation}
@@ -721,22 +511,14 @@ export const MartialProwessPage: React.FC = () => {
                       max={Math.max(activeCategoryAllocation + unassignedMp, activeCategorySpent)}
                       onChange={(e) => updateCategoryPool(activeCategory.key, Number(e.target.value) || 0)}
                       onWheel={(e) => e.preventDefault()}
-                      style={{
-                        background: "#0c121a",
-                        border: "1px solid #2b3747",
-                        borderRadius: 8,
-                        padding: "0.45rem 0.55rem",
-                        color: "#e6edf7",
-                        fontSize: 15,
-                        fontWeight: 600
-                      }}
+                      className="martial-page__allocation-input"
                     />
-                    <div style={{ fontSize: 12, color: "#7f8898" }}>
+                    <div className="martial-page__allocation-note">
                       Requires at least {activeCategorySpent} MP to cover purchased abilities.
                     </div>
                   </label>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8 }}>
+                <div className="martial-page__detail-stats">
                   <StatPill label="Abilities" value={`${activeCategory.abilities.length}`} />
                   <StatPill
                     label="Purchased"
@@ -747,14 +529,7 @@ export const MartialProwessPage: React.FC = () => {
                 </div>
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                  gap: "0.75rem",
-                  paddingTop: 4
-                }}
-              >
+              <div className="martial-page__ability-grid">
                 {activeCategory.abilities.map((ability) => {
                   const purchased = state.purchased.has(ability.id);
                   return (
@@ -770,15 +545,7 @@ export const MartialProwessPage: React.FC = () => {
               </div>
             </section>
           ) : (
-            <div
-              style={{
-                background: "#0b1018",
-                border: "1px solid #1b2634",
-                borderRadius: 12,
-                padding: "1rem",
-                color: "#9aa3b5"
-              }}
-            >
+            <div className="martial-page__empty">
               Choose a category on the left to view its abilities.
             </div>
           )}

@@ -12,6 +12,7 @@ import {
 } from "./psionicsUtils";
 import { PSION_BACKGROUND_CONFIG, PSIONICS_STORAGE_KEY } from "./psionBackgrounds";
 import { AncillarySelectionState, getAncillaryStorageKey, persistAncillarySelection, readAncillarySelection } from "../ancillaries/storage";
+import "./PsionicsPage.css";
 
 interface PsiState {
   purchased: Set<string>;
@@ -239,18 +240,6 @@ const AbilityNode: React.FC<{
             ? "starter"
             : "starter-cost"
           : "locked";
-
-  const colors: Record<string, { bg: string; border: string; text: string }> = {
-    purchased: { bg: "#1f352a", border: "#3ca66a", text: "#b5f5c8" },
-    available: { bg: "#18202c", border: "#3b82f6", text: "#dce7ff" },
-    starter: { bg: "#1f1631", border: "#a855f7", text: "#e9d5ff" },
-    "starter-cost": { bg: "#181027", border: "#6b21a8", text: "#c7b5ec" },
-    "locked-cost": { bg: "#141924", border: "#334155", text: "#9aa3b5" },
-    "locked-window": { bg: "#14161f", border: "#9a3412", text: "#f7a046" },
-    locked: { bg: "#0f141d", border: "#1f2935", text: "#6b7280" }
-  };
-
-  const palette = colors[status];
   const disabled = purchased || (!unlocked && !isStarter) || !canAfford || spendLocked;
 
   return (
@@ -271,23 +260,10 @@ const AbilityNode: React.FC<{
                 ? "Spend Psi to unlock this tree"
                 : "Locked"
       }
-      style={{
-        minWidth: 108,
-        minHeight: 48,
-        padding: "0.5rem 0.65rem",
-        borderRadius: 999,
-        border: `2px solid ${palette.border}`,
-        background: palette.bg,
-        color: palette.text,
-        fontWeight: 700,
-        fontSize: 13,
-        cursor: disabled ? "not-allowed" : "pointer",
-        transition: "transform 0.1s ease, box-shadow 0.1s ease",
-        boxShadow: purchased ? "0 0 0 2px rgba(60,166,106,0.2)" : "none"
-      }}
+      className={`psionics__node psionics__node--${status}${purchased ? " psionics__node--glow" : ""}`}
     >
-      <div style={{ lineHeight: 1.2 }}>{ability.name}</div>
-      <div style={{ fontSize: 11, opacity: 0.8 }}>Tier {ability.tier}</div>
+      <div className="psionics__node-name">{ability.name}</div>
+      <div className="psionics__node-tier">Tier {ability.tier}</div>
     </button>
   );
 };
@@ -435,11 +411,11 @@ const SkillTree: React.FC<{
   const centerHeight = Math.max(layout.maxRadius * 2 + 180, 420);
 
   return (
-    <div ref={containerRef} style={{ position: "relative", padding: "1.25rem 1rem 1rem" }}>
+    <div ref={containerRef} className="psionics__tree">
       <svg
         width="100%"
         height={containerHeight}
-        style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+        className="psionics__tree-lines"
       >
         {linePositions.map((line, idx) => (
           <line
@@ -456,14 +432,8 @@ const SkillTree: React.FC<{
         ))}
       </svg>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-        <div
-          style={{
-            position: "relative",
-            minHeight: centerHeight,
-            marginBottom: "0.25rem"
-          }}
-        >
+      <div className="psionics__tree-body">
+        <div className="psionics__tree-orbit" style={{ minHeight: centerHeight }}>
           {layout.positions.map(({ ability, x, y }) => {
             const unlocked = isAbilityUnlocked(ability, purchased, { allowTier1WithoutPrereq: false });
             const isPurchased = purchased.has(ability.id);
@@ -471,7 +441,8 @@ const SkillTree: React.FC<{
             return (
               <div
                 key={ability.id}
-                style={{ position: "absolute", left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)`, transform: "translate(-50%, -50%)" }}
+                className="psionics__node-wrap"
+                style={{ left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)` }}
               >
                 <AbilityNode
                   ability={ability}
@@ -940,74 +911,52 @@ export const PsionicsPage: React.FC = () => {
   };
 
   if (!selectedId) {
-    return <p>Please select a character on the Characters page to view psionics.</p>;
+    return <p className="psionics__status">Please select a character on the Characters page to view psionics.</p>;
   }
 
   if (loadingCharacter) {
-    return <p>Loading character...</p>;
+    return <p className="psionics__status">Loading character...</p>;
   }
 
   if (characterError) {
-    return <p style={{ color: "#f55" }}>{characterError}</p>;
+    return <p className="psionics__error">{characterError}</p>;
   }
 
   if (!selectedCharacter) {
-    return <p>Selected character could not be found.</p>;
+    return <p className="psionics__status">Selected character could not be found.</p>;
   }
 
   if (loadingAbilities) {
-    return <p>Loading psionic abilities...</p>;
+    return <p className="psionics__status">Loading psionic abilities...</p>;
   }
 
   if (abilitiesError) {
-    return <p style={{ color: "#f55" }}>{abilitiesError}</p>;
+    return <p className="psionics__error">{abilitiesError}</p>;
   }
 
   if (abilities.length === 0) {
-    return <p>No psionic abilities are available yet.</p>;
+    return <p className="psionics__status">No psionic abilities are available yet.</p>;
   }
 
   return (
     <>
       {ancillaryModalOpen && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            zIndex: 40,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "flex-start",
-            padding: "2rem 1rem",
-            overflowY: "auto"
-          }}
-        >
-          <div
-            style={{
-              background: "#0f131a",
-              border: "1px solid #1f2935",
-              borderRadius: 12,
-              padding: "1rem",
-              width: "min(960px, 95vw)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
-              color: "#e6edf7"
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-              <h3 style={{ margin: 0 }}>Lock Psion Ancillaries</h3>
+        <div className="psionics__modal">
+          <div className="psionics__modal-card">
+            <div className="psionics__modal-header">
+              <h3 className="psionics__modal-title">Lock Psion Ancillaries</h3>
               <button
                 onClick={closeAncillaryModal}
-                style={{ padding: "0.4rem 0.75rem", background: "#1f2935", color: "#e5e7eb", border: "1px solid #2b3747", borderRadius: 6 }}
+                className="psionics__modal-close"
               >
                 Close
               </button>
             </div>
-            <p style={{ marginTop: 8, color: "#c5ccd9" }}>
+            <p className="psionics__modal-intro">
               Choose up to {mentalAttribute} abilities from the current ancillary's tier. Abilities already unlocked elsewhere
               are not eligible. Once confirmed, selections are locked before moving to the next ancillary.
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            <div className="psionics__modal-body">
               {activeAncillaryId ? (
                 (() => {
                   const id = activeAncillaryId;
@@ -1035,32 +984,27 @@ export const PsionicsPage: React.FC = () => {
                   return (
                     <div
                       key={`ancillary-${id}`}
-                      style={{
-                        border: "1px solid #1f2935",
-                        borderRadius: 10,
-                        padding: "0.75rem",
-                        background: "#0c111a"
-                      }}
+                      className="psionics__modal-section"
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                      <div className="psionics__modal-section-header">
                         <div>
-                          <div style={{ fontWeight: 700 }}>{PSION_ANCILLARY_LABELS[id] ?? id}</div>
-                          <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                          <div className="psionics__modal-section-title">{PSION_ANCILLARY_LABELS[id] ?? id}</div>
+                          <div className="psionics__modal-section-subtitle">
                             Tier {config.tier} abilities • {helper}
                           </div>
                           {remainingQueue.length > 0 ? (
-                            <div style={{ fontSize: 12, color: "#9aa3b5", marginTop: 4 }}>
+                            <div className="psionics__modal-section-next">
                               Next: {remainingQueue.map((nextId) => PSION_ANCILLARY_LABELS[nextId] ?? nextId).join(", ")}
                             </div>
                           ) : null}
                         </div>
-                        <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+                        <div className="psionics__modal-section-count">
                           Selected: {selectedSet.size}/{Math.max(mentalAttribute, 0)}
                         </div>
                       </div>
-                      <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8 }}>
+                      <div className="psionics__modal-options">
                         {options.length === 0 && (
-                          <div style={{ color: "#9aa3b5" }}>No abilities available for this tier.</div>
+                          <div className="psionics__modal-empty">No abilities available for this tier.</div>
                         )}
                         {options.map((ability) => {
                           const chosen = selectedSet.has(ability.id);
@@ -1070,32 +1014,28 @@ export const PsionicsPage: React.FC = () => {
                           return (
                             <label
                               key={`${id}-${ability.id}`}
-                              style={{
-                                border: "1px solid #1f2935",
-                                borderRadius: 8,
-                                padding: "0.6rem 0.75rem",
-                                background: chosen ? "#162235" : "#0f141d",
-                                display: "flex",
-                                gap: 8,
-                                alignItems: "flex-start",
-                                opacity: unavailable ? 0.6 : 1
-                              }}
+                              className={`psionics__modal-option${chosen ? " psionics__modal-option--chosen" : ""}`}
+                              style={{ opacity: unavailable ? 0.6 : 1 }}
                             >
                               <input
                                 type="checkbox"
                                 checked={chosen}
                                 disabled={unavailable}
                                 onChange={() => toggleAncillaryAbility(id, ability.id)}
-                                style={{ marginTop: 4 }}
+                                className="psionics__modal-checkbox"
                               />
-                              <div style={{ fontSize: 13 }}>
-                                <div style={{ fontWeight: 700 }}>{ability.name}</div>
-                                <div style={{ color: "#9aa3b5" }}>{ability.tree} • Tier {ability.tier}</div>
+                              <div className="psionics__modal-option-body">
+                                <div className="psionics__modal-option-title">{ability.name}</div>
+                                <div className="psionics__modal-option-subtitle">{ability.tree} • Tier {ability.tier}</div>
                                 {unlockedByCurrent.has(ability.id) ? (
-                                  <div style={{ color: "#34d399", fontSize: 12 }}>Unlocked</div>
+                                  <div className="psionics__modal-option-status psionics__modal-option-status--unlocked">
+                                    Unlocked
+                                  </div>
                                 ) : null}
                                 {otherSelections(ability.id) ? (
-                                  <div style={{ color: "#f97316", fontSize: 12 }}>Chosen for another ancillary.</div>
+                                  <div className="psionics__modal-option-status psionics__modal-option-status--locked">
+                                    Chosen for another ancillary.
+                                  </div>
                                 ) : null}
                               </div>
                             </label>
@@ -1103,31 +1043,19 @@ export const PsionicsPage: React.FC = () => {
                         })}
                       </div>
                       {disabledReason && (
-                        <div style={{ marginTop: 6, fontSize: 12, color: "#f7a046" }}>{disabledReason}</div>
+                        <div className="psionics__modal-warning">{disabledReason}</div>
                       )}
-                      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 10 }}>
+                      <div className="psionics__modal-actions">
                         <button
                           onClick={() => setAncillaryChoices((prev) => ({ ...prev, [id]: new Set() }))}
-                          style={{ padding: "0.55rem 0.9rem", background: "#1f2935", color: "#e5e7eb", border: "1px solid #2b3747", borderRadius: 8 }}
+                          className="psionics__modal-button"
                         >
                           Clear
                         </button>
                         <button
                           onClick={confirmAncillaryChoices}
                           disabled={selectedSet.size === 0 || selectedSet.size > mentalAttribute || mentalAttribute <= 0}
-                          style={{
-                            padding: "0.55rem 0.9rem",
-                            background: "#2563eb",
-                            color: "#e6edf7",
-                            border: "1px solid #1d4ed8",
-                            borderRadius: 8,
-                            opacity:
-                              selectedSet.size === 0 || selectedSet.size > mentalAttribute || mentalAttribute <= 0 ? 0.6 : 1,
-                            cursor:
-                              selectedSet.size === 0 || selectedSet.size > mentalAttribute || mentalAttribute <= 0
-                                ? "not-allowed"
-                                : "pointer"
-                          }}
+                          className="psionics__modal-button psionics__modal-button--primary"
                         >
                           {remainingQueue.length > 0 ? "Confirm & Next" : "Confirm"}
                         </button>
@@ -1136,164 +1064,87 @@ export const PsionicsPage: React.FC = () => {
                   );
                 })()
               ) : (
-                <div style={{ color: "#9aa3b5" }}>No pending psion ancillaries to configure.</div>
+                <div className="psionics__modal-empty">No pending psion ancillaries to configure.</div>
               )}
             </div>
           </div>
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem" }}>
+      <div className="psionics">
+      <header className="psionics__header">
         <div>
-          <h1 style={{ margin: 0 }}>Psionics</h1>
-          <p style={{ margin: "0.2rem 0", color: "#c5ccd9" }}>Character: {selectedCharacter.name}</p>
+          <h1 className="psionics__title">Psionics</h1>
+          <p className="psionics__subtitle">Character: {selectedCharacter.name}</p>
         </div>
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <div
-            style={{
-              background: "#131a24",
-              border: "1px solid #2b3747",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
-              minWidth: 180,
-              color: "#c5ccd9",
-              display: "flex",
-              flexDirection: "column",
-              gap: 6
-            }}
-          >
-            <span style={{ fontSize: 13 }}>Mental Attribute</span>
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#e6edf7" }}>{mentalAttribute}</div>
-            <div style={{ fontSize: 12, color: "#9aa3b5" }}>Used for formulas and per-level gains</div>
+        <div className="psionics__metrics">
+          <div className="psionics__metric">
+            <span className="psionics__metric-label">Mental Attribute</span>
+            <div className="psionics__metric-value">{mentalAttribute}</div>
+            <div className="psionics__metric-hint">Used for formulas and per-level gains</div>
           </div>
-          <div
-            style={{
-              background: "#131a24",
-              border: "1px solid #2b3747",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
-              minWidth: 210,
-              color: "#c5ccd9",
-              display: "flex",
-              flexDirection: "column",
-              gap: 6
-            }}
-          >
-            <span style={{ fontSize: 13 }}>Manifold Manifestation Limit</span>
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#e6edf7" }}>{manifoldManifestationLimit}</div>
-            <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+          <div className="psionics__metric">
+            <span className="psionics__metric-label">Manifold Manifestation Limit</span>
+            <div className="psionics__metric-value">{manifoldManifestationLimit}</div>
+            <div className="psionics__metric-hint">
               Base Mental: {mentalAttribute}
               {fledglingLocked ? ` + ${mentalAttribute} from Fledgling Psion` : ""}
             </div>
           </div>
-          <div
-            style={{
-              background: "#131a24",
-              border: "1px solid #2b3747",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
-              minWidth: 220,
-              color: "#c5ccd9",
-              display: "flex",
-              flexDirection: "column",
-              gap: 4
-            }}
-          >
-            <div style={{ fontSize: 13, color: "#9aa3b5" }}>Psi Points Earned</div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: "#9ae6b4" }}>{totalPsiPool}</div>
-            <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+          <div className="psionics__metric">
+            <div className="psionics__metric-label">Psi Points Earned</div>
+            <div className="psionics__metric-value psionics__metric-value--accent">{totalPsiPool}</div>
+            <div className="psionics__metric-hint">
               {lineagePsi > 0 && <span>Lineage: {lineagePsi}. </span>}
               Backgrounds: {backgroundBenefits.psiBonus}. Per level: {psiPerLevel} × {Math.max(0, characterLevel - 1)} = {levelPsi}
             </div>
           </div>
-          <div
-            style={{
-              background: "#131a24",
-              border: "1px solid #2b3747",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
-              minWidth: 220,
-              color: tierAdvancementAvailable ? "#9ae6b4" : "#f7a046",
-              display: "flex",
-              flexDirection: "column",
-              gap: 4
-            }}
-          >
-            <div style={{ fontSize: 13, color: tierAdvancementAvailable ? "#9aa3b5" : "#f7c689" }}>
+          <div className={`psionics__metric${tierAdvancementAvailable ? "" : " psionics__metric--locked"}`}>
+            <div
+              className={`psionics__metric-label${tierAdvancementAvailable ? "" : " psionics__metric-label--warn"}`}
+            >
               Spending Window
             </div>
-            <div style={{ fontSize: 20, fontWeight: 800 }}>
+            <div className="psionics__metric-value psionics__metric-value--compact">
               {tierAdvancementAvailable ? "Open" : `Locked until level ${Math.max(6, nextTierLevel)}`}
             </div>
-            <div style={{ fontSize: 12, color: "#9aa3b5" }}>
+            <div className="psionics__metric-hint">
               Psi can only be spent during Character Tier Advancements (every 5 levels).
             </div>
           </div>
-          <div
-            style={{
-              background: "#131a24",
-              border: "1px solid #2b3747",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
-              minWidth: 220,
-              color: "#c5ccd9",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8
-            }}
-          >
-            <div style={{ fontSize: 13, color: "#9aa3b5" }}>Psion Ancillaries</div>
-            <div style={{ fontSize: 12, color: "#dce7ff" }}>
+          <div className="psionics__metric">
+            <div className="psionics__metric-label">Psion Ancillaries</div>
+            <div className="psionics__metric-text">
               {psionAncillaryList.length
                 ? psionAncillaryList.map((id) => PSION_ANCILLARY_LABELS[id] ?? id).join(", ")
                 : "None selected"}
             </div>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <div className="psionics__ancillary-actions">
               <button
                 onClick={startAncillaryModal}
                 disabled={psionAncillaryList.length === 0}
-                style={{
-                  padding: "0.55rem 0.9rem",
-                  background: psionAncillaryList.length === 0 ? "#1f2935" : "#2563eb",
-                  color: "#e6edf7",
-                  border: "1px solid #1d4ed8",
-                  borderRadius: 8,
-                  cursor: psionAncillaryList.length === 0 ? "not-allowed" : "pointer"
-                }}
+                className="psionics__ancillary-modal-button"
               >
                 Lock Psion Ancillaries
               </button>
-              <span style={{ fontSize: 12, color: "#9aa3b5" }}>
+              <span className="psionics__ancillary-hint">
                 {mentalAttribute > 0
                   ? `Select up to ${mentalAttribute} tier-matched abilities per ancillary.`
                   : "Mental Attribute is required to lock picks."}
               </span>
             </div>
           </div>
-          <div
-            style={{
-              background: "#131a24",
-              border: "1px solid #2b3747",
-              borderRadius: 10,
-              padding: "0.75rem 1rem",
-              minWidth: 200,
-              textAlign: "center"
-            }}
-          >
-            <div style={{ fontSize: 13, color: "#9aa3b5" }}>Psi Points Remaining</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: "#9ae6b4" }}>{remainingPsi}</div>
+          <div className="psionics__metric psionics__metric--center">
+            <div className="psionics__metric-label">Psi Points Remaining</div>
+            <div className="psionics__metric-value psionics__metric-value--large">{remainingPsi}</div>
           </div>
         </div>
       </header>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <div className="psionics__content">
         {Array.from(trees.entries()).map(([treeName, layout]) => (
-          <section
-            key={treeName}
-            style={{ background: "#0f131a", border: "1px solid #1f2935", borderRadius: 12, padding: "1rem" }}
-          >
-            <h2 style={{ marginTop: 0, marginBottom: "0.75rem", color: "#e6edf7" }}>{treeName}</h2>
+          <section key={treeName} className="psionics__tree-section">
+            <h2 className="psionics__tree-title">{treeName}</h2>
             <SkillTree
               treeName={treeName}
               tiers={layout.tiers}
@@ -1308,24 +1159,19 @@ export const PsionicsPage: React.FC = () => {
         ))}
       </div>
 
-      <section style={{ background: "#0f131a", border: "1px solid #1f2935", borderRadius: 12, padding: "1rem" }}>
-        <h2 style={{ marginTop: 0, marginBottom: "0.75rem", color: "#e6edf7" }}>Unlocked Abilities</h2>
+      <section className="psionics__unlocked">
+        <h2 className="psionics__tree-title">Unlocked Abilities</h2>
         {Array.from(unlockedByTree.entries()).length === 0 ? (
-          <p style={{ color: "#9aa3b5", margin: 0 }}>No abilities unlocked yet.</p>
+          <p className="psionics__empty">No abilities unlocked yet.</p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div className="psionics__unlocked-list">
             {Array.from(unlockedByTree.entries()).map(([treeName, list]) => (
               <div
                 key={`unlocked-${treeName}`}
-                style={{
-                  border: "1px solid #1f2935",
-                  borderRadius: 10,
-                  padding: "0.75rem",
-                  background: "#0c111a"
-                }}
+                className="psionics__unlocked-group"
               >
-                <h3 style={{ margin: "0 0 0.5rem", color: "#dce7ff" }}>{treeName}</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <h3 className="psionics__unlocked-title">{treeName}</h3>
+                <div className="psionics__unlocked-items">
                   {list.map((ability) => {
                     const derived = ability.formula ? evaluateFormula(ability.formula, mentalAttribute) : null;
                     const formattedDescription = replaceMentalAttributePlaceholders(
@@ -1336,48 +1182,21 @@ export const PsionicsPage: React.FC = () => {
                     return (
                       <div
                         key={`unlocked-${treeName}-${ability.id}`}
-                        style={{
-                          border: "1px solid #1f2935",
-                          borderRadius: 8,
-                          padding: "0.75rem",
-                          background: "#0f1621"
-                        }}
+                        className="psionics__unlocked-card"
                       >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: 4,
-                            gap: 8
-                          }}
-                        >
+                        <div className="psionics__unlocked-header">
                           <div>
-                            <div style={{ fontWeight: 700, color: "#e6edf7" }}>{ability.name}</div>
-                            <div style={{ fontSize: 12, color: "#9aa3b5" }}>Tier {ability.tier}</div>
+                            <div className="psionics__unlocked-name">{ability.name}</div>
+                            <div className="psionics__unlocked-tier">Tier {ability.tier}</div>
                           </div>
-                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          <div className="psionics__badge-row">
                             <span
-                              style={{
-                                padding: "0.2rem 0.5rem",
-                                borderRadius: 6,
-                                border: "1px solid #273442",
-                                background: "#111927",
-                                color: "#9ae6b4",
-                                fontSize: 12
-                              }}
+                              className="psionics__badge psionics__badge--success"
                             >
                               {ability.tier} Psi
                             </span>
                             <span
-                              style={{
-                                padding: "0.2rem 0.5rem",
-                                borderRadius: 6,
-                                border: "1px solid #273442",
-                                background: "#0f141d",
-                                color: "#c5ccd9",
-                                fontSize: 12
-                              }}
+                              className="psionics__badge"
                             >
                               {(() => {
                                 const overrideCost = ancillaryEnergyOverrides.get(ability.id);
@@ -1387,14 +1206,14 @@ export const PsionicsPage: React.FC = () => {
                             </span>
                           </div>
                         </div>
-                        <p style={{ margin: "0 0 0.5rem", color: "#c5ccd9", lineHeight: 1.4 }}>
+                        <p className="psionics__unlocked-description">
                           {formattedDescription}
                         </p>
-                        <div style={{ fontSize: 13, color: "#c5ccd9", marginBottom: 4 }}>
+                        <div className="psionics__unlocked-effects">
                           <strong>Prerequisites:</strong> {ability.prerequisiteNames.length ? ability.prerequisiteNames.join(", ") : "None"}
                         </div>
                         {ability.formula && (
-                          <div style={{ fontSize: 13, color: "#c5ccd9" }}>
+                          <div className="psionics__unlocked-formula">
                             <strong>Formula:</strong> {ability.formula.replace(/\*/g, " × ")}
                             {derived !== null && ` = ${derived}`}
                           </div>

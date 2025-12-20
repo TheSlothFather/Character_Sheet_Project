@@ -5,52 +5,7 @@ import { api, type Character } from "../../api/client";
 import { getSupabaseClient } from "../../api/supabaseClient";
 import { ACTIVE_CAMPAIGN_STORAGE_KEY } from "../campaigns/campaignStorage";
 import { useSelectedCharacter } from "../characters/SelectedCharacterContext";
-
-const pageStyle: React.CSSProperties = {
-  minHeight: "100vh",
-  background: "#0b0f16",
-  color: "#e5e7eb",
-  display: "grid",
-  placeItems: "center",
-  padding: "2rem"
-};
-
-const cardStyle: React.CSSProperties = {
-  width: "100%",
-  maxWidth: 720,
-  background: "#0f131a",
-  border: "1px solid #1f2935",
-  borderRadius: 16,
-  padding: "2rem",
-  boxShadow: "0 25px 60px rgba(15, 23, 42, 0.4)"
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: "0.7rem 1.2rem",
-  borderRadius: 10,
-  border: "1px solid #1d4ed8",
-  background: "#2563eb",
-  color: "#e6edf7",
-  fontWeight: 700,
-  cursor: "pointer"
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  ...buttonStyle,
-  border: "1px solid #2f3542",
-  background: "#111827",
-  color: "#e5e7eb"
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.6rem 0.75rem",
-  borderRadius: 8,
-  border: "1px solid #2f3542",
-  background: "#0b1017",
-  color: "#e5e7eb",
-  boxSizing: "border-box"
-};
+import "./JoinCampaignPage.css";
 
 type CampaignInviteRow = {
   token: string;
@@ -276,53 +231,58 @@ export const JoinCampaignPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={pageStyle}>
-        <div>Loading invite...</div>
+      <div className="join-campaign">
+        <div className="join-campaign__loading">Loading invite...</div>
       </div>
     );
   }
 
   return (
-    <div style={pageStyle}>
-      <div style={cardStyle}>
-        <h1 style={{ marginTop: 0 }}>Join Campaign</h1>
-        <p style={{ color: "#94a3b8", marginTop: 0 }}>
+    <div className="join-campaign">
+      <div className="join-campaign__card">
+        <h1 className="join-campaign__title">Join Campaign</h1>
+        <p className="join-campaign__subtitle">
           Use this invite link to join a campaign with one of your characters.
         </p>
-        {error && <div style={{ color: "#fca5a5", marginBottom: "1rem" }}>{error}</div>}
-        {notice && <div style={{ color: "#9ae6b4", marginBottom: "1rem" }}>{notice}</div>}
+        {error && <div className="join-campaign__message join-campaign__message--error">{error}</div>}
+        {notice && <div className="join-campaign__message join-campaign__message--success">{notice}</div>}
         {!user && (
-          <form onSubmit={handleAuth} style={{ marginBottom: "1.5rem" }}>
-            <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>
+          <form onSubmit={handleAuth} className="join-campaign__auth">
+            <div className="join-campaign__auth-title">
               {authMode === "sign-in" ? "Sign in to join" : "Create an account to join"}
             </div>
-            {authError && <div style={{ color: "#fca5a5", marginBottom: "0.75rem" }}>{authError}</div>}
-            {authNotice && <div style={{ color: "#9ae6b4", marginBottom: "0.75rem" }}>{authNotice}</div>}
-            <label style={{ display: "grid", gap: "0.35rem", marginBottom: "0.75rem" }}>
-              <span style={{ fontWeight: 600 }}>Email</span>
+            {authError && <div className="join-campaign__message join-campaign__message--error">{authError}</div>}
+            {authNotice && <div className="join-campaign__message join-campaign__message--success">{authNotice}</div>}
+            <label className="join-campaign__field">
+              <span className="join-campaign__label">Email</span>
               <input
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                style={inputStyle}
+                className="join-campaign__input"
                 autoComplete="email"
               />
             </label>
-            <label style={{ display: "grid", gap: "0.35rem", marginBottom: "1rem" }}>
-              <span style={{ fontWeight: 600 }}>Password</span>
+            <label className="join-campaign__field join-campaign__field--spaced">
+              <span className="join-campaign__label">Password</span>
               <input
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                style={inputStyle}
+                className="join-campaign__input"
                 autoComplete={authMode === "sign-in" ? "current-password" : "new-password"}
               />
             </label>
-            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-              <button type="submit" style={buttonStyle}>
+            <div className="join-campaign__button-row">
+              <button type="submit" className="join-campaign__button">
                 {authMode === "sign-in" ? "Sign In" : "Create Account"}
               </button>
-              <button type="button" style={secondaryButtonStyle} onClick={handleAnonSignIn} disabled={anonLoading}>
+              <button
+                type="button"
+                className="join-campaign__button join-campaign__button--secondary"
+                onClick={handleAnonSignIn}
+                disabled={anonLoading}
+              >
                 {anonLoading ? "Signing in..." : "Continue as Guest"}
               </button>
               <button
@@ -332,32 +292,23 @@ export const JoinCampaignPage: React.FC = () => {
                   setAuthError(null);
                   setAuthNotice(null);
                 }}
-                style={secondaryButtonStyle}
+                className="join-campaign__button join-campaign__button--secondary"
               >
                 {authMode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
               </button>
             </div>
           </form>
         )}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{ fontWeight: 700, marginBottom: "0.5rem" }}>Choose a character (optional)</div>
+        <div className="join-campaign__characters">
+          <div className="join-campaign__characters-title">Choose a character (optional)</div>
           {characters.length === 0 ? (
-            <div style={{ color: "#94a3b8" }}>No characters found yet. You can join and create one later.</div>
+            <div className="join-campaign__muted">No characters found yet. You can join and create one later.</div>
           ) : (
-            <div style={{ display: "grid", gap: "0.75rem" }}>
+            <div className="join-campaign__character-list">
               {characters.map((character) => (
                 <label
                   key={character.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    padding: "0.75rem",
-                    borderRadius: 10,
-                    border: "1px solid #1f2935",
-                    background: selectedCharacterId === character.id ? "#172036" : "#0b1017",
-                    cursor: "pointer"
-                  }}
+                  className={`join-campaign__character${selectedCharacterId === character.id ? " join-campaign__character--selected" : ""}`}
                 >
                   <input
                     type="radio"
@@ -370,19 +321,23 @@ export const JoinCampaignPage: React.FC = () => {
                     }}
                   />
                   <div>
-                    <div style={{ fontWeight: 700 }}>{character.name}</div>
-                    <div style={{ color: "#94a3b8", fontSize: "0.9rem" }}>Level {character.level}</div>
+                    <div className="join-campaign__character-name">{character.name}</div>
+                    <div className="join-campaign__character-meta">Level {character.level}</div>
                   </div>
                 </label>
               ))}
             </div>
           )}
         </div>
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-          <button type="button" style={buttonStyle} onClick={handleJoin} disabled={joinLoading}>
+        <div className="join-campaign__button-row">
+          <button type="button" className="join-campaign__button" onClick={handleJoin} disabled={joinLoading}>
             {joinLoading ? "Joining..." : "Join Campaign"}
           </button>
-          <button type="button" style={secondaryButtonStyle} onClick={() => navigate("/player/characters")}>
+          <button
+            type="button"
+            className="join-campaign__button join-campaign__button--secondary"
+            onClick={() => navigate("/player/characters")}
+          >
             Back to Characters
           </button>
         </div>

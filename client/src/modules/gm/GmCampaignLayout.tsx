@@ -1,12 +1,7 @@
 import React from "react";
 import { Outlet, useParams } from "react-router-dom";
 import { gmApi, type Campaign } from "../../api/gm";
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "0.35rem"
-};
+import "./GmCampaignLayout.css";
 
 export const GmCampaignLayout: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
@@ -53,13 +48,13 @@ export const GmCampaignLayout: React.FC = () => {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <header style={headerStyle}>
-        <h2 style={{ margin: 0 }}>GM Campaign</h2>
-        <p style={{ margin: 0, color: "var(--muted)" }}>
+    <div className="gm-campaign">
+      <header className="gm-campaign__header">
+        <h2 className="gm-campaign__title">GM Campaign</h2>
+        <p className="gm-campaign__subtitle">
           {loading ? "Loading campaign..." : campaign?.name || "Unnamed campaign"}
         </p>
-        {error && <p style={{ margin: 0, color: "var(--danger)" }}>{error}</p>}
+        {error && <p className="gm-campaign__error">{error}</p>}
       </header>
       <Outlet />
     </div>

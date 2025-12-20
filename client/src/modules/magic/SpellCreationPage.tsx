@@ -2,42 +2,7 @@ import React from "react";
 import facultiesText from "../../data/magic-faculties.txt?raw";
 import { MAGIC_FACULTIES, ParsedFaculty, parseMagicFaculties } from "./magicParser";
 import { GeneratedSpell, SpellGoal, generateSpell } from "./spellGenerator";
-
-const cardStyle: React.CSSProperties = {
-  background: "#1a202c",
-  border: "1px solid #2d3748",
-  borderRadius: 10,
-  padding: "1rem 1.25rem",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.4)"
-};
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "0.2rem 0.6rem",
-  borderRadius: 999,
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: 0.4,
-  background: "#2f855a",
-  color: "#f7fafc"
-};
-
-const labelStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 4,
-  color: "#e2e8f0"
-};
-
-const inputStyle: React.CSSProperties = {
-  padding: "0.4rem 0.6rem",
-  borderRadius: 8,
-  border: "1px solid #2d3748",
-  background: "#0b1019",
-  color: "#f7fafc"
-};
+import "./SpellCreationPage.css";
 
 const GoalToggle: React.FC<{
   goal: SpellGoal;
@@ -46,37 +11,24 @@ const GoalToggle: React.FC<{
 }> = ({ goal, active, onToggle }) => (
   <button
     onClick={onToggle}
-    style={{
-      ...badgeStyle,
-      background: active ? "#2f855a" : "#2d3748",
-      color: active ? "#f7fafc" : "#cbd5e0",
-      cursor: "pointer",
-      border: "1px solid #2d3748"
-    }}
+    className={`spell-creation__goal${active ? " spell-creation__goal--active" : ""}`}
   >
     {goal}
   </button>
 );
 
 const Pill: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <span
-    style={{
-      ...badgeStyle,
-      background: "#1f2937",
-      color: "#e2e8f0",
-      border: "1px solid #2d3748",
-      marginRight: 6,
-      marginBottom: 6
-    }}
-  >
+  <span className="spell-creation__pill">
     {children}
   </span>
 );
 
 const StatusList: React.FC<{ label: string; items: string[] }> = ({ label, items }) => (
-  <div style={{ marginBottom: 8 }}>
-    <div style={{ color: "#cbd5e0", fontWeight: 700, marginBottom: 4 }}>{label}</div>
-    <div>{items.length ? items.map((status) => <Pill key={status}>{status}</Pill>) : <span style={{ color: "#a0aec0" }}>None</span>}</div>
+  <div className="spell-creation__status">
+    <div className="spell-creation__status-label">{label}</div>
+    <div>
+      {items.length ? items.map((status) => <Pill key={status}>{status}</Pill>) : <span className="spell-creation__muted">None</span>}
+    </div>
   </div>
 );
 
@@ -126,27 +78,27 @@ export const SpellCreationPage: React.FC = () => {
   };
 
   return (
-    <div style={{ color: "#e2e8f0" }}>
-      <header style={{ marginBottom: "1rem" }}>
-        <div style={badgeStyle}>Generator</div>
-        <h1 style={{ margin: "0.35rem 0 0.25rem 0", color: "#f7fafc" }}>Automatic Spell Creation</h1>
-        <p style={{ margin: 0, color: "#cbd5e0", maxWidth: 900 }}>
+    <div className="spell-creation">
+      <header className="spell-creation__header">
+        <div className="spell-creation__badge">Generator</div>
+        <h1 className="spell-creation__title">Automatic Spell Creation</h1>
+        <p className="spell-creation__subtitle">
           Build fully composed spells from the Adûrun magic faculties. Choose intent, tiers, and resonance rules; the generator
           pulls tier text directly from the source document, applies aspect budgets, and returns an executable spell packet with
           statuses and costs.
         </p>
       </header>
 
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 3fr", gap: "1rem", alignItems: "start", marginBottom: "1rem" }}>
-        <section style={cardStyle}>
-          <h2 style={{ margin: "0 0 0.75rem 0", color: "#f7fafc" }}>Inputs</h2>
-          <div style={{ display: "grid", gap: "0.75rem" }}>
-            <label style={labelStyle}>
+      <div className="spell-creation__grid spell-creation__grid--primary">
+        <section className="spell-creation__card">
+          <h2 className="spell-creation__card-title">Inputs</h2>
+          <div className="spell-creation__stack">
+            <label className="spell-creation__field">
               <span>Primary Faculty</span>
               <select
                 value={primaryFaculty}
                 onChange={(e) => setPrimaryFaculty(e.target.value)}
-                style={inputStyle}
+                className="spell-creation__input"
               >
                 {faculties.map((faculty) => (
                   <option key={faculty.name} value={faculty.name}>
@@ -156,7 +108,7 @@ export const SpellCreationPage: React.FC = () => {
               </select>
             </label>
 
-            <label style={labelStyle}>
+            <label className="spell-creation__field">
               <span>Primary Tier</span>
               <input
                 type="range"
@@ -165,15 +117,15 @@ export const SpellCreationPage: React.FC = () => {
                 value={primaryTier}
                 onChange={(e) => setPrimaryTier(Number(e.target.value))}
               />
-              <div style={{ color: "#a0aec0" }}>Tier {primaryTier}</div>
+              <div className="spell-creation__muted">Tier {primaryTier}</div>
             </label>
 
-            <label style={labelStyle}>
+            <label className="spell-creation__field">
               <span>Secondary Faculty (resonance)</span>
               <select
                 value={secondaryFaculty}
                 onChange={(e) => setSecondaryFaculty(e.target.value || undefined)}
-                style={inputStyle}
+                className="spell-creation__input"
               >
                 <option value="">None</option>
                 {faculties
@@ -187,7 +139,7 @@ export const SpellCreationPage: React.FC = () => {
             </label>
 
             {secondaryFaculty && (
-              <label style={labelStyle}>
+              <label className="spell-creation__field">
                 <span>Secondary Tier</span>
                 <input
                   type="range"
@@ -196,17 +148,17 @@ export const SpellCreationPage: React.FC = () => {
                   value={secondaryTier}
                   onChange={(e) => setSecondaryTier(Number(e.target.value))}
                 />
-                <div style={{ color: "#a0aec0" }}>Tier {secondaryTier}</div>
+                <div className="spell-creation__muted">Tier {secondaryTier}</div>
               </label>
             )}
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div className="spell-creation__goal-list">
               {(["Damage", "Control", "Mobility", "Support", "Hazard"] as SpellGoal[]).map((goal) => (
                 <GoalToggle key={goal} goal={goal} active={goals.includes(goal)} onToggle={() => handleGoalToggle(goal)} />
               ))}
             </div>
 
-            <label style={{ ...labelStyle, flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <label className="spell-creation__field spell-creation__field--row">
               <input
                 type="checkbox"
                 checked={allowOpposedRing}
@@ -215,17 +167,17 @@ export const SpellCreationPage: React.FC = () => {
               <span>Allow opposed ring/gradient if the faculty tier provides one</span>
             </label>
 
-            <label style={labelStyle}>
+            <label className="spell-creation__field">
               <span>Seed</span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="spell-creation__row">
                 <input
-                  style={{ ...inputStyle, flex: 1 }}
+                  className="spell-creation__input spell-creation__input--grow"
                   value={seed}
                   onChange={(e) => setSeed(e.target.value)}
                 />
                 <button
                   onClick={refreshSeed}
-                  style={{ ...badgeStyle, background: "#1a365d", border: "1px solid #2d3748", cursor: "pointer" }}
+                  className="spell-creation__pill-button"
                 >
                   Randomize
                 </button>
@@ -234,27 +186,20 @@ export const SpellCreationPage: React.FC = () => {
 
             <button
               onClick={handleGenerate}
-              style={{
-                ...badgeStyle,
-                background: "#2b6cb0",
-                border: "1px solid #2c5282",
-                width: "fit-content",
-                padding: "0.4rem 0.9rem",
-                cursor: "pointer"
-              }}
+              className="spell-creation__primary-button"
             >
               Generate spell
             </button>
           </div>
         </section>
 
-        <section style={cardStyle}>
-          <h2 style={{ margin: "0 0 0.25rem 0", color: "#f7fafc" }}>Generated Spell</h2>
+        <section className="spell-creation__card">
+          <h2 className="spell-creation__card-title spell-creation__card-title--tight">Generated Spell</h2>
           {spell ? (
             <div>
-              <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>{spell.name}</div>
-              <div style={{ color: "#a0aec0", marginBottom: 12 }}>{spell.tagline}</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+              <div className="spell-creation__spell-name">{spell.name}</div>
+              <div className="spell-creation__spell-tagline">{spell.tagline}</div>
+              <div className="spell-creation__pill-row">
                 <Pill>
                   Core: {spell.primaryFaculty} · Tier {spell.primaryTier}
                 </Pill>
@@ -268,28 +213,30 @@ export const SpellCreationPage: React.FC = () => {
                 <Pill>Seed: {spell.seed}</Pill>
               </div>
 
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ color: "#cbd5e0", fontWeight: 700, marginBottom: 6 }}>Tags</div>
-                <div>{spell.tags.length ? spell.tags.map((tag) => <Pill key={tag}>{tag}</Pill>) : <span style={{ color: "#a0aec0" }}>No tags derived</span>}</div>
+              <div className="spell-creation__section">
+                <div className="spell-creation__section-title">Tags</div>
+                <div>
+                  {spell.tags.length ? spell.tags.map((tag) => <Pill key={tag}>{tag}</Pill>) : <span className="spell-creation__muted">No tags derived</span>}
+                </div>
               </div>
 
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ color: "#cbd5e0", fontWeight: 700, marginBottom: 6 }}>Aspect Plan</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
+              <div className="spell-creation__section">
+                <div className="spell-creation__section-title">Aspect Plan</div>
+                <div className="spell-creation__aspect-grid">
                   {Object.entries(spell.aspectPlan).map(([aspect, tierValue]) => (
-                    <div key={aspect} style={{ ...badgeStyle, background: "#1f2937", color: "#e2e8f0" }}>
+                    <div key={aspect} className="spell-creation__aspect-pill">
                       {aspect}: Tier {tierValue}
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-                <div style={{ background: "#111827", borderRadius: 8, padding: "0.75rem", border: "1px solid #2d3748" }}>
-                  <div style={{ fontWeight: 800, marginBottom: 4 }}>Primary Payload</div>
-                  <div style={{ color: "#cbd5e0", marginBottom: 8 }}>{spell.primarySegment.primaryEffect}</div>
+              <div className="spell-creation__payload-grid">
+                <div className="spell-creation__payload">
+                  <div className="spell-creation__payload-title">Primary Payload</div>
+                  <div className="spell-creation__payload-text">{spell.primarySegment.primaryEffect}</div>
                   {spell.primarySegment.consequence && (
-                    <div style={{ color: "#a0aec0", marginBottom: 8 }}>
+                    <div className="spell-creation__payload-muted">
                       <strong>Environmental:</strong> {spell.primarySegment.consequence}
                     </div>
                   )}
@@ -297,19 +244,19 @@ export const SpellCreationPage: React.FC = () => {
                 </div>
 
                 {spell.ringSegment && (
-                  <div style={{ background: "#111827", borderRadius: 8, padding: "0.75rem", border: "1px solid #2d3748" }}>
-                    <div style={{ fontWeight: 800, marginBottom: 4 }}>Opposed Ring</div>
-                    <div style={{ color: "#cbd5e0", marginBottom: 8 }}>{spell.ringSegment.consequence || spell.ringSegment.primaryEffect}</div>
+                  <div className="spell-creation__payload">
+                    <div className="spell-creation__payload-title">Opposed Ring</div>
+                    <div className="spell-creation__payload-text">{spell.ringSegment.consequence || spell.ringSegment.primaryEffect}</div>
                     <StatusList label="Ring Statuses" items={[...spell.ringSegment.statusesRing, ...spell.ringSegment.statusesPrimary]} />
                   </div>
                 )}
 
                 {spell.resonantSegment && (
-                  <div style={{ background: "#111827", borderRadius: 8, padding: "0.75rem", border: "1px solid #2d3748" }}>
-                    <div style={{ fontWeight: 800, marginBottom: 4 }}>Resonant Blend ({spell.secondaryFaculty})</div>
-                    <div style={{ color: "#cbd5e0", marginBottom: 8 }}>{spell.resonantSegment.primaryEffect}</div>
+                  <div className="spell-creation__payload">
+                    <div className="spell-creation__payload-title">Resonant Blend ({spell.secondaryFaculty})</div>
+                    <div className="spell-creation__payload-text">{spell.resonantSegment.primaryEffect}</div>
                     {spell.resonantSegment.consequence && (
-                      <div style={{ color: "#a0aec0", marginBottom: 8 }}>
+                      <div className="spell-creation__payload-muted">
                         <strong>Environmental:</strong> {spell.resonantSegment.consequence}
                       </div>
                     )}
@@ -319,20 +266,20 @@ export const SpellCreationPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div style={{ color: "#a0aec0" }}>Generate to see a complete spell packet.</div>
+            <div className="spell-creation__muted">Generate to see a complete spell packet.</div>
           )}
         </section>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1rem" }}>
-        <section style={cardStyle}>
-          <h3 style={{ marginTop: 0, marginBottom: 8, color: "#f7fafc" }}>Structured extraction</h3>
-          <p style={{ marginTop: 0, color: "#cbd5e0" }}>
+      <div className="spell-creation__grid spell-creation__grid--secondary">
+        <section className="spell-creation__card">
+          <h3 className="spell-creation__section-heading">Structured extraction</h3>
+          <p className="spell-creation__paragraph">
             The generator parses tier text into a primary payload, an optional opposed ring, and a resonance block from a second faculty.
             It derives tags, statuses, and aspect scaling automatically so you can copy this packet directly into play materials.
           </p>
           {spell && (
-            <ul style={{ marginTop: 8, color: "#e2e8f0" }}>
+            <ul className="spell-creation__bullet-list">
               <li>
                 <strong>Primary intent match:</strong> {spell.primarySegment.name} selected to best satisfy {goals.join(", ")} goals.
               </li>
@@ -349,14 +296,14 @@ export const SpellCreationPage: React.FC = () => {
           )}
         </section>
 
-        <section style={cardStyle}>
-          <h3 style={{ marginTop: 0, marginBottom: 8, color: "#f7fafc" }}>Safeguards</h3>
-          <ul style={{ color: "#e2e8f0", paddingLeft: "1.1rem" }}>
+        <section className="spell-creation__card">
+          <h3 className="spell-creation__section-heading">Safeguards</h3>
+          <ul className="spell-creation__bullet-list spell-creation__bullet-list--spaced">
             {spell?.cautions.map((caution) => (
-              <li key={caution} style={{ marginBottom: 6 }}>
+              <li key={caution} className="spell-creation__bullet-item">
                 {caution}
               </li>
-            )) || <li style={{ color: "#a0aec0" }}>Generate a spell to see the automatic safety notes.</li>}
+            )) || <li className="spell-creation__muted">Generate a spell to see the automatic safety notes.</li>}
           </ul>
         </section>
       </div>

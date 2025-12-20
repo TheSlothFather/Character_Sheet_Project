@@ -1,0 +1,96 @@
+.combat-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.combat-page__title {
+  margin: 0;
+}
+
+.combat-page__subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.combat-page__card {
+  background: var(--surface-1);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-4);
+}
+
+.combat-page__message {
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+}
+
+.combat-page__message--error {
+  color: var(--danger);
+}
+
+.combat-page__message--success {
+  color: var(--success);
+}
+
+.combat-page__status {
+  color: var(--muted);
+  margin: 0;
+}
+
+.combat-page__list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.combat-page__target {
+  text-align: left;
+  border: var(--border-width) solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 0.75rem;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  display: grid;
+  gap: 0.35rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.combat-page__target--selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft);
+  background: var(--surface-3);
+}
+
+.combat-page__target-name {
+  font-weight: 700;
+}
+
+.combat-page__target-faction {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.combat-page__section-title {
+  margin-top: 0;
+}
+
+.combat-page__helper {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+}
+
+.combat-page__button {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--border-radius-md);
+  border: var(--border-width) solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.combat-page__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
