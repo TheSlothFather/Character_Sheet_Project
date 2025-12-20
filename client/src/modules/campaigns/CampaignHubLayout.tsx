@@ -1,34 +1,7 @@
 import React from "react";
 import { NavLink, Outlet, useParams } from "react-router-dom";
 import { getCampaign } from "../../api/campaigns";
-
-const headerStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "0.35rem"
-};
-
-const navStyle: React.CSSProperties = {
-  display: "flex",
-  gap: "1rem",
-  borderBottom: "1px solid #1f2935",
-  paddingBottom: "0.75rem",
-  flexWrap: "wrap"
-};
-
-const linkStyle: React.CSSProperties = {
-  padding: "0.35rem 0.6rem",
-  borderRadius: 8,
-  textDecoration: "none",
-  color: "#e5e7eb",
-  border: "1px solid transparent"
-};
-
-const activeLinkStyle: React.CSSProperties = {
-  borderColor: "#2563eb",
-  background: "#111827",
-  fontWeight: 700
-};
+import "./CampaignHubLayout.css";
 
 export const CampaignHubLayout: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
@@ -71,27 +44,30 @@ export const CampaignHubLayout: React.FC = () => {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <header style={headerStyle}>
-        <h2 style={{ margin: 0 }}>Campaign Hub</h2>
-        <p style={{ margin: 0, color: "#94a3b8" }}>
+    <div className="campaign-hub">
+      <header className="campaign-hub__header">
+        <h2 className="campaign-hub__title">Campaign Hub</h2>
+        <p className="campaign-hub__subtitle">
           {loading ? "Loading campaign..." : campaignName || "Unnamed campaign"}
         </p>
-        {error && <p style={{ margin: 0, color: "#fca5a5" }}>{error}</p>}
+        {error && <p className="campaign-hub__error">{error}</p>}
       </header>
-      <nav style={navStyle}>
+      <nav className="campaign-hub__nav">
         <NavLink
           to="characters"
-          style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+          className={({ isActive }) => (isActive ? "campaign-hub__link campaign-hub__link--active" : "campaign-hub__link")}
         >
           Characters
         </NavLink>
-        <NavLink to="combat" style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}>
+        <NavLink
+          to="combat"
+          className={({ isActive }) => (isActive ? "campaign-hub__link campaign-hub__link--active" : "campaign-hub__link")}
+        >
           Combat
         </NavLink>
         <NavLink
           to="settings"
-          style={({ isActive }) => (isActive ? { ...linkStyle, ...activeLinkStyle } : linkStyle)}
+          className={({ isActive }) => (isActive ? "campaign-hub__link campaign-hub__link--active" : "campaign-hub__link")}
         >
           Setting Info
         </NavLink>

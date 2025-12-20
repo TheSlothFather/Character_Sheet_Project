@@ -1,26 +1,7 @@
 import React from "react";
 import { api, Character } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
-
-const cardStyle: React.CSSProperties = {
-  background: "#0f131a",
-  border: "1px solid #1f2935",
-  borderRadius: 12,
-  padding: "1rem"
-};
-
-const pillStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "0.2rem 0.55rem",
-  borderRadius: 999,
-  border: "1px solid #1f2935",
-  background: "#0b1017",
-  color: "#cbd5e1",
-  fontSize: 12,
-  fontWeight: 600
-};
+import "./PlayerCharactersPage.css";
 
 const attributeOrder = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"];
 
@@ -83,26 +64,26 @@ export const PlayerCharactersPage: React.FC = () => {
   const selectedCharacter = characters.find((character) => character.id === selectedId) ?? null;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="gm-player-characters">
       <header>
-        <h2 style={{ margin: 0 }}>Player Characters</h2>
-        <p style={{ margin: "0.25rem 0 0", color: "#cbd5e1" }}>
+        <h2 className="gm-player-characters__title">Player Characters</h2>
+        <p className="gm-player-characters__subtitle">
           Review player character sheets without switching to the player UI.
         </p>
       </header>
 
-      {error && <div style={{ color: "#f87171" }}>{error}</div>}
+      {error && <div className="gm-player-characters__error">{error}</div>}
 
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(240px, 1fr) 2fr", gap: "1rem" }}>
-        <section style={cardStyle}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <h3 style={{ margin: 0 }}>Characters</h3>
-            {loading && <span style={{ color: "#9ca3af", fontSize: 12 }}>Loading...</span>}
+      <div className="gm-player-characters__layout">
+        <section className="gm-player-characters__card">
+          <div className="gm-player-characters__card-header">
+            <h3 className="gm-player-characters__card-title">Characters</h3>
+            {loading && <span className="gm-player-characters__loading">Loading...</span>}
           </div>
           {characters.length === 0 && !loading ? (
-            <p style={{ color: "#94a3b8", margin: 0 }}>No characters found.</p>
+            <p className="gm-player-characters__muted">No characters found.</p>
           ) : (
-            <div style={{ display: "grid", gap: "0.5rem" }}>
+            <div className="gm-player-characters__list">
               {characters.map((character) => {
                 const isActive = character.id === selectedId;
                 return (
@@ -110,18 +91,10 @@ export const PlayerCharactersPage: React.FC = () => {
                     key={character.id}
                     type="button"
                     onClick={() => setSelectedId(character.id)}
-                    style={{
-                      textAlign: "left",
-                      border: isActive ? "1px solid #2563eb" : "1px solid #1f2935",
-                      background: isActive ? "#101a2c" : "#0c111a",
-                      color: "#e5e7eb",
-                      padding: "0.6rem",
-                      borderRadius: 10,
-                      cursor: "pointer"
-                    }}
+                    className={`gm-player-characters__item${isActive ? " gm-player-characters__item--active" : ""}`}
                   >
-                    <div style={{ fontWeight: 700 }}>{character.name}</div>
-                    <div style={{ color: "#9ca3af", fontSize: 12 }}>Level {character.level}</div>
+                    <div className="gm-player-characters__item-title">{character.name}</div>
+                    <div className="gm-player-characters__item-meta">Level {character.level}</div>
                   </button>
                 );
               })}
@@ -129,43 +102,43 @@ export const PlayerCharactersPage: React.FC = () => {
           )}
         </section>
 
-        <section style={{ ...cardStyle, minHeight: 320 }}>
+        <section className="gm-player-characters__card gm-player-characters__card--tall">
           {!selectedCharacter ? (
-            <p style={{ color: "#94a3b8", margin: 0 }}>Select a character to view details.</p>
+            <p className="gm-player-characters__muted">Select a character to view details.</p>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+            <div className="gm-player-characters__details">
+              <div className="gm-player-characters__details-header">
                 <div>
-                  <h3 style={{ margin: 0 }}>{selectedCharacter.name}</h3>
-                  <div style={{ color: "#9ca3af", fontSize: 13 }}>
+                  <h3 className="gm-player-characters__details-title">{selectedCharacter.name}</h3>
+                  <div className="gm-player-characters__details-meta">
                     Level {selectedCharacter.level} • {formatLabel(raceMap.get(selectedCharacter.raceKey ?? "") ?? selectedCharacter.raceKey)}
                     {selectedCharacter.subraceKey ? ` / ${subraceMap.get(selectedCharacter.subraceKey)?.name ?? selectedCharacter.subraceKey}` : ""}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <span style={pillStyle}>Skill Points: {selectedCharacter.skillPoints}</span>
-                  <span style={pillStyle}>Skill Total: {summarizeSkillTotals(selectedCharacter)}</span>
+                <div className="gm-player-characters__pill-row">
+                  <span className="gm-player-characters__pill">Skill Points: {selectedCharacter.skillPoints}</span>
+                  <span className="gm-player-characters__pill">Skill Total: {summarizeSkillTotals(selectedCharacter)}</span>
                   {selectedCharacter.fatePoints !== undefined && (
-                    <span style={pillStyle}>Fate Points: {selectedCharacter.fatePoints}</span>
+                    <span className="gm-player-characters__pill">Fate Points: {selectedCharacter.fatePoints}</span>
                   )}
                 </div>
               </div>
 
               <div>
-                <h4 style={{ marginBottom: 6 }}>Attributes</h4>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.5rem" }}>
+                <h4 className="gm-player-characters__section-title">Attributes</h4>
+                <div className="gm-player-characters__attributes">
                   {attributeOrder.map((key) => (
-                    <div key={key} style={{ border: "1px solid #1f2935", borderRadius: 10, padding: "0.6rem", background: "#0c111a" }}>
-                      <div style={{ fontSize: 12, color: "#9ca3af" }}>{key}</div>
-                      <div style={{ fontSize: 20, fontWeight: 700 }}>{selectedCharacter.attributes?.[key] ?? 0}</div>
+                    <div key={key} className="gm-player-characters__attribute">
+                      <div className="gm-player-characters__attribute-label">{key}</div>
+                      <div className="gm-player-characters__attribute-value">{selectedCharacter.attributes?.[key] ?? 0}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div>
-                <h4 style={{ marginBottom: 6 }}>Backgrounds</h4>
-                <div style={{ display: "grid", gap: "0.35rem", color: "#cbd5e1", fontSize: 14 }}>
+                <h4 className="gm-player-characters__section-title">Backgrounds</h4>
+                <div className="gm-player-characters__backgrounds">
                   <div>Family: {formatLabel(selectedCharacter.backgrounds?.family)}</div>
                   <div>Childhood: {formatLabel(selectedCharacter.backgrounds?.childhood)}</div>
                   <div>Adolescence: {formatLabel(selectedCharacter.backgrounds?.adolescence)}</div>
@@ -175,22 +148,22 @@ export const PlayerCharactersPage: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gap: "0.75rem" }}>
+              <div className="gm-player-characters__notes">
                 <div>
-                  <h4 style={{ marginBottom: 6 }}>Notes</h4>
-                  <p style={{ margin: 0, color: "#cbd5e1" }}>{selectedCharacter.notes?.trim() || "No notes."}</p>
+                  <h4 className="gm-player-characters__section-title">Notes</h4>
+                  <p className="gm-player-characters__note-text">{selectedCharacter.notes?.trim() || "No notes."}</p>
                 </div>
                 <div>
-                  <h4 style={{ marginBottom: 6 }}>Gear Notes</h4>
-                  <p style={{ margin: 0, color: "#cbd5e1" }}>{selectedCharacter.gearNotes?.trim() || "No gear notes."}</p>
+                  <h4 className="gm-player-characters__section-title">Gear Notes</h4>
+                  <p className="gm-player-characters__note-text">{selectedCharacter.gearNotes?.trim() || "No gear notes."}</p>
                 </div>
                 <div>
-                  <h4 style={{ marginBottom: 6 }}>Defense Notes</h4>
-                  <p style={{ margin: 0, color: "#cbd5e1" }}>{selectedCharacter.defenseNotes?.trim() || "No defense notes."}</p>
+                  <h4 className="gm-player-characters__section-title">Defense Notes</h4>
+                  <p className="gm-player-characters__note-text">{selectedCharacter.defenseNotes?.trim() || "No defense notes."}</p>
                 </div>
                 <div>
-                  <h4 style={{ marginBottom: 6 }}>Weapon Notes</h4>
-                  <p style={{ margin: 0, color: "#cbd5e1" }}>{selectedCharacter.weaponNotes?.trim() || "No weapon notes."}</p>
+                  <h4 className="gm-player-characters__section-title">Weapon Notes</h4>
+                  <p className="gm-player-characters__note-text">{selectedCharacter.weaponNotes?.trim() || "No weapon notes."}</p>
                 </div>
               </div>
             </div>

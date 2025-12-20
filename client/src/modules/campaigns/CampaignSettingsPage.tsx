@@ -1,13 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { listSharedSettings, type PlayerCampaignSetting } from "../../api/campaigns";
-
-const cardStyle: React.CSSProperties = {
-  background: "#0f131a",
-  border: "1px solid #1f2935",
-  borderRadius: 12,
-  padding: "1rem"
-};
+import "./CampaignSettingsPage.css";
 
 export const CampaignSettingsPage: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
@@ -46,32 +40,32 @@ export const CampaignSettingsPage: React.FC = () => {
   }, [campaignId]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="campaign-settings">
       <header>
-        <h3 style={{ margin: 0 }}>Setting Info</h3>
-        <p style={{ margin: "0.25rem 0 0", color: "#94a3b8" }}>
+        <h3 className="campaign-settings__title">Setting Info</h3>
+        <p className="campaign-settings__subtitle">
           Notes your GM has shared for this campaign.
         </p>
       </header>
-      {error && <div style={{ color: "#fca5a5" }}>{error}</div>}
+      {error && <div className="campaign-settings__error">{error}</div>}
       {loading ? (
-        <div style={{ color: "#94a3b8" }}>Loading setting notes...</div>
+        <div className="campaign-settings__status">Loading setting notes...</div>
       ) : settings.length === 0 ? (
-        <div style={{ color: "#94a3b8" }}>No shared setting notes yet.</div>
+        <div className="campaign-settings__status">No shared setting notes yet.</div>
       ) : (
-        <div style={{ display: "grid", gap: "0.75rem" }}>
+        <div className="campaign-settings__list">
           {settings.map((entry) => (
-            <div key={entry.id} style={cardStyle}>
-              <div style={{ fontWeight: 700, marginBottom: "0.35rem" }}>{entry.title}</div>
+            <div key={entry.id} className="campaign-settings__card">
+              <div className="campaign-settings__card-title">{entry.title}</div>
               {entry.tags && entry.tags.length > 0 && (
-                <div style={{ color: "#9ca3af", fontSize: 13, marginBottom: "0.5rem" }}>
+                <div className="campaign-settings__tags">
                   {entry.tags.join(" · ")}
                 </div>
               )}
               {entry.body ? (
-                <p style={{ margin: 0, color: "#cbd5e1" }}>{entry.body}</p>
+                <p className="campaign-settings__body">{entry.body}</p>
               ) : (
-                <p style={{ margin: 0, color: "#94a3b8" }}>No details provided.</p>
+                <p className="campaign-settings__empty">No details provided.</p>
               )}
             </div>
           ))}
