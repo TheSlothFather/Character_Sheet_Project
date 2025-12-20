@@ -59,15 +59,15 @@ const FacultyCard: React.FC<{
 }> = ({ faculty, unlocked, onToggle, canAfford, disabled, cost }) => {
   const buttonState = unlocked ? "unlocked" : canAfford ? "available" : "blocked";
   return (
-    <div className="magic-faculties__card">
-      <div className="magic-faculties__card-header">
+  <div className="card stack magic-faculties__card">
+    <div className="cluster magic-faculties__card-header">
         <div>
           <h2 className="magic-faculties__card-title">{faculty.name}</h2>
           <div className="magic-faculties__card-subtitle">
             {faculty.category} Faculty · {cost} Ildakar points to unlock
           </div>
         </div>
-        <div className="magic-faculties__card-actions">
+      <div className="cluster magic-faculties__card-actions">
           <span
             className={`magic-faculties__badge ${
               faculty.category === "Basic" ? "magic-faculties__badge--basic" : "magic-faculties__badge--advanced"
@@ -281,74 +281,77 @@ export const MagicFacultiesPage: React.FC = () => {
   const effectiveBasicCost = Math.ceil(COST_BY_CATEGORY.Basic * ancillaryEffects.basicCostMultiplier);
 
   return (
-    <div className="magic-faculties">
-      <h1 className="magic-faculties__title">Magic Faculties</h1>
-      <p className="magic-faculties__intro">
-        Faculties are unlocked with Ildakar Faculty points. Basic Faculties cost {effectiveBasicCost} points and Advanced
-        Faculties cost {COST_BY_CATEGORY.Advanced}. Aspect investments are additive across all six aspects.
-      </p>
+    <div className="page magic-faculties">
+      <header className="page__header magic-faculties__header">
+        <h1 className="magic-faculties__title">Magic Faculties</h1>
+        <p className="magic-faculties__intro">
+          Faculties are unlocked with Ildakar Faculty points. Basic Faculties cost {effectiveBasicCost} points and Advanced
+          Faculties cost {COST_BY_CATEGORY.Advanced}. Aspect investments are additive across all six aspects.
+        </p>
+      </header>
 
-      <div className="magic-faculties__summary">
-        <div className="magic-faculties__panel">
-          <h2 className="magic-faculties__panel-title">Ildakar Faculty Points</h2>
-          {characterError && <div className="magic-faculties__error">{characterError}</div>}
-          {loadingCharacters ? (
-            <div className="magic-faculties__muted">Loading characters...</div>
-          ) : selectedCharacter ? (
-            <div className="magic-faculties__stats">
-              <div className="magic-faculties__stat">
-                <div className="magic-faculties__stat-label">Available</div>
-                <div className="magic-faculties__stat-value">{availablePoints}</div>
-              </div>
-              <div className="magic-faculties__stat">
-                <div className="magic-faculties__stat-label">Spent</div>
-                <div className="magic-faculties__stat-value">{spentPoints}</div>
-              </div>
-              <div className="magic-faculties__stat">
-                <div className="magic-faculties__stat-label">Remaining</div>
-                <div
-                  className={`magic-faculties__stat-value ${
-                    remainingPoints < 0 ? "magic-faculties__stat-value--danger" : "magic-faculties__stat-value--success"
-                  }`}
-                >
-                  {remainingPoints}
+      <main className="page__content">
+        <div className="grid magic-faculties__summary">
+          <div className="panel stack magic-faculties__panel">
+            <h2 className="magic-faculties__panel-title">Ildakar Faculty Points</h2>
+            {characterError && <div className="magic-faculties__error">{characterError}</div>}
+            {loadingCharacters ? (
+              <div className="magic-faculties__muted">Loading characters...</div>
+            ) : selectedCharacter ? (
+              <div className="magic-faculties__stats">
+                <div className="magic-faculties__stat">
+                  <div className="magic-faculties__stat-label">Available</div>
+                  <div className="magic-faculties__stat-value">{availablePoints}</div>
+                </div>
+                <div className="magic-faculties__stat">
+                  <div className="magic-faculties__stat-label">Spent</div>
+                  <div className="magic-faculties__stat-value">{spentPoints}</div>
+                </div>
+                <div className="magic-faculties__stat">
+                  <div className="magic-faculties__stat-label">Remaining</div>
+                  <div
+                    className={`magic-faculties__stat-value ${
+                      remainingPoints < 0 ? "magic-faculties__stat-value--danger" : "magic-faculties__stat-value--success"
+                    }`}
+                  >
+                    {remainingPoints}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="magic-faculties__muted">
-              Select a character on the Characters page to sync their Ildakar Faculty points here.
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="magic-faculties__muted">
+                Select a character on the Characters page to sync their Ildakar Faculty points here.
+              </div>
+            )}
+          </div>
 
-        <div className="magic-faculties__panel">
-          <h2 className="magic-faculties__panel-title">Aspect Cost Scaling</h2>
-          <p className="magic-faculties__panel-text">
-            AP and Energy costs are additive across all six aspects. Example: one Tier 2 aspect with five Tier 1 aspects costs
-            14 AP/E; one Tier 3 with five Tier 1 costs 33 AP/E.
-          </p>
-          <table className="table magic-faculties__table">
-            <thead>
-              <tr className="table__row">
-                <th className="table__header magic-faculties__table-header">Tier</th>
-                <th className="table__header magic-faculties__table-header">AP & Energy Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ASPECT_COSTS.map((row) => (
-                <tr key={row.tier} className="table__row">
-                  <td className="table__cell magic-faculties__table-cell">Tier {row.tier}</td>
-                  <td className="table__cell magic-faculties__table-cell">{row.cost}</td>
+          <div className="panel stack magic-faculties__panel">
+            <h2 className="magic-faculties__panel-title">Aspect Cost Scaling</h2>
+            <p className="magic-faculties__panel-text">
+              AP and Energy costs are additive across all six aspects. Example: one Tier 2 aspect with five Tier 1 aspects costs
+              14 AP/E; one Tier 3 with five Tier 1 costs 33 AP/E.
+            </p>
+            <table className="table magic-faculties__table">
+              <thead>
+                <tr className="table__row">
+                  <th className="table__header magic-faculties__table-header">Tier</th>
+                  <th className="table__header magic-faculties__table-header">AP & Energy Cost</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {ASPECT_COSTS.map((row) => (
+                  <tr key={row.tier} className="table__row">
+                    <td className="table__cell magic-faculties__table-cell">Tier {row.tier}</td>
+                    <td className="table__cell magic-faculties__table-cell">{row.cost}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
 
-      <div className="magic-faculties__grid">
-        <div className="magic-faculties__panel">
+      <div className="grid magic-faculties__grid">
+        <div className="panel stack magic-faculties__panel">
           <h2 className="magic-faculties__panel-title">Faculty Costs</h2>
           <p className="magic-faculties__panel-text">Spend Ildakar Faculty points to unlock a Faculty for the caster.</p>
           <ul className="magic-faculties__list">
@@ -361,7 +364,7 @@ export const MagicFacultiesPage: React.FC = () => {
           </ul>
         </div>
 
-        <div className="magic-faculties__panel">
+        <div className="panel stack magic-faculties__panel">
           <h2 className="magic-faculties__panel-title">Aspect Scaling</h2>
           <div className="magic-faculties__table-scroll">
             <table className="table magic-faculties__table">
@@ -390,15 +393,15 @@ export const MagicFacultiesPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="magic-faculties__panel magic-faculties__panel--spaced">
+      <div className="panel stack magic-faculties__panel magic-faculties__panel--spaced">
         <h2 className="magic-faculties__panel-title">Aspect AP & Energy Calculator</h2>
         <p className="magic-faculties__panel-text">
           Choose a tier for each aspect to total the AP/Energy cost. Values add together exactly as described: six Tier 1 aspects
           cost {ASPECT_KEYS.length * getAspectCost(1)} AP/Energy; mixing tiers sums their respective costs.
         </p>
-        <div className="magic-faculties__calculator">
+        <div className="grid magic-faculties__calculator">
           {ASPECT_KEYS.map((aspect) => (
-            <label key={aspect} className="magic-faculties__field">
+            <label key={aspect} className="stack magic-faculties__field">
               <span className="magic-faculties__field-label">{aspect}</span>
               <select
                 value={aspectTiers[aspect]}
@@ -419,7 +422,7 @@ export const MagicFacultiesPage: React.FC = () => {
             </label>
           ))}
         </div>
-        <div className="magic-faculties__totals">
+        <div className="cluster magic-faculties__totals">
           <div className="magic-faculties__total">
             Total AP Cost: {adjustedApCost}
             {ancillaryEffects.apMultiplier !== 1 ? ` (base ${totalAspectCost})` : ""}
@@ -441,7 +444,7 @@ export const MagicFacultiesPage: React.FC = () => {
         )}
       </div>
 
-      <div className="magic-faculties__cards">
+      <div className="grid magic-faculties__cards">
         {parsed.map((faculty) => {
           const cost = getFacultyCost(faculty);
           const canAfford = remainingPoints >= cost || unlocked[faculty.name];
@@ -459,6 +462,7 @@ export const MagicFacultiesPage: React.FC = () => {
           );
         })}
       </div>
+      </main>
     </div>
   );
 };
