@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import deityData from "../../data/deity_relationships.json";
 import { api, Character, RaceDetailProfile } from "../../api/client";
 import { useDefinitions } from "../definitions/DefinitionsContext";
+import "./DeityRelationshipPage.css";
 
 type WorshipAction = {
   name: string;
@@ -235,31 +236,31 @@ export const DeityRelationshipPage: React.FC = () => {
   const totalLoggedDr = logEntries.reduce((sum, entry) => sum + entry.total, 0);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-      <header style={{ borderBottom: "1px solid #333", paddingBottom: "0.5rem" }}>
-        <h1 style={{ margin: 0 }}>Deity Relationship</h1>
-        <p style={{ margin: "0.5rem 0", color: "#bbb" }}>
+    <div className="deity-page">
+      <header className="deity-header">
+        <h1 className="deity-title">Deity Relationship</h1>
+        <p className="deity-intro">
           Manage Deity Relationship Points (DR), cap tiers, worship generation, beseech options, and sect-specific
           deities.
         </p>
         {!hasDeityData && (
-          <div style={{ color: "#f6ad55", marginTop: "0.25rem" }}>
+          <div className="deity-warning">
             Data for deities failed to load. Showing an empty template so the page remains usable.
           </div>
         )}
-        {characterError && <div style={{ color: "#f6ad55", marginTop: "0.25rem" }}>{characterError}</div>}
+        {characterError && <div className="deity-warning">{characterError}</div>}
       </header>
 
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
-        <div style={{ border: "1px solid #333", padding: "1rem", borderRadius: 4 }}>
-          <h2 style={{ marginTop: 0 }}>Inputs</h2>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>
+      <section className="deity-grid">
+        <div className="deity-card">
+          <h2 className="deity-card-title">Inputs</h2>
+          <label className="deity-label">
             Character
             <select
               value={selectedCharacterId}
               onChange={(e) => setSelectedCharacterId(e.target.value)}
               disabled={loadingCharacters}
-              style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
+              className="deity-control"
             >
               <option value="">Manual entry</option>
               {characters.map((c) => (
@@ -269,7 +270,7 @@ export const DeityRelationshipPage: React.FC = () => {
               ))}
             </select>
           </label>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>
+          <label className="deity-label">
             Spiritual Attribute
             <input
               type="number"
@@ -277,15 +278,15 @@ export const DeityRelationshipPage: React.FC = () => {
               min={0}
               onChange={(e) => setSpiritualAttribute(Number(e.target.value) || 0)}
               onWheel={(e) => e.preventDefault()}
-              style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
+              className="deity-control"
             />
           </label>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>
+          <label className="deity-label">
             Racial Cap Bonus
             <select
               value={racialCapBonus}
               onChange={(e) => setRacialCapBonus(Number(e.target.value))}
-              style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
+              className="deity-control"
             >
               {[0, ...safeData.currency.racialCapBonusOptions].map((bonus) => (
                 <option key={bonus} value={bonus}>
@@ -294,23 +295,23 @@ export const DeityRelationshipPage: React.FC = () => {
               ))}
             </select>
             {selectedCharacter && (
-              <div style={{ marginTop: 4, fontSize: 12, color: "#9aa3b5" }}>
+              <div className="deity-note">
                 Auto-set from {selectedCharacter.name}'s race/subrace.
               </div>
             )}
           </label>
-          <div style={{ marginTop: "0.5rem", fontSize: 14, color: "#ccc" }}>
+          <div className="deity-subtle">
             Spiritual limit: dedicate to {spiritualLimit} deities max.
           </div>
         </div>
 
-        <div style={{ border: "1px solid #333", padding: "1rem", borderRadius: 4 }}>
-          <h2 style={{ marginTop: 0 }}>Cap & Currency</h2>
-          <div style={{ fontSize: 32, fontWeight: 700 }}>{cap}</div>
-          <div style={{ color: "#bbb", marginBottom: "0.75rem" }}>
+        <div className="deity-card">
+          <h2 className="deity-card-title">Cap & Currency</h2>
+          <div className="deity-cap">{cap}</div>
+          <div className="deity-muted deity-spacing">
             {safeData.currency.name}: {safeData.currency.currentKey} / {safeData.currency.capKey}
           </div>
-          <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.5 }}>
+          <ul className="deity-list">
             {capTiers.map((tier) => (
               <li key={tier.tier}>
                 {tier.tier}% cap target: {tier.target ?? "-"} ({tier.formula})
@@ -319,9 +320,9 @@ export const DeityRelationshipPage: React.FC = () => {
           </ul>
         </div>
 
-        <div style={{ border: "1px solid #333", padding: "1rem", borderRadius: 4 }}>
-          <h2 style={{ marginTop: 0 }}>Worship Generation</h2>
-          <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.6 }}>
+        <div className="deity-card">
+          <h2 className="deity-card-title">Worship Generation</h2>
+          <ul className="deity-list">
             <li>
               Passive: {safeData.mechanics.worshipGeneration.passive} ⇒ {3 * spiritualAttribute} DR
             </li>
@@ -331,12 +332,12 @@ export const DeityRelationshipPage: React.FC = () => {
         </div>
       </section>
 
-      <section style={{ border: "1px solid #333", padding: "1rem", borderRadius: 4 }}>
-        <h2 style={{ marginTop: 0 }}>Mechanics & Gear</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+      <section className="deity-card">
+        <h2 className="deity-heading">Mechanics & Gear</h2>
+        <div className="deity-gear-grid">
           <div>
-            <h3 style={{ marginTop: 0 }}>Rules</h3>
-            <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.6 }}>
+            <h3 className="deity-heading">Rules</h3>
+            <ul className="deity-list">
               <li>{safeData.mechanics.apostasy}</li>
               <li>{safeData.mechanics.spiritualLimit}</li>
               <li>{safeData.mechanics.casting.divineInterventionCost}</li>
@@ -344,8 +345,8 @@ export const DeityRelationshipPage: React.FC = () => {
             </ul>
           </div>
           <div>
-            <h3 style={{ marginTop: 0 }}>Gear Integration</h3>
-            <ul style={{ margin: 0, paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.6 }}>
+            <h3 className="deity-heading">Gear Integration</h3>
+            <ul className="deity-list">
               {safeData.mechanics.gearIntegration.equipmentSlots.map((slot) => (
                 <li key={slot}>
                   <strong>{slot}:</strong> {safeData.mechanics.gearIntegration.effects[slot]}
@@ -354,21 +355,21 @@ export const DeityRelationshipPage: React.FC = () => {
             </ul>
           </div>
           <div>
-            <h3 style={{ marginTop: 0 }}>Worship Tracker</h3>
-            <p style={{ margin: 0, color: "#ccc" }}>{safeData.mechanics.worshipTracker}</p>
+            <h3 className="deity-heading">Worship Tracker</h3>
+            <p className="deity-paragraph">{safeData.mechanics.worshipTracker}</p>
           </div>
         </div>
       </section>
 
-      <section style={{ border: "1px solid #333", padding: "1rem", borderRadius: 4 }}>
-        <h2 style={{ marginTop: 0 }}>Worship Log</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem" }}>
-          <label style={{ display: "block" }}>
+      <section className="deity-card">
+        <h2 className="deity-heading">Worship Log</h2>
+        <div className="deity-grid-tight">
+          <label className="deity-label">
             Deity
             <select
               value={selectedDeity?.name ?? ""}
               onChange={(e) => setSelectedDeityName(e.target.value)}
-              style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
+              className="deity-control"
             >
               {safeData.deities.map((deity) => (
                 <option key={deity.name} value={deity.name}>
@@ -377,12 +378,12 @@ export const DeityRelationshipPage: React.FC = () => {
               ))}
             </select>
           </label>
-          <label style={{ display: "block" }}>
+          <label className="deity-label">
             Worship Action
             <select
               value={selectedActionName}
               onChange={(e) => setSelectedActionName(e.target.value)}
-              style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
+              className="deity-control"
             >
               {availableActions.map((action) => (
                 <option key={action.name} value={action.name}>
@@ -391,7 +392,7 @@ export const DeityRelationshipPage: React.FC = () => {
               ))}
             </select>
           </label>
-          <label style={{ display: "block" }}>
+          <label className="deity-label">
             Times Performed
             <input
               type="number"
@@ -399,12 +400,12 @@ export const DeityRelationshipPage: React.FC = () => {
               min={1}
               onChange={(e) => setTimesPerformed(Number(e.target.value) || 1)}
               onWheel={(e) => e.preventDefault()}
-              style={{ width: "100%", marginTop: 4, padding: 6, background: "#111", color: "#eee", border: "1px solid #444" }}
+              className="deity-control"
             />
           </label>
         </div>
-        <div style={{ marginTop: "0.75rem", display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-          <div style={{ color: "#ccc" }}>
+        <div className="deity-row">
+          <div className="deity-action-text">
             Estimated gain: {(() => {
               const action = availableActions.find((item) => item.name === selectedActionName);
               return action ? computeActionDr(action) * Math.max(1, timesPerformed) : 0;
@@ -413,47 +414,47 @@ export const DeityRelationshipPage: React.FC = () => {
           <button
             type="button"
             onClick={addLogEntry}
-            style={{ padding: "0.5rem 0.75rem", background: "#2f855a", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer" }}
+            className="deity-button deity-button--add"
           >
             Add Entry
           </button>
-          <div style={{ marginLeft: "auto", color: "#9ae6b4", fontWeight: 700 }}>Total Logged: {totalLoggedDr} DR</div>
+          <div className="deity-total">Total Logged: {totalLoggedDr} DR</div>
         </div>
 
-        <div style={{ marginTop: "1rem", overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
+        <div className="deity-table-wrap">
+          <table className="deity-table">
             <thead>
-              <tr style={{ textAlign: "left", borderBottom: "1px solid #444" }}>
-                <th style={{ padding: "0.5rem" }}>Deity</th>
-                <th style={{ padding: "0.5rem" }}>Action</th>
-                <th style={{ padding: "0.5rem" }}>Type</th>
-                <th style={{ padding: "0.5rem" }}>DR per</th>
-                <th style={{ padding: "0.5rem" }}>Count</th>
-                <th style={{ padding: "0.5rem" }}>Total DR</th>
-                <th style={{ padding: "0.5rem" }}>Remove</th>
+              <tr>
+                <th>Deity</th>
+                <th>Action</th>
+                <th>Type</th>
+                <th>DR per</th>
+                <th>Count</th>
+                <th>Total DR</th>
+                <th>Remove</th>
               </tr>
             </thead>
             <tbody>
               {logEntries.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: "0.75rem", color: "#888", textAlign: "center" }}>
+                  <td colSpan={7} className="deity-empty">
                     No worship actions logged yet.
                   </td>
                 </tr>
               ) : (
                 logEntries.map((entry) => (
-                  <tr key={entry.id} style={{ borderBottom: "1px solid #222" }}>
-                    <td style={{ padding: "0.5rem" }}>{entry.deity}</td>
-                    <td style={{ padding: "0.5rem" }}>{entry.action}</td>
-                    <td style={{ padding: "0.5rem", textTransform: "capitalize" }}>{entry.type}</td>
-                    <td style={{ padding: "0.5rem" }}>{entry.perAction}</td>
-                    <td style={{ padding: "0.5rem" }}>{entry.count}</td>
-                    <td style={{ padding: "0.5rem" }}>{entry.total}</td>
-                    <td style={{ padding: "0.5rem" }}>
+                  <tr key={entry.id}>
+                    <td>{entry.deity}</td>
+                    <td>{entry.action}</td>
+                    <td className="deity-type">{entry.type}</td>
+                    <td>{entry.perAction}</td>
+                    <td>{entry.count}</td>
+                    <td>{entry.total}</td>
+                    <td>
                       <button
                         type="button"
                         onClick={() => removeEntry(entry.id)}
-                        style={{ padding: "0.25rem 0.5rem", background: "#c53030", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer" }}
+                        className="deity-button deity-button--remove"
                       >
                         Remove
                       </button>
@@ -466,28 +467,28 @@ export const DeityRelationshipPage: React.FC = () => {
         </div>
       </section>
 
-      <section style={{ border: "1px solid #333", padding: "1rem", borderRadius: 4 }}>
-        <h2 style={{ marginTop: 0 }}>Sects & Deities</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
+      <section className="deity-card">
+        <h2 className="deity-heading">Sects & Deities</h2>
+        <div className="deity-sect-grid">
           {groupedDeities.map((group) => (
-            <div key={group.sect} style={{ border: "1px solid #333", padding: "0.75rem", borderRadius: 4, background: "#0d0d0d" }}>
-              <h3 style={{ margin: "0 0 0.25rem" }}>{group.sect}</h3>
-              <div style={{ fontSize: 12, color: "#999", marginBottom: "0.5rem" }}>
+            <div key={group.sect} className="deity-sect-card">
+              <h3 className="deity-sect-title">{group.sect}</h3>
+              <div className="deity-sect-meta">
                 Alignment: {safeData.sects.find((sect) => sect.name === group.sect)?.alignment ?? ""}
               </div>
-              {group.deities.length === 0 && <div style={{ color: "#777" }}>No deities listed.</div>}
+              {group.deities.length === 0 && <div className="deity-sect-empty">No deities listed.</div>}
               {group.deities.map((deity) => (
-                <div key={deity.name} style={{ borderTop: "1px solid #222", paddingTop: "0.5rem", marginTop: "0.5rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "space-between" }}>
+                <div key={deity.name} className="deity-sect-divider">
+                  <div className="deity-sect-row">
                     <strong>{deity.name}</strong>
-                    <span style={{ fontSize: 12, color: "#999" }}>{deity.alignment}</span>
+                    <span className="deity-sect-alignment">{deity.alignment}</span>
                   </div>
-                  <div style={{ marginTop: "0.35rem" }}>
-                    <div style={{ fontSize: 13, color: "#9ae6b4" }}>Worship</div>
-                    <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.5 }}>
+                  <div className="deity-section-spacing">
+                    <div className="deity-section-heading">Worship</div>
+                    <ul className="deity-list-tight">
                       {deity.worship.map((action) => (
                         <li key={action.name}>
-                          <strong>{action.name}</strong> ({action.type}) — {" "}
+                          <strong>{action.name}</strong> ({action.type}) —{" "}
                           {action.type === "passive"
                             ? `${3 * spiritualAttribute} DR when conditions met`
                             : `${action.value ?? 0} × Spiritual (${(action.value ?? 0) * spiritualAttribute} DR)`}
@@ -495,10 +496,10 @@ export const DeityRelationshipPage: React.FC = () => {
                       ))}
                     </ul>
                   </div>
-                  <div style={{ marginTop: "0.35rem" }}>
-                    <div style={{ fontSize: 13, color: "#9ae6b4" }}>Divine Interventions</div>
+                  <div className="deity-section-spacing">
+                    <div className="deity-section-heading">Divine Interventions</div>
                     {Array.isArray(deity.divineInterventions) ? (
-                      <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.5 }}>
+                      <ul className="deity-list-tight">
                         {deity.divineInterventions.map((spell) => (
                           <li key={spell.spell}>
                             <strong>{spell.spell}:</strong> {spell.effect}
@@ -506,7 +507,7 @@ export const DeityRelationshipPage: React.FC = () => {
                         ))}
                       </ul>
                     ) : (
-                      <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", color: "#ccc", lineHeight: 1.5 }}>
+                      <ul className="deity-list-tight">
                         <li>
                           Choose {deity.divineInterventions.choose} from: {deity.divineInterventions.options.join(", ")}
                         </li>
