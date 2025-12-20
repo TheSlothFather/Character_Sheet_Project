@@ -6,23 +6,7 @@ import {
   type CampaignCombatant,
   type BestiaryEntry as ApiBestiaryEntry
 } from "../../api/gm";
-
-const cardStyle: React.CSSProperties = {
-  background: "#0f131a",
-  border: "1px solid #1f2935",
-  borderRadius: 12,
-  padding: "1rem"
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.6rem 0.75rem",
-  borderRadius: 8,
-  border: "1px solid #2f3542",
-  background: "#0b1017",
-  color: "#e5e7eb",
-  boxSizing: "border-box"
-};
+import "./CombatPage.css";
 
 type CombatFaction = "ally" | "enemy";
 
@@ -243,24 +227,24 @@ export const CombatPage: React.FC = () => {
   const enemies = filteredEntries.filter((entry) => entry.faction === "enemy");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="gm-combat">
       <header>
-        <h2 style={{ margin: 0 }}>Combat</h2>
-        <p style={{ margin: "0.25rem 0 0", color: "#cbd5e1" }}>
+        <h2 className="gm-combat__title">Combat</h2>
+        <p className="gm-combat__subtitle">
           Track active combatants and mark allies versus enemies in the current scene.
         </p>
       </header>
 
-      <section style={cardStyle}>
-        <div style={{ display: "grid", gap: "0.75rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "0.75rem" }}>
+      <section className="gm-combat__card">
+        <div className="gm-combat__stack">
+          <div className="gm-combat__filters">
             {!campaignId && (
-              <label style={{ display: "grid", gap: "0.35rem" }}>
-                <span style={{ fontWeight: 700 }}>Campaign</span>
+              <label className="gm-combat__field">
+                <span className="gm-combat__label">Campaign</span>
                 <select
                   value={selectedCampaignId}
                   onChange={(event) => setSelectedCampaignId(event.target.value)}
-                  style={inputStyle}
+                  className="gm-combat__input"
                 >
                   {campaigns.length === 0 ? (
                     <option value="">No campaigns</option>
@@ -274,45 +258,28 @@ export const CombatPage: React.FC = () => {
                 </select>
               </label>
             )}
-            <label style={{ display: "grid", gap: "0.35rem", alignSelf: "end" }}>
-              <span style={{ fontWeight: 700 }}>View</span>
+            <label className="gm-combat__field gm-combat__field--end">
+              <span className="gm-combat__label">View</span>
               <button
                 type="button"
                 onClick={() => setShowInactive((prev) => !prev)}
-                style={{
-                  padding: "0.55rem 0.9rem",
-                  borderRadius: 8,
-                  border: "1px solid #2f3542",
-                  background: showInactive ? "#1f2935" : "#111827",
-                  color: "#e5e7eb",
-                  fontWeight: 600,
-                  cursor: "pointer"
-                }}
+                className={`gm-combat__toggle${showInactive ? " gm-combat__toggle--active" : ""}`}
               >
                 {showInactive ? "Hide inactive" : "Show inactive"}
               </button>
             </label>
           </div>
-          {error && <div style={{ color: "#fca5a5" }}>{error}</div>}
-          {loading && <div style={{ color: "#94a3b8" }}>Loading combat roster...</div>}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center" }}>
-            <span style={{ color: "#94a3b8", fontSize: 13 }}>
+          {error && <div className="gm-combat__message gm-combat__message--error">{error}</div>}
+          {loading && <div className="gm-combat__message gm-combat__message--loading">Loading combat roster...</div>}
+          <div className="gm-combat__bulk">
+            <span className="gm-combat__bulk-status">
               Selected: {selectedIds.size} | Active: {combatants.filter((entry) => entry.isActive).length}
             </span>
             <button
               type="button"
               onClick={() => updateSelectedStatus(true)}
               disabled={selectedIds.size === 0 || bulkUpdating}
-              style={{
-                padding: "0.45rem 0.8rem",
-                borderRadius: 8,
-                border: "1px solid #16a34a",
-                background: "#166534",
-                color: "#dcfce7",
-                fontWeight: 600,
-                cursor: selectedIds.size === 0 || bulkUpdating ? "not-allowed" : "pointer",
-                opacity: selectedIds.size === 0 || bulkUpdating ? 0.6 : 1
-              }}
+              className="gm-combat__bulk-button gm-combat__bulk-button--active"
             >
               Set Active
             </button>
@@ -320,16 +287,7 @@ export const CombatPage: React.FC = () => {
               type="button"
               onClick={() => updateSelectedStatus(false)}
               disabled={selectedIds.size === 0 || bulkUpdating}
-              style={{
-                padding: "0.45rem 0.8rem",
-                borderRadius: 8,
-                border: "1px solid #7c2d12",
-                background: "#3f1d12",
-                color: "#fed7aa",
-                fontWeight: 600,
-                cursor: selectedIds.size === 0 || bulkUpdating ? "not-allowed" : "pointer",
-                opacity: selectedIds.size === 0 || bulkUpdating ? 0.6 : 1
-              }}
+              className="gm-combat__bulk-button gm-combat__bulk-button--inactive"
             >
               Set Inactive
             </button>
@@ -337,12 +295,12 @@ export const CombatPage: React.FC = () => {
         </div>
       </section>
 
-      <section style={cardStyle}>
-        <h3 style={{ marginTop: 0 }}>Add Combatant</h3>
-        <form onSubmit={handleAddCombatant} style={{ display: "grid", gap: "0.75rem" }}>
-          <label style={{ display: "grid", gap: "0.35rem" }}>
-            <span style={{ fontWeight: 700 }}>Bestiary Entry</span>
-            <select value={addingId} onChange={(event) => setAddingId(event.target.value)} style={inputStyle}>
+      <section className="gm-combat__card">
+        <h3 className="gm-combat__card-title">Add Combatant</h3>
+        <form onSubmit={handleAddCombatant} className="gm-combat__form">
+          <label className="gm-combat__field">
+            <span className="gm-combat__label">Bestiary Entry</span>
+            <select value={addingId} onChange={(event) => setAddingId(event.target.value)} className="gm-combat__input">
               <option value="">Select an entry</option>
               {bestiaryEntries.map((entry) => (
                 <option key={entry.id} value={entry.id}>
@@ -351,24 +309,24 @@ export const CombatPage: React.FC = () => {
               ))}
             </select>
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem" }}>
-            <label style={{ display: "grid", gap: "0.35rem" }}>
-              <span style={{ fontWeight: 700 }}>Faction</span>
+          <div className="gm-combat__grid">
+            <label className="gm-combat__field">
+              <span className="gm-combat__label">Faction</span>
               <select
                 value={addingFaction}
                 onChange={(event) => setAddingFaction(event.target.value as CombatFaction)}
-                style={inputStyle}
+                className="gm-combat__input"
               >
                 <option value="ally">Ally</option>
                 <option value="enemy">Enemy</option>
               </select>
             </label>
-            <label style={{ display: "grid", gap: "0.35rem" }}>
-              <span style={{ fontWeight: 700 }}>Active</span>
+            <label className="gm-combat__field">
+              <span className="gm-combat__label">Active</span>
               <select
                 value={addingActive ? "active" : "inactive"}
                 onChange={(event) => setAddingActive(event.target.value === "active")}
-                style={inputStyle}
+                className="gm-combat__input"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -378,41 +336,25 @@ export const CombatPage: React.FC = () => {
           <button
             type="submit"
             disabled={!addingId}
-            style={{
-              padding: "0.6rem 0.9rem",
-              borderRadius: 8,
-              border: "1px solid #1d4ed8",
-              background: "#2563eb",
-              color: "#e6edf7",
-              fontWeight: 700,
-              width: "fit-content",
-              cursor: addingId ? "pointer" : "not-allowed",
-              opacity: addingId ? 1 : 0.6
-            }}
+            className="gm-combat__button gm-combat__button--primary"
           >
             Add Combatant
           </button>
         </form>
       </section>
 
-      <section style={{ display: "grid", gap: "1rem" }}>
+      <section className="gm-combat__groups">
         {[{ title: "Allies", data: allies }, { title: "Enemies", data: enemies }].map((group) => (
-          <div key={group.title} style={cardStyle}>
-            <h3 style={{ marginTop: 0 }}>{group.title}</h3>
+          <div key={group.title} className="gm-combat__card">
+            <h3 className="gm-combat__card-title">{group.title}</h3>
             {group.data.length === 0 ? (
-              <p style={{ margin: 0, color: "#94a3b8" }}>No {group.title.toLowerCase()} to show.</p>
+              <p className="gm-combat__muted">No {group.title.toLowerCase()} to show.</p>
             ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gap: "0.75rem",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))"
-                }}
-              >
+              <div className="gm-combat__entries">
                 {group.data.map((entry) => {
                   const isSelected = selectedIds.has(entry.id);
                   const isUpdating = updatingIds.includes(entry.id) || bulkUpdating;
-                  const statusColor = entry.isActive ? "#9ae6b4" : "#fbbf24";
+                  const statusClass = entry.isActive ? "gm-combat__status--active" : "gm-combat__status--inactive";
                   const energyCurrent = fallbackNumber(entry.energyCurrent);
                   const apCurrent = fallbackNumber(entry.apCurrent);
                   const energyMax = entry.energyMax ?? null;
@@ -426,32 +368,25 @@ export const CombatPage: React.FC = () => {
                   return (
                     <div
                       key={entry.id}
-                      style={{
-                        border: "1px solid #1f2935",
-                        borderRadius: 12,
-                        padding: "0.75rem",
-                        background: isSelected ? "#111827" : "#0c111a",
-                        display: "grid",
-                        gap: "0.6rem"
-                      }}
+                      className={`gm-combat__entry${isSelected ? " gm-combat__entry--selected" : ""}`}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
-                        <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <div className="gm-combat__entry-header">
+                        <label className="gm-combat__entry-label">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelection(entry.id)}
                             disabled={isUpdating}
                           />
-                          <span style={{ fontWeight: 700 }}>{entry.name}</span>
+                          <span className="gm-combat__entry-title">{entry.name}</span>
                         </label>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: statusColor }}>
+                        <span className={`gm-combat__status ${statusClass}`}>
                           {entry.isActive ? "Active" : "Inactive"}
                         </span>
                       </div>
                       {entry.isActive && (
-                        <div style={{ display: "grid", gap: "0.35rem", color: "#cbd5e1", fontSize: 13 }}>
-                          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                        <div className="gm-combat__entry-stats">
+                          <div className="gm-combat__stat-row">
                             <span>
                               <strong>Energy:</strong> {energyCurrent}
                               {energyMax !== null ? ` / ${energyMax}` : ""}
@@ -464,35 +399,35 @@ export const CombatPage: React.FC = () => {
                               <strong>Tier:</strong> {tier > 0 ? tier : "—"}
                             </span>
                           </div>
-                          <span style={{ color: "#94a3b8" }}>Formula: energy gain = AP × Tier × 3</span>
+                          <span className="gm-combat__formula">Formula: energy gain = AP × Tier × 3</span>
                         </div>
                       )}
-                      <label style={{ display: "grid", gap: "0.35rem" }}>
-                        <span style={{ fontSize: 12, color: "#94a3b8" }}>Faction</span>
+                      <label className="gm-combat__field">
+                        <span className="gm-combat__hint">Faction</span>
                         <select
                           value={entry.faction}
                           onChange={(event) => updateCombatant(entry.id, { faction: event.target.value })}
-                          style={inputStyle}
+                          className="gm-combat__input"
                           disabled={isUpdating}
                         >
                           <option value="ally">Ally</option>
                           <option value="enemy">Enemy</option>
                         </select>
                       </label>
-                      <label style={{ display: "grid", gap: "0.35rem" }}>
-                        <span style={{ fontSize: 12, color: "#94a3b8" }}>Combat status</span>
+                      <label className="gm-combat__field">
+                        <span className="gm-combat__hint">Combat status</span>
                         <select
                           value={entry.isActive ? "active" : "inactive"}
                           onChange={(event) => updateCombatant(entry.id, { isActive: event.target.value === "active" })}
-                          style={inputStyle}
+                          className="gm-combat__input"
                           disabled={isUpdating}
                         >
                           <option value="active">Active</option>
                           <option value="inactive">Inactive</option>
                         </select>
                       </label>
-                      <label style={{ display: "grid", gap: "0.35rem" }}>
-                        <span style={{ fontSize: 12, color: "#94a3b8" }}>Initiative</span>
+                      <label className="gm-combat__field">
+                        <span className="gm-combat__hint">Initiative</span>
                         <input
                           type="number"
                           value={entry.initiative ?? ""}
@@ -501,13 +436,13 @@ export const CombatPage: React.FC = () => {
                               initiative: event.target.value === "" ? null : Number(event.target.value)
                             })
                           }
-                          style={inputStyle}
+                          className="gm-combat__input"
                           disabled={isUpdating}
                         />
                       </label>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.5rem" }}>
-                        <label style={{ display: "grid", gap: "0.35rem" }}>
-                          <span style={{ fontSize: 12, color: "#94a3b8" }}>Energy</span>
+                      <div className="gm-combat__metrics">
+                        <label className="gm-combat__field">
+                          <span className="gm-combat__hint">Energy</span>
                           <input
                             type="number"
                             value={entry.energyCurrent ?? ""}
@@ -516,12 +451,12 @@ export const CombatPage: React.FC = () => {
                                 energyCurrent: event.target.value === "" ? null : Number(event.target.value)
                               })
                             }
-                            style={inputStyle}
+                            className="gm-combat__input"
                             disabled={isUpdating}
                           />
                         </label>
-                        <label style={{ display: "grid", gap: "0.35rem" }}>
-                          <span style={{ fontSize: 12, color: "#94a3b8" }}>AP</span>
+                        <label className="gm-combat__field">
+                          <span className="gm-combat__hint">AP</span>
                           <input
                             type="number"
                             value={entry.apCurrent ?? ""}
@@ -530,37 +465,28 @@ export const CombatPage: React.FC = () => {
                                 apCurrent: event.target.value === "" ? null : Number(event.target.value)
                               })
                             }
-                            style={inputStyle}
+                            className="gm-combat__input"
                             disabled={isUpdating}
                           />
                         </label>
                       </div>
                       {entry.isActive && (
-                        <div style={{ display: "grid", gap: "0.5rem", padding: "0.6rem", borderRadius: 10, border: "1px solid #1f2935" }}>
-                          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+                        <div className="gm-combat__active-panel">
+                          <div className="gm-combat__turn-row">
                             <button
                               type="button"
                               onClick={() => handleStartTurn(entry)}
                               disabled={isUpdating || apCurrent <= 0 || tier <= 0}
-                              style={{
-                                padding: "0.45rem 0.8rem",
-                                borderRadius: 8,
-                                border: "1px solid #2563eb",
-                                background: "#1d4ed8",
-                                color: "#e0f2fe",
-                                fontWeight: 700,
-                                cursor: isUpdating || apCurrent <= 0 || tier <= 0 ? "not-allowed" : "pointer",
-                                opacity: isUpdating || apCurrent <= 0 || tier <= 0 ? 0.6 : 1
-                              }}
+                              className="gm-combat__action-button gm-combat__action-button--start"
                             >
                               Start Turn
                             </button>
-                            <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                            <span className="gm-combat__hint">
                               Gain {startTurnGain} energy = {apCurrent} × {tier || "?"} × 3
                             </span>
                           </div>
-                          <div style={{ display: "grid", gap: "0.45rem" }}>
-                            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+                          <div className="gm-combat__turn-stack">
+                            <div className="gm-combat__turn-row">
                               <input
                                 type="number"
                                 min={0}
@@ -573,41 +499,31 @@ export const CombatPage: React.FC = () => {
                                   }))
                                 }
                                 placeholder="AP to spend"
-                                style={{ ...inputStyle, width: 140 }}
+                                className="gm-combat__input gm-combat__input--compact"
                                 disabled={isUpdating || apCurrent <= 0 || tier <= 0}
                               />
                               <button
                                 type="button"
                                 onClick={() => handleEndTurn(entry)}
                                 disabled={isUpdating || apCurrent <= 0 || tier <= 0 || clampedSpend <= 0}
-                                style={{
-                                  padding: "0.45rem 0.8rem",
-                                  borderRadius: 8,
-                                  border: "1px solid #a855f7",
-                                  background: "#6b21a8",
-                                  color: "#f5d0fe",
-                                  fontWeight: 700,
-                                  cursor:
-                                    isUpdating || apCurrent <= 0 || tier <= 0 || clampedSpend <= 0 ? "not-allowed" : "pointer",
-                                  opacity: isUpdating || apCurrent <= 0 || tier <= 0 || clampedSpend <= 0 ? 0.6 : 1
-                                }}
+                                className="gm-combat__action-button gm-combat__action-button--end"
                               >
                                 End Turn
                               </button>
                             </div>
-                            <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                            <span className="gm-combat__hint">
                               Spend {clampedSpend} AP → gain {endTurnGain} energy = {clampedSpend} × {tier || "?"} × 3
                             </span>
                           </div>
                         </div>
                       )}
-                      <label style={{ display: "grid", gap: "0.35rem" }}>
-                        <span style={{ fontSize: 12, color: "#94a3b8" }}>Notes</span>
+                      <label className="gm-combat__field">
+                        <span className="gm-combat__hint">Notes</span>
                         <textarea
                           value={entry.notes ?? ""}
                           onChange={(event) => updateCombatant(entry.id, { notes: event.target.value })}
                           rows={2}
-                          style={{ ...inputStyle, resize: "vertical" }}
+                          className="gm-combat__input gm-combat__input--textarea"
                           disabled={isUpdating}
                         />
                       </label>
