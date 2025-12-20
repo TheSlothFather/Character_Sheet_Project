@@ -1,0 +1,130 @@
+.npc-hub {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.npc-hub__title {
+  margin: 0;
+}
+
+.npc-hub__subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+.npc-hub__card {
+  background: var(--surface-1);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-4);
+}
+
+.npc-hub__card-title {
+  margin-top: 0;
+}
+
+.npc-hub__form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.npc-hub__field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.npc-hub__label {
+  font-weight: 700;
+}
+
+.npc-hub__input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--border-radius-md);
+  border: var(--border-width) solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  box-sizing: border-box;
+}
+
+.npc-hub__input--textarea {
+  resize: vertical;
+}
+
+.npc-hub__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.npc-hub__button {
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--border-radius-md);
+  border: var(--border-width) solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.npc-hub__button--primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 700;
+}
+
+.npc-hub__button--danger {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 35%, var(--surface-2));
+  color: var(--text);
+}
+
+.npc-hub__muted {
+  color: var(--muted);
+  margin: 0;
+}
+
+.npc-hub__list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.npc-hub__item {
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--border-radius-md);
+  padding: 0.75rem;
+  background: var(--surface-2);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.npc-hub__item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.npc-hub__item-title {
+  font-weight: 700;
+}
+
+.npc-hub__item-meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.npc-hub__status {
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.npc-hub__notes {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+}

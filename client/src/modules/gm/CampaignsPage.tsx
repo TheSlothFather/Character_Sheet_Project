@@ -1,41 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { gmApi, type Campaign, type CampaignInvite } from "../../api/gm";
-
-const cardStyle: React.CSSProperties = {
-  background: "#0f131a",
-  border: "1px solid #1f2935",
-  borderRadius: 12,
-  padding: "1rem"
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.6rem 0.75rem",
-  borderRadius: 8,
-  border: "1px solid #2f3542",
-  background: "#0b1017",
-  color: "#e5e7eb",
-  boxSizing: "border-box"
-};
+import "./CampaignsPage.css";
 
 const buildInviteLink = (inviteCode: string) => {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://adurun.app";
   return `${origin}/join/${inviteCode}`;
-};
-
-const linkButtonStyle: React.CSSProperties = {
-  padding: "0.45rem 0.8rem",
-  borderRadius: 8,
-  border: "1px solid #1d4ed8",
-  background: "#2563eb",
-  color: "#e6edf7",
-  fontWeight: 600,
-  cursor: "pointer",
-  textDecoration: "none",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center"
 };
 
 export const CampaignsPage: React.FC = () => {
@@ -149,126 +119,83 @@ export const CampaignsPage: React.FC = () => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div className="gm-campaigns">
       <header>
-        <h2 style={{ margin: 0 }}>Campaigns</h2>
-        <p style={{ margin: "0.25rem 0 0", color: "#cbd5e1" }}>
+        <h2 className="gm-campaigns__title">Campaigns</h2>
+        <p className="gm-campaigns__subtitle">
           Create a campaign and share an invite link with players.
         </p>
       </header>
 
-      <section style={cardStyle}>
-        <h3 style={{ marginTop: 0 }}>Create Campaign</h3>
-        <form onSubmit={handleCreate} style={{ display: "grid", gap: "0.75rem" }}>
-          <label style={{ display: "grid", gap: "0.35rem" }}>
-            <span style={{ fontWeight: 700 }}>Campaign Name</span>
+      <section className="gm-campaigns__card">
+        <h3 className="gm-campaigns__card-title">Create Campaign</h3>
+        <form onSubmit={handleCreate} className="gm-campaigns__form">
+          <label className="gm-campaigns__field">
+            <span className="gm-campaigns__label">Campaign Name</span>
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Crimson Coast"
-              style={inputStyle}
+              className="gm-campaigns__input"
             />
           </label>
           <button
             type="submit"
-            style={{
-              padding: "0.6rem 0.9rem",
-              borderRadius: 8,
-              border: "1px solid #1d4ed8",
-              background: "#2563eb",
-              color: "#e6edf7",
-              fontWeight: 700,
-              width: "fit-content",
-              cursor: "pointer"
-            }}
+            className="gm-campaigns__button gm-campaigns__button--primary"
           >
             Create Campaign
           </button>
         </form>
       </section>
 
-      <section style={cardStyle}>
-        <h3 style={{ marginTop: 0 }}>Active Campaigns</h3>
-        {error && <div style={{ marginBottom: 8, color: "#fca5a5" }}>{error}</div>}
-        {copyNotice && <div style={{ marginBottom: 8, color: "#9ae6b4" }}>{copyNotice}</div>}
+      <section className="gm-campaigns__card">
+        <h3 className="gm-campaigns__card-title">Active Campaigns</h3>
+        {error && <div className="gm-campaigns__message gm-campaigns__message--error">{error}</div>}
+        {copyNotice && <div className="gm-campaigns__message gm-campaigns__message--success">{copyNotice}</div>}
         {loading ? (
-          <p style={{ color: "#94a3b8", margin: 0 }}>Loading campaigns...</p>
+          <p className="gm-campaigns__muted">Loading campaigns...</p>
         ) : campaigns.length === 0 ? (
-          <p style={{ color: "#94a3b8", margin: 0 }}>No campaigns yet. Create one above.</p>
+          <p className="gm-campaigns__muted">No campaigns yet. Create one above.</p>
         ) : (
-          <div style={{ display: "grid", gap: "0.75rem" }}>
+          <div className="gm-campaigns__list">
             {campaigns.map((campaign) => {
               const invite = inviteByCampaign[campaign.id];
               const link = invite ? buildInviteLink(invite.token) : null;
               return (
-                <div
-                  key={campaign.id}
-                  style={{
-                    border: "1px solid #1f2935",
-                    borderRadius: 10,
-                    padding: "0.75rem",
-                    background: "#0c111a",
-                    display: "grid",
-                    gap: "0.5rem"
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem" }}>
+                <div key={campaign.id} className="gm-campaigns__item">
+                  <div className="gm-campaigns__item-header">
                     <div>
-                      <div style={{ fontWeight: 700 }}>{campaign.name}</div>
+                      <div className="gm-campaigns__item-title">{campaign.name}</div>
                       {campaign.createdAt && (
-                        <div style={{ color: "#9ca3af", fontSize: 13 }}>
+                        <div className="gm-campaigns__item-meta">
                           Created {new Date(campaign.createdAt).toLocaleDateString()}
                         </div>
                       )}
                     </div>
-                    <span style={{ color: "#9ae6b4", fontSize: 12, fontWeight: 700 }}>
+                    <span className="gm-campaigns__status">
                       {invite ? "INVITE READY" : "NO INVITE"}
                     </span>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "0.5rem",
-                      alignItems: "center",
-                      fontSize: 13
-                    }}
-                  >
-                    <span style={{ color: "#9ca3af" }}>Invite Link:</span>
-                    <span style={{ color: "#e5e7eb" }}>{link ?? "Generate an invite to share."}</span>
+                  <div className="gm-campaigns__invite-row">
+                    <span className="gm-campaigns__invite-label">Invite Link:</span>
+                    <span className="gm-campaigns__invite-value">{link ?? "Generate an invite to share."}</span>
                   </div>
-                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                    <Link to={`/gm/campaigns/${campaign.id}`} style={linkButtonStyle}>
+                  <div className="gm-campaigns__actions">
+                    <Link to={`/gm/campaigns/${campaign.id}`} className="gm-campaigns__button gm-campaigns__button--primary">
                       Open Campaign
                     </Link>
                     <button
                       type="button"
                       onClick={() => link && handleCopy(link)}
                       disabled={!link}
-                      style={{
-                        padding: "0.45rem 0.8rem",
-                        borderRadius: 8,
-                        border: "1px solid #2b3747",
-                        background: "#1f2935",
-                        color: "#e5e7eb",
-                        fontWeight: 600,
-                        cursor: "pointer"
-                      }}
+                      className="gm-campaigns__button gm-campaigns__button--neutral"
                     >
                       Copy Link
                     </button>
                     <button
                       type="button"
                       onClick={() => handleRotateLink(campaign.id)}
-                      style={{
-                        padding: "0.45rem 0.8rem",
-                        borderRadius: 8,
-                        border: "1px solid #3f2b2b",
-                        background: "#2c1515",
-                        color: "#fecaca",
-                        fontWeight: 600,
-                        cursor: "pointer"
-                      }}
+                      className="gm-campaigns__button gm-campaigns__button--danger"
                     >
                       Regenerate Link
                     </button>
@@ -276,15 +203,7 @@ export const CampaignsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleCreateInvite(campaign.id)}
-                        style={{
-                          padding: "0.45rem 0.8rem",
-                          borderRadius: 8,
-                          border: "1px solid #1d4ed8",
-                          background: "#2563eb",
-                          color: "#e6edf7",
-                          fontWeight: 600,
-                          cursor: "pointer"
-                        }}
+                        className="gm-campaigns__button gm-campaigns__button--primary"
                       >
                         Create Invite
                       </button>
