@@ -242,6 +242,52 @@ async function createTables(client: Client): Promise<void> {
       slug TEXT PRIMARY KEY,
       payload JSONB NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS character_status_effects (
+      id SERIAL PRIMARY KEY,
+      character_id TEXT NOT NULL,
+      status_key TEXT NOT NULL,
+      duration_type TEXT,
+      duration_remaining INTEGER,
+      stacks INTEGER NOT NULL DEFAULT 1,
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE(character_id, status_key)
+    );
+
+    CREATE TABLE IF NOT EXISTS character_wounds (
+      id SERIAL PRIMARY KEY,
+      character_id TEXT NOT NULL,
+      wound_type TEXT NOT NULL,
+      wound_count INTEGER NOT NULL DEFAULT 0,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE(character_id, wound_type)
+    );
+
+    CREATE TABLE IF NOT EXISTS campaign_combatant_status_effects (
+      id SERIAL PRIMARY KEY,
+      campaign_id TEXT NOT NULL,
+      combatant_id TEXT NOT NULL,
+      status_key TEXT NOT NULL,
+      duration_type TEXT,
+      duration_remaining INTEGER,
+      stacks INTEGER NOT NULL DEFAULT 1,
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE(combatant_id, status_key)
+    );
+
+    CREATE TABLE IF NOT EXISTS campaign_combatant_wounds (
+      id SERIAL PRIMARY KEY,
+      campaign_id TEXT NOT NULL,
+      combatant_id TEXT NOT NULL,
+      wound_type TEXT NOT NULL,
+      wound_count INTEGER NOT NULL DEFAULT 0,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE(combatant_id, wound_type)
+    );
   `);
 }
 
