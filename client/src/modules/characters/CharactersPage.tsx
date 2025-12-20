@@ -969,9 +969,9 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
   return (
     <div className="page characters-page">
       <header className="page__header characters-page__header">
-        <h2 className="characters-page__title">Characters</h2>
+        <h2 className="characters-page__title h2">Characters</h2>
         {(definitionsError || error) && (
-          <p className="characters-page__error">{definitionsError || error}</p>
+          <p className="characters-page__error body">{definitionsError || error}</p>
         )}
       </header>
       <main className="page__content">
@@ -1013,8 +1013,10 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
               {levelUpdatingId === selectedId ? "Leveling..." : "Level Up"}
             </button>
           </div>
-          {loadingAny && <p className="characters-page__status">Loading sheet...</p>}
-          {!loadingAny && !selectedCharacter && <p className="characters-page__status">Select a character to view the sheet.</p>}
+          {loadingAny && <p className="characters-page__status body muted">Loading sheet...</p>}
+          {!loadingAny && !selectedCharacter && (
+            <p className="characters-page__status body muted">Select a character to view the sheet.</p>
+          )}
           {!loadingAny && selectedCharacter && definitions && (
             <CharacterSheet
               character={selectedCharacter}

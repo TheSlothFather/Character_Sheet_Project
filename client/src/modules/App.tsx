@@ -32,14 +32,14 @@ const ThemeToggle: React.FC = () => {
 
   return (
     <div className="app-theme-toggle">
-      <label htmlFor="theme-toggle" className="app-theme-toggle__label">
+      <label htmlFor="theme-toggle" className="app-theme-toggle__label caption">
         Theme
       </label>
       <select
         id="theme-toggle"
         value={theme}
         onChange={(event) => setTheme(event.target.value as "parchment" | "dark-fantasy")}
-        className="select app-theme-toggle__select"
+        className="select app-theme-toggle__select caption"
       >
         <option value="parchment">Parchment</option>
         <option value="dark-fantasy">Dark Fantasy</option>
@@ -52,8 +52,8 @@ const StartPage: React.FC = () => {
   return (
     <div className="app-start">
       <div className="app-start__content">
-        <h1 className="app-start__title">Adûrun Builder</h1>
-        <p className="app-start__subtitle">
+        <h1 className="app-start__title h1">Adûrun Builder</h1>
+        <p className="app-start__subtitle subtitle muted">
           Choose your role to launch the correct workspace.
         </p>
         <div className="app-start__actions">
@@ -91,7 +91,7 @@ const PlayerApp: React.FC = () => {
   return (
     <div className="app-shell">
       <nav className="app-shell__nav">
-        <h1 className="app-shell__title">Adûrun Builder</h1>
+        <h1 className="app-shell__title h2">Adûrun Builder</h1>
         <NavLink
           to="/player/characters"
           className={({ isActive }) => (isActive ? "app-shell__link app-shell__link--active" : "app-shell__link")}

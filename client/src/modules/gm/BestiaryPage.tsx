@@ -688,17 +688,17 @@ export const BestiaryPage: React.FC = () => {
   return (
     <div className={styles.root}>
       <header className={styles.header}>
-        <h2 className={styles.title}>Bestiary</h2>
-        <p className={styles.subtitle}>Maintain monster entries with quick edit controls.</p>
+        <h2 className={`${styles.title} h2`}>Bestiary</h2>
+        <p className={`${styles.subtitle} subtitle muted`}>Maintain monster entries with quick edit controls.</p>
       </header>
 
-      {error && <div className={styles.error}>{error}</div>}
-      {loading && <div className={styles.loading}>Loading...</div>}
+      {error && <div className={`${styles.error} body`}>{error}</div>}
+      {loading && <div className={`${styles.loading} body muted`}>Loading...</div>}
 
       <div className={styles.mainLayout}>
         <section className={`${styles.card} ${styles.sidebar}`}>
           <div className={styles.rowBetween}>
-            <h3 className={styles.title}>Creatures</h3>
+            <h3 className={`${styles.title} h3`}>Creatures</h3>
             <button type="button" onClick={startCreate} className={styles.primaryButton}>
               New
             </button>

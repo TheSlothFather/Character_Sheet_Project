@@ -2,10 +2,6 @@
   color: var(--text);
 }
 
-.character-creation__title {
-  margin-bottom: 0.5rem;
-}
-
 .character-creation__error {
   color: var(--danger);
 }
@@ -60,13 +56,10 @@
 }
 
 .character-creation__section-title {
-  font-size: 12px;
-  color: var(--muted);
 }
 
 .character-creation__section-subtitle {
   font-weight: 700;
-  color: var(--text);
 }
 
 .character-creation__label {
@@ -351,7 +344,6 @@
 
 .character-creation__modal-subtitle {
   margin: 4px 0;
-  color: var(--muted);
 }
 
 .character-creation__modal-auto {

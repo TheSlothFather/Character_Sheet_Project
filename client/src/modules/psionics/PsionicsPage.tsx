@@ -1074,8 +1074,8 @@ export const PsionicsPage: React.FC = () => {
       <div className="psionics">
       <header className="psionics__header">
         <div>
-          <h1 className="psionics__title">Psionics</h1>
-          <p className="psionics__subtitle">Character: {selectedCharacter.name}</p>
+          <h1 className="psionics__title h1">Psionics</h1>
+          <p className="psionics__subtitle subtitle muted">Character: {selectedCharacter.name}</p>
         </div>
         <div className="psionics__metrics">
           <div className="psionics__metric">
@@ -1144,7 +1144,7 @@ export const PsionicsPage: React.FC = () => {
       <div className="psionics__content">
         {Array.from(trees.entries()).map(([treeName, layout]) => (
           <section key={treeName} className="psionics__tree-section">
-            <h2 className="psionics__tree-title">{treeName}</h2>
+            <h2 className="psionics__tree-title h2">{treeName}</h2>
             <SkillTree
               treeName={treeName}
               tiers={layout.tiers}
@@ -1160,7 +1160,7 @@ export const PsionicsPage: React.FC = () => {
       </div>
 
       <section className="psionics__unlocked">
-        <h2 className="psionics__tree-title">Unlocked Abilities</h2>
+        <h2 className="psionics__tree-title h2">Unlocked Abilities</h2>
         {Array.from(unlockedByTree.entries()).length === 0 ? (
           <p className="psionics__empty">No abilities unlocked yet.</p>
         ) : (
@@ -1170,7 +1170,7 @@ export const PsionicsPage: React.FC = () => {
                 key={`unlocked-${treeName}`}
                 className="psionics__unlocked-group"
               >
-                <h3 className="psionics__unlocked-title">{treeName}</h3>
+                <h3 className="psionics__unlocked-title h3">{treeName}</h3>
                 <div className="psionics__unlocked-items">
                   {list.map((ability) => {
                     const derived = ability.formula ? evaluateFormula(ability.formula, mentalAttribute) : null;

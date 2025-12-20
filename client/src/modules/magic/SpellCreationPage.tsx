@@ -81,8 +81,8 @@ export const SpellCreationPage: React.FC = () => {
     <div className="spell-creation">
       <header className="spell-creation__header">
         <div className="spell-creation__badge">Generator</div>
-        <h1 className="spell-creation__title">Automatic Spell Creation</h1>
-        <p className="spell-creation__subtitle">
+        <h1 className="spell-creation__title h1">Automatic Spell Creation</h1>
+        <p className="spell-creation__subtitle subtitle muted">
           Build fully composed spells from the Adûrun magic faculties. Choose intent, tiers, and resonance rules; the generator
           pulls tier text directly from the source document, applies aspect budgets, and returns an executable spell packet with
           statuses and costs.
@@ -91,7 +91,7 @@ export const SpellCreationPage: React.FC = () => {
 
       <div className="spell-creation__grid spell-creation__grid--primary">
         <section className="spell-creation__card">
-          <h2 className="spell-creation__card-title">Inputs</h2>
+          <h2 className="spell-creation__card-title h2">Inputs</h2>
           <div className="spell-creation__stack">
             <label className="spell-creation__field">
               <span>Primary Faculty</span>
@@ -194,7 +194,7 @@ export const SpellCreationPage: React.FC = () => {
         </section>
 
         <section className="spell-creation__card">
-          <h2 className="spell-creation__card-title spell-creation__card-title--tight">Generated Spell</h2>
+          <h2 className="spell-creation__card-title spell-creation__card-title--tight h2">Generated Spell</h2>
           {spell ? (
             <div>
               <div className="spell-creation__spell-name">{spell.name}</div>
@@ -273,7 +273,7 @@ export const SpellCreationPage: React.FC = () => {
 
       <div className="spell-creation__grid spell-creation__grid--secondary">
         <section className="spell-creation__card">
-          <h3 className="spell-creation__section-heading">Structured extraction</h3>
+          <h3 className="spell-creation__section-heading h3">Structured extraction</h3>
           <p className="spell-creation__paragraph">
             The generator parses tier text into a primary payload, an optional opposed ring, and a resonance block from a second faculty.
             It derives tags, statuses, and aspect scaling automatically so you can copy this packet directly into play materials.
@@ -297,7 +297,7 @@ export const SpellCreationPage: React.FC = () => {
         </section>
 
         <section className="spell-creation__card">
-          <h3 className="spell-creation__section-heading">Safeguards</h3>
+          <h3 className="spell-creation__section-heading h3">Safeguards</h3>
           <ul className="spell-creation__bullet-list spell-creation__bullet-list--spaced">
             {spell?.cautions.map((caution) => (
               <li key={caution} className="spell-creation__bullet-item">

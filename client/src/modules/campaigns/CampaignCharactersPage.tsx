@@ -8,15 +8,15 @@ export const CampaignCharactersPage: React.FC = () => {
   const navigate = useNavigate();
 
   if (!campaignId) {
-    return <div className="campaign-characters__error">Campaign ID missing.</div>;
+    return <div className="campaign-characters__error body">Campaign ID missing.</div>;
   }
 
   return (
     <div className="campaign-characters">
       <div className="campaign-characters__header">
         <div>
-          <h3 className="campaign-characters__title">Campaign Characters</h3>
-          <p className="campaign-characters__subtitle">
+          <h3 className="campaign-characters__title h2">Campaign Characters</h3>
+          <p className="campaign-characters__subtitle subtitle muted">
             Create and manage characters tied to this campaign only.
           </p>
         </div>

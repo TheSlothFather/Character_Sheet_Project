@@ -229,8 +229,8 @@ export const CombatPage: React.FC = () => {
   return (
     <div className="gm-combat">
       <header>
-        <h2 className="gm-combat__title">Combat</h2>
-        <p className="gm-combat__subtitle">
+        <h2 className="gm-combat__title h2">Combat</h2>
+        <p className="gm-combat__subtitle subtitle muted">
           Track active combatants and mark allies versus enemies in the current scene.
         </p>
       </header>
@@ -296,7 +296,7 @@ export const CombatPage: React.FC = () => {
       </section>
 
       <section className="gm-combat__card">
-        <h3 className="gm-combat__card-title">Add Combatant</h3>
+        <h3 className="gm-combat__card-title h3">Add Combatant</h3>
         <form onSubmit={handleAddCombatant} className="gm-combat__form">
           <label className="gm-combat__field">
             <span className="gm-combat__label">Bestiary Entry</span>
@@ -346,9 +346,9 @@ export const CombatPage: React.FC = () => {
       <section className="gm-combat__groups">
         {[{ title: "Allies", data: allies }, { title: "Enemies", data: enemies }].map((group) => (
           <div key={group.title} className="gm-combat__card">
-            <h3 className="gm-combat__card-title">{group.title}</h3>
+            <h3 className="gm-combat__card-title h3">{group.title}</h3>
             {group.data.length === 0 ? (
-              <p className="gm-combat__muted">No {group.title.toLowerCase()} to show.</p>
+              <p className="gm-combat__muted body muted">No {group.title.toLowerCase()} to show.</p>
             ) : (
               <div className="gm-combat__entries">
                 {group.data.map((entry) => {

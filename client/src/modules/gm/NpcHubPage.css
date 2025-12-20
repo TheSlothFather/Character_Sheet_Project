@@ -4,13 +4,8 @@
   gap: var(--space-4);
 }
 
-.npc-hub__title {
-  margin: 0;
-}
-
 .npc-hub__subtitle {
-  margin: 0.25rem 0 0;
-  color: var(--muted);
+  margin: 0;
 }
 
 .npc-hub__card {
@@ -18,10 +13,6 @@
   border: var(--border-width) solid var(--border);
   border-radius: var(--border-radius-lg);
   padding: var(--space-4);
-}
-
-.npc-hub__card-title {
-  margin-top: 0;
 }
 
 .npc-hub__form {
@@ -83,7 +74,6 @@
 }
 
 .npc-hub__muted {
-  color: var(--muted);
   margin: 0;
 }
 

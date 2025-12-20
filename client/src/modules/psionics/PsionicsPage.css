@@ -20,13 +20,8 @@
   gap: 1rem;
 }
 
-.psionics__title {
-  margin: 0;
-}
-
 .psionics__subtitle {
-  margin: 0.2rem 0;
-  color: var(--muted);
+  margin: 0;
 }
 
 .psionics__metrics {
@@ -139,12 +134,6 @@
   padding: 1rem;
 }
 
-.psionics__tree-title {
-  margin-top: 0;
-  margin-bottom: 0.75rem;
-  color: var(--text);
-}
-
 .psionics__empty {
   color: var(--muted);
   margin: 0;
@@ -161,11 +150,6 @@
   border-radius: var(--border-radius-lg);
   padding: 0.75rem;
   background: var(--surface-2);
-}
-
-.psionics__unlocked-title {
-  margin: 0 0 0.5rem;
-  color: #dce7ff;
 }
 
 .psionics__unlocked-items {

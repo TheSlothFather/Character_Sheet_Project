@@ -4,13 +4,8 @@
   gap: var(--space-4);
 }
 
-.gm-player-characters__title {
-  margin: 0;
-}
-
 .gm-player-characters__subtitle {
-  margin: 0.25rem 0 0;
-  color: var(--muted);
+  margin: 0;
 }
 
 .gm-player-characters__error {
@@ -41,17 +36,7 @@
   margin-bottom: 8px;
 }
 
-.gm-player-characters__card-title {
-  margin: 0;
-}
-
-.gm-player-characters__loading {
-  color: var(--muted);
-  font-size: 12px;
-}
-
 .gm-player-characters__muted {
-  color: var(--muted);
   margin: 0;
 }
 
@@ -96,10 +81,6 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-3);
-}
-
-.gm-player-characters__details-title {
-  margin: 0;
 }
 
 .gm-player-characters__details-meta {

@@ -4,13 +4,8 @@
   gap: var(--space-4);
 }
 
-.gm-combat__title {
-  margin: 0;
-}
-
 .gm-combat__subtitle {
-  margin: 0.25rem 0 0;
-  color: var(--muted);
+  margin: 0;
 }
 
 .gm-combat__card {
@@ -18,10 +13,6 @@
   border: var(--border-width) solid var(--border);
   border-radius: var(--border-radius-lg);
   padding: var(--space-4);
-}
-
-.gm-combat__card-title {
-  margin-top: 0;
 }
 
 .gm-combat__stack {

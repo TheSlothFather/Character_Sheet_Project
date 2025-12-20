@@ -66,22 +66,22 @@ export const PlayerCharactersPage: React.FC = () => {
   return (
     <div className="gm-player-characters">
       <header>
-        <h2 className="gm-player-characters__title">Player Characters</h2>
-        <p className="gm-player-characters__subtitle">
+        <h2 className="gm-player-characters__title h2">Player Characters</h2>
+        <p className="gm-player-characters__subtitle subtitle muted">
           Review player character sheets without switching to the player UI.
         </p>
       </header>
 
-      {error && <div className="gm-player-characters__error">{error}</div>}
+      {error && <div className="gm-player-characters__error body">{error}</div>}
 
       <div className="gm-player-characters__layout">
         <section className="gm-player-characters__card">
           <div className="gm-player-characters__card-header">
-            <h3 className="gm-player-characters__card-title">Characters</h3>
-            {loading && <span className="gm-player-characters__loading">Loading...</span>}
+            <h3 className="gm-player-characters__card-title h3">Characters</h3>
+            {loading && <span className="gm-player-characters__loading caption muted">Loading...</span>}
           </div>
           {characters.length === 0 && !loading ? (
-            <p className="gm-player-characters__muted">No characters found.</p>
+            <p className="gm-player-characters__muted body muted">No characters found.</p>
           ) : (
             <div className="gm-player-characters__list">
               {characters.map((character) => {
@@ -104,12 +104,12 @@ export const PlayerCharactersPage: React.FC = () => {
 
         <section className="gm-player-characters__card gm-player-characters__card--tall">
           {!selectedCharacter ? (
-            <p className="gm-player-characters__muted">Select a character to view details.</p>
+            <p className="gm-player-characters__muted body muted">Select a character to view details.</p>
           ) : (
             <div className="gm-player-characters__details">
               <div className="gm-player-characters__details-header">
                 <div>
-                  <h3 className="gm-player-characters__details-title">{selectedCharacter.name}</h3>
+                  <h3 className="gm-player-characters__details-title h3">{selectedCharacter.name}</h3>
                   <div className="gm-player-characters__details-meta">
                     Level {selectedCharacter.level} • {formatLabel(raceMap.get(selectedCharacter.raceKey ?? "") ?? selectedCharacter.raceKey)}
                     {selectedCharacter.subraceKey ? ` / ${subraceMap.get(selectedCharacter.subraceKey)?.name ?? selectedCharacter.subraceKey}` : ""}
@@ -125,7 +125,7 @@ export const PlayerCharactersPage: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="gm-player-characters__section-title">Attributes</h4>
+                <h4 className="gm-player-characters__section-title h3">Attributes</h4>
                 <div className="gm-player-characters__attributes">
                   {attributeOrder.map((key) => (
                     <div key={key} className="gm-player-characters__attribute">
@@ -137,7 +137,7 @@ export const PlayerCharactersPage: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="gm-player-characters__section-title">Backgrounds</h4>
+                <h4 className="gm-player-characters__section-title h3">Backgrounds</h4>
                 <div className="gm-player-characters__backgrounds">
                   <div>Family: {formatLabel(selectedCharacter.backgrounds?.family)}</div>
                   <div>Childhood: {formatLabel(selectedCharacter.backgrounds?.childhood)}</div>
@@ -150,19 +150,19 @@ export const PlayerCharactersPage: React.FC = () => {
 
               <div className="gm-player-characters__notes">
                 <div>
-                  <h4 className="gm-player-characters__section-title">Notes</h4>
+                  <h4 className="gm-player-characters__section-title h3">Notes</h4>
                   <p className="gm-player-characters__note-text">{selectedCharacter.notes?.trim() || "No notes."}</p>
                 </div>
                 <div>
-                  <h4 className="gm-player-characters__section-title">Gear Notes</h4>
+                  <h4 className="gm-player-characters__section-title h3">Gear Notes</h4>
                   <p className="gm-player-characters__note-text">{selectedCharacter.gearNotes?.trim() || "No gear notes."}</p>
                 </div>
                 <div>
-                  <h4 className="gm-player-characters__section-title">Defense Notes</h4>
+                  <h4 className="gm-player-characters__section-title h3">Defense Notes</h4>
                   <p className="gm-player-characters__note-text">{selectedCharacter.defenseNotes?.trim() || "No defense notes."}</p>
                 </div>
                 <div>
-                  <h4 className="gm-player-characters__section-title">Weapon Notes</h4>
+                  <h4 className="gm-player-characters__section-title h3">Weapon Notes</h4>
                   <p className="gm-player-characters__note-text">{selectedCharacter.weaponNotes?.trim() || "No weapon notes."}</p>
                 </div>
               </div>

@@ -121,14 +121,14 @@ export const CampaignsPage: React.FC = () => {
   return (
     <div className="gm-campaigns">
       <header>
-        <h2 className="gm-campaigns__title">Campaigns</h2>
-        <p className="gm-campaigns__subtitle">
+        <h2 className="gm-campaigns__title h2">Campaigns</h2>
+        <p className="gm-campaigns__subtitle subtitle muted">
           Create a campaign and share an invite link with players.
         </p>
       </header>
 
       <section className="gm-campaigns__card">
-        <h3 className="gm-campaigns__card-title">Create Campaign</h3>
+        <h3 className="gm-campaigns__card-title h3">Create Campaign</h3>
         <form onSubmit={handleCreate} className="gm-campaigns__form">
           <label className="gm-campaigns__field">
             <span className="gm-campaigns__label">Campaign Name</span>
@@ -149,13 +149,13 @@ export const CampaignsPage: React.FC = () => {
       </section>
 
       <section className="gm-campaigns__card">
-        <h3 className="gm-campaigns__card-title">Active Campaigns</h3>
+        <h3 className="gm-campaigns__card-title h3">Active Campaigns</h3>
         {error && <div className="gm-campaigns__message gm-campaigns__message--error">{error}</div>}
         {copyNotice && <div className="gm-campaigns__message gm-campaigns__message--success">{copyNotice}</div>}
         {loading ? (
-          <p className="gm-campaigns__muted">Loading campaigns...</p>
+          <p className="gm-campaigns__muted body muted">Loading campaigns...</p>
         ) : campaigns.length === 0 ? (
-          <p className="gm-campaigns__muted">No campaigns yet. Create one above.</p>
+          <p className="gm-campaigns__muted body muted">No campaigns yet. Create one above.</p>
         ) : (
           <div className="gm-campaigns__list">
             {campaigns.map((campaign) => {

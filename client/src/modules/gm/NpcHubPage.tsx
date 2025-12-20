@@ -41,14 +41,14 @@ export const NpcHubPage: React.FC = () => {
   return (
     <div className="npc-hub">
       <header>
-        <h2 className="npc-hub__title">NPC Hub</h2>
-        <p className="npc-hub__subtitle">
+        <h2 className="npc-hub__title h2">NPC Hub</h2>
+        <p className="npc-hub__subtitle subtitle muted">
           Pin recurring NPCs to keep story beats and hooks visible. Later, this space will host the roll inbox.
         </p>
       </header>
 
       <section className="npc-hub__card">
-        <h3 className="npc-hub__card-title">Pinboard Entry</h3>
+        <h3 className="npc-hub__card-title h3">Pinboard Entry</h3>
         <form onSubmit={handleCreate} className="npc-hub__form">
           <label className="npc-hub__field">
             <span className="npc-hub__label">NPC Name</span>
@@ -99,9 +99,9 @@ export const NpcHubPage: React.FC = () => {
       </section>
 
       <section className="npc-hub__card">
-        <h3 className="npc-hub__card-title">Pinned NPCs</h3>
+        <h3 className="npc-hub__card-title h3">Pinned NPCs</h3>
         {pins.length === 0 ? (
-          <p className="npc-hub__muted">No NPCs pinned yet.</p>
+          <p className="npc-hub__muted body muted">No NPCs pinned yet.</p>
         ) : (
           <div className="npc-hub__list">
             {pins.map((pin) => (

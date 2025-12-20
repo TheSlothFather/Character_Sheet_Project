@@ -232,7 +232,7 @@ export const JoinCampaignPage: React.FC = () => {
   if (loading) {
     return (
       <div className="join-campaign">
-        <div className="join-campaign__loading">Loading invite...</div>
+        <div className="join-campaign__loading caption muted">Loading invite...</div>
       </div>
     );
   }
@@ -240,15 +240,15 @@ export const JoinCampaignPage: React.FC = () => {
   return (
     <div className="join-campaign">
       <div className="join-campaign__card">
-        <h1 className="join-campaign__title">Join Campaign</h1>
-        <p className="join-campaign__subtitle">
+        <h1 className="join-campaign__title h1">Join Campaign</h1>
+        <p className="join-campaign__subtitle subtitle muted">
           Use this invite link to join a campaign with one of your characters.
         </p>
         {error && <div className="join-campaign__message join-campaign__message--error">{error}</div>}
         {notice && <div className="join-campaign__message join-campaign__message--success">{notice}</div>}
         {!user && (
           <form onSubmit={handleAuth} className="join-campaign__auth">
-            <div className="join-campaign__auth-title">
+            <div className="join-campaign__auth-title h3">
               {authMode === "sign-in" ? "Sign in to join" : "Create an account to join"}
             </div>
             {authError && <div className="join-campaign__message join-campaign__message--error">{authError}</div>}
@@ -300,9 +300,11 @@ export const JoinCampaignPage: React.FC = () => {
           </form>
         )}
         <div className="join-campaign__characters">
-          <div className="join-campaign__characters-title">Choose a character (optional)</div>
+          <div className="join-campaign__characters-title h3">Choose a character (optional)</div>
           {characters.length === 0 ? (
-            <div className="join-campaign__muted">No characters found yet. You can join and create one later.</div>
+            <div className="join-campaign__muted body muted">
+              No characters found yet. You can join and create one later.
+            </div>
           ) : (
             <div className="join-campaign__character-list">
               {characters.map((character) => (
@@ -321,8 +323,8 @@ export const JoinCampaignPage: React.FC = () => {
                     }}
                   />
                   <div>
-                    <div className="join-campaign__character-name">{character.name}</div>
-                    <div className="join-campaign__character-meta">Level {character.level}</div>
+                    <div className="join-campaign__character-name body">{character.name}</div>
+                    <div className="join-campaign__character-meta caption muted">Level {character.level}</div>
                   </div>
                 </label>
               ))}

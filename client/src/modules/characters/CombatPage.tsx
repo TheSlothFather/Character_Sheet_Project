@@ -60,17 +60,19 @@ export const CombatPage: React.FC = () => {
   return (
     <div className="combat-page">
       <header>
-        <h2 className="combat-page__title">Combat Targets</h2>
-        <p className="combat-page__subtitle">Select an active target and submit a roll request to the GM.</p>
+        <h2 className="combat-page__title h2">Combat Targets</h2>
+        <p className="combat-page__subtitle subtitle muted">
+          Select an active target and submit a roll request to the GM.
+        </p>
       </header>
 
       <section className="combat-page__card">
-        {error && <div className="combat-page__message combat-page__message--error">{error}</div>}
-        {notice && <div className="combat-page__message combat-page__message--success">{notice}</div>}
+        {error && <div className="combat-page__message body combat-page__message--error">{error}</div>}
+        {notice && <div className="combat-page__message body combat-page__message--success">{notice}</div>}
         {loading ? (
-          <p className="combat-page__status">Loading combatants...</p>
+          <p className="combat-page__status body muted">Loading combatants...</p>
         ) : combatants.length === 0 ? (
-          <p className="combat-page__status">No active combatants yet.</p>
+          <p className="combat-page__status body muted">No active combatants yet.</p>
         ) : (
           <div className="combat-page__list">
             {combatants.map((combatant) => {
@@ -82,8 +84,8 @@ export const CombatPage: React.FC = () => {
                   onClick={() => setSelectedId(combatant.id)}
                   className={`combat-page__target${isSelected ? " combat-page__target--selected" : ""}`}
                 >
-                  <div className="combat-page__target-name">{combatant.name}</div>
-                  <div className="combat-page__target-faction">{normalizeFaction(combatant.faction)}</div>
+                  <div className="combat-page__target-name body">{combatant.name}</div>
+                  <div className="combat-page__target-faction caption muted">{normalizeFaction(combatant.faction)}</div>
                 </button>
               );
             })}
@@ -92,8 +94,10 @@ export const CombatPage: React.FC = () => {
       </section>
 
       <section className="combat-page__card">
-        <h3 className="combat-page__section-title">Roll Request</h3>
-        <p className="combat-page__helper">Target: {selected ? selected.name : "Select a combatant to roll against."}</p>
+        <h3 className="combat-page__section-title h3">Roll Request</h3>
+        <p className="combat-page__helper body muted">
+          Target: {selected ? selected.name : "Select a combatant to roll against."}
+        </p>
         <button
           type="button"
           onClick={handleSubmit}

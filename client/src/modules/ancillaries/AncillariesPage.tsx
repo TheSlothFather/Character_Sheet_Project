@@ -1071,26 +1071,26 @@ export const AncillariesPage: React.FC = () => {
 
   return (
     <div className="ancillaries">
-      <h2 className="ancillaries__title">Ancillaries</h2>
-      <p className="ancillaries__intro">
+      <h2 className="ancillaries__title h2">Ancillaries</h2>
+      <p className="ancillaries__intro subtitle muted">
         Choose 2 ancillaries at character creation. You gain 2 more picks at every Character Tier Advancement (levels 6, 11, 16,
         and so on). Entries stay locked until the listed prerequisites are satisfied for the selected character.
       </p>
-      <p className="ancillaries__intro">
+      <p className="ancillaries__intro subtitle muted">
         Ancestry ancillaries are locked to your character’s race and subrace (when applicable) and can only be chosen at level 1.
       </p>
 
-      {error && <p className="ancillaries__error">{error}</p>}
+      {error && <p className="ancillaries__error body">{error}</p>}
 
       <div className="ancillaries__summary">
         <div className="ancillaries__pill">
           <div>
-            <div className="ancillaries__pill-title">Selected Character</div>
-            <div className="ancillaries__pill-subtitle">
+            <div className="ancillaries__pill-title body">Selected Character</div>
+            <div className="ancillaries__pill-subtitle subtitle muted">
               {loading ? "Loading..." : selectedCharacter ? `${selectedCharacter.name} (Level ${selectedCharacter.level})` : "None"}
             </div>
             {selectedCharacter && (
-              <div className="ancillaries__pill-meta">
+              <div className="ancillaries__pill-meta caption muted">
                 Race: {selectedRaceName ?? "Unknown"}
                 {selectedSubraceName ? ` / ${selectedSubraceName}` : ""}
               </div>
@@ -1099,8 +1099,8 @@ export const AncillariesPage: React.FC = () => {
         </div>
         <div className="ancillaries__pill">
           <div>
-            <div className="ancillaries__pill-title">Allowed Ancillaries</div>
-            <div className="ancillaries__pill-subtitle">
+            <div className="ancillaries__pill-title body">Allowed Ancillaries</div>
+            <div className="ancillaries__pill-subtitle subtitle muted">
               Base 2 + {tierAdvancements} tier advancements × 2
             </div>
           </div>
@@ -1108,15 +1108,15 @@ export const AncillariesPage: React.FC = () => {
         </div>
         <div className="ancillaries__pill">
           <div>
-            <div className="ancillaries__pill-title">Remaining Picks</div>
-            <div className="ancillaries__pill-subtitle">Available to assign</div>
+            <div className="ancillaries__pill-title body">Remaining Picks</div>
+            <div className="ancillaries__pill-subtitle subtitle muted">Available to assign</div>
           </div>
           <div className={`ancillaries__pill-value${remaining > 0 ? "" : " ancillaries__pill-value--danger"}`}>{remaining}</div>
         </div>
         <div className="ancillaries__pill">
           <div>
-            <div className="ancillaries__pill-title">Ancestry Access</div>
-            <div className="ancillaries__pill-subtitle">{ancestryAvailabilityLabel}</div>
+            <div className="ancillaries__pill-title body">Ancestry Access</div>
+            <div className="ancillaries__pill-subtitle subtitle muted">{ancestryAvailabilityLabel}</div>
           </div>
           <div className={`ancillaries__pill-value${ancestryLevelEligible ? "" : " ancillaries__pill-value--warn"}`}>
             {ancestryLevelEligible ? "Level 1" : selectedCharacter ? `Level ${selectedCharacter.level}` : ""}
@@ -1148,7 +1148,7 @@ export const AncillariesPage: React.FC = () => {
         <div>
           <div className="ancillaries__panel ancillaries__panel--sticky">
             <div className="ancillaries__panel-header">
-              <h3 className="ancillaries__panel-title">Chosen Ancillaries</h3>
+              <h3 className="ancillaries__panel-title h3">Chosen Ancillaries</h3>
               <span className="ancillaries__badge ancillaries__badge--count">
                 {selectedAncillaries.length}/{allowed}
               </span>
@@ -1184,7 +1184,7 @@ export const AncillariesPage: React.FC = () => {
         <div>
           <div className="ancillaries__panel">
             <div className="ancillaries__panel-header">
-              <h3 className="ancillaries__panel-title">All Ancillaries</h3>
+              <h3 className="ancillaries__panel-title h3">All Ancillaries</h3>
               <span className="ancillaries__badge ancillaries__badge--count">{filtered.length}</span>
             </div>
             {filtered.map((entry) => renderAncillaryCard(entry, false))}
