@@ -726,6 +726,39 @@ export const BestiaryPage: React.FC = () => {
               />
             </label>
           </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Tier</span>
+              <input
+                value={tier}
+                onChange={(event) => setTier(event.target.value)}
+                placeholder="3"
+                style={inputStyle}
+                inputMode="numeric"
+              />
+              <span style={{ color: "#94a3b8", fontSize: 12 }}>{tier ? tierLabel(Number(tier)) : "Tier name"}</span>
+            </label>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Max Energy</span>
+              <input
+                value={maxEnergy}
+                onChange={(event) => setMaxEnergy(event.target.value)}
+                placeholder="120"
+                style={inputStyle}
+                inputMode="numeric"
+              />
+            </label>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Max AP</span>
+              <input
+                value={maxAp}
+                onChange={(event) => setMaxAp(event.target.value)}
+                placeholder="6"
+                style={inputStyle}
+                inputMode="numeric"
+              />
+            </label>
+          </div>
           <label style={{ display: "grid", gap: "0.35rem" }}>
             <span style={{ fontWeight: 700 }}>Tactics / Notes</span>
             <textarea
@@ -939,6 +972,29 @@ export const BestiaryPage: React.FC = () => {
                             ))}
                         </select>
                       )}
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
+                        <input
+                          value={editDraft.tier}
+                          onChange={(event) => setEditDraft({ ...editDraft, tier: event.target.value })}
+                          placeholder="Tier"
+                          style={inputStyle}
+                          inputMode="numeric"
+                        />
+                        <input
+                          value={editDraft.maxEnergy}
+                          onChange={(event) => setEditDraft({ ...editDraft, maxEnergy: event.target.value })}
+                          placeholder="Max Energy"
+                          style={inputStyle}
+                          inputMode="numeric"
+                        />
+                        <input
+                          value={editDraft.maxAp}
+                          onChange={(event) => setEditDraft({ ...editDraft, maxAp: event.target.value })}
+                          placeholder="Max AP"
+                          style={inputStyle}
+                          inputMode="numeric"
+                        />
+                      </div>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
                         <input
                           value={editDraft.tier}
