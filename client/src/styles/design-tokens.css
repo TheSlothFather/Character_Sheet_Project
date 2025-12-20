@@ -1,0 +1,17 @@
+:root[data-theme="parchment"] {
+  --text-heading: var(--color-text);
+  --text-body: var(--color-text);
+  --surface-card: var(--color-surface-2);
+  --surface-panel: var(--color-surface-1);
+  --border-subtle: rgba(201, 176, 135, 0.6);
+  --focus-ring: 0 0 0 3px rgba(127, 79, 36, 0.35);
+}
+
+:root[data-theme="dark-fantasy"] {
+  --text-heading: var(--color-text);
+  --text-body: var(--color-text);
+  --surface-card: var(--color-surface-2);
+  --surface-panel: var(--color-surface-1);
+  --border-subtle: rgba(58, 47, 36, 0.7);
+  --focus-ring: 0 0 0 3px rgba(183, 121, 77, 0.45);
+}
