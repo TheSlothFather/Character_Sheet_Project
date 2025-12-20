@@ -3,48 +3,7 @@ import { useParams } from "react-router-dom";
 import { gmApi, type BestiaryEntry as ApiBestiaryEntry, type Campaign } from "../../api/gm";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { AttributeKey, computeAttributeSkillBonuses, getSkillCode, normalizeSkillCode } from "../characters/skillMetadata";
-
-const cardStyle: React.CSSProperties = {
-  background: "var(--surface-1)",
-  border: "1px solid var(--border)",
-  borderRadius: 12,
-  padding: "1rem"
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "0.6rem 0.75rem",
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--surface-2)",
-  color: "var(--text)",
-  boxSizing: "border-box"
-};
-
-const sectionHeaderStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: "0.5rem",
-  width: "100%",
-  background: "transparent",
-  border: "none",
-  color: "var(--text)",
-  padding: 0,
-  cursor: "pointer",
-  fontSize: 16,
-  fontWeight: 700,
-  textAlign: "left"
-};
-
-const collapsibleStyle: React.CSSProperties = {
-  border: "1px solid var(--border)",
-  borderRadius: 10,
-  padding: "0.75rem",
-  background: "var(--surface-2)",
-  display: "grid",
-  gap: "0.75rem"
-};
+import styles from "./BestiaryPage.module.css";
 
 type BestiaryEntry = {
   id: string;
@@ -146,12 +105,12 @@ type CollapsibleSectionProps = {
 };
 
 const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, isOpen, onToggle, children }) => (
-  <div style={collapsibleStyle}>
-    <button type="button" onClick={onToggle} style={sectionHeaderStyle}>
+  <div className={styles.collapsible}>
+    <button type="button" onClick={onToggle} className={styles.sectionHeader}>
       <span>{title}</span>
-      <span style={{ color: "var(--muted)", fontSize: 14 }}>{isOpen ? "▾" : "▸"}</span>
+      <span className={styles.sectionToggle}>{isOpen ? "▾" : "▸"}</span>
     </button>
-    {isOpen && <div style={{ display: "grid", gap: "0.75rem" }}>{children}</div>}
+    {isOpen && <div className={styles.collapsibleBody}>{children}</div>}
   </div>
 );
 
@@ -727,53 +686,30 @@ export const BestiaryPage: React.FC = () => {
   }, [selectedEntry, selectedBonuses, skillDefinitions]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <header>
-        <h2 style={{ margin: 0 }}>Bestiary</h2>
-        <p style={{ margin: "0.25rem 0 0", color: "var(--muted)" }}>
-          Maintain monster entries with quick edit controls.
-        </p>
+    <div className={styles.root}>
+      <header className={styles.header}>
+        <h2 className={styles.title}>Bestiary</h2>
+        <p className={styles.subtitle}>Maintain monster entries with quick edit controls.</p>
       </header>
 
-      {error && <div style={{ color: "var(--danger)" }}>{error}</div>}
-      {loading && <div style={{ color: "var(--muted)" }}>Loading...</div>}
+      {error && <div className={styles.error}>{error}</div>}
+      {loading && <div className={styles.loading}>Loading...</div>}
 
-      <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-        <section
-          style={{
-            ...cardStyle,
-            width: 300,
-            flex: "0 0 300px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.75rem"
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h3 style={{ margin: 0 }}>Creatures</h3>
-            <button
-              type="button"
-              onClick={startCreate}
-              style={{
-                padding: "0.35rem 0.7rem",
-                borderRadius: 8,
-                border: "1px solid var(--accent)",
-                background: "var(--accent)",
-                color: "var(--accent-contrast)",
-                fontWeight: 600,
-                cursor: "pointer"
-              }}
-            >
+      <div className={styles.mainLayout}>
+        <section className={`${styles.card} ${styles.sidebar}`}>
+          <div className={styles.rowBetween}>
+            <h3 className={styles.title}>Creatures</h3>
+            <button type="button" onClick={startCreate} className={styles.primaryButton}>
               New
             </button>
           </div>
           {!campaignId && (
-            <label style={{ display: "grid", gap: "0.35rem" }}>
-              <span style={{ fontWeight: 700 }}>Campaign</span>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>Campaign</span>
               <select
                 value={selectedCampaignId}
                 onChange={(event) => setSelectedCampaignId(event.target.value)}
-                style={inputStyle}
+                className={styles.input}
               >
                 {campaigns.map((campaign) => (
                   <option key={campaign.id} value={campaign.id}>
@@ -783,19 +719,19 @@ export const BestiaryPage: React.FC = () => {
               </select>
             </label>
           )}
-          <label style={{ display: "grid", gap: "0.35rem" }}>
-            <span style={{ fontWeight: 700 }}>Search</span>
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>Search</span>
             <input
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search creatures..."
-              style={inputStyle}
+              className={styles.input}
             />
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.6rem" }}>
-            <label style={{ display: "grid", gap: "0.35rem" }}>
-              <span style={{ fontWeight: 700 }}>Rank</span>
-              <select value={filterRank} onChange={(event) => setFilterRank(event.target.value)} style={inputStyle}>
+          <div className={styles.gridAuto120}>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>Rank</span>
+              <select value={filterRank} onChange={(event) => setFilterRank(event.target.value)} className={styles.input}>
                 <option value="All">All</option>
                 {RANK_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -804,29 +740,29 @@ export const BestiaryPage: React.FC = () => {
                 ))}
               </select>
             </label>
-            <label style={{ display: "grid", gap: "0.35rem" }}>
-              <span style={{ fontWeight: 700 }}>Type</span>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>Type</span>
               <input
                 value={filterType}
                 onChange={(event) => setFilterType(event.target.value)}
                 placeholder="Dragon"
-                style={inputStyle}
+                className={styles.input}
               />
             </label>
-            <label style={{ display: "grid", gap: "0.35rem" }}>
-              <span style={{ fontWeight: 700 }}>Tier</span>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>Tier</span>
               <input
                 value={filterTier}
                 onChange={(event) => setFilterTier(event.target.value)}
                 placeholder="3"
-                style={inputStyle}
+                className={styles.input}
                 inputMode="numeric"
               />
             </label>
           </div>
-          <div style={{ display: "grid", gap: "0.5rem", maxHeight: "70vh", overflowY: "auto" }}>
+          <div className={styles.listPanel}>
             {filteredEntries.length === 0 ? (
-              <div style={{ color: "var(--muted)", fontSize: 13 }}>No entries match these filters.</div>
+              <div className={styles.emptyText}>No entries match these filters.</div>
             ) : (
               filteredEntries.map((entry) => {
                 const isSelected = entry.id === selectedEntryId;
@@ -853,38 +789,22 @@ export const BestiaryPage: React.FC = () => {
                     key={entry.id}
                     type="button"
                     onClick={() => selectEntry(entry.id)}
+                    className={styles.entryButton}
                     style={{
-                      textAlign: "left",
-                      borderRadius: 8,
                       border: isSelected ? "1px solid var(--accent)" : "1px solid var(--border)",
-                      background: isSelected ? "var(--accent-soft)" : "var(--surface-2)",
-                      padding: "0.6rem",
-                      color: "var(--text)",
-                      cursor: "pointer",
-                      display: "grid",
-                      gap: "0.2rem"
+                      background: isSelected ? "var(--accent-soft)" : "var(--surface-2)"
                     }}
                   >
-                    <span style={{ fontWeight: 700 }}>{entry.name}</span>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", alignItems: "center" }}>
-                      <span
-                        style={{
-                          ...rankChipColor,
-                          padding: "0.1rem 0.45rem",
-                          borderRadius: 999,
-                          fontSize: 11,
-                          fontWeight: 700,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em"
-                        }}
-                      >
+                    <span className={styles.entryName}>{entry.name}</span>
+                    <div className={styles.chipRow}>
+                      <span className={styles.rankChip} style={rankChipColor}>
                         {entry.rank || "NPC"}
                       </span>
-                      {inlineLink && <span style={{ color: "var(--muted)", fontSize: 11 }}>{inlineLink}</span>}
+                      <span className={styles.entryMeta}>
+                        {entry.tier ? `Tier ${entry.tier}` : "Tier —"} • {entry.type || "Unknown type"}
+                        {inlineLink ? ` • ${inlineLink}` : ""}
+                      </span>
                     </div>
-                    <span style={{ color: "var(--muted)", fontSize: 12 }}>
-                      {entry.tier ? `Tier ${entry.tier}` : "Tier —"} • {entry.type || "Unknown type"}
-                    </span>
                   </button>
                 );
               })
@@ -892,28 +812,16 @@ export const BestiaryPage: React.FC = () => {
           </div>
         </section>
 
-        <section style={{ ...cardStyle, flex: "1 1 0", minWidth: 0 }}>
+        <section className={`${styles.card} ${styles.detailPanel}`}>
           {!campaignId && campaigns.length === 0 ? (
-            <p style={{ color: "var(--muted)", margin: 0 }}>Create a campaign first to manage a bestiary.</p>
+            <p className={`${styles.mutedText} ${styles.title}`}>Create a campaign first to manage a bestiary.</p>
           ) : !selectedCampaignId ? (
-            <p style={{ color: "var(--muted)", margin: 0 }}>Select a campaign to view or edit bestiary entries.</p>
+            <p className={`${styles.mutedText} ${styles.title}`}>Select a campaign to view or edit bestiary entries.</p>
           ) : isCreating ? (
-            <form onSubmit={handleCreate} style={{ display: "grid", gap: "0.75rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h3 style={{ margin: 0 }}>Add Creature</h3>
-                <button
-                  type="button"
-                  onClick={() => setIsCreating(false)}
-                  style={{
-                    padding: "0.35rem 0.7rem",
-                    borderRadius: 8,
-                    border: "1px solid var(--border)",
-                    background: "var(--surface-3)",
-                    color: "var(--text)",
-                    fontWeight: 600,
-                    cursor: "pointer"
-                  }}
-                >
+            <form onSubmit={handleCreate} className={styles.form}>
+              <div className={styles.rowBetween}>
+                <h3 className={styles.title}>Add Creature</h3>
+                <button type="button" onClick={() => setIsCreating(false)} className={styles.secondaryButton}>
                   Cancel
                 </button>
               </div>
@@ -922,27 +830,27 @@ export const BestiaryPage: React.FC = () => {
                 isOpen={panelState.core}
                 onToggle={() => togglePanel("core")}
               >
-                <label style={{ display: "grid", gap: "0.35rem" }}>
-                  <span style={{ fontWeight: 700 }}>Name</span>
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>Name</span>
                   <input
                     value={name}
                     onChange={(event) => setName(event.target.value)}
                     placeholder="Ash Drake"
-                    style={inputStyle}
+                    className={styles.input}
                   />
                 </label>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem" }}>
-                  <label style={{ display: "grid", gap: "0.35rem" }}>
-                    <span style={{ fontWeight: 700 }}>Type</span>
+                <div className={styles.gridAuto180}>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Type</span>
                     <input
                       value={type}
                       onChange={(event) => setType(event.target.value)}
                       placeholder="Dragon"
-                      style={inputStyle}
+                      className={styles.input}
                     />
                   </label>
-                  <label style={{ display: "grid", gap: "0.35rem" }}>
-                    <span style={{ fontWeight: 700 }}>Rank</span>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Rank</span>
                     <select
                       value={rank}
                       onChange={(event) => {
@@ -951,7 +859,7 @@ export const BestiaryPage: React.FC = () => {
                         if (next !== "Minion") setLieutenantId("");
                         if (next !== "Lieutenant") setHeroId("");
                       }}
-                      style={inputStyle}
+                      className={styles.input}
                     >
                       {RANK_OPTIONS.map((option) => (
                         <option key={option} value={option}>
@@ -962,9 +870,9 @@ export const BestiaryPage: React.FC = () => {
                   </label>
                 </div>
                 {rank === "Minion" && (
-                  <label style={{ display: "grid", gap: "0.35rem" }}>
-                    <span style={{ fontWeight: 700 }}>Assigned Lieutenant</span>
-                    <select value={lieutenantId} onChange={(event) => setLieutenantId(event.target.value)} style={inputStyle}>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Assigned Lieutenant</span>
+                    <select value={lieutenantId} onChange={(event) => setLieutenantId(event.target.value)} className={styles.input}>
                       <option value="">Select a lieutenant</option>
                       {availableLieutenants.map((entry) => (
                         <option key={entry.id} value={entry.id}>
@@ -975,9 +883,9 @@ export const BestiaryPage: React.FC = () => {
                   </label>
                 )}
                 {rank === "Lieutenant" && (
-                  <label style={{ display: "grid", gap: "0.35rem" }}>
-                    <span style={{ fontWeight: 700 }}>Assigned Hero</span>
-                    <select value={heroId} onChange={(event) => setHeroId(event.target.value)} style={inputStyle}>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Assigned Hero</span>
+                    <select value={heroId} onChange={(event) => setHeroId(event.target.value)} className={styles.input}>
                       <option value="">Select a hero</option>
                       {availableHeroes.map((entry) => (
                         <option key={entry.id} value={entry.id}>
@@ -988,52 +896,52 @@ export const BestiaryPage: React.FC = () => {
                   </label>
                 )}
               </CollapsibleSection>
-              <CollapsibleSection
-                title="Stats"
-                isOpen={panelState.stats}
-                onToggle={() => togglePanel("stats")}
-              >
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
-                  <label style={{ display: "grid", gap: "0.35rem" }}>
-                    <span style={{ fontWeight: 700 }}>Tier</span>
+                <CollapsibleSection
+                  title="Stats"
+                  isOpen={panelState.stats}
+                  onToggle={() => togglePanel("stats")}
+                >
+                <div className={styles.gridAuto160}>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Tier</span>
                     <input
                       value={tier}
                       onChange={(event) => setTier(event.target.value)}
                       placeholder="3"
-                      style={inputStyle}
+                      className={styles.input}
                       inputMode="numeric"
                     />
-                    <span style={{ color: "var(--muted)", fontSize: 12 }}>{tier ? tierLabel(Number(tier)) : "Tier name"}</span>
+                    <span className={styles.mutedTextSmall}>{tier ? tierLabel(Number(tier)) : "Tier name"}</span>
                   </label>
-                  <label style={{ display: "grid", gap: "0.35rem" }}>
-                    <span style={{ fontWeight: 700 }}>Max Energy</span>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Max Energy</span>
                     <input
                       value={maxEnergy}
                       onChange={(event) => setMaxEnergy(event.target.value)}
                       placeholder="120"
-                      style={inputStyle}
+                      className={styles.input}
                       inputMode="numeric"
                     />
                   </label>
-                  <label style={{ display: "grid", gap: "0.35rem" }}>
-                    <span style={{ fontWeight: 700 }}>Max AP</span>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabel}>Max AP</span>
                     <input
                       value={maxAp}
                       onChange={(event) => setMaxAp(event.target.value)}
                       placeholder="6"
-                      style={inputStyle}
+                      className={styles.input}
                       inputMode="numeric"
                     />
                   </label>
                 </div>
-                <label style={{ display: "grid", gap: "0.35rem" }}>
-                  <span style={{ fontWeight: 700 }}>Tactics / Notes</span>
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>Tactics / Notes</span>
                   <textarea
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     rows={3}
                     placeholder="Breath weapon on round two, vulnerable to cold iron."
-                    style={{ ...inputStyle, resize: "vertical" }}
+                    className={`${styles.input} ${styles.textarea}`}
                   />
                 </label>
               </CollapsibleSection>
@@ -1042,15 +950,15 @@ export const BestiaryPage: React.FC = () => {
                 isOpen={panelState.attributes}
                 onToggle={() => togglePanel("attributes")}
               >
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.75rem" }}>
+                <div className={styles.gridTwoWide}>
                   {ATTRIBUTE_KEYS.map((key) => (
-                    <label key={key} style={{ display: "grid", gap: "0.35rem" }}>
-                      <span style={{ fontWeight: 600 }}>{ATTRIBUTE_LABELS[key]}</span>
+                    <label key={key} className={styles.field}>
+                      <span className={styles.fieldLabelMedium}>{ATTRIBUTE_LABELS[key]}</span>
                       <input
                         value={attributes[key]}
                         onChange={(event) => setAttributes((prev) => ({ ...prev, [key]: event.target.value }))}
                         placeholder="0"
-                        style={inputStyle}
+                        className={styles.input}
                         inputMode="numeric"
                       />
                     </label>
@@ -1063,9 +971,9 @@ export const BestiaryPage: React.FC = () => {
                 onToggle={() => togglePanel("skills")}
               >
                 {skillDefinitions.length === 0 ? (
-                  <div style={{ color: "var(--muted)", fontSize: 13 }}>No skills loaded from definitions.</div>
+                  <div className={styles.mutedTextMedium}>No skills loaded from definitions.</div>
                 ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.75rem" }}>
+                  <div className={styles.gridThreeWide}>
                     {skillDefinitions.map((skill) => {
                       const code = getSkillCode(skill);
                       const bonus = createBonuses[code] ?? 0;
@@ -1073,16 +981,16 @@ export const BestiaryPage: React.FC = () => {
                       const numericBase = Number(baseValue);
                       const total = (Number.isFinite(numericBase) ? numericBase : 0) + bonus;
                       return (
-                        <label key={code} style={{ display: "grid", gap: "0.35rem" }}>
-                          <span style={{ fontWeight: 600 }}>{skill.name}</span>
+                        <label key={code} className={styles.field}>
+                          <span className={styles.fieldLabelMedium}>{skill.name}</span>
                           <input
                             value={baseValue}
                             onChange={(event) => setSkills((prev) => ({ ...prev, [code]: event.target.value }))}
                             placeholder="0"
-                            style={inputStyle}
+                            className={styles.input}
                             inputMode="numeric"
                           />
-                          <span style={{ color: "var(--muted)", fontSize: 12 }}>
+                          <span className={styles.mutedTextSmall}>
                             Bonus {bonus >= 0 ? `+${bonus}` : bonus} • Total {total}
                           </span>
                         </label>
@@ -1096,12 +1004,12 @@ export const BestiaryPage: React.FC = () => {
                 isOpen={panelState.abilities}
                 onToggle={() => togglePanel("abilities")}
               >
-                <label style={{ display: "grid", gap: "0.35rem" }}>
-                  <span style={{ fontWeight: 700 }}>Ability Type</span>
+                <label className={styles.field}>
+                  <span className={styles.fieldLabel}>Ability Type</span>
                   <select
                     value={abilityType}
                     onChange={(event) => setAbilityType(event.target.value)}
-                    style={inputStyle}
+                    className={styles.input}
                   >
                     <option value="">None</option>
                     <option value="psionic">Psionic</option>
@@ -1110,35 +1018,33 @@ export const BestiaryPage: React.FC = () => {
                   </select>
                 </label>
                 {abilityType === "custom" && (
-                  <div
-                    style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}
-                  >
-                    <label style={{ display: "grid", gap: "0.35rem" }}>
-                      <span style={{ fontWeight: 700 }}>Custom Ability Name</span>
+                  <div className={styles.gridAuto160}>
+                    <label className={styles.field}>
+                      <span className={styles.fieldLabel}>Custom Ability Name</span>
                       <input
                         value={customAbilityName}
                         onChange={(event) => setCustomAbilityName(event.target.value)}
                         placeholder="Solar Flare"
-                        style={inputStyle}
+                        className={styles.input}
                       />
                     </label>
-                    <label style={{ display: "grid", gap: "0.35rem" }}>
-                      <span style={{ fontWeight: 700 }}>Energy Cost</span>
+                    <label className={styles.field}>
+                      <span className={styles.fieldLabel}>Energy Cost</span>
                       <input
                         value={customAbilityEnergy}
                         onChange={(event) => setCustomAbilityEnergy(event.target.value)}
                         placeholder="8"
-                        style={inputStyle}
+                        className={styles.input}
                         inputMode="numeric"
                       />
                     </label>
-                    <label style={{ display: "grid", gap: "0.35rem" }}>
-                      <span style={{ fontWeight: 700 }}>AP Cost</span>
+                    <label className={styles.field}>
+                      <span className={styles.fieldLabel}>AP Cost</span>
                       <input
                         value={customAbilityAp}
                         onChange={(event) => setCustomAbilityAp(event.target.value)}
                         placeholder="2"
-                        style={inputStyle}
+                        className={styles.input}
                         inputMode="numeric"
                       />
                     </label>
@@ -1147,37 +1053,20 @@ export const BestiaryPage: React.FC = () => {
               </CollapsibleSection>
               <button
                 type="submit"
-                style={{
-                  padding: "0.6rem 0.9rem",
-                  borderRadius: 8,
-                  border: "1px solid var(--accent)",
-                  background: "var(--accent)",
-                  color: "var(--accent-contrast)",
-                  fontWeight: 700,
-                  width: "fit-content",
-                  cursor: "pointer"
-                }}
+                className={styles.submitButton}
               >
                 Add Entry
               </button>
             </form>
           ) : selectedEntry ? (
             editingId === selectedEntry.id && editDraft ? (
-              <div style={{ display: "grid", gap: "0.75rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h3 style={{ margin: 0 }}>Edit Creature</h3>
+              <div className={styles.detailStack}>
+                <div className={styles.rowBetween}>
+                  <h3 className={styles.title}>Edit Creature</h3>
                   <button
                     type="button"
                     onClick={cancelEdit}
-                    style={{
-                      padding: "0.35rem 0.7rem",
-                      borderRadius: 8,
-                      border: "1px solid var(--border)",
-                      background: "var(--surface-3)",
-                      color: "var(--text)",
-                      fontWeight: 600,
-                      cursor: "pointer"
-                    }}
+                    className={styles.secondaryButton}
                   >
                     Cancel
                   </button>
@@ -1190,14 +1079,14 @@ export const BestiaryPage: React.FC = () => {
                   <input
                     value={editDraft.name}
                     onChange={(event) => setEditDraft({ ...editDraft, name: event.target.value })}
-                    style={inputStyle}
+                    className={styles.input}
                   />
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.6rem" }}>
+                  <div className={styles.gridAuto160}>
                     <input
                       value={editDraft.type}
                       onChange={(event) => setEditDraft({ ...editDraft, type: event.target.value })}
                       placeholder="Type"
-                      style={inputStyle}
+                      className={styles.input}
                     />
                     <select
                       value={editDraft.rank}
@@ -1210,7 +1099,7 @@ export const BestiaryPage: React.FC = () => {
                           heroId: next === "Lieutenant" ? editDraft.heroId : ""
                         });
                       }}
-                      style={inputStyle}
+                      className={styles.input}
                     >
                       {RANK_OPTIONS.map((option) => (
                         <option key={option} value={option}>
@@ -1223,7 +1112,7 @@ export const BestiaryPage: React.FC = () => {
                     <select
                       value={editDraft.lieutenantId}
                       onChange={(event) => setEditDraft({ ...editDraft, lieutenantId: event.target.value })}
-                      style={inputStyle}
+                      className={styles.input}
                     >
                       <option value="">Select a lieutenant</option>
                       {availableLieutenants
@@ -1239,7 +1128,7 @@ export const BestiaryPage: React.FC = () => {
                     <select
                       value={editDraft.heroId}
                       onChange={(event) => setEditDraft({ ...editDraft, heroId: event.target.value })}
-                      style={inputStyle}
+                      className={styles.input}
                     >
                       <option value="">Select a hero</option>
                       {availableHeroes
@@ -1257,26 +1146,26 @@ export const BestiaryPage: React.FC = () => {
                   isOpen={panelState.stats}
                   onToggle={() => togglePanel("stats")}
                 >
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
+                  <div className={styles.gridAuto150}>
                     <input
                       value={editDraft.tier}
                       onChange={(event) => setEditDraft({ ...editDraft, tier: event.target.value })}
                       placeholder="Tier"
-                      style={inputStyle}
+                      className={styles.input}
                       inputMode="numeric"
                     />
                     <input
                       value={editDraft.maxEnergy}
                       onChange={(event) => setEditDraft({ ...editDraft, maxEnergy: event.target.value })}
                       placeholder="Max Energy"
-                      style={inputStyle}
+                      className={styles.input}
                       inputMode="numeric"
                     />
                     <input
                       value={editDraft.maxAp}
                       onChange={(event) => setEditDraft({ ...editDraft, maxAp: event.target.value })}
                       placeholder="Max AP"
-                      style={inputStyle}
+                      className={styles.input}
                       inputMode="numeric"
                     />
                   </div>
@@ -1285,7 +1174,7 @@ export const BestiaryPage: React.FC = () => {
                     onChange={(event) => setEditDraft({ ...editDraft, description: event.target.value })}
                     rows={3}
                     placeholder="Notes"
-                    style={{ ...inputStyle, resize: "vertical" }}
+                    className={`${styles.input} ${styles.textarea}`}
                   />
                 </CollapsibleSection>
                 <CollapsibleSection
@@ -1293,17 +1182,17 @@ export const BestiaryPage: React.FC = () => {
                   isOpen={panelState.attributes}
                   onToggle={() => togglePanel("attributes")}
                 >
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.6rem" }}>
+                  <div className={styles.gridTwo}>
                     {ATTRIBUTE_KEYS.map((key) => (
-                      <label key={key} style={{ display: "grid", gap: "0.35rem" }}>
-                        <span style={{ fontWeight: 600 }}>{ATTRIBUTE_LABELS[key]}</span>
+                      <label key={key} className={styles.field}>
+                        <span className={styles.fieldLabelMedium}>{ATTRIBUTE_LABELS[key]}</span>
                         <input
                           value={editDraft.attributes[key]}
                           onChange={(event) =>
                             setEditDraft({ ...editDraft, attributes: { ...editDraft.attributes, [key]: event.target.value } })
                           }
                           placeholder="0"
-                          style={inputStyle}
+                          className={styles.input}
                           inputMode="numeric"
                         />
                       </label>
@@ -1316,9 +1205,9 @@ export const BestiaryPage: React.FC = () => {
                   onToggle={() => togglePanel("skills")}
                 >
                   {skillDefinitions.length === 0 ? (
-                    <div style={{ color: "var(--muted)", fontSize: 13 }}>No skills loaded from definitions.</div>
+                    <div className={styles.mutedTextMedium}>No skills loaded from definitions.</div>
                   ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.6rem" }}>
+                    <div className={styles.gridThree}>
                       {skillDefinitions.map((skill) => {
                         const code = getSkillCode(skill);
                         const bonus = (editBonuses as Record<string, number>)[code] ?? 0;
@@ -1326,18 +1215,18 @@ export const BestiaryPage: React.FC = () => {
                         const numericBase = Number(baseValue);
                         const total = (Number.isFinite(numericBase) ? numericBase : 0) + bonus;
                         return (
-                          <label key={code} style={{ display: "grid", gap: "0.35rem" }}>
-                            <span style={{ fontWeight: 600 }}>{skill.name}</span>
+                          <label key={code} className={styles.field}>
+                            <span className={styles.fieldLabelMedium}>{skill.name}</span>
                             <input
                               value={baseValue}
                               onChange={(event) =>
                                 setEditDraft({ ...editDraft, skills: { ...editDraft.skills, [code]: event.target.value } })
                               }
                               placeholder="0"
-                              style={inputStyle}
+                              className={styles.input}
                               inputMode="numeric"
                             />
-                            <span style={{ color: "var(--muted)", fontSize: 12 }}>
+                            <span className={styles.mutedTextSmall}>
                               Bonus {bonus >= 0 ? `+${bonus}` : bonus} • Total {total}
                             </span>
                           </label>
@@ -1346,15 +1235,15 @@ export const BestiaryPage: React.FC = () => {
                       {Object.keys(editDraft.skills)
                         .filter((code) => !skillCodeSet.has(code))
                         .map((code) => (
-                          <label key={code} style={{ display: "grid", gap: "0.35rem" }}>
-                            <span style={{ fontWeight: 600 }}>{normalizeSkillCode({ id: code })}</span>
+                          <label key={code} className={styles.field}>
+                            <span className={styles.fieldLabelMedium}>{normalizeSkillCode({ id: code })}</span>
                             <input
                               value={editDraft.skills[code]}
                               onChange={(event) =>
                                 setEditDraft({ ...editDraft, skills: { ...editDraft.skills, [code]: event.target.value } })
                               }
                               placeholder="0"
-                              style={inputStyle}
+                              className={styles.input}
                               inputMode="numeric"
                             />
                           </label>
@@ -1370,7 +1259,7 @@ export const BestiaryPage: React.FC = () => {
                   <select
                     value={editDraft.abilityType}
                     onChange={(event) => setEditDraft({ ...editDraft, abilityType: event.target.value })}
-                    style={inputStyle}
+                    className={styles.input}
                   >
                     <option value="">None</option>
                     <option value="psionic">Psionic</option>
@@ -1378,201 +1267,140 @@ export const BestiaryPage: React.FC = () => {
                     <option value="custom">Custom</option>
                   </select>
                   {editDraft.abilityType === "custom" && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
+                    <div className={styles.gridAuto150}>
                       <input
                         value={editDraft.customAbilityName}
                         onChange={(event) => setEditDraft({ ...editDraft, customAbilityName: event.target.value })}
                         placeholder="Custom Ability"
-                        style={inputStyle}
+                        className={styles.input}
                       />
                       <input
                         value={editDraft.customAbilityEnergy}
                         onChange={(event) => setEditDraft({ ...editDraft, customAbilityEnergy: event.target.value })}
                         placeholder="Energy Cost"
-                        style={inputStyle}
+                        className={styles.input}
                         inputMode="numeric"
                       />
                       <input
                         value={editDraft.customAbilityAp}
                         onChange={(event) => setEditDraft({ ...editDraft, customAbilityAp: event.target.value })}
                         placeholder="AP Cost"
-                        style={inputStyle}
+                        className={styles.input}
                         inputMode="numeric"
                       />
                     </div>
                   )}
                 </CollapsibleSection>
-                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    onClick={saveEdit}
-                    style={{
-                      padding: "0.45rem 0.8rem",
-                      borderRadius: 8,
-                      border: "1px solid var(--accent)",
-                      background: "var(--accent)",
-                      color: "var(--accent-contrast)",
-                      fontWeight: 600,
-                      cursor: "pointer"
-                    }}
-                  >
+                <div className={styles.actionRow}>
+                  <button type="button" onClick={saveEdit} className={styles.actionButton}>
                     Save
                   </button>
-                  <button
-                    type="button"
-                    onClick={cancelEdit}
-                    style={{
-                      padding: "0.45rem 0.8rem",
-                      borderRadius: 8,
-                      border: "1px solid var(--border)",
-                      background: "var(--surface-3)",
-                      color: "var(--text)",
-                      fontWeight: 600,
-                      cursor: "pointer"
-                    }}
-                  >
+                  <button type="button" onClick={cancelEdit} className={styles.actionButtonSecondary}>
                     Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <div style={{ display: "grid", gap: "0.75rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
-                  <h3 style={{ margin: 0 }}>{selectedEntry.name}</h3>
-                  <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+              <div className={styles.detailStack}>
+                <div className={styles.detailHeader}>
+                  <h3 className={styles.title}>{selectedEntry.name}</h3>
+                  <div className={styles.detailActions}>
                     <button
                       type="button"
                       onClick={() => startEdit(selectedEntry)}
-                      style={{
-                        padding: "0.4rem 0.7rem",
-                        borderRadius: 8,
-                        border: "1px solid var(--border)",
-                        background: "var(--surface-3)",
-                        color: "var(--text)",
-                        fontWeight: 600,
-                        cursor: "pointer"
-                      }}
+                      className={styles.editButton}
                     >
                       Edit
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteEntry(selectedEntry.id)}
-                      style={{
-                        padding: "0.4rem 0.7rem",
-                        borderRadius: 8,
-                        border: "1px solid var(--danger)",
-                        background: "color-mix(in srgb, var(--danger) 15%, transparent)",
-                        color: "var(--danger)",
-                        fontWeight: 600,
-                        cursor: "pointer"
-                      }}
+                      className={styles.dangerButton}
                     >
                       Delete
                     </button>
                   </div>
                 </div>
-                <div
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    padding: "1rem",
-                    background: "var(--surface-2)",
-                    display: "grid",
-                    gap: "0.85rem"
-                  }}
-                >
-                  <div style={{ display: "grid", gap: "0.25rem" }}>
-                    <div style={{ color: "var(--muted)", fontSize: 13 }}>
-                      {selectedEntry.type || "Unknown type"} • {selectedEntry.rank || "NPC"}
-                    </div>
-                    {selectedEntry.rank === "Minion" && selectedEntry.lieutenantId && (
-                      <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                        → Lt: {entryNameById.get(selectedEntry.lieutenantId) ?? "Unassigned"}
+                <div className={styles.summaryCard}>
+                  <div className={styles.detailSection}>
+                    <div className={styles.sectionTitle}>Overview</div>
+                    <div className={styles.infoStack}>
+                      <div className={styles.mutedTextMedium}>
+                        {selectedEntry.type || "Unknown type"} • {selectedEntry.rank || "NPC"}
                       </div>
-                    )}
-                    {selectedEntry.rank === "Lieutenant" && selectedEntry.heroId && (
-                      <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                        → Hero: {entryNameById.get(selectedEntry.heroId) ?? "Unassigned"}
-                      </div>
-                    )}
-                    {selectedEntry.description && (
-                      <p style={{ margin: 0, color: "var(--muted)", fontSize: 14 }}>{selectedEntry.description}</p>
-                    )}
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem" }}>
-                    <div>
-                      <div style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase" }}>Tier</div>
-                      <div style={{ fontWeight: 600 }}>
-                        {selectedEntry.tier || "—"}{" "}
-                        {selectedEntry.tier ? `(${tierLabel(Number(selectedEntry.tier))})` : ""}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase" }}>Max Energy</div>
-                      <div style={{ fontWeight: 600 }}>{selectedEntry.maxEnergy || "—"}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase" }}>Max AP</div>
-                      <div style={{ fontWeight: 600 }}>{selectedEntry.maxAp || "—"}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase" }}>Ability</div>
-                      <div style={{ fontWeight: 600 }}>
-                        {selectedEntry.abilityType
-                          ? selectedEntry.abilityType === "custom"
-                            ? selectedEntry.customAbilityName || "Custom"
-                            : selectedEntry.abilityType
-                          : "None"}
-                      </div>
-                      {selectedEntry.abilityType === "custom" && (
-                        <div style={{ color: "var(--muted)", fontSize: 12 }}>
-                          Energy {selectedEntry.customAbilityEnergy || "—"} • AP {selectedEntry.customAbilityAp || "—"}
+                      {selectedEntry.rank === "Minion" && selectedEntry.lieutenantId && (
+                        <div className={styles.mutedTextSmall}>
+                          → Lt: {entryNameById.get(selectedEntry.lieutenantId) ?? "Unassigned"}
                         </div>
+                      )}
+                      {selectedEntry.rank === "Lieutenant" && selectedEntry.heroId && (
+                        <div className={styles.mutedTextSmall}>
+                          → Hero: {entryNameById.get(selectedEntry.heroId) ?? "Unassigned"}
+                        </div>
+                      )}
+                      {selectedEntry.description && (
+                        <p className={styles.description}>{selectedEntry.description}</p>
                       )}
                     </div>
                   </div>
-                  <div style={{ display: "grid", gap: "0.35rem" }}>
-                    <span style={{ fontWeight: 700 }}>Attributes</span>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.6rem" }}>
+                  <div className={styles.detailSection}>
+                    <div className={styles.sectionTitle}>Stats</div>
+                    <div className={styles.gridAuto140}>
+                      <div>
+                        <div className={styles.statLabel}>Tier</div>
+                        <div className={styles.statValue}>
+                          {selectedEntry.tier || "—"}{" "}
+                          {selectedEntry.tier ? `(${tierLabel(Number(selectedEntry.tier))})` : ""}
+                        </div>
+                      </div>
+                      <div>
+                        <div className={styles.statLabel}>Max Energy</div>
+                        <div className={styles.statValue}>{selectedEntry.maxEnergy || "—"}</div>
+                      </div>
+                      <div>
+                        <div className={styles.statLabel}>Max AP</div>
+                        <div className={styles.statValue}>{selectedEntry.maxAp || "—"}</div>
+                      </div>
+                      <div>
+                        <div className={styles.statLabel}>Ability</div>
+                        <div className={styles.statValue}>
+                          {selectedEntry.abilityType
+                            ? selectedEntry.abilityType === "custom"
+                              ? selectedEntry.customAbilityName || "Custom"
+                              : selectedEntry.abilityType
+                            : "None"}
+                        </div>
+                        {selectedEntry.abilityType === "custom" && (
+                          <div className={styles.mutedTextSmall}>
+                            Energy {selectedEntry.customAbilityEnergy || "—"} • AP {selectedEntry.customAbilityAp || "—"}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.detailSection}>
+                    <div className={styles.sectionTitle}>Attributes</div>
+                    <div className={styles.gridTwo}>
                       {ATTRIBUTE_KEYS.map((key) => (
-                        <div
-                          key={key}
-                          style={{
-                            border: "1px solid var(--border)",
-                            borderRadius: 8,
-                            padding: "0.5rem",
-                            background: "var(--surface-2)"
-                          }}
-                        >
-                          <div style={{ color: "var(--muted)", fontSize: 12 }}>{ATTRIBUTE_LABELS[key]}</div>
-                          <div style={{ fontWeight: 600 }}>{selectedEntry.attributes[key] || "0"}</div>
+                        <div key={key} className={styles.attributeCard}>
+                          <div className={styles.mutedTextSmall}>{ATTRIBUTE_LABELS[key]}</div>
+                          <div className={styles.statValue}>{selectedEntry.attributes[key] || "0"}</div>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div style={{ display: "grid", gap: "0.35rem" }}>
-                    <span style={{ fontWeight: 700 }}>Top Skills</span>
+                  <div className={styles.detailSection}>
+                    <div className={styles.sectionTitle}>Top Skills</div>
                     {skillDefinitions.length === 0 ? (
-                      <div style={{ color: "var(--muted)", fontSize: 13 }}>No skills loaded from definitions.</div>
+                      <div className={styles.mutedTextMedium}>No skills loaded from definitions.</div>
                     ) : topSkillSummary.length === 0 ? (
-                      <div style={{ color: "var(--muted)", fontSize: 13 }}>No notable skills listed.</div>
+                      <div className={styles.mutedTextMedium}>No notable skills listed.</div>
                     ) : (
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.6rem" }}>
+                      <div className={styles.gridThree}>
                         {topSkillSummary.map((skill) => (
-                          <div
-                            key={skill.code}
-                            style={{
-                              border: "1px solid var(--border)",
-                              borderRadius: 8,
-                              padding: "0.5rem",
-                              background: "var(--surface-2)",
-                              display: "grid",
-                              gap: "0.2rem"
-                            }}
-                          >
-                            <span style={{ fontWeight: 600 }}>{skill.name}</span>
-                            <span style={{ color: "var(--muted)", fontSize: 12 }}>
+                          <div key={skill.code} className={styles.skillCard}>
+                            <span className={styles.fieldLabelMedium}>{skill.name}</span>
+                            <span className={styles.mutedTextSmall}>
                               Total {skill.total} (Base {skill.base} • Bonus {skill.bonus >= 0 ? `+${skill.bonus}` : skill.bonus})
                             </span>
                           </div>
@@ -1584,7 +1412,7 @@ export const BestiaryPage: React.FC = () => {
               </div>
             )
           ) : (
-            <div style={{ color: "var(--muted)" }}>Select an entry or create a new one.</div>
+            <div className={styles.mutedText}>Select an entry or create a new one.</div>
           )}
         </section>
       </div>
