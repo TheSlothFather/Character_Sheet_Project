@@ -17,6 +17,7 @@ import { CampaignCharactersPage } from "./campaigns/CampaignCharactersPage";
 import { CampaignSettingsPage } from "./campaigns/CampaignSettingsPage";
 import { ACTIVE_CAMPAIGN_STORAGE_KEY } from "./campaigns/campaignStorage";
 import { CombatPage } from "./characters/CombatPage";
+import { useTheme } from "../hooks/useTheme";
 
 const linkStyle: React.CSSProperties = {
   display: "block",
@@ -36,6 +37,51 @@ const NotFound: React.FC = () => (
     <p>The page you are looking for does not exist.</p>
   </div>
 );
+
+const ThemeToggle: React.FC = () => {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: "1rem",
+        right: "1rem",
+        zIndex: 999,
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        padding: "0.4rem 0.6rem",
+        borderRadius: 999,
+        border: "1px solid var(--border)",
+        background: "var(--surface-1)",
+        color: "var(--text)",
+        boxShadow: "var(--shadow-depth-1)"
+      }}
+    >
+      <label htmlFor="theme-toggle" style={{ fontSize: 12, fontWeight: 600 }}>
+        Theme
+      </label>
+      <select
+        id="theme-toggle"
+        value={theme}
+        onChange={(event) => setTheme(event.target.value as "parchment" | "dark-fantasy")}
+        style={{
+          borderRadius: 999,
+          border: "1px solid var(--border)",
+          background: "var(--surface-2)",
+          color: "var(--text)",
+          padding: "0.2rem 0.6rem",
+          fontSize: 12,
+          fontWeight: 600
+        }}
+      >
+        <option value="parchment">Parchment</option>
+        <option value="dark-fantasy">Dark Fantasy</option>
+      </select>
+    </div>
+  );
+};
 
 const StartPage: React.FC = () => {
   return (
@@ -191,6 +237,7 @@ export const App: React.FC = () => {
   return (
     <DefinitionsProvider>
       <SelectedCharacterProvider>
+        <ThemeToggle />
         <Routes>
           <Route path="/" element={<StartPage />} />
           <Route path="/join/:token" element={<JoinCampaignPage />} />

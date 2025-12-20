@@ -5,8 +5,8 @@ import { useDefinitions } from "../definitions/DefinitionsContext";
 import { AttributeKey, computeAttributeSkillBonuses, getSkillCode, normalizeSkillCode } from "../characters/skillMetadata";
 
 const cardStyle: React.CSSProperties = {
-  background: "#0f131a",
-  border: "1px solid #1f2935",
+  background: "var(--surface-1)",
+  border: "1px solid var(--border)",
   borderRadius: 12,
   padding: "1rem"
 };
@@ -15,9 +15,9 @@ const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.6rem 0.75rem",
   borderRadius: 8,
-  border: "1px solid #2f3542",
-  background: "#0b1017",
-  color: "#e5e7eb",
+  border: "1px solid var(--border)",
+  background: "var(--surface-2)",
+  color: "var(--text)",
   boxSizing: "border-box"
 };
 
@@ -29,7 +29,7 @@ const sectionHeaderStyle: React.CSSProperties = {
   width: "100%",
   background: "transparent",
   border: "none",
-  color: "#e5e7eb",
+  color: "var(--text)",
   padding: 0,
   cursor: "pointer",
   fontSize: 16,
@@ -38,10 +38,10 @@ const sectionHeaderStyle: React.CSSProperties = {
 };
 
 const collapsibleStyle: React.CSSProperties = {
-  border: "1px solid #1f2935",
+  border: "1px solid var(--border)",
   borderRadius: 10,
   padding: "0.75rem",
-  background: "#0c111a",
+  background: "var(--surface-2)",
   display: "grid",
   gap: "0.75rem"
 };
@@ -149,7 +149,7 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, isOpen, 
   <div style={collapsibleStyle}>
     <button type="button" onClick={onToggle} style={sectionHeaderStyle}>
       <span>{title}</span>
-      <span style={{ color: "#94a3b8", fontSize: 14 }}>{isOpen ? "▾" : "▸"}</span>
+      <span style={{ color: "var(--muted)", fontSize: 14 }}>{isOpen ? "▾" : "▸"}</span>
     </button>
     {isOpen && <div style={{ display: "grid", gap: "0.75rem" }}>{children}</div>}
   </div>
@@ -730,13 +730,13 @@ export const BestiaryPage: React.FC = () => {
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <header>
         <h2 style={{ margin: 0 }}>Bestiary</h2>
-        <p style={{ margin: "0.25rem 0 0", color: "#cbd5e1" }}>
+        <p style={{ margin: "0.25rem 0 0", color: "var(--muted)" }}>
           Maintain monster entries with quick edit controls.
         </p>
       </header>
 
-      {error && <div style={{ color: "#fca5a5" }}>{error}</div>}
-      {loading && <div style={{ color: "#94a3b8" }}>Loading...</div>}
+      {error && <div style={{ color: "var(--danger)" }}>{error}</div>}
+      {loading && <div style={{ color: "var(--muted)" }}>Loading...</div>}
 
       <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
         <section
@@ -757,9 +757,9 @@ export const BestiaryPage: React.FC = () => {
               style={{
                 padding: "0.35rem 0.7rem",
                 borderRadius: 8,
-                border: "1px solid #1d4ed8",
-                background: "#2563eb",
-                color: "#e6edf7",
+                border: "1px solid var(--accent)",
+                background: "var(--accent)",
+                color: "var(--accent-contrast)",
                 fontWeight: 600,
                 cursor: "pointer"
               }}
@@ -826,18 +826,22 @@ export const BestiaryPage: React.FC = () => {
           </div>
           <div style={{ display: "grid", gap: "0.5rem", maxHeight: "70vh", overflowY: "auto" }}>
             {filteredEntries.length === 0 ? (
-              <div style={{ color: "#94a3b8", fontSize: 13 }}>No entries match these filters.</div>
+              <div style={{ color: "var(--muted)", fontSize: 13 }}>No entries match these filters.</div>
             ) : (
               filteredEntries.map((entry) => {
                 const isSelected = entry.id === selectedEntryId;
                 const rankChipColor =
                   entry.rank === "Hero"
-                    ? { background: "rgba(139, 92, 246, 0.2)", color: "#c4b5fd", border: "1px solid #7c3aed" }
+                    ? { background: "var(--tag-hero-bg)", color: "var(--tag-hero-text)", border: "1px solid var(--tag-hero-border)" }
                     : entry.rank === "Lieutenant"
-                      ? { background: "rgba(245, 158, 11, 0.2)", color: "#fcd34d", border: "1px solid #f59e0b" }
+                      ? {
+                          background: "var(--tag-lieutenant-bg)",
+                          color: "var(--tag-lieutenant-text)",
+                          border: "1px solid var(--tag-lieutenant-border)"
+                        }
                       : entry.rank === "Minion"
-                        ? { background: "rgba(45, 212, 191, 0.2)", color: "#5eead4", border: "1px solid #14b8a6" }
-                        : { background: "rgba(148, 163, 184, 0.2)", color: "#cbd5f5", border: "1px solid #64748b" };
+                        ? { background: "var(--tag-minion-bg)", color: "var(--tag-minion-text)", border: "1px solid var(--tag-minion-border)" }
+                        : { background: "var(--tag-npc-bg)", color: "var(--tag-npc-text)", border: "1px solid var(--tag-npc-border)" };
                 const inlineLink =
                   entry.rank === "Minion" && entry.lieutenantId
                     ? `→ Lt: ${entryNameById.get(entry.lieutenantId) ?? "Unassigned"}`
@@ -852,10 +856,10 @@ export const BestiaryPage: React.FC = () => {
                     style={{
                       textAlign: "left",
                       borderRadius: 8,
-                      border: isSelected ? "1px solid #2563eb" : "1px solid #1f2935",
-                      background: isSelected ? "rgba(37, 99, 235, 0.15)" : "#0c111a",
+                      border: isSelected ? "1px solid var(--accent)" : "1px solid var(--border)",
+                      background: isSelected ? "var(--accent-soft)" : "var(--surface-2)",
                       padding: "0.6rem",
-                      color: "#e5e7eb",
+                      color: "var(--text)",
                       cursor: "pointer",
                       display: "grid",
                       gap: "0.2rem"
@@ -876,9 +880,9 @@ export const BestiaryPage: React.FC = () => {
                       >
                         {entry.rank || "NPC"}
                       </span>
-                      {inlineLink && <span style={{ color: "#94a3b8", fontSize: 11 }}>{inlineLink}</span>}
+                      {inlineLink && <span style={{ color: "var(--muted)", fontSize: 11 }}>{inlineLink}</span>}
                     </div>
-                    <span style={{ color: "#9ca3af", fontSize: 12 }}>
+                    <span style={{ color: "var(--muted)", fontSize: 12 }}>
                       {entry.tier ? `Tier ${entry.tier}` : "Tier —"} • {entry.type || "Unknown type"}
                     </span>
                   </button>
@@ -890,9 +894,9 @@ export const BestiaryPage: React.FC = () => {
 
         <section style={{ ...cardStyle, flex: "1 1 0", minWidth: 0 }}>
           {!campaignId && campaigns.length === 0 ? (
-            <p style={{ color: "#94a3b8", margin: 0 }}>Create a campaign first to manage a bestiary.</p>
+            <p style={{ color: "var(--muted)", margin: 0 }}>Create a campaign first to manage a bestiary.</p>
           ) : !selectedCampaignId ? (
-            <p style={{ color: "#94a3b8", margin: 0 }}>Select a campaign to view or edit bestiary entries.</p>
+            <p style={{ color: "var(--muted)", margin: 0 }}>Select a campaign to view or edit bestiary entries.</p>
           ) : isCreating ? (
             <form onSubmit={handleCreate} style={{ display: "grid", gap: "0.75rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -903,9 +907,9 @@ export const BestiaryPage: React.FC = () => {
                   style={{
                     padding: "0.35rem 0.7rem",
                     borderRadius: 8,
-                    border: "1px solid #2b3747",
-                    background: "#1f2935",
-                    color: "#e5e7eb",
+                    border: "1px solid var(--border)",
+                    background: "var(--surface-3)",
+                    color: "var(--text)",
                     fontWeight: 600,
                     cursor: "pointer"
                   }}
@@ -999,7 +1003,7 @@ export const BestiaryPage: React.FC = () => {
                       style={inputStyle}
                       inputMode="numeric"
                     />
-                    <span style={{ color: "#94a3b8", fontSize: 12 }}>{tier ? tierLabel(Number(tier)) : "Tier name"}</span>
+                    <span style={{ color: "var(--muted)", fontSize: 12 }}>{tier ? tierLabel(Number(tier)) : "Tier name"}</span>
                   </label>
                   <label style={{ display: "grid", gap: "0.35rem" }}>
                     <span style={{ fontWeight: 700 }}>Max Energy</span>
@@ -1059,7 +1063,7 @@ export const BestiaryPage: React.FC = () => {
                 onToggle={() => togglePanel("skills")}
               >
                 {skillDefinitions.length === 0 ? (
-                  <div style={{ color: "#94a3b8", fontSize: 13 }}>No skills loaded from definitions.</div>
+                  <div style={{ color: "var(--muted)", fontSize: 13 }}>No skills loaded from definitions.</div>
                 ) : (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.75rem" }}>
                     {skillDefinitions.map((skill) => {
@@ -1078,7 +1082,7 @@ export const BestiaryPage: React.FC = () => {
                             style={inputStyle}
                             inputMode="numeric"
                           />
-                          <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                          <span style={{ color: "var(--muted)", fontSize: 12 }}>
                             Bonus {bonus >= 0 ? `+${bonus}` : bonus} • Total {total}
                           </span>
                         </label>
@@ -1146,9 +1150,9 @@ export const BestiaryPage: React.FC = () => {
                 style={{
                   padding: "0.6rem 0.9rem",
                   borderRadius: 8,
-                  border: "1px solid #1d4ed8",
-                  background: "#2563eb",
-                  color: "#e6edf7",
+                  border: "1px solid var(--accent)",
+                  background: "var(--accent)",
+                  color: "var(--accent-contrast)",
                   fontWeight: 700,
                   width: "fit-content",
                   cursor: "pointer"
@@ -1168,9 +1172,9 @@ export const BestiaryPage: React.FC = () => {
                     style={{
                       padding: "0.35rem 0.7rem",
                       borderRadius: 8,
-                      border: "1px solid #2b3747",
-                      background: "#1f2935",
-                      color: "#e5e7eb",
+                      border: "1px solid var(--border)",
+                      background: "var(--surface-3)",
+                      color: "var(--text)",
                       fontWeight: 600,
                       cursor: "pointer"
                     }}
@@ -1312,7 +1316,7 @@ export const BestiaryPage: React.FC = () => {
                   onToggle={() => togglePanel("skills")}
                 >
                   {skillDefinitions.length === 0 ? (
-                    <div style={{ color: "#94a3b8", fontSize: 13 }}>No skills loaded from definitions.</div>
+                    <div style={{ color: "var(--muted)", fontSize: 13 }}>No skills loaded from definitions.</div>
                   ) : (
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.6rem" }}>
                       {skillDefinitions.map((skill) => {
@@ -1333,7 +1337,7 @@ export const BestiaryPage: React.FC = () => {
                               style={inputStyle}
                               inputMode="numeric"
                             />
-                            <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                            <span style={{ color: "var(--muted)", fontSize: 12 }}>
                               Bonus {bonus >= 0 ? `+${bonus}` : bonus} • Total {total}
                             </span>
                           </label>
@@ -1405,9 +1409,9 @@ export const BestiaryPage: React.FC = () => {
                     style={{
                       padding: "0.45rem 0.8rem",
                       borderRadius: 8,
-                      border: "1px solid #1d4ed8",
-                      background: "#2563eb",
-                      color: "#e6edf7",
+                      border: "1px solid var(--accent)",
+                      background: "var(--accent)",
+                      color: "var(--accent-contrast)",
                       fontWeight: 600,
                       cursor: "pointer"
                     }}
@@ -1420,9 +1424,9 @@ export const BestiaryPage: React.FC = () => {
                     style={{
                       padding: "0.45rem 0.8rem",
                       borderRadius: 8,
-                      border: "1px solid #2b3747",
-                      background: "#1f2935",
-                      color: "#e5e7eb",
+                      border: "1px solid var(--border)",
+                      background: "var(--surface-3)",
+                      color: "var(--text)",
                       fontWeight: 600,
                       cursor: "pointer"
                     }}
@@ -1442,9 +1446,9 @@ export const BestiaryPage: React.FC = () => {
                       style={{
                         padding: "0.4rem 0.7rem",
                         borderRadius: 8,
-                        border: "1px solid #2b3747",
-                        background: "#1f2935",
-                        color: "#e5e7eb",
+                        border: "1px solid var(--border)",
+                        background: "var(--surface-3)",
+                        color: "var(--text)",
                         fontWeight: 600,
                         cursor: "pointer"
                       }}
@@ -1457,9 +1461,9 @@ export const BestiaryPage: React.FC = () => {
                       style={{
                         padding: "0.4rem 0.7rem",
                         borderRadius: 8,
-                        border: "1px solid #3f2b2b",
-                        background: "#2c1515",
-                        color: "#fecaca",
+                        border: "1px solid var(--danger)",
+                        background: "color-mix(in srgb, var(--danger) 15%, transparent)",
+                        color: "var(--danger)",
                         fontWeight: 600,
                         cursor: "pointer"
                       }}
@@ -1470,50 +1474,50 @@ export const BestiaryPage: React.FC = () => {
                 </div>
                 <div
                   style={{
-                    border: "1px solid #1f2935",
+                    border: "1px solid var(--border)",
                     borderRadius: 12,
                     padding: "1rem",
-                    background: "#0c111a",
+                    background: "var(--surface-2)",
                     display: "grid",
                     gap: "0.85rem"
                   }}
                 >
                   <div style={{ display: "grid", gap: "0.25rem" }}>
-                    <div style={{ color: "#9ca3af", fontSize: 13 }}>
+                    <div style={{ color: "var(--muted)", fontSize: 13 }}>
                       {selectedEntry.type || "Unknown type"} • {selectedEntry.rank || "NPC"}
                     </div>
                     {selectedEntry.rank === "Minion" && selectedEntry.lieutenantId && (
-                      <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                      <div style={{ color: "var(--muted)", fontSize: 12 }}>
                         → Lt: {entryNameById.get(selectedEntry.lieutenantId) ?? "Unassigned"}
                       </div>
                     )}
                     {selectedEntry.rank === "Lieutenant" && selectedEntry.heroId && (
-                      <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                      <div style={{ color: "var(--muted)", fontSize: 12 }}>
                         → Hero: {entryNameById.get(selectedEntry.heroId) ?? "Unassigned"}
                       </div>
                     )}
                     {selectedEntry.description && (
-                      <p style={{ margin: 0, color: "#cbd5e1", fontSize: 14 }}>{selectedEntry.description}</p>
+                      <p style={{ margin: 0, color: "var(--muted)", fontSize: 14 }}>{selectedEntry.description}</p>
                     )}
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem" }}>
                     <div>
-                      <div style={{ color: "#94a3b8", fontSize: 12, textTransform: "uppercase" }}>Tier</div>
+                      <div style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase" }}>Tier</div>
                       <div style={{ fontWeight: 600 }}>
                         {selectedEntry.tier || "—"}{" "}
                         {selectedEntry.tier ? `(${tierLabel(Number(selectedEntry.tier))})` : ""}
                       </div>
                     </div>
                     <div>
-                      <div style={{ color: "#94a3b8", fontSize: 12, textTransform: "uppercase" }}>Max Energy</div>
+                      <div style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase" }}>Max Energy</div>
                       <div style={{ fontWeight: 600 }}>{selectedEntry.maxEnergy || "—"}</div>
                     </div>
                     <div>
-                      <div style={{ color: "#94a3b8", fontSize: 12, textTransform: "uppercase" }}>Max AP</div>
+                      <div style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase" }}>Max AP</div>
                       <div style={{ fontWeight: 600 }}>{selectedEntry.maxAp || "—"}</div>
                     </div>
                     <div>
-                      <div style={{ color: "#94a3b8", fontSize: 12, textTransform: "uppercase" }}>Ability</div>
+                      <div style={{ color: "var(--muted)", fontSize: 12, textTransform: "uppercase" }}>Ability</div>
                       <div style={{ fontWeight: 600 }}>
                         {selectedEntry.abilityType
                           ? selectedEntry.abilityType === "custom"
@@ -1522,7 +1526,7 @@ export const BestiaryPage: React.FC = () => {
                           : "None"}
                       </div>
                       {selectedEntry.abilityType === "custom" && (
-                        <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                        <div style={{ color: "var(--muted)", fontSize: 12 }}>
                           Energy {selectedEntry.customAbilityEnergy || "—"} • AP {selectedEntry.customAbilityAp || "—"}
                         </div>
                       )}
@@ -1535,13 +1539,13 @@ export const BestiaryPage: React.FC = () => {
                         <div
                           key={key}
                           style={{
-                            border: "1px solid #1f2935",
+                            border: "1px solid var(--border)",
                             borderRadius: 8,
                             padding: "0.5rem",
-                            background: "#0b1017"
+                            background: "var(--surface-2)"
                           }}
                         >
-                          <div style={{ color: "#94a3b8", fontSize: 12 }}>{ATTRIBUTE_LABELS[key]}</div>
+                          <div style={{ color: "var(--muted)", fontSize: 12 }}>{ATTRIBUTE_LABELS[key]}</div>
                           <div style={{ fontWeight: 600 }}>{selectedEntry.attributes[key] || "0"}</div>
                         </div>
                       ))}
@@ -1550,25 +1554,25 @@ export const BestiaryPage: React.FC = () => {
                   <div style={{ display: "grid", gap: "0.35rem" }}>
                     <span style={{ fontWeight: 700 }}>Top Skills</span>
                     {skillDefinitions.length === 0 ? (
-                      <div style={{ color: "#94a3b8", fontSize: 13 }}>No skills loaded from definitions.</div>
+                      <div style={{ color: "var(--muted)", fontSize: 13 }}>No skills loaded from definitions.</div>
                     ) : topSkillSummary.length === 0 ? (
-                      <div style={{ color: "#94a3b8", fontSize: 13 }}>No notable skills listed.</div>
+                      <div style={{ color: "var(--muted)", fontSize: 13 }}>No notable skills listed.</div>
                     ) : (
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.6rem" }}>
                         {topSkillSummary.map((skill) => (
                           <div
                             key={skill.code}
                             style={{
-                              border: "1px solid #1f2935",
+                              border: "1px solid var(--border)",
                               borderRadius: 8,
                               padding: "0.5rem",
-                              background: "#0b1017",
+                              background: "var(--surface-2)",
                               display: "grid",
                               gap: "0.2rem"
                             }}
                           >
                             <span style={{ fontWeight: 600 }}>{skill.name}</span>
-                            <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                            <span style={{ color: "var(--muted)", fontSize: 12 }}>
                               Total {skill.total} (Base {skill.base} • Bonus {skill.bonus >= 0 ? `+${skill.bonus}` : skill.bonus})
                             </span>
                           </div>
@@ -1580,7 +1584,7 @@ export const BestiaryPage: React.FC = () => {
               </div>
             )
           ) : (
-            <div style={{ color: "#94a3b8" }}>Select an entry or create a new one.</div>
+            <div style={{ color: "var(--muted)" }}>Select an entry or create a new one.</div>
           )}
         </section>
       </div>

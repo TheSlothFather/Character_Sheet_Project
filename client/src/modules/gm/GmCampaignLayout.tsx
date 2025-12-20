@@ -56,10 +56,10 @@ export const GmCampaignLayout: React.FC = () => {
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <header style={headerStyle}>
         <h2 style={{ margin: 0 }}>GM Campaign</h2>
-        <p style={{ margin: 0, color: "#94a3b8" }}>
+        <p style={{ margin: 0, color: "var(--muted)" }}>
           {loading ? "Loading campaign..." : campaign?.name || "Unnamed campaign"}
         </p>
-        {error && <p style={{ margin: 0, color: "#fca5a5" }}>{error}</p>}
+        {error && <p style={{ margin: 0, color: "var(--danger)" }}>{error}</p>}
       </header>
       <Outlet />
     </div>
