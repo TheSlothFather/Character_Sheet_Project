@@ -194,6 +194,7 @@ export const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<StartPage />} />
           <Route path="/join/:token" element={<JoinCampaignPage />} />
+          <Route path="/gm/combat" element={<GmApp />} />
           <Route path="/gm/*" element={<GmApp />} />
           <Route path="/player/*" element={<PlayerApp />} />
           <Route path="*" element={<NotFound />} />
