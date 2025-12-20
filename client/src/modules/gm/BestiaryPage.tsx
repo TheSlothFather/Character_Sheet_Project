@@ -21,6 +21,31 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box"
 };
 
+const sectionHeaderStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "0.5rem",
+  width: "100%",
+  background: "transparent",
+  border: "none",
+  color: "#e5e7eb",
+  padding: 0,
+  cursor: "pointer",
+  fontSize: 16,
+  fontWeight: 700,
+  textAlign: "left"
+};
+
+const collapsibleStyle: React.CSSProperties = {
+  border: "1px solid #1f2935",
+  borderRadius: 10,
+  padding: "0.75rem",
+  background: "#0c111a",
+  display: "grid",
+  gap: "0.75rem"
+};
+
 type BestiaryEntry = {
   id: string;
   name: string;
@@ -441,11 +466,32 @@ export const BestiaryPage: React.FC = () => {
   const startEdit = (entry: BestiaryEntry) => {
     setEditingId(entry.id);
     setEditDraft({ ...entry });
+    setSelectedEntryId(entry.id);
+    setIsCreating(false);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditDraft(null);
+  };
+
+  const selectEntry = (entryId: string) => {
+    setSelectedEntryId(entryId);
+    setIsCreating(false);
+    if (editingId && editingId !== entryId) {
+      cancelEdit();
+    }
+  };
+
+  const startCreate = () => {
+    cancelEdit();
+    resetForm();
+    setSelectedEntryId(null);
+    setIsCreating(true);
+  };
+
+  const togglePanel = (key: PanelKey) => {
+    setPanelState((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const saveEdit = async () => {
@@ -571,6 +617,7 @@ export const BestiaryPage: React.FC = () => {
       await gmApi.deleteBestiaryEntry(id);
       setApiEntries((prev) => prev.filter((entry) => entry.id !== id));
       if (editingId === id) cancelEdit();
+      if (selectedEntryId === id) setSelectedEntryId(null);
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Failed to delete bestiary entry.");
     }
@@ -629,20 +676,31 @@ export const BestiaryPage: React.FC = () => {
             </label>
           )}
           <label style={{ display: "grid", gap: "0.35rem" }}>
-            <span style={{ fontWeight: 700 }}>Name</span>
+            <span style={{ fontWeight: 700 }}>Search</span>
             <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Ash Drake"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search creatures..."
               style={inputStyle}
             />
           </label>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.6rem" }}>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Rank</span>
+              <select value={filterRank} onChange={(event) => setFilterRank(event.target.value)} style={inputStyle}>
+                <option value="All">All</option>
+                {RANK_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label style={{ display: "grid", gap: "0.35rem" }}>
               <span style={{ fontWeight: 700 }}>Type</span>
               <input
-                value={type}
-                onChange={(event) => setType(event.target.value)}
+                value={filterType}
+                onChange={(event) => setFilterType(event.target.value)}
                 placeholder="Dragon"
                 style={inputStyle}
               />
@@ -873,12 +931,144 @@ export const BestiaryPage: React.FC = () => {
                     gap: "0.6rem"
                   }}
                 >
-                  {isEditing && editDraft ? (
-                    <div style={{ display: "grid", gap: "0.6rem" }}>
+                  Cancel
+                </button>
+              </div>
+              <CollapsibleSection
+                title="Core Info"
+                isOpen={panelState.core}
+                onToggle={() => togglePanel("core")}
+              >
+                <label style={{ display: "grid", gap: "0.35rem" }}>
+                  <span style={{ fontWeight: 700 }}>Name</span>
+                  <input
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder="Ash Drake"
+                    style={inputStyle}
+                  />
+                </label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem" }}>
+                  <label style={{ display: "grid", gap: "0.35rem" }}>
+                    <span style={{ fontWeight: 700 }}>Type</span>
+                    <input
+                      value={type}
+                      onChange={(event) => setType(event.target.value)}
+                      placeholder="Dragon"
+                      style={inputStyle}
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: "0.35rem" }}>
+                    <span style={{ fontWeight: 700 }}>Rank</span>
+                    <select
+                      value={rank}
+                      onChange={(event) => {
+                        const next = event.target.value;
+                        setRank(next);
+                        if (next !== "Minion") setLieutenantId("");
+                        if (next !== "Lieutenant") setHeroId("");
+                      }}
+                      style={inputStyle}
+                    >
+                      {RANK_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                {rank === "Minion" && (
+                  <label style={{ display: "grid", gap: "0.35rem" }}>
+                    <span style={{ fontWeight: 700 }}>Assigned Lieutenant</span>
+                    <select value={lieutenantId} onChange={(event) => setLieutenantId(event.target.value)} style={inputStyle}>
+                      <option value="">Select a lieutenant</option>
+                      {availableLieutenants.map((entry) => (
+                        <option key={entry.id} value={entry.id}>
+                          {entry.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                {rank === "Lieutenant" && (
+                  <label style={{ display: "grid", gap: "0.35rem" }}>
+                    <span style={{ fontWeight: 700 }}>Assigned Hero</span>
+                    <select value={heroId} onChange={(event) => setHeroId(event.target.value)} style={inputStyle}>
+                      <option value="">Select a hero</option>
+                      {availableHeroes.map((entry) => (
+                        <option key={entry.id} value={entry.id}>
+                          {entry.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </CollapsibleSection>
+              <CollapsibleSection
+                title="Stats"
+                isOpen={panelState.stats}
+                onToggle={() => togglePanel("stats")}
+              >
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
+                  <label style={{ display: "grid", gap: "0.35rem" }}>
+                    <span style={{ fontWeight: 700 }}>Tier</span>
+                    <input
+                      value={tier}
+                      onChange={(event) => setTier(event.target.value)}
+                      placeholder="3"
+                      style={inputStyle}
+                      inputMode="numeric"
+                    />
+                    <span style={{ color: "#94a3b8", fontSize: 12 }}>{tier ? tierLabel(Number(tier)) : "Tier name"}</span>
+                  </label>
+                  <label style={{ display: "grid", gap: "0.35rem" }}>
+                    <span style={{ fontWeight: 700 }}>Max Energy</span>
+                    <input
+                      value={maxEnergy}
+                      onChange={(event) => setMaxEnergy(event.target.value)}
+                      placeholder="120"
+                      style={inputStyle}
+                      inputMode="numeric"
+                    />
+                  </label>
+                  <label style={{ display: "grid", gap: "0.35rem" }}>
+                    <span style={{ fontWeight: 700 }}>Max AP</span>
+                    <input
+                      value={maxAp}
+                      onChange={(event) => setMaxAp(event.target.value)}
+                      placeholder="6"
+                      style={inputStyle}
+                      inputMode="numeric"
+                    />
+                  </label>
+                </div>
+                <label style={{ display: "grid", gap: "0.35rem" }}>
+                  <span style={{ fontWeight: 700 }}>Tactics / Notes</span>
+                  <textarea
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    rows={3}
+                    placeholder="Breath weapon on round two, vulnerable to cold iron."
+                    style={{ ...inputStyle, resize: "vertical" }}
+                  />
+                </label>
+              </CollapsibleSection>
+              <CollapsibleSection
+                title="Attributes"
+                isOpen={panelState.attributes}
+                onToggle={() => togglePanel("attributes")}
+              >
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.75rem" }}>
+                  {ATTRIBUTE_KEYS.map((key) => (
+                    <label key={key} style={{ display: "grid", gap: "0.35rem" }}>
+                      <span style={{ fontWeight: 600 }}>{ATTRIBUTE_LABELS[key]}</span>
                       <input
-                        value={editDraft.name}
-                        onChange={(event) => setEditDraft({ ...editDraft, name: event.target.value })}
+                        value={attributes[key]}
+                        onChange={(event) => setAttributes((prev) => ({ ...prev, [key]: event.target.value }))}
+                        placeholder="0"
                         style={inputStyle}
+                        inputMode="numeric"
                       />
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.6rem" }}>
                         <input
@@ -961,13 +1151,84 @@ export const BestiaryPage: React.FC = () => {
                           style={inputStyle}
                           inputMode="numeric"
                         />
-                      </div>
-                      <textarea
-                        value={editDraft.description}
-                        onChange={(event) => setEditDraft({ ...editDraft, description: event.target.value })}
-                        rows={3}
-                        placeholder="Notes"
-                        style={{ ...inputStyle, resize: "vertical" }}
+                      </label>
+                    ))}
+                  </div>
+                </CollapsibleSection>
+                <CollapsibleSection
+                  title="Skills"
+                  isOpen={panelState.skills}
+                  onToggle={() => togglePanel("skills")}
+                >
+                  {skillDefinitions.length === 0 ? (
+                    <div style={{ color: "#94a3b8", fontSize: 13 }}>No skills loaded from definitions.</div>
+                  ) : (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.6rem" }}>
+                      {skillDefinitions.map((skill) => {
+                        const code = getSkillCode(skill);
+                        const bonus = (editBonuses as Record<string, number>)[code] ?? 0;
+                        const baseValue = editDraft.skills[code] ?? "";
+                        const numericBase = Number(baseValue);
+                        const total = (Number.isFinite(numericBase) ? numericBase : 0) + bonus;
+                        return (
+                          <label key={code} style={{ display: "grid", gap: "0.35rem" }}>
+                            <span style={{ fontWeight: 600 }}>{skill.name}</span>
+                            <input
+                              value={baseValue}
+                              onChange={(event) =>
+                                setEditDraft({ ...editDraft, skills: { ...editDraft.skills, [code]: event.target.value } })
+                              }
+                              placeholder="0"
+                              style={inputStyle}
+                              inputMode="numeric"
+                            />
+                            <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                              Bonus {bonus >= 0 ? `+${bonus}` : bonus} • Total {total}
+                            </span>
+                          </label>
+                        );
+                      })}
+                      {Object.keys(editDraft.skills)
+                        .filter((code) => !skillCodeSet.has(code))
+                        .map((code) => (
+                          <label key={code} style={{ display: "grid", gap: "0.35rem" }}>
+                            <span style={{ fontWeight: 600 }}>{normalizeSkillCode({ id: code })}</span>
+                            <input
+                              value={editDraft.skills[code]}
+                              onChange={(event) =>
+                                setEditDraft({ ...editDraft, skills: { ...editDraft.skills, [code]: event.target.value } })
+                              }
+                              placeholder="0"
+                              style={inputStyle}
+                              inputMode="numeric"
+                            />
+                          </label>
+                        ))}
+                    </div>
+                  )}
+                </CollapsibleSection>
+                <CollapsibleSection
+                  title="Abilities"
+                  isOpen={panelState.abilities}
+                  onToggle={() => togglePanel("abilities")}
+                >
+                  <select
+                    value={editDraft.abilityType}
+                    onChange={(event) => setEditDraft({ ...editDraft, abilityType: event.target.value })}
+                    style={inputStyle}
+                  >
+                    <option value="">None</option>
+                    <option value="psionic">Psionic</option>
+                    <option value="martial">Martial</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                  {editDraft.abilityType === "custom" && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
+                      <input
+                        value={editDraft.customAbilityName}
+                        onChange={(event) => setEditDraft({ ...editDraft, customAbilityName: event.target.value })}
+                        placeholder="Custom Ability"
+                        style={inputStyle}
                       />
                       <div style={{ display: "grid", gap: "0.6rem" }}>
                         <div style={{ display: "grid", gap: "0.35rem" }}>
@@ -1093,7 +1354,7 @@ export const BestiaryPage: React.FC = () => {
                           type="button"
                           onClick={cancelEdit}
                           style={{
-                            padding: "0.45rem 0.8rem",
+                            border: "1px solid #1f2935",
                             borderRadius: 8,
                             border: "1px solid var(--border)",
                             background: "var(--surface-2)",
@@ -1145,7 +1406,7 @@ export const BestiaryPage: React.FC = () => {
                             type="button"
                             onClick={() => deleteEntry(entry.id)}
                             style={{
-                              padding: "0.4rem 0.7rem",
+                              border: "1px solid #1f2935",
                               borderRadius: 8,
                               border: "1px solid var(--danger)",
                               background: "var(--danger)",
@@ -1154,9 +1415,12 @@ export const BestiaryPage: React.FC = () => {
                               cursor: "pointer"
                             }}
                           >
-                            Delete
-                          </button>
-                        </div>
+                            <span style={{ fontWeight: 600 }}>{skill.name}</span>
+                            <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                              Total {skill.total} (Base {skill.base} • Bonus {skill.bonus >= 0 ? `+${skill.bonus}` : skill.bonus})
+                            </span>
+                          </div>
+                        ))}
                       </div>
                       {entry.description && (
                         <p style={{ margin: 0, color: "var(--muted)", fontSize: 14 }}>{entry.description}</p>
@@ -1164,11 +1428,13 @@ export const BestiaryPage: React.FC = () => {
                     </>
                   )}
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
+              </div>
+            )
+          ) : (
+            <div style={{ color: "#94a3b8" }}>Select an entry or create a new one.</div>
+          )}
+        </section>
+      </div>
     </div>
   );
 };
