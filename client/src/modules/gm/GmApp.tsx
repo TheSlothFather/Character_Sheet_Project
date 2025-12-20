@@ -13,13 +13,13 @@ import { GmCampaignLayout } from "./GmCampaignLayout";
 const linkStyle: React.CSSProperties = {
   display: "block",
   padding: "0.5rem 0",
-  color: "#e5e7eb",
+  color: "var(--text)",
   textDecoration: "none"
 };
 
 const activeLinkStyle: React.CSSProperties = {
   fontWeight: 700,
-  color: "#9ae6b4"
+  color: "var(--success)"
 };
 
 const NotFound: React.FC = () => (
@@ -30,20 +30,20 @@ const NotFound: React.FC = () => (
 );
 
 const cardStyle: React.CSSProperties = {
-  background: "#0f131a",
-  border: "1px solid #1f2935",
+  background: "var(--surface-1)",
+  border: "1px solid var(--border)",
   borderRadius: 12,
   padding: "1.5rem",
-  boxShadow: "0 20px 50px rgba(15, 23, 42, 0.35)"
+  boxShadow: "var(--shadow-depth-2)"
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "0.6rem 0.75rem",
   borderRadius: 8,
-  border: "1px solid #2f3542",
-  background: "#0b1017",
-  color: "#e5e7eb",
+  border: "1px solid var(--border)",
+  background: "var(--surface-2)",
+  color: "var(--text)",
   boxSizing: "border-box"
 };
 
@@ -120,7 +120,7 @@ export const GmApp: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#0b0f16", color: "#e5e7eb" }}>
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--background)", color: "var(--text)" }}>
         <div>Checking session...</div>
       </div>
     );
@@ -128,15 +128,15 @@ export const GmApp: React.FC = () => {
 
   if (!user) {
     return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#0b0f16", color: "#e5e7eb" }}>
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "var(--background)", color: "var(--text)" }}>
         <form onSubmit={handleAuth} style={{ width: "100%", maxWidth: 420 }}>
           <div style={cardStyle}>
             <h2 style={{ marginTop: 0 }}>{authMode === "sign-in" ? "GM Sign In" : "Create GM Account"}</h2>
-            <p style={{ color: "#94a3b8", marginTop: 0 }}>
+            <p style={{ color: "var(--muted)", marginTop: 0 }}>
               You must be signed in for GM actions (campaigns, invites, bestiary, settings).
             </p>
-            {error && <div style={{ color: "#fca5a5", marginBottom: "0.75rem" }}>{error}</div>}
-            {notice && <div style={{ color: "#9ae6b4", marginBottom: "0.75rem" }}>{notice}</div>}
+            {error && <div style={{ color: "var(--danger)", marginBottom: "0.75rem" }}>{error}</div>}
+            {notice && <div style={{ color: "var(--success)", marginBottom: "0.75rem" }}>{notice}</div>}
             <label style={{ display: "grid", gap: "0.35rem", marginBottom: "0.75rem" }}>
               <span style={{ fontWeight: 600 }}>Email</span>
               <input
@@ -162,9 +162,9 @@ export const GmApp: React.FC = () => {
               style={{
                 padding: "0.6rem 0.9rem",
                 borderRadius: 8,
-                border: "1px solid #1d4ed8",
-                background: "#2563eb",
-                color: "#e6edf7",
+                border: "1px solid var(--accent)",
+                background: "var(--accent)",
+                color: "var(--surface-1)",
                 fontWeight: 700,
                 width: "100%",
                 cursor: "pointer"
@@ -184,9 +184,9 @@ export const GmApp: React.FC = () => {
                 width: "100%",
                 padding: "0.55rem 0.9rem",
                 borderRadius: 8,
-                border: "1px solid #2f3542",
-                background: "#111827",
-                color: "#e5e7eb",
+                border: "1px solid var(--border)",
+                background: "var(--surface-3)",
+                color: "var(--text)",
                 fontWeight: 600,
                 cursor: "pointer"
               }}
@@ -204,17 +204,17 @@ export const GmApp: React.FC = () => {
   const campaignId = campaignMatch?.[1] ?? null;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#0b0f16", color: "#e5e7eb" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--background)", color: "var(--text)" }}>
       <nav
         style={{
           width: 240,
-          borderRight: "1px solid #1f2935",
+          borderRight: "1px solid var(--border)",
           padding: "1rem",
           boxSizing: "border-box"
         }}
       >
         <h1 style={{ fontSize: 18, marginBottom: "0.5rem" }}>GM Console</h1>
-        <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: "1rem" }}>
+        <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: "1rem" }}>
           {user.email ?? "Signed in"}
           <button
             type="button"
@@ -224,9 +224,9 @@ export const GmApp: React.FC = () => {
               width: "100%",
               padding: "0.35rem 0.6rem",
               borderRadius: 8,
-              border: "1px solid #2f3542",
-              background: "#111827",
-              color: "#e5e7eb",
+              border: "1px solid var(--border)",
+              background: "var(--surface-3)",
+              color: "var(--text)",
               fontWeight: 600,
               cursor: "pointer"
             }}
@@ -269,7 +269,7 @@ export const GmApp: React.FC = () => {
                 fontSize: 12,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
-                color: "#94a3b8"
+                color: "var(--muted)"
               }}
             >
               Player Views
