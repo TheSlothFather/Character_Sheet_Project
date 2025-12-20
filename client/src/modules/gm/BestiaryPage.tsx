@@ -1,6 +1,8 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { gmApi, type BestiaryEntry as ApiBestiaryEntry, type Campaign } from "../../api/gm";
+import { useDefinitions } from "../definitions/DefinitionsContext";
+import { AttributeKey, computeAttributeSkillBonuses, getSkillCode, normalizeSkillCode } from "../characters/skillMetadata";
 
 const cardStyle: React.CSSProperties = {
   background: "#0f131a",
@@ -23,18 +25,31 @@ type BestiaryEntry = {
   id: string;
   name: string;
   type: string;
-  threat: string;
+  rank: string;
   description: string;
   tier: string;
   maxEnergy: string;
   maxAp: string;
-  skillValues: string;
-  attributeValues: string;
+  attributes: Record<AttributeKey, string>;
+  skills: Record<string, string>;
   abilityType: string;
   customAbilityName: string;
   customAbilityEnergy: string;
   customAbilityAp: string;
+  lieutenantId: string;
+  heroId: string;
 };
+
+const ATTRIBUTE_KEYS: AttributeKey[] = ["PHYSICAL", "MENTAL", "SPIRITUAL", "WILL"];
+
+const ATTRIBUTE_LABELS: Record<AttributeKey, string> = {
+  PHYSICAL: "Physical",
+  MENTAL: "Mental",
+  SPIRITUAL: "Spiritual",
+  WILL: "Will"
+};
+
+const RANK_OPTIONS = ["NPC", "Minion", "Lieutenant", "Hero"];
 
 const tierLabel = (value: number): string => {
   if (value <= 0 || Number.isNaN(value)) return "Unknown";
@@ -53,56 +68,11 @@ const readNumberString = (value: unknown): string => {
   return "";
 };
 
-const buildJsonString = (value: Record<string, unknown>): string => {
-  const keys = Object.keys(value);
-  if (keys.length === 0) return "";
-  return JSON.stringify(value, null, 2);
-};
-
-const mapApiEntry = (entry: ApiBestiaryEntry): BestiaryEntry => {
-  const statsSkills = entry.statsSkills;
-  const attributes = entry.attributes;
-  const type = typeof statsSkills?.type === "string" ? statsSkills.type : "";
-  const threat = typeof statsSkills?.threat === "string" ? statsSkills.threat : "";
-  const description = typeof statsSkills?.description === "string" ? statsSkills.description : "";
-  const tier = readNumberString(statsSkills?.tier ?? attributes?.tier);
-  const maxEnergy = readNumberString(attributes?.energy);
-  const maxAp = readNumberString(attributes?.ap);
-  const attributeValues: Record<string, unknown> = { ...(attributes ?? {}) };
-  delete attributeValues.energy;
-  delete attributeValues.ap;
-  delete attributeValues.tier;
-  const skillValues = entry.skills ?? {};
-  const primaryAbility = entry.abilities?.[0];
-  const abilityType = typeof primaryAbility?.type === "string" ? primaryAbility.type : "";
-  const customAbilityName = typeof primaryAbility?.name === "string" ? primaryAbility.name : "";
-  const customAbilityEnergy = readNumberString(primaryAbility?.energyCost);
-  const customAbilityAp = readNumberString(primaryAbility?.apCost);
-  return {
-    id: entry.id,
-    name: entry.name,
-    type,
-    threat,
-    description,
-    tier,
-    maxEnergy,
-    maxAp,
-    skillValues: buildJsonString(skillValues as Record<string, unknown>),
-    attributeValues: buildJsonString(attributeValues),
-    abilityType,
-    customAbilityName,
-    customAbilityEnergy,
-    customAbilityAp
-  };
-};
-
 const toStatsSkills = (entry: BestiaryEntry, tierValue?: number): Record<string, string | number> => {
   const statsSkills: Record<string, string | number> = {};
   const type = entry.type.trim();
-  const threat = entry.threat.trim();
   const description = entry.description.trim();
   if (type) statsSkills.type = type;
-  if (threat) statsSkills.threat = threat;
   if (description) statsSkills.description = description;
   if (tierValue !== undefined) statsSkills.tier = tierValue;
   return statsSkills;
@@ -118,55 +88,55 @@ const parseIntegerField = (label: string, value: string): { value?: number; erro
   return { value: parsed };
 };
 
-const parseJsonObject = (label: string, value: string): { value?: Record<string, unknown>; error?: string } => {
-  const trimmed = value.trim();
-  if (!trimmed) return {};
-  try {
-    const parsed = JSON.parse(trimmed);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return { error: `${label} must be a JSON object.` };
-    }
-    return { value: parsed as Record<string, unknown> };
-  } catch (parseError) {
-    return { error: `${label} must be valid JSON.` };
-  }
-};
-
-const parseSkillValues = (value: string): { value?: Record<string, number>; error?: string } => {
-  const parsed = parseJsonObject("Skill Values", value);
-  if (parsed.error || !parsed.value) return parsed;
+const parseSkillValues = (
+  skills: Record<string, string>
+): { value?: Record<string, number>; error?: string } => {
   const normalized: Record<string, number> = {};
-  for (const [key, raw] of Object.entries(parsed.value)) {
-    const numberValue = typeof raw === "number" ? raw : Number(raw);
-    if (!Number.isFinite(numberValue)) {
-      return { error: `Skill Values entries must be numbers (invalid: ${key}).` };
+  for (const [key, raw] of Object.entries(skills)) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const parsed = Number(trimmed);
+    if (!Number.isInteger(parsed)) {
+      return { error: `Skill ${key} must be an integer.` };
     }
-    normalized[key] = numberValue;
+    normalized[key] = parsed;
   }
   return { value: normalized };
 };
 
-const parseAttributeValues = (value: string): { value?: Record<string, unknown>; error?: string } =>
-  parseJsonObject("Attribute Values", value);
+const toAttributeNumbers = (values: Record<AttributeKey, string>): Record<AttributeKey, number> =>
+  ATTRIBUTE_KEYS.reduce<Record<AttributeKey, number>>((acc, key) => {
+    const parsed = Number(values[key]);
+    acc[key] = Number.isFinite(parsed) ? parsed : 0;
+    return acc;
+  }, {} as Record<AttributeKey, number>);
 
 export const BestiaryPage: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
+  const { data: definitions } = useDefinitions();
   const [campaigns, setCampaigns] = React.useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = React.useState<string>(campaignId ?? "");
-  const [entries, setEntries] = React.useState<BestiaryEntry[]>([]);
+  const [apiEntries, setApiEntries] = React.useState<ApiBestiaryEntry[]>([]);
   const [name, setName] = React.useState("");
   const [type, setType] = React.useState("");
-  const [threat, setThreat] = React.useState("");
+  const [rank, setRank] = React.useState("NPC");
   const [description, setDescription] = React.useState("");
   const [tier, setTier] = React.useState("");
   const [maxEnergy, setMaxEnergy] = React.useState("");
   const [maxAp, setMaxAp] = React.useState("");
-  const [skillValues, setSkillValues] = React.useState("");
-  const [attributeValues, setAttributeValues] = React.useState("");
+  const [attributes, setAttributes] = React.useState<Record<AttributeKey, string>>({
+    PHYSICAL: "",
+    MENTAL: "",
+    SPIRITUAL: "",
+    WILL: ""
+  });
+  const [skills, setSkills] = React.useState<Record<string, string>>({});
   const [abilityType, setAbilityType] = React.useState("");
   const [customAbilityName, setCustomAbilityName] = React.useState("");
   const [customAbilityEnergy, setCustomAbilityEnergy] = React.useState("");
   const [customAbilityAp, setCustomAbilityAp] = React.useState("");
+  const [lieutenantId, setLieutenantId] = React.useState("");
+  const [heroId, setHeroId] = React.useState("");
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editDraft, setEditDraft] = React.useState<BestiaryEntry | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -175,18 +145,38 @@ export const BestiaryPage: React.FC = () => {
   const resetForm = () => {
     setName("");
     setType("");
-    setThreat("");
+    setRank("NPC");
     setDescription("");
     setTier("");
     setMaxEnergy("");
     setMaxAp("");
-    setSkillValues("");
-    setAttributeValues("");
+    setAttributes({ PHYSICAL: "", MENTAL: "", SPIRITUAL: "", WILL: "" });
+    setSkills((prev) => {
+      const next: Record<string, string> = {};
+      (definitions?.skills ?? []).forEach((skill) => {
+        next[getSkillCode(skill)] = "";
+      });
+      return Object.keys(next).length ? next : prev;
+    });
     setAbilityType("");
     setCustomAbilityName("");
     setCustomAbilityEnergy("");
     setCustomAbilityAp("");
+    setLieutenantId("");
+    setHeroId("");
   };
+
+  React.useEffect(() => {
+    if (!definitions?.skills) return;
+    setSkills((prev) => {
+      if (Object.keys(prev).length) return prev;
+      const next: Record<string, string> = {};
+      definitions.skills.forEach((skill) => {
+        next[getSkillCode(skill)] = "";
+      });
+      return next;
+    });
+  }, [definitions]);
 
   React.useEffect(() => {
     if (campaignId) {
@@ -217,7 +207,7 @@ export const BestiaryPage: React.FC = () => {
 
   React.useEffect(() => {
     if (!selectedCampaignId) {
-      setEntries([]);
+      setApiEntries([]);
       return;
     }
     let active = true;
@@ -227,7 +217,7 @@ export const BestiaryPage: React.FC = () => {
       try {
         const data = await gmApi.listBestiaryEntries(selectedCampaignId);
         if (!active) return;
-        setEntries(data.map(mapApiEntry));
+        setApiEntries(data);
       } catch (loadError) {
         if (!active) return;
         setError(loadError instanceof Error ? loadError.message : "Failed to load bestiary entries.");
@@ -240,6 +230,73 @@ export const BestiaryPage: React.FC = () => {
       active = false;
     };
   }, [selectedCampaignId]);
+
+  const skillDefinitions = definitions?.skills ?? [];
+  const skillCodeSet = React.useMemo(() => new Set(skillDefinitions.map(getSkillCode)), [skillDefinitions]);
+
+  const mapApiEntry = React.useCallback(
+    (entry: ApiBestiaryEntry): BestiaryEntry => {
+      const statsSkills = entry.statsSkills;
+      const attributesPayload = entry.attributes ?? {};
+      const type = typeof statsSkills?.type === "string" ? statsSkills.type : "";
+      const description = typeof statsSkills?.description === "string" ? statsSkills.description : "";
+      const tier = readNumberString(statsSkills?.tier ?? attributesPayload?.tier);
+      const maxEnergy = readNumberString(attributesPayload?.energy);
+      const maxAp = readNumberString(attributesPayload?.ap);
+      const rankValue = typeof entry.rank === "string" ? entry.rank : "NPC";
+      const attributesValues = ATTRIBUTE_KEYS.reduce<Record<AttributeKey, string>>((acc, key) => {
+        acc[key] = readNumberString((attributesPayload as Record<string, unknown>)[key]);
+        return acc;
+      }, {} as Record<AttributeKey, string>);
+      const attributeNumbers = ATTRIBUTE_KEYS.reduce<Record<AttributeKey, number>>((acc, key) => {
+        const parsed = Number(attributesValues[key]);
+        acc[key] = Number.isFinite(parsed) ? parsed : 0;
+        return acc;
+      }, {} as Record<AttributeKey, number>);
+      const bonuses = computeAttributeSkillBonuses(attributeNumbers, skillDefinitions);
+      const skillsPayload = entry.skills ?? {};
+      const skillsValues: Record<string, string> = {};
+      skillDefinitions.forEach((skill) => {
+        const code = getSkillCode(skill);
+        const total = skillsPayload[code] ?? 0;
+        const bonus = bonuses[code] ?? 0;
+        const baseValue = total - bonus;
+        skillsValues[code] = total !== 0 || bonus !== 0 ? `${baseValue}` : "";
+      });
+      Object.entries(skillsPayload).forEach(([code, total]) => {
+        if (skillCodeSet.has(code)) return;
+        if (typeof total === "number" && !Number.isNaN(total)) {
+          skillsValues[code] = `${total}`;
+        }
+      });
+      const primaryAbility = entry.abilities?.[0];
+      const abilityTypeValue = typeof primaryAbility?.type === "string" ? primaryAbility.type : "";
+      const customAbilityNameValue = typeof primaryAbility?.name === "string" ? primaryAbility.name : "";
+      const customAbilityEnergyValue = readNumberString(primaryAbility?.energyCost);
+      const customAbilityApValue = readNumberString(primaryAbility?.apCost);
+      return {
+        id: entry.id,
+        name: entry.name,
+        type,
+        rank: rankValue,
+        description,
+        tier,
+        maxEnergy,
+        maxAp,
+        attributes: attributesValues,
+        skills: skillsValues,
+        abilityType: abilityTypeValue,
+        customAbilityName: customAbilityNameValue,
+        customAbilityEnergy: customAbilityEnergyValue,
+        customAbilityAp: customAbilityApValue,
+        lieutenantId: entry.lieutenantId ?? "",
+        heroId: entry.heroId ?? ""
+      };
+    },
+    [skillDefinitions, skillCodeSet]
+  );
+
+  const entries = React.useMemo(() => apiEntries.map(mapApiEntry), [apiEntries, mapApiEntry]);
 
   const handleCreate = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -265,14 +322,36 @@ export const BestiaryPage: React.FC = () => {
       setError(maxApParsed.error);
       return;
     }
-    const skillsParsed = parseSkillValues(skillValues);
-    if (skillsParsed.error) {
-      setError(skillsParsed.error);
+    if (!RANK_OPTIONS.includes(rank)) {
+      setError("Rank must be NPC, Minion, Lieutenant, or Hero.");
       return;
     }
-    const attributesParsed = parseAttributeValues(attributeValues);
-    if (attributesParsed.error) {
-      setError(attributesParsed.error);
+    if (rank === "Minion" && !lieutenantId) {
+      setError("Minions must be assigned to a Lieutenant.");
+      return;
+    }
+    if (rank === "Lieutenant" && !heroId) {
+      setError("Lieutenants must be assigned to a Hero.");
+      return;
+    }
+    const attributeNumbers = {} as Record<AttributeKey, number>;
+    const attributesPayload: Record<string, number> = {};
+    for (const key of ATTRIBUTE_KEYS) {
+      const parsed = parseIntegerField(`${ATTRIBUTE_LABELS[key]} attribute`, attributes[key]);
+      if (parsed.error) {
+        setError(parsed.error);
+        return;
+      }
+      if (parsed.value !== undefined) {
+        attributesPayload[key] = parsed.value;
+        attributeNumbers[key] = parsed.value;
+      } else {
+        attributeNumbers[key] = 0;
+      }
+    }
+    const skillsParsed = parseSkillValues(skills);
+    if (skillsParsed.error) {
+      setError(skillsParsed.error);
       return;
     }
     if (abilityType === "custom" && !customAbilityName.trim()) {
@@ -289,11 +368,25 @@ export const BestiaryPage: React.FC = () => {
       setError(customApParsed.error);
       return;
     }
-    const attributesPayload: Record<string, unknown> = {
-      ...(attributesParsed.value ?? {})
-    };
     if (maxEnergyParsed.value !== undefined) attributesPayload.energy = maxEnergyParsed.value;
     if (maxApParsed.value !== undefined) attributesPayload.ap = maxApParsed.value;
+    const bonuses = computeAttributeSkillBonuses(attributeNumbers, skillDefinitions);
+    const skillsPayload: Record<string, number> = {};
+    skillDefinitions.forEach((skill) => {
+      const code = getSkillCode(skill);
+      const base = skillsParsed.value?.[code] ?? 0;
+      const bonus = bonuses[code] ?? 0;
+      const total = base + bonus;
+      if (total !== 0) {
+        skillsPayload[code] = total;
+      }
+    });
+    Object.entries(skillsParsed.value ?? {}).forEach(([code, value]) => {
+      if (skillCodeSet.has(code)) return;
+      if (value !== 0) {
+        skillsPayload[code] = value;
+      }
+    });
     const abilitiesPayload = abilityType
       ? [
           {
@@ -313,27 +406,32 @@ export const BestiaryPage: React.FC = () => {
         id: "",
         name: trimmed,
         type,
-        threat,
+        rank,
         description,
         tier,
         maxEnergy,
         maxAp,
-        skillValues,
-        attributeValues,
+        attributes,
+        skills,
         abilityType,
         customAbilityName,
         customAbilityEnergy,
-        customAbilityAp
+        customAbilityAp,
+        lieutenantId,
+        heroId
       };
       const created = await gmApi.createBestiaryEntry({
         campaignId: selectedCampaignId,
         name: trimmed,
         statsSkills: toStatsSkills(draftEntry, tierParsed.value),
         attributes: Object.keys(attributesPayload).length ? attributesPayload : undefined,
-        skills: skillsParsed.value,
-        abilities: abilitiesPayload
+        skills: Object.keys(skillsPayload).length ? skillsPayload : undefined,
+        abilities: abilitiesPayload,
+        rank,
+        lieutenantId: rank === "Minion" ? lieutenantId : undefined,
+        heroId: rank === "Lieutenant" ? heroId : undefined
       });
-      setEntries((prev) => [mapApiEntry(created), ...prev]);
+      setApiEntries((prev) => [created, ...prev]);
       resetForm();
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "Failed to create bestiary entry.");
@@ -369,14 +467,36 @@ export const BestiaryPage: React.FC = () => {
       setError(maxApParsed.error);
       return;
     }
-    const skillsParsed = parseSkillValues(editDraft.skillValues);
-    if (skillsParsed.error) {
-      setError(skillsParsed.error);
+    if (!RANK_OPTIONS.includes(editDraft.rank)) {
+      setError("Rank must be NPC, Minion, Lieutenant, or Hero.");
       return;
     }
-    const attributesParsed = parseAttributeValues(editDraft.attributeValues);
-    if (attributesParsed.error) {
-      setError(attributesParsed.error);
+    if (editDraft.rank === "Minion" && !editDraft.lieutenantId) {
+      setError("Minions must be assigned to a Lieutenant.");
+      return;
+    }
+    if (editDraft.rank === "Lieutenant" && !editDraft.heroId) {
+      setError("Lieutenants must be assigned to a Hero.");
+      return;
+    }
+    const attributeNumbers = {} as Record<AttributeKey, number>;
+    const attributesPayload: Record<string, number> = {};
+    for (const key of ATTRIBUTE_KEYS) {
+      const parsed = parseIntegerField(`${ATTRIBUTE_LABELS[key]} attribute`, editDraft.attributes[key]);
+      if (parsed.error) {
+        setError(parsed.error);
+        return;
+      }
+      if (parsed.value !== undefined) {
+        attributesPayload[key] = parsed.value;
+        attributeNumbers[key] = parsed.value;
+      } else {
+        attributeNumbers[key] = 0;
+      }
+    }
+    const skillsParsed = parseSkillValues(editDraft.skills);
+    if (skillsParsed.error) {
+      setError(skillsParsed.error);
       return;
     }
     if (editDraft.abilityType === "custom" && !editDraft.customAbilityName.trim()) {
@@ -393,14 +513,25 @@ export const BestiaryPage: React.FC = () => {
       setError(customApParsed.error);
       return;
     }
-    const attributesPayload: Record<string, unknown> = {
-      ...(attributesParsed.value ?? {})
-    };
-    const shouldClearAttributes =
-      !editDraft.attributeValues.trim() && maxEnergyParsed.value === undefined && maxApParsed.value === undefined;
     if (maxEnergyParsed.value !== undefined) attributesPayload.energy = maxEnergyParsed.value;
     if (maxApParsed.value !== undefined) attributesPayload.ap = maxApParsed.value;
-    const skillsPayload = editDraft.skillValues.trim() ? skillsParsed.value : {};
+    const bonuses = computeAttributeSkillBonuses(attributeNumbers, skillDefinitions);
+    const skillsPayload: Record<string, number> = {};
+    skillDefinitions.forEach((skill) => {
+      const code = getSkillCode(skill);
+      const base = skillsParsed.value?.[code] ?? 0;
+      const bonus = bonuses[code] ?? 0;
+      const total = base + bonus;
+      if (total !== 0) {
+        skillsPayload[code] = total;
+      }
+    });
+    Object.entries(skillsParsed.value ?? {}).forEach(([code, value]) => {
+      if (skillCodeSet.has(code)) return;
+      if (value !== 0) {
+        skillsPayload[code] = value;
+      }
+    });
     const abilitiesPayload = editDraft.abilityType
       ? [
           {
@@ -414,21 +545,20 @@ export const BestiaryPage: React.FC = () => {
               : {})
           }
         ]
-      : [];
-    const attributesToSend = shouldClearAttributes
-      ? {}
-      : Object.keys(attributesPayload).length
-        ? attributesPayload
-        : undefined;
+      : undefined;
+    const attributesToSend = Object.keys(attributesPayload).length ? attributesPayload : undefined;
     try {
       const updated = await gmApi.updateBestiaryEntry(editDraft.id, {
         name: editDraft.name.trim(),
         statsSkills: toStatsSkills(editDraft, tierParsed.value),
         attributes: attributesToSend,
-        skills: skillsPayload,
-        abilities: abilitiesPayload
+        skills: Object.keys(skillsPayload).length ? skillsPayload : undefined,
+        abilities: abilitiesPayload,
+        rank: editDraft.rank,
+        lieutenantId: editDraft.rank === "Minion" ? editDraft.lieutenantId : null,
+        heroId: editDraft.rank === "Lieutenant" ? editDraft.heroId : null
       });
-      setEntries((prev) => prev.map((entry) => (entry.id === updated.id ? mapApiEntry(updated) : entry)));
+      setApiEntries((prev) => prev.map((entry) => (entry.id === updated.id ? updated : entry)));
       cancelEdit();
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "Failed to update bestiary entry.");
@@ -439,12 +569,31 @@ export const BestiaryPage: React.FC = () => {
     setError(null);
     try {
       await gmApi.deleteBestiaryEntry(id);
-      setEntries((prev) => prev.filter((entry) => entry.id !== id));
+      setApiEntries((prev) => prev.filter((entry) => entry.id !== id));
       if (editingId === id) cancelEdit();
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : "Failed to delete bestiary entry.");
     }
   };
+
+  const createAttributeNumbers = React.useMemo(() => toAttributeNumbers(attributes), [attributes]);
+  const createBonuses = React.useMemo(
+    () => computeAttributeSkillBonuses(createAttributeNumbers, skillDefinitions),
+    [createAttributeNumbers, skillDefinitions]
+  );
+  const editBonuses = React.useMemo(() => {
+    if (!editDraft) return {};
+    return computeAttributeSkillBonuses(toAttributeNumbers(editDraft.attributes), skillDefinitions);
+  }, [editDraft, skillDefinitions]);
+  const availableLieutenants = React.useMemo(
+    () => entries.filter((entry) => entry.rank === "Lieutenant"),
+    [entries]
+  );
+  const availableHeroes = React.useMemo(() => entries.filter((entry) => entry.rank === "Hero"), [entries]);
+  const entryNameById = React.useMemo(
+    () => new Map(entries.map((entry) => [entry.id, entry.name])),
+    [entries]
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -499,12 +648,81 @@ export const BestiaryPage: React.FC = () => {
               />
             </label>
             <label style={{ display: "grid", gap: "0.35rem" }}>
-              <span style={{ fontWeight: 700 }}>Threat Tier</span>
-              <input
-                value={threat}
-                onChange={(event) => setThreat(event.target.value)}
-                placeholder="Tier 3"
+              <span style={{ fontWeight: 700 }}>Rank</span>
+              <select
+                value={rank}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setRank(next);
+                  if (next !== "Minion") setLieutenantId("");
+                  if (next !== "Lieutenant") setHeroId("");
+                }}
                 style={inputStyle}
+              >
+                {RANK_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {rank === "Minion" && (
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Assigned Lieutenant</span>
+              <select value={lieutenantId} onChange={(event) => setLieutenantId(event.target.value)} style={inputStyle}>
+                <option value="">Select a lieutenant</option>
+                {availableLieutenants.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {rank === "Lieutenant" && (
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Assigned Hero</span>
+              <select value={heroId} onChange={(event) => setHeroId(event.target.value)} style={inputStyle}>
+                <option value="">Select a hero</option>
+                {availableHeroes.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Tier</span>
+              <input
+                value={tier}
+                onChange={(event) => setTier(event.target.value)}
+                placeholder="3"
+                style={inputStyle}
+                inputMode="numeric"
+              />
+              <span style={{ color: "#94a3b8", fontSize: 12 }}>{tier ? tierLabel(Number(tier)) : "Tier name"}</span>
+            </label>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Max Energy</span>
+              <input
+                value={maxEnergy}
+                onChange={(event) => setMaxEnergy(event.target.value)}
+                placeholder="120"
+                style={inputStyle}
+                inputMode="numeric"
+              />
+            </label>
+            <label style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Max AP</span>
+              <input
+                value={maxAp}
+                onChange={(event) => setMaxAp(event.target.value)}
+                placeholder="6"
+                style={inputStyle}
+                inputMode="numeric"
               />
             </label>
           </div>
@@ -552,26 +770,54 @@ export const BestiaryPage: React.FC = () => {
             />
           </label>
           <div style={{ display: "grid", gap: "0.75rem" }}>
-            <label style={{ display: "grid", gap: "0.35rem" }}>
-              <span style={{ fontWeight: 700 }}>Skill Values (JSON)</span>
-              <textarea
-                value={skillValues}
-                onChange={(event) => setSkillValues(event.target.value)}
-                rows={4}
-                placeholder='{"athletics": 4, "lore": 2}'
-                style={{ ...inputStyle, resize: "vertical" }}
-              />
-            </label>
-            <label style={{ display: "grid", gap: "0.35rem" }}>
-              <span style={{ fontWeight: 700 }}>Attribute Values (JSON)</span>
-              <textarea
-                value={attributeValues}
-                onChange={(event) => setAttributeValues(event.target.value)}
-                rows={4}
-                placeholder='{"strength": 5, "agility": 3}'
-                style={{ ...inputStyle, resize: "vertical" }}
-              />
-            </label>
+            <div style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Attributes</span>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.75rem" }}>
+                {ATTRIBUTE_KEYS.map((key) => (
+                  <label key={key} style={{ display: "grid", gap: "0.35rem" }}>
+                    <span style={{ fontWeight: 600 }}>{ATTRIBUTE_LABELS[key]}</span>
+                    <input
+                      value={attributes[key]}
+                      onChange={(event) => setAttributes((prev) => ({ ...prev, [key]: event.target.value }))}
+                      placeholder="0"
+                      style={inputStyle}
+                      inputMode="numeric"
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: "grid", gap: "0.35rem" }}>
+              <span style={{ fontWeight: 700 }}>Skills</span>
+              {skillDefinitions.length === 0 ? (
+                <div style={{ color: "#94a3b8", fontSize: 13 }}>No skills loaded from definitions.</div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.75rem" }}>
+                  {skillDefinitions.map((skill) => {
+                    const code = getSkillCode(skill);
+                    const bonus = createBonuses[code] ?? 0;
+                    const baseValue = skills[code] ?? "";
+                    const numericBase = Number(baseValue);
+                    const total = (Number.isFinite(numericBase) ? numericBase : 0) + bonus;
+                    return (
+                      <label key={code} style={{ display: "grid", gap: "0.35rem" }}>
+                        <span style={{ fontWeight: 600 }}>{skill.name}</span>
+                        <input
+                          value={baseValue}
+                          onChange={(event) => setSkills((prev) => ({ ...prev, [code]: event.target.value }))}
+                          placeholder="0"
+                          style={inputStyle}
+                          inputMode="numeric"
+                        />
+                        <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                          Bonus {bonus >= 0 ? `+${bonus}` : bonus} • Total {total}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
           <div style={{ display: "grid", gap: "0.75rem" }}>
             <label style={{ display: "grid", gap: "0.35rem" }}>
@@ -674,11 +920,79 @@ export const BestiaryPage: React.FC = () => {
                           placeholder="Type"
                           style={inputStyle}
                         />
-                        <input
-                          value={editDraft.threat}
-                          onChange={(event) => setEditDraft({ ...editDraft, threat: event.target.value })}
-                          placeholder="Threat"
+                        <select
+                          value={editDraft.rank}
+                          onChange={(event) => {
+                            const next = event.target.value;
+                            setEditDraft({
+                              ...editDraft,
+                              rank: next,
+                              lieutenantId: next === "Minion" ? editDraft.lieutenantId : "",
+                              heroId: next === "Lieutenant" ? editDraft.heroId : ""
+                            });
+                          }}
                           style={inputStyle}
+                        >
+                          {RANK_OPTIONS.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {editDraft.rank === "Minion" && (
+                        <select
+                          value={editDraft.lieutenantId}
+                          onChange={(event) => setEditDraft({ ...editDraft, lieutenantId: event.target.value })}
+                          style={inputStyle}
+                        >
+                          <option value="">Select a lieutenant</option>
+                          {availableLieutenants
+                            .filter((entryOption) => entryOption.id !== editDraft.id)
+                            .map((entryOption) => (
+                              <option key={entryOption.id} value={entryOption.id}>
+                                {entryOption.name}
+                              </option>
+                            ))}
+                        </select>
+                      )}
+                      {editDraft.rank === "Lieutenant" && (
+                        <select
+                          value={editDraft.heroId}
+                          onChange={(event) => setEditDraft({ ...editDraft, heroId: event.target.value })}
+                          style={inputStyle}
+                        >
+                          <option value="">Select a hero</option>
+                          {availableHeroes
+                            .filter((entryOption) => entryOption.id !== editDraft.id)
+                            .map((entryOption) => (
+                              <option key={entryOption.id} value={entryOption.id}>
+                                {entryOption.name}
+                              </option>
+                            ))}
+                        </select>
+                      )}
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
+                        <input
+                          value={editDraft.tier}
+                          onChange={(event) => setEditDraft({ ...editDraft, tier: event.target.value })}
+                          placeholder="Tier"
+                          style={inputStyle}
+                          inputMode="numeric"
+                        />
+                        <input
+                          value={editDraft.maxEnergy}
+                          onChange={(event) => setEditDraft({ ...editDraft, maxEnergy: event.target.value })}
+                          placeholder="Max Energy"
+                          style={inputStyle}
+                          inputMode="numeric"
+                        />
+                        <input
+                          value={editDraft.maxAp}
+                          onChange={(event) => setEditDraft({ ...editDraft, maxAp: event.target.value })}
+                          placeholder="Max AP"
+                          style={inputStyle}
+                          inputMode="numeric"
                         />
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.6rem" }}>
@@ -711,20 +1025,76 @@ export const BestiaryPage: React.FC = () => {
                         placeholder="Notes"
                         style={{ ...inputStyle, resize: "vertical" }}
                       />
-                      <textarea
-                        value={editDraft.skillValues}
-                        onChange={(event) => setEditDraft({ ...editDraft, skillValues: event.target.value })}
-                        rows={3}
-                        placeholder="Skill Values (JSON)"
-                        style={{ ...inputStyle, resize: "vertical" }}
-                      />
-                      <textarea
-                        value={editDraft.attributeValues}
-                        onChange={(event) => setEditDraft({ ...editDraft, attributeValues: event.target.value })}
-                        rows={3}
-                        placeholder="Attribute Values (JSON)"
-                        style={{ ...inputStyle, resize: "vertical" }}
-                      />
+                      <div style={{ display: "grid", gap: "0.6rem" }}>
+                        <div style={{ display: "grid", gap: "0.35rem" }}>
+                          <span style={{ fontWeight: 700 }}>Attributes</span>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0.6rem" }}>
+                            {ATTRIBUTE_KEYS.map((key) => (
+                              <label key={key} style={{ display: "grid", gap: "0.35rem" }}>
+                                <span style={{ fontWeight: 600 }}>{ATTRIBUTE_LABELS[key]}</span>
+                                <input
+                                  value={editDraft.attributes[key]}
+                                  onChange={(event) =>
+                                    setEditDraft({ ...editDraft, attributes: { ...editDraft.attributes, [key]: event.target.value } })
+                                  }
+                                  placeholder="0"
+                                  style={inputStyle}
+                                  inputMode="numeric"
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ display: "grid", gap: "0.35rem" }}>
+                          <span style={{ fontWeight: 700 }}>Skills</span>
+                          {skillDefinitions.length === 0 ? (
+                            <div style={{ color: "#94a3b8", fontSize: 13 }}>No skills loaded from definitions.</div>
+                          ) : (
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.6rem" }}>
+                              {skillDefinitions.map((skill) => {
+                                const code = getSkillCode(skill);
+                                const bonus = (editBonuses as Record<string, number>)[code] ?? 0;
+                                const baseValue = editDraft.skills[code] ?? "";
+                                const numericBase = Number(baseValue);
+                                const total = (Number.isFinite(numericBase) ? numericBase : 0) + bonus;
+                                return (
+                                  <label key={code} style={{ display: "grid", gap: "0.35rem" }}>
+                                    <span style={{ fontWeight: 600 }}>{skill.name}</span>
+                                    <input
+                                      value={baseValue}
+                                      onChange={(event) =>
+                                        setEditDraft({ ...editDraft, skills: { ...editDraft.skills, [code]: event.target.value } })
+                                      }
+                                      placeholder="0"
+                                      style={inputStyle}
+                                      inputMode="numeric"
+                                    />
+                                    <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                                      Bonus {bonus >= 0 ? `+${bonus}` : bonus} • Total {total}
+                                    </span>
+                                  </label>
+                                );
+                              })}
+                              {Object.keys(editDraft.skills)
+                                .filter((code) => !skillCodeSet.has(code))
+                                .map((code) => (
+                                  <label key={code} style={{ display: "grid", gap: "0.35rem" }}>
+                                    <span style={{ fontWeight: 600 }}>{normalizeSkillCode({ id: code })}</span>
+                                    <input
+                                      value={editDraft.skills[code]}
+                                      onChange={(event) =>
+                                        setEditDraft({ ...editDraft, skills: { ...editDraft.skills, [code]: event.target.value } })
+                                      }
+                                      placeholder="0"
+                                      style={inputStyle}
+                                      inputMode="numeric"
+                                    />
+                                  </label>
+                                ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                       <select
                         value={editDraft.abilityType}
                         onChange={(event) => setEditDraft({ ...editDraft, abilityType: event.target.value })}
@@ -798,8 +1168,18 @@ export const BestiaryPage: React.FC = () => {
                         <div>
                           <div style={{ fontWeight: 700 }}>{entry.name}</div>
                           <div style={{ color: "#9ca3af", fontSize: 13 }}>
-                            {entry.type || "Unknown type"} • {entry.threat || "Unrated"}
+                            {entry.type || "Unknown type"} • {entry.rank || "NPC"}
                           </div>
+                          {entry.rank === "Minion" && entry.lieutenantId && (
+                            <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                              Lieutenant: {entryNameById.get(entry.lieutenantId) ?? "Unassigned"}
+                            </div>
+                          )}
+                          {entry.rank === "Lieutenant" && entry.heroId && (
+                            <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                              Hero: {entryNameById.get(entry.heroId) ?? "Unassigned"}
+                            </div>
+                          )}
                         </div>
                         <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
                           <button
