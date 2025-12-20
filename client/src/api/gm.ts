@@ -59,6 +59,12 @@ export interface BestiaryAbility {
   category?: string;
   key?: string;
   name?: string;
+  description?: string;
+  phase?: string;
+  range?: string;
+  damage?: string;
+  rules?: string;
+  tags?: string[];
   energyCost?: number;
   apCost?: number;
 }
