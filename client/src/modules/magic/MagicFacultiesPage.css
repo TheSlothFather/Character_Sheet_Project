@@ -4,7 +4,7 @@
 
 .magic-faculties__title {
   margin-top: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 
 .magic-faculties__intro {
@@ -13,18 +13,13 @@
 }
 
 .magic-faculties__summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-4);
+  --grid-min: 260px;
+  --grid-gap: var(--space-4);
   margin-bottom: var(--space-4);
 }
 
 .magic-faculties__panel {
-  background: var(--surface-1);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--border-radius-md);
-  padding: var(--space-4);
-  box-shadow: var(--shadow-depth-1);
+  --stack-gap: var(--space-3);
 }
 
 .magic-faculties__panel--spaced {
@@ -32,7 +27,7 @@
 }
 
 .magic-faculties__panel-title {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
 }
 
 .magic-faculties__panel-text {
@@ -59,8 +54,8 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 0.25rem 0.5rem;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
@@ -89,21 +84,20 @@
 }
 
 .magic-faculties__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-4);
+  --grid-min: 280px;
+  --grid-gap: var(--space-4);
   margin-bottom: var(--space-6);
 }
 
 .magic-faculties__list {
-  margin-top: 0.5rem;
-  padding-left: 1.25rem;
+  margin-top: var(--space-2);
+  padding-left: var(--space-4);
   color: var(--text);
 }
 
 .magic-faculties__table {
   width: 100%;
-  margin-top: 0.75rem;
+  margin-top: var(--space-3);
 }
 
 .magic-faculties__table-scroll {
@@ -111,12 +105,12 @@
 }
 
 .magic-faculties__table-header--spaced {
-  padding: 6px 4px;
+  padding: var(--space-2) var(--space-1);
 }
 
 .magic-faculties__table-cell--strong {
   font-weight: 700;
-  padding: 6px 4px;
+  padding: var(--space-2) var(--space-1);
 }
 
 .magic-faculties__detail {
@@ -124,17 +118,17 @@
 }
 
 .magic-faculties__detail-title {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
   font-size: 16px;
   color: var(--text);
 }
 
 .magic-faculties__tier {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
   background: var(--surface-2);
   border-radius: var(--border-radius-sm);
   border: var(--border-width) solid var(--border);
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
 }
 
 .magic-faculties__tier-summary {
@@ -145,24 +139,17 @@
 
 .magic-faculties__tier-content {
   white-space: pre-line;
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
   color: var(--text);
 }
 
 .magic-faculties__card {
-  background: var(--surface-1);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--border-radius-md);
-  padding: var(--space-4);
-  box-shadow: var(--shadow-depth-1);
+  --stack-gap: var(--space-3);
 }
 
 .magic-faculties__card-header {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
+  --cluster-gap: var(--space-2);
 }
 
 .magic-faculties__card-title {
@@ -176,14 +163,12 @@
 }
 
 .magic-faculties__card-actions {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
+  --cluster-gap: var(--space-2);
 }
 
 .magic-faculties__badge {
   display: inline-block;
-  padding: 0.15rem 0.5rem;
+  padding: calc(var(--space-1) / 2) var(--space-2);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
@@ -226,20 +211,17 @@
 .magic-faculties__warning {
   color: var(--danger);
   font-size: 14px;
-  margin-top: 0.75rem;
+  margin-top: var(--space-3);
 }
 
 .magic-faculties__calculator {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-3);
-  margin-top: 0.75rem;
+  --grid-min: 220px;
+  --grid-gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 
 .magic-faculties__field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  --stack-gap: var(--space-1);
   color: var(--text);
 }
 
@@ -248,20 +230,18 @@
 }
 
 .magic-faculties__select {
-  padding: 0.35rem 0.5rem;
+  padding: var(--space-2) var(--space-2);
   border-radius: var(--border-radius-sm);
 }
 
 .magic-faculties__totals {
-  margin-top: 0.75rem;
-  display: flex;
-  gap: var(--space-4);
-  flex-wrap: wrap;
+  margin-top: var(--space-3);
+  --cluster-gap: var(--space-4);
 }
 
 .magic-faculties__total {
   display: inline-flex;
-  padding: 0.15rem 0.5rem;
+  padding: calc(var(--space-1) / 2) var(--space-2);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
@@ -272,14 +252,14 @@
 }
 
 .magic-faculties__modifiers {
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
   color: var(--muted);
   font-size: 13px;
 }
 
 .magic-faculties__modifiers-title {
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .magic-faculties__modifiers-list {
@@ -289,7 +269,16 @@
 
 .magic-faculties__cards {
   margin-top: var(--space-6);
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
+  --grid-min: 320px;
+  --grid-gap: var(--space-4);
+}
+
+@media (max-width: 900px) {
+  .magic-faculties__summary {
+    --grid-min: 220px;
+  }
+
+  .magic-faculties__cards {
+    --grid-min: 260px;
+  }
 }

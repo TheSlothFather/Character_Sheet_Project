@@ -410,7 +410,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     setter: React.Dispatch<React.SetStateAction<string>>,
     field: "weaponNotes" | "defenseNotes" | "gearNotes"
   ) => (
-    <div className="characters__notes">
+    <div className="stack characters__notes">
       <div className="characters__notes-label">{label}</div>
       <textarea
         value={value}
@@ -425,8 +425,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   );
 
   return (
-    <div className="characters__sheet">
-      <div className="characters__summary">
+    <div className="stack characters__sheet">
+      <div className="panel grid characters__summary">
         <div className="characters__pill">
           <span>Name</span>
           <strong>{character.name}</strong>
@@ -453,7 +453,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
       </div>
 
-      <div className="characters__card characters__attributes">
+      <div className="card stack characters__attributes">
         <div className="characters__attributes-header">
           <div className="characters__attributes-label">Attribute Points Available</div>
           <div
@@ -483,10 +483,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
       </div>
 
-      <div className="characters__layout">
-        <div className="characters__column">
+      <div className="grid characters__layout">
+        <div className="stack characters__column">
           {levelCards.map((lvl) => (
-            <div key={lvl} className="characters__card">
+            <div key={lvl} className="card">
               <div className="characters__level-label">Level {lvl}</div>
               <div className="characters__level-slot">
                 Future feat slots
@@ -495,8 +495,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           ))}
         </div>
 
-        <div className="characters__column">
-          <div className="characters__metrics">
+        <div className="stack characters__column">
+          <div className="grid characters__metrics">
             <div className="characters__pill">
               <span>Damage Reduction</span>
               <strong>{damageReduction}</strong>
@@ -521,7 +521,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               )}
             </div>
           </div>
-          <div className="characters__card characters__card--flush">
+          <div className="card characters__card--flush">
             <div className="characters__skill-header">
               <div>
                 <div className="characters__skill-label">Skill Points Remaining</div>
@@ -547,9 +547,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               {skills.length === 0 ? (
                 <div className="characters__skill-empty">No skills defined yet.</div>
               ) : (
-                <div
-                  className="characters__skill-grid"
-                >
+                <div className="grid characters__skill-grid">
                   {specialSkills.map((skill) => (
                     <div
                       key={getSkillCode(skill)}
@@ -598,7 +596,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
           </div>
         </div>
 
-        <div className="characters__column">
+        <div className="stack characters__column">
           <div className="characters__tabs">
             {["Weapons", "Defense", "Gear", "Psionics", "Spells", "Details", "Feats", "Actions"].map((tab) => (
               <button
@@ -610,23 +608,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               </button>
             ))}
           </div>
-          <div className="characters__card characters__tab-panel">
+          <div className="card characters__tab-panel">
             {activeTab === "Weapons" && renderNotesArea("Weapons", weaponNotes, setWeaponNotes, "weaponNotes")}
             {activeTab === "Defense" && renderNotesArea("Defense", defenseNotes, setDefenseNotes, "defenseNotes")}
             {activeTab === "Gear" && renderNotesArea("Gear", gearNotes, setGearNotes, "gearNotes")}
             {activeTab === "Psionics" && (
-              <div className="characters__psionics">
+              <div className="stack characters__psionics">
                 <div className="characters__psionics-hint">
                   Unlocked psionic abilities are stored per character. Edit unlocks on the Psionics page; summaries appear here.
                 </div>
                 {unlockedPsionics.length === 0 ? (
                   <div className="characters__psionics-empty">No psionic abilities unlocked yet.</div>
                 ) : (
-                  <div className="characters__psionics-list">
+                  <div className="stack characters__psionics-list">
                     {groupedPsionics.map(({ tree, abilities }) => (
-                      <div key={tree} className="characters__psionics-tree">
+                      <div key={tree} className="stack characters__psionics-tree">
                         <div className="characters__psionics-tree-title">{tree}</div>
-                        <div className="characters__psionics-grid">
+                        <div className="grid characters__psionics-grid">
                           {abilities.map((ability) => (
                             <details key={ability.id} className="characters__psionics-detail">
                               <summary className="characters__psionics-summary">
@@ -969,77 +967,79 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
   }, [definitions]);
 
   return (
-    <div className="characters-page">
-      <h2 className="characters-page__title">Characters</h2>
-      {(definitionsError || error) && (
-        <p className="characters-page__error">{definitionsError || error}</p>
-      )}
-      <main
-        className="characters-page__main"
-      >
-        <div className="characters-page__toolbar">
-          <div className="characters-page__toolbar-label">Selected character</div>
-          <select
-            value={selectedId ?? ""}
-            onChange={(e) => setSelectedId(e.target.value || null)}
-            disabled={loadingAny || characters.length === 0}
-            className="select characters-page__select"
-          >
-            {characters.length === 0 && <option value="">No characters</option>}
-            {characters.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => navigate(createCharacterPath)}
-            className="btn btn--primary"
-          >
-            New Character
-          </button>
-          <button
-            onClick={() => selectedId && handleDeleteCharacter(selectedId)}
-            disabled={!selectedId || deletingId === selectedId || loadingAny}
-            className="btn btn--danger"
-          >
-            {deletingId === selectedId ? "Deleting..." : "Delete Character"}
-          </button>
-          <button
-            onClick={handleLevelUp}
-            disabled={!selectedId || loadingAny || levelUpdatingId === selectedId || remaining > 0}
-            className="btn btn--secondary"
-          >
-            {levelUpdatingId === selectedId ? "Leveling..." : "Level Up"}
-          </button>
-        </div>
-        {loadingAny && <p className="characters-page__status">Loading sheet...</p>}
-        {!loadingAny && !selectedCharacter && <p className="characters-page__status">Select a character to view the sheet.</p>}
-        {!loadingAny && selectedCharacter && definitions && (
-          <CharacterSheet
-            character={selectedCharacter}
-            skills={definitions.skills}
-            raceName={raceMap.get(selectedCharacter.raceKey || "")}
-            subraceName={subraceMap.get(selectedCharacter.subraceKey || "")?.name}
-            remaining={remaining}
-            skillPointPool={skillPointPool}
-            allocations={currentAllocations}
-            allocationMinimums={allocationMinimums}
-            skillBonuses={skillBonuses}
-            onChangeAllocation={onChangeAllocation}
-            onLockAllocations={handleLockAllocations}
-            disableAllocation={
-              loadingAny || allocationSavingId === selectedCharacter.id || lockingAllocationId === selectedCharacter.id
-            }
-            lockDisabled={lockButtonDisabled}
-            isLocking={lockingAllocationId === selectedCharacter.id}
-            attributePointsAvailable={attributePointsAvailable}
-            onSpendAttributePoint={handleSpendAttributePoint}
-            isUpdating={loadingAny || isGeneralSaving}
-            onSaveNotes={handleSaveNotes}
-          />
+    <div className="page characters-page">
+      <header className="page__header characters-page__header">
+        <h2 className="characters-page__title">Characters</h2>
+        {(definitionsError || error) && (
+          <p className="characters-page__error">{definitionsError || error}</p>
         )}
+      </header>
+      <main className="page__content">
+        <div className="panel stack characters-page__main">
+          <div className="cluster characters-page__toolbar">
+            <div className="characters-page__toolbar-label">Selected character</div>
+            <select
+              value={selectedId ?? ""}
+              onChange={(e) => setSelectedId(e.target.value || null)}
+              disabled={loadingAny || characters.length === 0}
+              className="select characters-page__select"
+            >
+              {characters.length === 0 && <option value="">No characters</option>}
+              {characters.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => navigate(createCharacterPath)}
+              className="btn btn--primary"
+            >
+              New Character
+            </button>
+            <button
+              onClick={() => selectedId && handleDeleteCharacter(selectedId)}
+              disabled={!selectedId || deletingId === selectedId || loadingAny}
+              className="btn btn--danger"
+            >
+              {deletingId === selectedId ? "Deleting..." : "Delete Character"}
+            </button>
+            <button
+              onClick={handleLevelUp}
+              disabled={!selectedId || loadingAny || levelUpdatingId === selectedId || remaining > 0}
+              className="btn btn--secondary"
+            >
+              {levelUpdatingId === selectedId ? "Leveling..." : "Level Up"}
+            </button>
+          </div>
+          {loadingAny && <p className="characters-page__status">Loading sheet...</p>}
+          {!loadingAny && !selectedCharacter && <p className="characters-page__status">Select a character to view the sheet.</p>}
+          {!loadingAny && selectedCharacter && definitions && (
+            <CharacterSheet
+              character={selectedCharacter}
+              skills={definitions.skills}
+              raceName={raceMap.get(selectedCharacter.raceKey || "")}
+              subraceName={subraceMap.get(selectedCharacter.subraceKey || "")?.name}
+              remaining={remaining}
+              skillPointPool={skillPointPool}
+              allocations={currentAllocations}
+              allocationMinimums={allocationMinimums}
+              skillBonuses={skillBonuses}
+              onChangeAllocation={onChangeAllocation}
+              onLockAllocations={handleLockAllocations}
+              disableAllocation={
+                loadingAny || allocationSavingId === selectedCharacter.id || lockingAllocationId === selectedCharacter.id
+              }
+              lockDisabled={lockButtonDisabled}
+              isLocking={lockingAllocationId === selectedCharacter.id}
+              attributePointsAvailable={attributePointsAvailable}
+              onSpendAttributePoint={handleSpendAttributePoint}
+              isUpdating={loadingAny || isGeneralSaving}
+              onSaveNotes={handleSaveNotes}
+            />
+          )}
+        </div>
       </main>
     </div>
   );
