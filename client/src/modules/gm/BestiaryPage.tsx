@@ -1,10 +1,50 @@
 import React from "react";
 import { useParams } from "react-router-dom";
+import { api } from "../../api/client";
 import { gmApi, type BestiaryEntry as ApiBestiaryEntry, type Campaign } from "../../api/gm";
+import { getSupabaseClient } from "../../api/supabaseClient";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { parseBestiaryImport, type ParsedBestiaryEntry, type BestiaryParseMessage } from "./bestiaryImport";
 import { AttributeKey, computeAttributeSkillBonuses, getSkillCode, normalizeSkillCode } from "../characters/skillMetadata";
 import styles from "./BestiaryPage.module.css";
+
+type BestiaryAction = {
+  energyCost: string;
+  apCost: string;
+  range: string;
+  damage: string;
+  damageType: string;
+};
+
+type BestiaryActionPayload = {
+  energyCost?: number;
+  apCost?: number;
+  range?: string;
+  damage?: string;
+  damageType?: string;
+};
+
+type WeaponAbilityOption = {
+  id: number;
+  category: string;
+  name: string;
+  abilityType?: string;
+  energyCost?: number;
+  apCost?: number;
+  damage?: string;
+  damageType?: string;
+  range?: string;
+  description?: string;
+};
+
+type PsionicAbilityOption = {
+  id: string;
+  tree: string;
+  name: string;
+  tier?: number;
+  description?: string;
+  energyCost?: number;
+};
 
 type BestiaryEntry = {
   id: string;
@@ -20,11 +60,15 @@ type BestiaryEntry = {
   energyBars: string;
   attributes: Record<AttributeKey, string>;
   skills: Record<string, string>;
-  abilityType: string;
+  actions: BestiaryAction[];
+  immunities: string[];
+  resistances: string[];
+  weaknesses: string[];
+  customAbilityEnabled: boolean;
   customAbilityName: string;
   customAbilityEnergy: string;
   customAbilityAp: string;
-  abilities: ApiBestiaryEntry["abilities"];
+  abilities: NonNullable<ApiBestiaryEntry["abilities"]>;
   lieutenantId: string;
   heroId: string;
 };
@@ -57,13 +101,82 @@ const readNumberString = (value: unknown): string => {
   return "";
 };
 
-const toStatsSkills = (entry: BestiaryEntry, tierValue?: number): Record<string, string | number> => {
-  const statsSkills: Record<string, string | number> = {};
+const readStringList = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean);
+};
+
+const readActions = (value: unknown): BestiaryAction[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") return null;
+      const record = entry as BestiaryActionPayload;
+      const range = typeof record.range === "string" ? record.range : "";
+      const damage = typeof record.damage === "string" ? record.damage : "";
+      const damageType = typeof record.damageType === "string" ? record.damageType : "";
+      return {
+        energyCost: readNumberString(record.energyCost),
+        apCost: readNumberString(record.apCost),
+        range,
+        damage,
+        damageType
+      };
+    })
+    .filter((entry): entry is BestiaryAction => Boolean(entry))
+    .filter((entry) =>
+      [entry.energyCost, entry.apCost, entry.range, entry.damage, entry.damageType].some((value) => value.trim())
+    );
+};
+
+const createBlankAction = (): BestiaryAction => ({
+  energyCost: "",
+  apCost: "",
+  range: "",
+  damage: "",
+  damageType: ""
+});
+
+const parseActions = (actions: BestiaryAction[]): { value?: BestiaryActionPayload[]; error?: string } => {
+  const payloads: BestiaryActionPayload[] = [];
+  for (const [index, action] of actions.entries()) {
+    const hasContent = [action.energyCost, action.apCost, action.range, action.damage, action.damageType].some((value) =>
+      value.trim()
+    );
+    if (!hasContent) continue;
+    const energyParsed = parseIntegerField(`Action ${index + 1} energy cost`, action.energyCost);
+    if (energyParsed.error) return { error: energyParsed.error };
+    const apParsed = parseIntegerField(`Action ${index + 1} AP cost`, action.apCost);
+    if (apParsed.error) return { error: apParsed.error };
+    const range = action.range.trim();
+    const damage = action.damage.trim();
+    const damageType = action.damageType.trim();
+    payloads.push({
+      energyCost: energyParsed.value,
+      apCost: apParsed.value,
+      range: range || undefined,
+      damage: damage || undefined,
+      damageType: damageType || undefined
+    });
+  }
+  return { value: payloads };
+};
+
+const toStatsSkills = (
+  entry: BestiaryEntry,
+  tierValue?: number,
+  actionsPayload?: BestiaryActionPayload[]
+): Record<string, string | number | string[] | BestiaryActionPayload[]> => {
+  const statsSkills: Record<string, string | number | string[] | BestiaryActionPayload[]> = {};
   const type = entry.type.trim();
   const description = entry.description.trim();
   if (type) statsSkills.type = type;
   if (description) statsSkills.description = description;
   if (tierValue !== undefined) statsSkills.tier = tierValue;
+  if (entry.immunities.length) statsSkills.immunities = entry.immunities;
+  if (entry.resistances.length) statsSkills.resistances = entry.resistances;
+  if (entry.weaknesses.length) statsSkills.weaknesses = entry.weaknesses;
+  if (actionsPayload && actionsPayload.length) statsSkills.actions = actionsPayload;
   return statsSkills;
 };
 
@@ -100,7 +213,7 @@ const toAttributeNumbers = (values: Record<AttributeKey, string>): Record<Attrib
     return acc;
   }, {} as Record<AttributeKey, number>);
 
-type PanelKey = "core" | "stats" | "attributes" | "skills" | "abilities";
+type PanelKey = "core" | "stats" | "defenses" | "actions" | "attributes" | "skills" | "abilities";
 
 type CollapsibleSectionProps = {
   title: string;
@@ -118,6 +231,66 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, isOpen, 
     {isOpen && <div className={styles.collapsibleBody}>{children}</div>}
   </div>
 );
+
+type MultiValueInputProps = {
+  label: string;
+  values: string[];
+  placeholder?: string;
+  onChange: (values: string[]) => void;
+};
+
+const MultiValueInput: React.FC<MultiValueInputProps> = ({ label, values, placeholder, onChange }) => {
+  const [draft, setDraft] = React.useState("");
+
+  const addValue = () => {
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    if (!values.includes(trimmed)) {
+      onChange([...values, trimmed]);
+    }
+    setDraft("");
+  };
+
+  return (
+    <div className={styles.field}>
+      <span className={styles.fieldLabel}>{label}</span>
+      <div className={styles.rowWrap}>
+        <input
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              addValue();
+            }
+          }}
+          placeholder={placeholder}
+          className={styles.input}
+        />
+        <button type="button" onClick={addValue} className={styles.secondaryButton}>
+          Add
+        </button>
+      </div>
+      {values.length > 0 && (
+        <div className={styles.chipRow}>
+          {values.map((value) => (
+            <span key={value} className={styles.valueChip}>
+              {value}
+              <button
+                type="button"
+                onClick={() => onChange(values.filter((item) => item !== value))}
+                className={styles.chipRemove}
+                aria-label={`Remove ${value}`}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const BestiaryPage: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
@@ -142,10 +315,15 @@ export const BestiaryPage: React.FC = () => {
     WILL: ""
   });
   const [skills, setSkills] = React.useState<Record<string, string>>({});
-  const [abilityType, setAbilityType] = React.useState("");
+  const [actions, setActions] = React.useState<BestiaryAction[]>([]);
+  const [immunities, setImmunities] = React.useState<string[]>([]);
+  const [resistances, setResistances] = React.useState<string[]>([]);
+  const [weaknesses, setWeaknesses] = React.useState<string[]>([]);
+  const [customAbilityEnabled, setCustomAbilityEnabled] = React.useState(false);
   const [customAbilityName, setCustomAbilityName] = React.useState("");
   const [customAbilityEnergy, setCustomAbilityEnergy] = React.useState("");
   const [customAbilityAp, setCustomAbilityAp] = React.useState("");
+  const [abilities, setAbilities] = React.useState<NonNullable<ApiBestiaryEntry["abilities"]>>([]);
   const [lieutenantId, setLieutenantId] = React.useState("");
   const [heroId, setHeroId] = React.useState("");
   const [selectedEntryId, setSelectedEntryId] = React.useState<string | null>(null);
@@ -162,6 +340,8 @@ export const BestiaryPage: React.FC = () => {
   const [panelState, setPanelState] = React.useState<Record<PanelKey, boolean>>({
     core: true,
     stats: true,
+    defenses: false,
+    actions: false,
     attributes: false,
     skills: false,
     abilities: false
@@ -170,6 +350,11 @@ export const BestiaryPage: React.FC = () => {
   const [editDraft, setEditDraft] = React.useState<BestiaryEntry | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [abilityLoadError, setAbilityLoadError] = React.useState<string | null>(null);
+  const [weaponAbilities, setWeaponAbilities] = React.useState<WeaponAbilityOption[]>([]);
+  const [psionicAbilities, setPsionicAbilities] = React.useState<PsionicAbilityOption[]>([]);
+  const [weaponCategory, setWeaponCategory] = React.useState("");
+  const [psionicTree, setPsionicTree] = React.useState("");
 
   const resetForm = () => {
     setName("");
@@ -183,6 +368,10 @@ export const BestiaryPage: React.FC = () => {
     setArmorType("");
     setEnergyBars("");
     setAttributes({ PHYSICAL: "", MENTAL: "", SPIRITUAL: "", WILL: "" });
+    setActions([]);
+    setImmunities([]);
+    setResistances([]);
+    setWeaknesses([]);
     setSkills((prev) => {
       const next: Record<string, string> = {};
       (definitions?.skills ?? []).forEach((skill) => {
@@ -190,10 +379,11 @@ export const BestiaryPage: React.FC = () => {
       });
       return Object.keys(next).length ? next : prev;
     });
-    setAbilityType("");
+    setCustomAbilityEnabled(false);
     setCustomAbilityName("");
     setCustomAbilityEnergy("");
     setCustomAbilityAp("");
+    setAbilities([]);
     setLieutenantId("");
     setHeroId("");
   };
@@ -263,8 +453,129 @@ export const BestiaryPage: React.FC = () => {
     };
   }, [selectedCampaignId]);
 
+  React.useEffect(() => {
+    let active = true;
+    setAbilityLoadError(null);
+    const loadAbilities = async () => {
+      try {
+        const client = getSupabaseClient();
+        const { data: weaponData, error: weaponError } = await client
+          .from("weapon_abilities")
+          .select(
+            "id, category, ability_name, ability_type, energy_cost, action_point_cost, damage, damage_type, range, description"
+          )
+          .order("category", { ascending: true })
+          .order("ability_name", { ascending: true });
+        if (weaponError) throw new Error(weaponError.message);
+
+        const martialOptions = (weaponData ?? [])
+          .filter((row) => row.category && row.ability_name)
+          .map((row) => ({
+            id: row.id,
+            category: row.category,
+            name: row.ability_name,
+            abilityType: row.ability_type ?? undefined,
+            energyCost: typeof row.energy_cost === "number" ? row.energy_cost : undefined,
+            apCost: typeof row.action_point_cost === "number" ? row.action_point_cost : undefined,
+            damage: row.damage ?? undefined,
+            damageType: row.damage_type ?? undefined,
+            range: row.range ?? undefined,
+            description: row.description ?? undefined
+          }));
+
+        const psionicRows = await api.listPsionicAbilities();
+        const psionicOptions = psionicRows.map((row) => ({
+          id: `${row.ability_tree}:${row.ability}`,
+          tree: row.ability_tree,
+          name: row.ability,
+          tier: row.tier ?? undefined,
+          description: row.description ?? undefined,
+          energyCost: row.energy_cost !== null && row.energy_cost !== undefined ? Number(row.energy_cost) : undefined
+        }));
+
+        if (!active) return;
+        setWeaponAbilities(martialOptions);
+        setPsionicAbilities(psionicOptions);
+        setWeaponCategory((current) => current || martialOptions[0]?.category || "");
+        setPsionicTree((current) => current || psionicOptions[0]?.tree || "");
+      } catch (loadError) {
+        if (!active) return;
+        setAbilityLoadError(loadError instanceof Error ? loadError.message : "Failed to load abilities.");
+      }
+    };
+
+    loadAbilities();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const skillDefinitions = definitions?.skills ?? [];
   const skillCodeSet = React.useMemo(() => new Set(skillDefinitions.map(getSkillCode)), [skillDefinitions]);
+  const weaponCategories = React.useMemo(
+    () => Array.from(new Set(weaponAbilities.map((ability) => ability.category))).sort((a, b) => a.localeCompare(b)),
+    [weaponAbilities]
+  );
+  const psionicTrees = React.useMemo(
+    () => Array.from(new Set(psionicAbilities.map((ability) => ability.tree))).sort((a, b) => a.localeCompare(b)),
+    [psionicAbilities]
+  );
+
+  const buildMartialAbilityKey = React.useCallback(
+    (ability: WeaponAbilityOption) =>
+      `${ability.category}::${ability.name}${ability.abilityType ? `::${ability.abilityType}` : ""}`,
+    []
+  );
+  const buildPsionicAbilityKey = React.useCallback((ability: PsionicAbilityOption) => `${ability.tree}::${ability.name}`, []);
+
+  const buildMartialAbility = React.useCallback(
+    (ability: WeaponAbilityOption): NonNullable<ApiBestiaryEntry["abilities"]>[number] => ({
+      type: "martial",
+      category: ability.category,
+      key: buildMartialAbilityKey(ability),
+      name: ability.name,
+      description: ability.description,
+      range: ability.range,
+      damage: ability.damage,
+      energyCost: ability.energyCost,
+      apCost: ability.apCost
+    }),
+    [buildMartialAbilityKey]
+  );
+  const buildPsionicAbility = React.useCallback(
+    (ability: PsionicAbilityOption): NonNullable<ApiBestiaryEntry["abilities"]>[number] => ({
+      type: "psionic",
+      tree: ability.tree,
+      key: buildPsionicAbilityKey(ability),
+      name: ability.name,
+      description: ability.description,
+      energyCost: ability.energyCost
+    }),
+    [buildPsionicAbilityKey]
+  );
+
+  const toggleAbilitySelection = React.useCallback(
+    (
+      current: NonNullable<ApiBestiaryEntry["abilities"]>,
+      ability: NonNullable<ApiBestiaryEntry["abilities"]>[number]
+    ) => {
+      const exists = current.some((item) => item.type === ability.type && item.key === ability.key);
+      if (exists) {
+        return current.filter((item) => !(item.type === ability.type && item.key === ability.key));
+      }
+      return [...current, ability];
+    },
+    []
+  );
+
+  const weaponAbilityOptions = React.useMemo(
+    () => weaponAbilities.filter((ability) => ability.category === weaponCategory),
+    [weaponAbilities, weaponCategory]
+  );
+  const psionicAbilityOptions = React.useMemo(
+    () => psionicAbilities.filter((ability) => ability.tree === psionicTree),
+    [psionicAbilities, psionicTree]
+  );
 
   const mapApiEntry = React.useCallback(
     (entry: ApiBestiaryEntry): BestiaryEntry => {
@@ -279,6 +590,10 @@ export const BestiaryPage: React.FC = () => {
       const armorTypeValue = typeof entry.armorType === "string" ? entry.armorType : "";
       const energyBarsValue = readNumberString(attributesPayload?.energy_bars ?? entry.energyBars);
       const rankValue = typeof entry.rank === "string" ? entry.rank : "NPC";
+      const immunities = readStringList(statsSkills?.immunities);
+      const resistances = readStringList(statsSkills?.resistances);
+      const weaknesses = readStringList(statsSkills?.weaknesses);
+      const actions = readActions(statsSkills?.actions);
       const attributesValues = ATTRIBUTE_KEYS.reduce<Record<AttributeKey, string>>((acc, key) => {
         acc[key] = readNumberString((attributesPayload as Record<string, unknown>)[key]);
         return acc;
@@ -304,11 +619,14 @@ export const BestiaryPage: React.FC = () => {
           skillsValues[code] = `${total}`;
         }
       });
-      const primaryAbility = entry.abilities?.[0];
-      const abilityTypeValue = typeof primaryAbility?.type === "string" ? primaryAbility.type : "";
-      const customAbilityNameValue = typeof primaryAbility?.name === "string" ? primaryAbility.name : "";
-      const customAbilityEnergyValue = readNumberString(primaryAbility?.energyCost);
-      const customAbilityApValue = readNumberString(primaryAbility?.apCost);
+      const abilitiesPayload = entry.abilities ?? [];
+      const customAbility = abilitiesPayload.find((ability) => ability.type === "custom");
+      const customAbilityNameValue = typeof customAbility?.name === "string" ? customAbility.name : "";
+      const customAbilityEnergyValue = readNumberString(customAbility?.energyCost);
+      const customAbilityApValue = readNumberString(customAbility?.apCost);
+      const customAbilityEnabled = Boolean(
+        customAbilityNameValue || customAbilityEnergyValue || customAbilityApValue
+      );
       return {
         id: entry.id,
         name: entry.name,
@@ -323,11 +641,15 @@ export const BestiaryPage: React.FC = () => {
         energyBars: energyBarsValue,
         attributes: attributesValues,
         skills: skillsValues,
-        abilityType: abilityTypeValue,
+        actions,
+        immunities,
+        resistances,
+        weaknesses,
+        customAbilityEnabled,
         customAbilityName: customAbilityNameValue,
         customAbilityEnergy: customAbilityEnergyValue,
         customAbilityAp: customAbilityApValue,
-        abilities: entry.abilities ?? [],
+        abilities: abilitiesPayload,
         lieutenantId: entry.lieutenantId ?? "",
         heroId: entry.heroId ?? ""
       };
@@ -609,18 +931,27 @@ export const BestiaryPage: React.FC = () => {
       setError(skillsParsed.error);
       return;
     }
-    if (abilityType === "custom" && !customAbilityName.trim()) {
+    if (customAbilityEnabled && !customAbilityName.trim()) {
       setError("Custom ability name is required.");
       return;
     }
-    const customEnergyParsed = parseIntegerField("Custom ability energy cost", customAbilityEnergy);
+    const customEnergyParsed = customAbilityEnabled
+      ? parseIntegerField("Custom ability energy cost", customAbilityEnergy)
+      : {};
     if (customEnergyParsed.error) {
       setError(customEnergyParsed.error);
       return;
     }
-    const customApParsed = parseIntegerField("Custom ability AP cost", customAbilityAp);
+    const customApParsed = customAbilityEnabled
+      ? parseIntegerField("Custom ability AP cost", customAbilityAp)
+      : {};
     if (customApParsed.error) {
       setError(customApParsed.error);
+      return;
+    }
+    const actionsParsed = parseActions(actions);
+    if (actionsParsed.error) {
+      setError(actionsParsed.error);
       return;
     }
     if (maxEnergyParsed.value !== undefined) attributesPayload.energy = maxEnergyParsed.value;
@@ -644,20 +975,16 @@ export const BestiaryPage: React.FC = () => {
         skillsPayload[code] = value;
       }
     });
-    const abilitiesPayload = abilityType
-      ? [
-          {
-            type: abilityType,
-            ...(abilityType === "custom"
-              ? {
-                  name: customAbilityName.trim(),
-                  energyCost: customEnergyParsed.value,
-                  apCost: customApParsed.value
-                }
-              : {})
-          }
-        ]
-      : undefined;
+    const abilitiesPayload = [...abilities];
+    if (customAbilityEnabled) {
+      abilitiesPayload.push({
+        type: "custom",
+        key: customAbilityName.trim(),
+        name: customAbilityName.trim(),
+        energyCost: customEnergyParsed.value,
+        apCost: customApParsed.value
+      });
+    }
     try {
       const draftEntry: BestiaryEntry = {
         id: "",
@@ -673,21 +1000,25 @@ export const BestiaryPage: React.FC = () => {
         energyBars,
         attributes,
         skills,
-        abilityType,
+        actions,
+        immunities,
+        resistances,
+        weaknesses,
+        customAbilityEnabled,
         customAbilityName,
         customAbilityEnergy,
         customAbilityAp,
-        abilities: abilitiesPayload ?? [],
+        abilities: abilitiesPayload,
         lieutenantId,
         heroId
       };
       const created = await gmApi.createBestiaryEntry({
         campaignId: selectedCampaignId,
         name: trimmed,
-        statsSkills: toStatsSkills(draftEntry, tierParsed.value),
+        statsSkills: toStatsSkills(draftEntry, tierParsed.value, actionsParsed.value),
         attributes: Object.keys(attributesPayload).length ? attributesPayload : undefined,
         skills: Object.keys(skillsPayload).length ? skillsPayload : undefined,
-        abilities: abilitiesPayload,
+        abilities: abilitiesPayload.length ? abilitiesPayload : undefined,
         rank,
         dr: drParsed.value,
         armorType: armorType.trim() || undefined,
@@ -796,18 +1127,27 @@ export const BestiaryPage: React.FC = () => {
       setError(skillsParsed.error);
       return;
     }
-    if (editDraft.abilityType === "custom" && !editDraft.customAbilityName.trim()) {
+    if (editDraft.customAbilityEnabled && !editDraft.customAbilityName.trim()) {
       setError("Custom ability name is required.");
       return;
     }
-    const customEnergyParsed = parseIntegerField("Custom ability energy cost", editDraft.customAbilityEnergy);
+    const customEnergyParsed = editDraft.customAbilityEnabled
+      ? parseIntegerField("Custom ability energy cost", editDraft.customAbilityEnergy)
+      : {};
     if (customEnergyParsed.error) {
       setError(customEnergyParsed.error);
       return;
     }
-    const customApParsed = parseIntegerField("Custom ability AP cost", editDraft.customAbilityAp);
+    const customApParsed = editDraft.customAbilityEnabled
+      ? parseIntegerField("Custom ability AP cost", editDraft.customAbilityAp)
+      : {};
     if (customApParsed.error) {
       setError(customApParsed.error);
+      return;
+    }
+    const actionsParsed = parseActions(editDraft.actions);
+    if (actionsParsed.error) {
+      setError(actionsParsed.error);
       return;
     }
     if (maxEnergyParsed.value !== undefined) attributesPayload.energy = maxEnergyParsed.value;
@@ -831,28 +1171,25 @@ export const BestiaryPage: React.FC = () => {
         skillsPayload[code] = value;
       }
     });
-    const abilitiesPayload = editDraft.abilityType
-      ? [
-          {
-            type: editDraft.abilityType,
-            ...(editDraft.abilityType === "custom"
-              ? {
-                  name: editDraft.customAbilityName.trim(),
-                  energyCost: customEnergyParsed.value,
-                  apCost: customApParsed.value
-                }
-              : {})
-          }
-        ]
-      : undefined;
+    const baseAbilities = editDraft.abilities.filter((ability) => ability.type !== "custom");
+    const abilitiesPayload = [...baseAbilities];
+    if (editDraft.customAbilityEnabled) {
+      abilitiesPayload.push({
+        type: "custom",
+        key: editDraft.customAbilityName.trim(),
+        name: editDraft.customAbilityName.trim(),
+        energyCost: customEnergyParsed.value,
+        apCost: customApParsed.value
+      });
+    }
     const attributesToSend = Object.keys(attributesPayload).length ? attributesPayload : undefined;
     try {
       const updated = await gmApi.updateBestiaryEntry(editDraft.id, {
         name: editDraft.name.trim(),
-        statsSkills: toStatsSkills(editDraft, tierParsed.value),
+        statsSkills: toStatsSkills(editDraft, tierParsed.value, actionsParsed.value),
         attributes: attributesToSend,
         skills: Object.keys(skillsPayload).length ? skillsPayload : undefined,
-        abilities: abilitiesPayload,
+        abilities: abilitiesPayload.length ? abilitiesPayload : undefined,
         rank: editDraft.rank,
         dr: drParsed.value,
         armorType: editDraft.armorType.trim() || null,
@@ -1256,7 +1593,7 @@ export const BestiaryPage: React.FC = () => {
                     />
                   </label>
                   <label className={styles.field}>
-                    <span className={styles.fieldLabel}>DR</span>
+                    <span className={styles.fieldLabel}>Damage Reduction (DR)</span>
                     <input
                       value={dr}
                       onChange={(event) => setDr(event.target.value)}
@@ -1295,6 +1632,118 @@ export const BestiaryPage: React.FC = () => {
                     className={`${styles.input} ${styles.textarea}`}
                   />
                 </label>
+              </CollapsibleSection>
+              <CollapsibleSection
+                title="Defenses"
+                isOpen={panelState.defenses}
+                onToggle={() => togglePanel("defenses")}
+              >
+                <MultiValueInput
+                  label="Immunities"
+                  values={immunities}
+                  onChange={setImmunities}
+                  placeholder="Poison"
+                />
+                <MultiValueInput
+                  label="Resistances"
+                  values={resistances}
+                  onChange={setResistances}
+                  placeholder="Fire"
+                />
+                <MultiValueInput
+                  label="Weaknesses"
+                  values={weaknesses}
+                  onChange={setWeaknesses}
+                  placeholder="Cold Iron"
+                />
+              </CollapsibleSection>
+              <CollapsibleSection
+                title="Actions"
+                isOpen={panelState.actions}
+                onToggle={() => togglePanel("actions")}
+              >
+                {actions.length === 0 ? (
+                  <div className={styles.mutedTextSmall}>No actions added yet.</div>
+                ) : (
+                  <div className={styles.actionList}>
+                    {actions.map((action, index) => (
+                      <div key={`action-${index}`} className={styles.actionInputsRow}>
+                        <input
+                          value={action.energyCost}
+                          onChange={(event) =>
+                            setActions((prev) =>
+                              prev.map((item, rowIndex) =>
+                                rowIndex === index ? { ...item, energyCost: event.target.value } : item
+                              )
+                            )
+                          }
+                          placeholder="Energy"
+                          className={styles.input}
+                          inputMode="numeric"
+                        />
+                        <input
+                          value={action.apCost}
+                          onChange={(event) =>
+                            setActions((prev) =>
+                              prev.map((item, rowIndex) =>
+                                rowIndex === index ? { ...item, apCost: event.target.value } : item
+                              )
+                            )
+                          }
+                          placeholder="AP"
+                          className={styles.input}
+                          inputMode="numeric"
+                        />
+                        <input
+                          value={action.range}
+                          onChange={(event) =>
+                            setActions((prev) =>
+                              prev.map((item, rowIndex) =>
+                                rowIndex === index ? { ...item, range: event.target.value } : item
+                              )
+                            )
+                          }
+                          placeholder="Range"
+                          className={styles.input}
+                        />
+                        <input
+                          value={action.damage}
+                          onChange={(event) =>
+                            setActions((prev) =>
+                              prev.map((item, rowIndex) =>
+                                rowIndex === index ? { ...item, damage: event.target.value } : item
+                              )
+                            )
+                          }
+                          placeholder="Damage"
+                          className={styles.input}
+                        />
+                        <input
+                          value={action.damageType}
+                          onChange={(event) =>
+                            setActions((prev) =>
+                              prev.map((item, rowIndex) =>
+                                rowIndex === index ? { ...item, damageType: event.target.value } : item
+                              )
+                            )
+                          }
+                          placeholder="Damage Type"
+                          className={styles.input}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setActions((prev) => prev.filter((_, rowIndex) => rowIndex !== index))}
+                          className={styles.dangerButton}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button type="button" onClick={() => setActions((prev) => [...prev, createBlankAction()])} className={styles.secondaryButton}>
+                  Add Action
+                </button>
               </CollapsibleSection>
               <CollapsibleSection
                 title="Attributes"
@@ -1355,20 +1804,105 @@ export const BestiaryPage: React.FC = () => {
                 isOpen={panelState.abilities}
                 onToggle={() => togglePanel("abilities")}
               >
-                <label className={styles.field}>
-                  <span className={styles.fieldLabel}>Ability Type</span>
-                  <select
-                    value={abilityType}
-                    onChange={(event) => setAbilityType(event.target.value)}
-                    className={styles.input}
-                  >
-                    <option value="">None</option>
-                    <option value="psionic">Psionic</option>
-                    <option value="martial">Martial</option>
-                    <option value="custom">Custom</option>
-                  </select>
+                {abilityLoadError && <div className={styles.mutedTextSmall}>Ability data error: {abilityLoadError}</div>}
+                <div className={styles.field}>
+                  <span className={styles.fieldLabel}>Martial</span>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabelMedium}>Weapon Category</span>
+                    <select
+                      value={weaponCategory}
+                      onChange={(event) => setWeaponCategory(event.target.value)}
+                      className={styles.input}
+                    >
+                      {weaponCategories.length === 0 ? (
+                        <option value="">No categories available</option>
+                      ) : (
+                        weaponCategories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </label>
+                  {weaponAbilityOptions.length === 0 ? (
+                    <div className={styles.mutedTextSmall}>No martial abilities for this category.</div>
+                  ) : (
+                    <div className={styles.selectionGrid}>
+                      {weaponAbilityOptions.map((ability) => {
+                        const key = buildMartialAbilityKey(ability);
+                        const selected = abilities.some((item) => item.type === "martial" && item.key === key);
+                        return (
+                          <label key={key} className={styles.checkboxRow}>
+                            <input
+                              type="checkbox"
+                              checked={selected}
+                              onChange={() =>
+                                setAbilities((prev) => toggleAbilitySelection(prev, buildMartialAbility(ability)))
+                              }
+                            />
+                            <span>{ability.name}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                <div className={styles.field}>
+                  <span className={styles.fieldLabel}>Psionic</span>
+                  <label className={styles.field}>
+                    <span className={styles.fieldLabelMedium}>Tree</span>
+                    <select
+                      value={psionicTree}
+                      onChange={(event) => setPsionicTree(event.target.value)}
+                      className={styles.input}
+                    >
+                      {psionicTrees.length === 0 ? (
+                        <option value="">No trees available</option>
+                      ) : (
+                        psionicTrees.map((tree) => (
+                          <option key={tree} value={tree}>
+                            {tree}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </label>
+                  {psionicAbilityOptions.length === 0 ? (
+                    <div className={styles.mutedTextSmall}>No psionic abilities for this tree.</div>
+                  ) : (
+                    <div className={styles.selectionGrid}>
+                      {psionicAbilityOptions.map((ability) => {
+                        const key = buildPsionicAbilityKey(ability);
+                        const selected = abilities.some((item) => item.type === "psionic" && item.key === key);
+                        return (
+                          <label key={key} className={styles.checkboxRow}>
+                            <input
+                              type="checkbox"
+                              checked={selected}
+                              onChange={() =>
+                                setAbilities((prev) => toggleAbilitySelection(prev, buildPsionicAbility(ability)))
+                              }
+                            />
+                            <span>
+                              {ability.name}
+                              {ability.tier ? ` (Tier ${ability.tier})` : ""}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                <label className={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={customAbilityEnabled}
+                    onChange={(event) => setCustomAbilityEnabled(event.target.checked)}
+                  />
+                  <span className={styles.fieldLabel}>Custom Ability</span>
                 </label>
-                {abilityType === "custom" && (
+                {customAbilityEnabled && (
                   <div className={styles.gridAuto160}>
                     <label className={styles.field}>
                       <span className={styles.fieldLabel}>Custom Ability Name</span>
@@ -1522,7 +2056,7 @@ export const BestiaryPage: React.FC = () => {
                     <input
                       value={editDraft.dr}
                       onChange={(event) => setEditDraft({ ...editDraft, dr: event.target.value })}
-                      placeholder="DR"
+                      placeholder="Damage Reduction"
                       className={styles.input}
                       inputMode="numeric"
                     />
@@ -1547,6 +2081,132 @@ export const BestiaryPage: React.FC = () => {
                     placeholder="Notes"
                     className={`${styles.input} ${styles.textarea}`}
                   />
+                </CollapsibleSection>
+                <CollapsibleSection
+                  title="Defenses"
+                  isOpen={panelState.defenses}
+                  onToggle={() => togglePanel("defenses")}
+                >
+                  <MultiValueInput
+                    label="Immunities"
+                    values={editDraft.immunities}
+                    onChange={(values) => setEditDraft({ ...editDraft, immunities: values })}
+                    placeholder="Poison"
+                  />
+                  <MultiValueInput
+                    label="Resistances"
+                    values={editDraft.resistances}
+                    onChange={(values) => setEditDraft({ ...editDraft, resistances: values })}
+                    placeholder="Fire"
+                  />
+                  <MultiValueInput
+                    label="Weaknesses"
+                    values={editDraft.weaknesses}
+                    onChange={(values) => setEditDraft({ ...editDraft, weaknesses: values })}
+                    placeholder="Cold Iron"
+                  />
+                </CollapsibleSection>
+                <CollapsibleSection
+                  title="Actions"
+                  isOpen={panelState.actions}
+                  onToggle={() => togglePanel("actions")}
+                >
+                  {editDraft.actions.length === 0 ? (
+                    <div className={styles.mutedTextSmall}>No actions added yet.</div>
+                  ) : (
+                    <div className={styles.actionList}>
+                      {editDraft.actions.map((action, index) => (
+                        <div key={`edit-action-${index}`} className={styles.actionInputsRow}>
+                          <input
+                            value={action.energyCost}
+                            onChange={(event) =>
+                              setEditDraft({
+                                ...editDraft,
+                                actions: editDraft.actions.map((item, rowIndex) =>
+                                  rowIndex === index ? { ...item, energyCost: event.target.value } : item
+                                )
+                              })
+                            }
+                            placeholder="Energy"
+                            className={styles.input}
+                            inputMode="numeric"
+                          />
+                          <input
+                            value={action.apCost}
+                            onChange={(event) =>
+                              setEditDraft({
+                                ...editDraft,
+                                actions: editDraft.actions.map((item, rowIndex) =>
+                                  rowIndex === index ? { ...item, apCost: event.target.value } : item
+                                )
+                              })
+                            }
+                            placeholder="AP"
+                            className={styles.input}
+                            inputMode="numeric"
+                          />
+                          <input
+                            value={action.range}
+                            onChange={(event) =>
+                              setEditDraft({
+                                ...editDraft,
+                                actions: editDraft.actions.map((item, rowIndex) =>
+                                  rowIndex === index ? { ...item, range: event.target.value } : item
+                                )
+                              })
+                            }
+                            placeholder="Range"
+                            className={styles.input}
+                          />
+                          <input
+                            value={action.damage}
+                            onChange={(event) =>
+                              setEditDraft({
+                                ...editDraft,
+                                actions: editDraft.actions.map((item, rowIndex) =>
+                                  rowIndex === index ? { ...item, damage: event.target.value } : item
+                                )
+                              })
+                            }
+                            placeholder="Damage"
+                            className={styles.input}
+                          />
+                          <input
+                            value={action.damageType}
+                            onChange={(event) =>
+                              setEditDraft({
+                                ...editDraft,
+                                actions: editDraft.actions.map((item, rowIndex) =>
+                                  rowIndex === index ? { ...item, damageType: event.target.value } : item
+                                )
+                              })
+                            }
+                            placeholder="Damage Type"
+                            className={styles.input}
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEditDraft({
+                                ...editDraft,
+                                actions: editDraft.actions.filter((_, rowIndex) => rowIndex !== index)
+                              })
+                            }
+                            className={styles.dangerButton}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setEditDraft({ ...editDraft, actions: [...editDraft.actions, createBlankAction()] })}
+                    className={styles.secondaryButton}
+                  >
+                    Add Action
+                  </button>
                 </CollapsibleSection>
                 <CollapsibleSection
                   title="Attributes"
@@ -1627,17 +2287,111 @@ export const BestiaryPage: React.FC = () => {
                   isOpen={panelState.abilities}
                   onToggle={() => togglePanel("abilities")}
                 >
-                  <select
-                    value={editDraft.abilityType}
-                    onChange={(event) => setEditDraft({ ...editDraft, abilityType: event.target.value })}
-                    className={styles.input}
-                  >
-                    <option value="">None</option>
-                    <option value="psionic">Psionic</option>
-                    <option value="martial">Martial</option>
-                    <option value="custom">Custom</option>
-                  </select>
-                  {editDraft.abilityType === "custom" && (
+                  {abilityLoadError && <div className={styles.mutedTextSmall}>Ability data error: {abilityLoadError}</div>}
+                  <div className={styles.field}>
+                    <span className={styles.fieldLabel}>Martial</span>
+                    <label className={styles.field}>
+                      <span className={styles.fieldLabelMedium}>Weapon Category</span>
+                      <select
+                        value={weaponCategory}
+                        onChange={(event) => setWeaponCategory(event.target.value)}
+                        className={styles.input}
+                      >
+                        {weaponCategories.length === 0 ? (
+                          <option value="">No categories available</option>
+                        ) : (
+                          weaponCategories.map((category) => (
+                            <option key={category} value={category}>
+                              {category}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </label>
+                    {weaponAbilityOptions.length === 0 ? (
+                      <div className={styles.mutedTextSmall}>No martial abilities for this category.</div>
+                    ) : (
+                      <div className={styles.selectionGrid}>
+                        {weaponAbilityOptions.map((ability) => {
+                          const key = buildMartialAbilityKey(ability);
+                          const selected = editDraft.abilities.some((item) => item.type === "martial" && item.key === key);
+                          return (
+                            <label key={key} className={styles.checkboxRow}>
+                              <input
+                                type="checkbox"
+                                checked={selected}
+                                onChange={() =>
+                                  setEditDraft({
+                                    ...editDraft,
+                                    abilities: toggleAbilitySelection(editDraft.abilities, buildMartialAbility(ability))
+                                  })
+                                }
+                              />
+                              <span>{ability.name}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.field}>
+                    <span className={styles.fieldLabel}>Psionic</span>
+                    <label className={styles.field}>
+                      <span className={styles.fieldLabelMedium}>Tree</span>
+                      <select
+                        value={psionicTree}
+                        onChange={(event) => setPsionicTree(event.target.value)}
+                        className={styles.input}
+                      >
+                        {psionicTrees.length === 0 ? (
+                          <option value="">No trees available</option>
+                        ) : (
+                          psionicTrees.map((tree) => (
+                            <option key={tree} value={tree}>
+                              {tree}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </label>
+                    {psionicAbilityOptions.length === 0 ? (
+                      <div className={styles.mutedTextSmall}>No psionic abilities for this tree.</div>
+                    ) : (
+                      <div className={styles.selectionGrid}>
+                        {psionicAbilityOptions.map((ability) => {
+                          const key = buildPsionicAbilityKey(ability);
+                          const selected = editDraft.abilities.some((item) => item.type === "psionic" && item.key === key);
+                          return (
+                            <label key={key} className={styles.checkboxRow}>
+                              <input
+                                type="checkbox"
+                                checked={selected}
+                                onChange={() =>
+                                  setEditDraft({
+                                    ...editDraft,
+                                    abilities: toggleAbilitySelection(editDraft.abilities, buildPsionicAbility(ability))
+                                  })
+                                }
+                              />
+                              <span>
+                                {ability.name}
+                                {ability.tier ? ` (Tier ${ability.tier})` : ""}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <label className={styles.checkboxRow}>
+                    <input
+                      type="checkbox"
+                      checked={editDraft.customAbilityEnabled}
+                      onChange={(event) => setEditDraft({ ...editDraft, customAbilityEnabled: event.target.checked })}
+                    />
+                    <span className={styles.fieldLabel}>Custom Ability</span>
+                  </label>
+                  {editDraft.customAbilityEnabled && (
                     <div className={styles.gridAuto150}>
                       <input
                         value={editDraft.customAbilityName}
@@ -1733,7 +2487,7 @@ export const BestiaryPage: React.FC = () => {
                         <div className={styles.statValue}>{selectedEntry.maxAp || "—"}</div>
                       </div>
                       <div>
-                        <div className={styles.statLabel}>DR</div>
+                        <div className={styles.statLabel}>Damage Reduction</div>
                         <div className={styles.statValue}>{selectedEntry.dr || "—"}</div>
                         {selectedEntry.armorType && (
                           <div className={styles.mutedTextSmall}>{selectedEntry.armorType}</div>
@@ -1744,21 +2498,63 @@ export const BestiaryPage: React.FC = () => {
                         <div className={styles.statValue}>{selectedEntry.energyBars || "—"}</div>
                       </div>
                       <div>
-                        <div className={styles.statLabel}>Ability</div>
+                        <div className={styles.statLabel}>Abilities</div>
                         <div className={styles.statValue}>
-                          {selectedEntry.abilityType
-                            ? selectedEntry.abilityType === "custom"
-                              ? selectedEntry.customAbilityName || "Custom"
-                              : selectedEntry.abilityType
-                            : "None"}
+                          {selectedEntry.abilities.length ? `${selectedEntry.abilities.length} selected` : "None"}
                         </div>
-                        {selectedEntry.abilityType === "custom" && (
-                          <div className={styles.mutedTextSmall}>
-                            Energy {selectedEntry.customAbilityEnergy || "—"} • AP {selectedEntry.customAbilityAp || "—"}
-                          </div>
-                        )}
                       </div>
                     </div>
+                  </div>
+                  <div className={styles.detailSection}>
+                    <div className={styles.sectionTitle}>Defenses</div>
+                    <div className={styles.gridTwo}>
+                      <div>
+                        <div className={styles.statLabel}>Immunities</div>
+                        <div className={styles.statValue}>
+                          {selectedEntry.immunities.length ? selectedEntry.immunities.join(", ") : "—"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className={styles.statLabel}>Resistances</div>
+                        <div className={styles.statValue}>
+                          {selectedEntry.resistances.length ? selectedEntry.resistances.join(", ") : "—"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className={styles.statLabel}>Weaknesses</div>
+                        <div className={styles.statValue}>
+                          {selectedEntry.weaknesses.length ? selectedEntry.weaknesses.join(", ") : "—"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.detailSection}>
+                    <div className={styles.sectionTitle}>Actions</div>
+                    {selectedEntry.actions.length === 0 ? (
+                      <div className={styles.mutedTextMedium}>No actions listed.</div>
+                    ) : (
+                      <div className={styles.gridTwo}>
+                        {selectedEntry.actions.map((action, index) => {
+                          const parts = [
+                            action.energyCost ? `Energy ${action.energyCost}` : null,
+                            action.apCost ? `AP ${action.apCost}` : null,
+                            action.range ? `Range ${action.range}` : null,
+                            action.damage ? `Damage ${action.damage}` : null,
+                            action.damageType ? `Type ${action.damageType}` : null
+                          ].filter(Boolean);
+                          return (
+                            <div key={`action-display-${index}`} className={styles.skillCard}>
+                              <span className={styles.fieldLabelMedium}>Action {index + 1}</span>
+                              {parts.length > 0 ? (
+                                <span className={styles.mutedTextSmall}>{parts.join(" • ")}</span>
+                              ) : (
+                                <span className={styles.mutedTextSmall}>No details provided.</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                   <div className={styles.detailSection}>
                     <div className={styles.sectionTitle}>Attributes</div>
@@ -1796,8 +2592,16 @@ export const BestiaryPage: React.FC = () => {
                       <div className={styles.gridTwo}>
                         {selectedEntry.abilities.map((ability, index) => {
                           const label = ability.name || ability.key || ability.type || `Ability ${index + 1}`;
-                          const metaParts = [ability.phase, ability.range, ability.damage]
-                            .filter((value) => value && value.trim())
+                          const metaParts = [
+                            ability.category ? `Category: ${ability.category}` : null,
+                            ability.tree ? `Tree: ${ability.tree}` : null,
+                            ability.phase ? `Phase: ${ability.phase}` : null,
+                            ability.energyCost !== undefined ? `Energy ${ability.energyCost}` : null,
+                            ability.apCost !== undefined ? `AP ${ability.apCost}` : null,
+                            ability.range ? `Range ${ability.range}` : null,
+                            ability.damage ? `Damage ${ability.damage}` : null
+                          ]
+                            .filter((value): value is string => Boolean(value))
                             .join(" • ");
                           return (
                             <div key={`${label}-${index}`} className={styles.skillCard}>
