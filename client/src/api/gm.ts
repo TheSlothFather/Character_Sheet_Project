@@ -31,6 +31,10 @@ export interface BestiaryEntry {
   attributes?: Record<string, unknown>;
   skills?: Record<string, number>;
   abilities?: BestiaryAbility[];
+  actions?: BestiaryEntryJson;
+  immunities?: BestiaryEntryJson;
+  resistances?: BestiaryEntryJson;
+  weaknesses?: BestiaryEntryJson;
   tags?: string[];
   rank?: string;
   dr?: number;
@@ -117,6 +121,8 @@ export interface BestiaryAbility {
   apCost?: number;
 }
 
+type BestiaryEntryJson = Record<string, unknown> | unknown[];
+
 export interface BestiaryPin {
   campaignId: string;
   bestiaryEntryId: string;
@@ -162,6 +168,10 @@ type BestiaryEntryRow = {
   attributes?: Record<string, unknown> | null;
   skills?: Record<string, number> | null;
   abilities?: BestiaryAbility[] | null;
+  actions?: BestiaryEntryJson | null;
+  immunities?: BestiaryEntryJson | null;
+  resistances?: BestiaryEntryJson | null;
+  weaknesses?: BestiaryEntryJson | null;
   tags?: string[] | null;
   rank?: string | null;
   dr?: number | null;
@@ -309,6 +319,10 @@ function mapBestiaryEntry(row: BestiaryEntryRow): BestiaryEntry {
     attributes: row.attributes ?? undefined,
     skills: row.skills ?? undefined,
     abilities: row.abilities ?? undefined,
+    actions: row.actions ?? undefined,
+    immunities: row.immunities ?? undefined,
+    resistances: row.resistances ?? undefined,
+    weaknesses: row.weaknesses ?? undefined,
     tags: row.tags ?? undefined,
     rank: row.rank ?? undefined,
     dr: row.dr ?? undefined,
@@ -413,6 +427,10 @@ function toBestiaryPayload(payload: Partial<BestiaryEntry>): Partial<BestiaryEnt
   if (payload.attributes !== undefined) record.attributes = payload.attributes ?? null;
   if (payload.skills !== undefined) record.skills = payload.skills ?? null;
   if (payload.abilities !== undefined) record.abilities = payload.abilities ?? null;
+  if (payload.actions !== undefined) record.actions = payload.actions ?? null;
+  if (payload.immunities !== undefined) record.immunities = payload.immunities ?? null;
+  if (payload.resistances !== undefined) record.resistances = payload.resistances ?? null;
+  if (payload.weaknesses !== undefined) record.weaknesses = payload.weaknesses ?? null;
   if (payload.tags !== undefined) record.tags = payload.tags ?? null;
   if (payload.rank !== undefined) record.rank = payload.rank ?? null;
   if (payload.dr !== undefined) record.dr = payload.dr ?? null;
@@ -727,7 +745,7 @@ async function listBestiaryEntries(campaignId: string): Promise<BestiaryEntry[]>
   const { data, error } = (await client
     .from("bestiary_entries")
     .select(
-      "id, campaign_id, name, stats_skills, attributes, skills, abilities, tags, rank, dr, armor_type, energy_bars, lieutenant_id, hero_id"
+      "id, campaign_id, name, stats_skills, attributes, skills, abilities, actions, immunities, resistances, weaknesses, tags, rank, dr, armor_type, energy_bars, lieutenant_id, hero_id"
     )
     .eq("campaign_id", campaignId)
     .order("name", { ascending: true })) as SupabaseResult<BestiaryEntryRow[]>;
@@ -748,7 +766,7 @@ async function createBestiaryEntry(payload: Partial<BestiaryEntry>): Promise<Bes
     .from("bestiary_entries")
     .insert(record)
     .select(
-      "id, campaign_id, name, stats_skills, attributes, skills, abilities, tags, rank, dr, armor_type, energy_bars, lieutenant_id, hero_id"
+      "id, campaign_id, name, stats_skills, attributes, skills, abilities, actions, immunities, resistances, weaknesses, tags, rank, dr, armor_type, energy_bars, lieutenant_id, hero_id"
     )
     .single()) as SupabaseResult<BestiaryEntryRow>;
   if (error || !data) {
@@ -766,7 +784,7 @@ async function updateBestiaryEntry(id: string, payload: Partial<BestiaryEntry>):
     .update(record)
     .eq("id", id)
     .select(
-      "id, campaign_id, name, stats_skills, attributes, skills, abilities, tags, rank, dr, armor_type, energy_bars, lieutenant_id, hero_id"
+      "id, campaign_id, name, stats_skills, attributes, skills, abilities, actions, immunities, resistances, weaknesses, tags, rank, dr, armor_type, energy_bars, lieutenant_id, hero_id"
     )
     .single()) as SupabaseResult<BestiaryEntryRow>;
   if (error || !data) {
