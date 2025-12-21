@@ -241,6 +241,53 @@
   background: var(--surface-1);
 }
 
+.gm-combat__card--current {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.gm-combat__current-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.gm-combat__current-details {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.gm-combat__current-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.gm-combat__current-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.gm-combat__current-ticks {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.gm-combat__tick-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.gm-combat__tick-item {
+  font-size: 13px;
+  color: var(--text);
+}
+
 .gm-combat__turn-row {
   display: flex;
   gap: 0.5rem;
@@ -270,6 +317,18 @@
 .gm-combat__action-button--end {
   border-color: var(--accent-secondary);
   background: color-mix(in srgb, var(--accent-secondary) 45%, var(--surface-2));
+  color: var(--text);
+}
+
+.gm-combat__action-button--advance {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 35%, var(--surface-2));
+  color: var(--text);
+}
+
+.gm-combat__action-button--ambush {
+  border-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 35%, var(--surface-2));
   color: var(--text);
 }
 

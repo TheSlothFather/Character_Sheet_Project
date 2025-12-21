@@ -9,6 +9,7 @@ import {
   type CombatantStatusEffect,
   type CombatantWound
 } from "../../api/gm";
+import { connectCampaignSocket } from "../../api/campaignSocket";
 import { useDefinitions } from "../definitions/DefinitionsContext";
 import { getStatusWoundTick, WOUND_DEFINITIONS, type WoundType } from "@shared/rules/wounds";
 import "./CombatPage.css";
@@ -75,6 +76,7 @@ export const CombatPage: React.FC = () => {
   const [bulkUpdating, setBulkUpdating] = React.useState(false);
   const [updatingIds, setUpdatingIds] = React.useState<string[]>([]);
   const [error, setError] = React.useState<string | null>(null);
+  const [combatState, setCombatState] = React.useState<CombatState | null>(null);
   const [addingId, setAddingId] = React.useState<string>("");
   const [addingFaction, setAddingFaction] = React.useState<CombatFaction>("enemy");
   const [addingActive, setAddingActive] = React.useState(true);
@@ -114,6 +116,7 @@ export const CombatPage: React.FC = () => {
     if (!selectedCampaignId) {
       setCombatants([]);
       setBestiaryEntries([]);
+      setCombatState(null);
       return;
     }
     let active = true;
@@ -140,6 +143,57 @@ export const CombatPage: React.FC = () => {
       active = false;
     };
   }, [selectedCampaignId]);
+
+  React.useEffect(() => {
+    if (!selectedCampaignId) return;
+    let active = true;
+    const loadCombatState = async () => {
+      try {
+        const response = await gmApi.getCombatState(selectedCampaignId);
+        if (!active) return;
+        setCombatState(response.state);
+      } catch (loadError) {
+        if (!active) return;
+        if (loadError instanceof Error && loadError.message.includes("Combat state not found")) {
+          setCombatState(null);
+          return;
+        }
+        setError(loadError instanceof Error ? loadError.message : "Failed to load combat state.");
+      }
+    };
+    loadCombatState();
+    return () => {
+      active = false;
+    };
+  }, [selectedCampaignId]);
+
+  React.useEffect(() => {
+    if (!selectedCampaignId) return;
+    const socket = connectCampaignSocket(
+      selectedCampaignId,
+      {
+        onEvent: (event) => {
+          if (!event.payload || typeof event.payload !== "object") return;
+          if ("state" in event.payload) {
+            const payload = event.payload as { state?: CombatState };
+            if (payload.state) {
+              setCombatState(payload.state);
+              setCombatants((prev) => applyCombatState(prev, payload.state));
+            }
+          }
+        }
+      }
+    );
+
+    return () => {
+      socket.close();
+    };
+  }, [selectedCampaignId]);
+
+  React.useEffect(() => {
+    if (!combatState) return;
+    setCombatants((prev) => applyCombatState(prev, combatState));
+  }, [combatState]);
 
   const toggleSelection = (id: string) => {
     setSelectedIds((prev) => {
@@ -318,6 +372,7 @@ export const CombatPage: React.FC = () => {
         actionType: "turn_start",
         metadata: { previousEnergy: energyCurrent }
       });
+      setCombatState(result.state);
       setCombatants((prev) => applyCombatState(prev, result.state));
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "Failed to start turn.");
@@ -344,6 +399,7 @@ export const CombatPage: React.FC = () => {
         actionType: "turn_end",
         metadata: { previousEnergy: energyCurrent }
       });
+      setCombatState(result.state);
       setCombatants((prev) => applyCombatState(prev, result.state));
       setEndTurnSpend((prev) => ({ ...prev, [entry.id]: "" }));
     } catch (updateError) {
@@ -413,10 +469,92 @@ export const CombatPage: React.FC = () => {
     }
   };
 
+  const buildStatusEffectsById = React.useCallback(() => {
+    const statusMap: Record<string, string[]> = {};
+    combatants.forEach((entry) => {
+      const activeStatuses = (entry.statusEffects ?? [])
+        .filter((status) => status.isActive !== false)
+        .map((status) => status.statusKey);
+      if (activeStatuses.length > 0) {
+        statusMap[entry.id] = activeStatuses;
+      }
+    });
+    return statusMap;
+  }, [combatants]);
+
+  const handleAdvanceTurn = async () => {
+    if (!selectedCampaignId) return;
+    setBulkUpdating(true);
+    setError(null);
+    try {
+      const result = await gmApi.advanceCombatTurn(selectedCampaignId, {
+        statusEffectsById: buildStatusEffectsById()
+      });
+      setCombatState(result.state);
+      setCombatants((prev) => applyCombatState(prev, result.state));
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to advance turn.");
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
+  const handleResolveAmbush = async () => {
+    if (!selectedCampaignId) return;
+    setBulkUpdating(true);
+    setError(null);
+    try {
+      const result = await gmApi.resolveAmbushCheck(selectedCampaignId, {
+        combatantId: activeCombatantId ?? undefined
+      });
+      setCombatState(result.state);
+      setCombatants((prev) => applyCombatState(prev, result.state));
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to resolve ambush check.");
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
   const filteredEntries = showInactive ? combatants : combatants.filter((entry) => entry.isActive);
   const allies = filteredEntries.filter((entry) => entry.faction === "ally");
   const enemies = filteredEntries.filter((entry) => entry.faction === "enemy");
   const statusOptions = definitions?.statusEffects ?? [];
+  const statusNameById = React.useMemo(
+    () => new Map(statusOptions.map((status) => [status.id, status.name])),
+    [statusOptions]
+  );
+  const woundLabelByType = React.useMemo(
+    () => new Map(WOUND_DEFINITIONS.map((wound) => [wound.key, wound.label])),
+    []
+  );
+  const activeCombatantId = combatState?.activeCombatantId ?? null;
+  const activeCombatant = activeCombatantId
+    ? combatants.find((entry) => entry.id === activeCombatantId) ?? null
+    : null;
+  const activeAp = activeCombatantId
+    ? combatState?.actionPointsById[activeCombatantId] ?? fallbackNumber(activeCombatant?.apCurrent)
+    : 0;
+  const activeEnergy = activeCombatantId
+    ? combatState?.energyById[activeCombatantId] ?? fallbackNumber(activeCombatant?.energyCurrent)
+    : 0;
+  const activeAmbushPenalty = Boolean(
+    activeCombatantId && combatState?.round === 1 && combatState.ambushRoundFlags[activeCombatantId]
+  );
+  const activeStatusTicks =
+    activeCombatant?.statusEffects
+      ?.map((status) => {
+        const tick = getStatusWoundTick(status.statusKey);
+        if (!tick) return null;
+        return {
+          statusKey: status.statusKey,
+          statusName: statusNameById.get(status.statusKey) ?? status.statusKey,
+          woundType: tick.woundType,
+          woundLabel: woundLabelByType.get(tick.woundType) ?? tick.woundType,
+          amount: tick.amount
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry)) ?? [];
 
   return (
     <div className="gm-combat">
@@ -429,6 +567,72 @@ export const CombatPage: React.FC = () => {
           Advance Round
         </button>
       </header>
+
+      <section className="gm-combat__card gm-combat__card--current">
+        <h3 className="gm-combat__card-title h3">Current Turn</h3>
+        <div className="gm-combat__current-grid">
+          <div className="gm-combat__current-details">
+            <div className="gm-combat__current-row">
+              <span className="gm-combat__hint">Active combatant</span>
+              <strong>{activeCombatant?.name ?? "No active combatant"}</strong>
+            </div>
+            <div className="gm-combat__current-row">
+              <span className="gm-combat__hint">Round</span>
+              <span>{combatState?.round ?? "—"}</span>
+            </div>
+            <div className="gm-combat__current-row">
+              <span className="gm-combat__hint">Remaining AP</span>
+              <span>
+                {activeCombatant ? activeAp : "—"}
+                {activeCombatant?.apMax != null ? ` / ${activeCombatant.apMax}` : ""}
+              </span>
+            </div>
+            <div className="gm-combat__current-row">
+              <span className="gm-combat__hint">Remaining energy</span>
+              <span>
+                {activeCombatant ? activeEnergy : "—"}
+                {activeCombatant?.energyMax != null ? ` / ${activeCombatant.energyMax}` : ""}
+              </span>
+            </div>
+            <div className="gm-combat__current-row">
+              <span className="gm-combat__hint">Ambush penalty</span>
+              <span>{activeAmbushPenalty ? "Pending resolution" : "None"}</span>
+            </div>
+          </div>
+          <div className="gm-combat__current-actions">
+            <button
+              type="button"
+              className="gm-combat__action-button gm-combat__action-button--advance"
+              onClick={handleAdvanceTurn}
+              disabled={bulkUpdating || !combatState}
+            >
+              Advance Turn
+            </button>
+            <button
+              type="button"
+              className="gm-combat__action-button gm-combat__action-button--ambush"
+              onClick={handleResolveAmbush}
+              disabled={bulkUpdating || !combatState || !activeCombatantId || !activeAmbushPenalty}
+            >
+              Resolve Ambush Check
+            </button>
+          </div>
+        </div>
+        <div className="gm-combat__current-ticks">
+          <span className="gm-combat__hint">Status tick preview</span>
+          {activeStatusTicks.length === 0 ? (
+            <p className="gm-combat__muted body muted">No status ticks queued.</p>
+          ) : (
+            <ul className="gm-combat__tick-list">
+              {activeStatusTicks.map((tick) => (
+                <li key={`${tick.statusKey}-${tick.woundType}`} className="gm-combat__tick-item">
+                  <strong>{tick.statusName}</strong> → {tick.woundLabel} +{tick.amount}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
 
       <section className="gm-combat__card">
         <div className="gm-combat__stack">

@@ -10,6 +10,7 @@ type CombatEventType =
   | "turn_ended"
   | "combat_updated"
   | "ambush_applied"
+  | "ambush_resolved"
   | "status_tick"
   | "reaction_spent"
   | "action_spent";
@@ -85,6 +86,10 @@ type CombatStartPayload = {
 
 type CombatAdvancePayload = {
   statusEffectsById?: Record<string, string[]>;
+};
+
+type CombatAmbushPayload = {
+  combatantId?: string;
 };
 
 type CombatSpendPayload = {
@@ -505,10 +510,15 @@ export class CampaignDurableObject {
     body: unknown,
   ): Promise<Response> {
     switch (action) {
+      case "state":
+        return this.handleCombatState(campaignId);
       case "start":
         return this.handleCombatStart(campaignId, body);
       case "advance":
+      case "advance-turn":
         return this.handleCombatAdvance(campaignId, body);
+      case "resolve-ambush":
+        return this.handleCombatAmbush(campaignId, body);
       case "spend":
         return this.handleCombatSpend(campaignId, body);
       case "reaction":
@@ -516,6 +526,54 @@ export class CampaignDurableObject {
       default:
         return jsonResponse({ error: "Not found" }, 404);
     }
+  }
+
+  private async handleCombatState(campaignId: string): Promise<Response> {
+    const combatState = await this.loadCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404);
+    }
+
+    return jsonResponse({ ok: true, sequence: this.sequence, state: combatState });
+  }
+
+  private async handleCombatAmbush(campaignId: string, body: unknown): Promise<Response> {
+    const parsed = parseCombatAmbush(body);
+    if (parsed instanceof Response) {
+      return parsed;
+    }
+
+    const combatState = await this.loadCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404);
+    }
+
+    const targetId = parsed.combatantId ?? combatState.activeCombatantId;
+    if (!targetId) {
+      return jsonResponse({ error: "Combatant not available for ambush resolution." }, 400);
+    }
+
+    const hadAmbushPenalty = combatState.ambushRoundFlags[targetId] ?? false;
+    if (hadAmbushPenalty) {
+      combatState.ambushRoundFlags[targetId] = false;
+    }
+
+    const ambushEntry = createCombatEventLogEntry("ambush_resolved", {
+      combatantId: targetId,
+      hadAmbushPenalty,
+    });
+    combatState.eventLog.push(ambushEntry);
+
+    const sequence = await this.saveCombatState(campaignId, combatState);
+    this.broadcast({
+      type: "ambush_resolved",
+      campaignId,
+      sequence,
+      timestamp: ambushEntry.timestamp,
+      payload: { state: combatState, combatantId: targetId, hadAmbushPenalty },
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState });
   }
 
   private async handleCombatStart(campaignId: string, body: unknown): Promise<Response> {
@@ -606,24 +664,11 @@ export class CampaignDurableObject {
       }
     }
 
-    const ambushResult = this.resolveNextTurn(combatState, 0, 1);
-    combatState.turnIndex = ambushResult.nextIndex;
-    combatState.round = ambushResult.nextRound;
-    combatState.activeCombatantId = ambushResult.activeCombatantId;
-
     const startedEntry = createCombatEventLogEntry("combat_started", {
       initiativeOrder,
       groupInitiative: parsed.groupInitiative,
     });
     combatState.eventLog.push(startedEntry);
-
-    if (ambushResult.skippedAmbushIds.length > 0) {
-      combatState.eventLog.push(
-        createCombatEventLogEntry("ambush_applied", {
-          skippedCombatants: ambushResult.skippedAmbushIds,
-        }),
-      );
-    }
 
     if (combatState.activeCombatantId) {
       combatState.eventLog.push(
@@ -684,17 +729,35 @@ export class CampaignDurableObject {
       }),
     );
 
-    let nextIndex = combatState.turnIndex + 1;
-    let nextRound = combatState.round;
-    if (nextIndex >= combatState.initiativeOrder.length) {
-      nextIndex = 0;
-      nextRound += 1;
+    const hadAmbushPenalty = Boolean(
+      previousCombatantId != null &&
+        combatState.round === 1 &&
+        combatState.ambushRoundFlags[previousCombatantId],
+    );
+    if (previousCombatantId && hadAmbushPenalty) {
+      combatState.ambushRoundFlags[previousCombatantId] = false;
+      combatState.eventLog.push(
+        createCombatEventLogEntry("ambush_applied", {
+          skippedCombatants: [previousCombatantId],
+        }),
+      );
     }
 
-    const nextTurn = this.resolveNextTurn(combatState, nextIndex, nextRound);
-    combatState.turnIndex = nextTurn.nextIndex;
-    combatState.round = nextTurn.nextRound;
-    combatState.activeCombatantId = nextTurn.activeCombatantId;
+    const order = combatState.initiativeOrder;
+    let nextIndex = combatState.turnIndex + 1;
+    let nextRound = combatState.round;
+    if (order.length === 0) {
+      combatState.turnIndex = 0;
+      combatState.activeCombatantId = null;
+    } else {
+      if (nextIndex >= order.length) {
+        nextIndex = 0;
+        nextRound += 1;
+      }
+      combatState.turnIndex = nextIndex;
+      combatState.round = nextRound;
+      combatState.activeCombatantId = order[nextIndex] ?? null;
+    }
 
     if (combatState.activeCombatantId) {
       const activeId = combatState.activeCombatantId;
@@ -711,14 +774,6 @@ export class CampaignDurableObject {
       );
     }
 
-    if (nextTurn.skippedAmbushIds.length > 0) {
-      combatState.eventLog.push(
-        createCombatEventLogEntry("ambush_applied", {
-          skippedCombatants: nextTurn.skippedAmbushIds,
-        }),
-      );
-    }
-
     const sequence = await this.saveCombatState(campaignId, combatState);
     this.broadcast({
       type: "turn_started",
@@ -728,7 +783,7 @@ export class CampaignDurableObject {
       payload: {
         state: combatState,
         previousCombatantId,
-        skippedAmbushIds: nextTurn.skippedAmbushIds,
+        ambushCleared: hadAmbushPenalty,
       },
     });
 
@@ -831,59 +886,6 @@ export class CampaignDurableObject {
     });
 
     return jsonResponse({ ok: true, sequence, state: combatState });
-  }
-
-  private resolveNextTurn(
-    combatState: CombatState,
-    startIndex: number,
-    startRound: number,
-  ): {
-    nextIndex: number;
-    nextRound: number;
-    activeCombatantId: string | null;
-    skippedAmbushIds: string[];
-  } {
-    const order = combatState.initiativeOrder;
-    if (order.length === 0) {
-      return {
-        nextIndex: 0,
-        nextRound: startRound,
-        activeCombatantId: null,
-        skippedAmbushIds: [],
-      };
-    }
-
-    let index = startIndex;
-    let round = startRound;
-    const skippedAmbushIds: string[] = [];
-
-    for (let step = 0; step < order.length; step += 1) {
-      const combatantId = order[index];
-      if (round === 1 && combatState.ambushRoundFlags[combatantId]) {
-        combatState.ambushRoundFlags[combatantId] = false;
-        skippedAmbushIds.push(combatantId);
-        index += 1;
-        if (index >= order.length) {
-          index = 0;
-          round += 1;
-        }
-        continue;
-      }
-
-      return {
-        nextIndex: index,
-        nextRound: round,
-        activeCombatantId: combatantId,
-        skippedAmbushIds,
-      };
-    }
-
-    return {
-      nextIndex: index,
-      nextRound: round,
-      activeCombatantId: null,
-      skippedAmbushIds,
-    };
   }
 
   private broadcast(event: CampaignEvent) {
@@ -1301,6 +1303,19 @@ function parseCombatAdvance(body: unknown): CombatAdvancePayload | Response {
   }
 
   return { statusEffectsById };
+}
+
+function parseCombatAmbush(body: unknown): CombatAmbushPayload | Response {
+  if (!isRecord(body)) {
+    return jsonResponse({ error: "Invalid payload." }, 400);
+  }
+
+  const combatantId = parseStringField(body.combatantId, "combatantId");
+  if (combatantId instanceof Response) {
+    return combatantId;
+  }
+
+  return { combatantId };
 }
 
 function parseCombatSpend(body: unknown): CombatSpendPayload | Response {
