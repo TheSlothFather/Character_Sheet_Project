@@ -28,6 +28,7 @@ type CombatState = {
   activeCombatantId: string | null;
   ambushRoundFlags: Record<string, boolean>;
   actionPointsById: Record<string, number>;
+  actionPointsMaxById: Record<string, number>;
   energyById: Record<string, number>;
   statusEffectsById: Record<string, string[]>;
   woundsById: Record<string, number>;
@@ -61,6 +62,46 @@ type RollRequestPayload = {
   label?: string;
   skill?: string;
   requestId?: string;
+};
+
+type CombatantStartPayload = {
+  id: string;
+  initiative?: number;
+  initiativeRoll?: number;
+  initiativeBonus?: number;
+  actionPoints?: number;
+  energy?: number;
+  statusEffects?: string[];
+  wounds?: number;
+  ambushed?: boolean;
+  groupId?: string;
+};
+
+type CombatStartPayload = {
+  combatants: CombatantStartPayload[];
+  groupInitiative: boolean;
+  ambushedIds?: string[];
+};
+
+type CombatAdvancePayload = {
+  statusEffectsById?: Record<string, string[]>;
+};
+
+type CombatSpendPayload = {
+  combatantId: string;
+  actionPointCost: number;
+  energyCost: number;
+  actionType?: string;
+  targetId?: string;
+  rollResults?: unknown;
+  metadata?: unknown;
+};
+
+type CombatReactionPayload = {
+  combatantId: string;
+  actionPointCost: number;
+  reactionType?: string;
+  metadata?: unknown;
 };
 
 type ContestSelectionPayload = {
@@ -127,12 +168,15 @@ export class CampaignDurableObject {
     await this.ready;
     const url = new URL(request.url);
     const match = url.pathname.match(/^\/api\/campaigns\/([^/]+)\/(connect|roll|contest)$/);
-    if (!match) {
+    const combatMatch = url.pathname.match(
+      /^\/api\/campaigns\/([^/]+)\/combat\/([^/]+)$/,
+    );
+    if (!match && !combatMatch) {
       return jsonResponse({ error: "Not found" }, 404);
     }
 
-    const campaignId = decodeURIComponent(match[1]);
-    const action = match[2];
+    const campaignId = decodeURIComponent((match ?? combatMatch)![1]);
+    const action = (match ?? combatMatch)![2];
 
     if (action === "connect") {
       return this.handleConnect(request, campaignId);
@@ -153,6 +197,10 @@ export class CampaignDurableObject {
 
     if (action === "contest") {
       return this.handleContestRequest(campaignId, body);
+    }
+
+    if (combatMatch) {
+      return this.handleCombatAction(campaignId, action, body);
     }
 
     return jsonResponse({ error: "Not found" }, 404);
@@ -451,6 +499,380 @@ export class CampaignDurableObject {
     return jsonResponse({ ok: true, sequence, contest });
   }
 
+  private async handleCombatAction(
+    campaignId: string,
+    action: string,
+    body: unknown,
+  ): Promise<Response> {
+    switch (action) {
+      case "start":
+        return this.handleCombatStart(campaignId, body);
+      case "advance":
+        return this.handleCombatAdvance(campaignId, body);
+      case "spend":
+        return this.handleCombatSpend(campaignId, body);
+      case "reaction":
+        return this.handleCombatReaction(campaignId, body);
+      default:
+        return jsonResponse({ error: "Not found" }, 404);
+    }
+  }
+
+  private async handleCombatStart(campaignId: string, body: unknown): Promise<Response> {
+    const parsed = parseCombatStart(body);
+    if (parsed instanceof Response) {
+      return parsed;
+    }
+
+    const ambushedSet = new Set(parsed.ambushedIds ?? []);
+    const initiativeScores = new Map<string, number>();
+    const groupScores = new Map<string, number>();
+
+    parsed.combatants.forEach((combatant) => {
+      const score =
+        (combatant.initiative ?? 0) +
+        (combatant.initiativeRoll ?? 0) +
+        (combatant.initiativeBonus ?? 0);
+      initiativeScores.set(combatant.id, score);
+      if (parsed.groupInitiative) {
+        const groupKey = combatant.groupId ?? combatant.id;
+        const current = groupScores.get(groupKey);
+        if (current == null || score > current) {
+          groupScores.set(groupKey, score);
+        }
+      }
+    });
+
+    const initiativeOrder = [...parsed.combatants]
+      .sort((left, right) => {
+        const leftScore = parsed.groupInitiative
+          ? groupScores.get(left.groupId ?? left.id) ?? 0
+          : initiativeScores.get(left.id) ?? 0;
+        const rightScore = parsed.groupInitiative
+          ? groupScores.get(right.groupId ?? right.id) ?? 0
+          : initiativeScores.get(right.id) ?? 0;
+        if (leftScore !== rightScore) {
+          return rightScore - leftScore;
+        }
+        const leftTie = initiativeScores.get(left.id) ?? 0;
+        const rightTie = initiativeScores.get(right.id) ?? 0;
+        if (leftTie !== rightTie) {
+          return rightTie - leftTie;
+        }
+        return left.id.localeCompare(right.id);
+      })
+      .map((combatant) => combatant.id);
+
+    const now = new Date().toISOString();
+    const combatState: CombatState = {
+      round: 1,
+      turnIndex: 0,
+      initiativeOrder,
+      activeCombatantId: initiativeOrder[0] ?? null,
+      ambushRoundFlags: {},
+      actionPointsById: {},
+      actionPointsMaxById: {},
+      energyById: {},
+      statusEffectsById: {},
+      woundsById: {},
+      reactionsUsedById: {},
+      eventLog: [],
+    };
+
+    for (const combatant of parsed.combatants) {
+      const id = combatant.id;
+      const actionPoints = combatant.actionPoints ?? 0;
+      combatState.actionPointsById[id] = actionPoints;
+      combatState.actionPointsMaxById[id] = actionPoints;
+      combatState.energyById[id] = combatant.energy ?? 0;
+      combatState.statusEffectsById[id] = combatant.statusEffects ?? [];
+      combatState.woundsById[id] = combatant.wounds ?? 0;
+      combatState.reactionsUsedById[id] = 0;
+      if (combatant.ambushed || ambushedSet.has(id)) {
+        combatState.ambushRoundFlags[id] = true;
+      }
+    }
+
+    const ambushResult = this.resolveNextTurn(combatState, 0, 1);
+    combatState.turnIndex = ambushResult.nextIndex;
+    combatState.round = ambushResult.nextRound;
+    combatState.activeCombatantId = ambushResult.activeCombatantId;
+
+    const startedEntry = createCombatEventLogEntry("combat_started", {
+      initiativeOrder,
+      groupInitiative: parsed.groupInitiative,
+    });
+    combatState.eventLog.push(startedEntry);
+
+    if (ambushResult.skippedAmbushIds.length > 0) {
+      combatState.eventLog.push(
+        createCombatEventLogEntry("ambush_applied", {
+          skippedCombatants: ambushResult.skippedAmbushIds,
+        }),
+      );
+    }
+
+    if (combatState.activeCombatantId) {
+      combatState.eventLog.push(
+        createCombatEventLogEntry("turn_started", {
+          combatantId: combatState.activeCombatantId,
+          round: combatState.round,
+          turnIndex: combatState.turnIndex,
+        }),
+      );
+    }
+
+    const sequence = await this.saveCombatState(campaignId, combatState);
+    this.broadcast({
+      type: "combat_started",
+      campaignId,
+      sequence,
+      timestamp: now,
+      payload: { state: combatState },
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState });
+  }
+
+  private async handleCombatAdvance(campaignId: string, body: unknown): Promise<Response> {
+    const parsed = parseCombatAdvance(body);
+    if (parsed instanceof Response) {
+      return parsed;
+    }
+
+    const combatState = await this.loadCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404);
+    }
+
+    const now = new Date().toISOString();
+    const previousCombatantId = combatState.activeCombatantId;
+
+    if (parsed.statusEffectsById) {
+      for (const [combatantId, statusEffects] of Object.entries(parsed.statusEffectsById)) {
+        combatState.statusEffectsById[combatantId] = statusEffects;
+      }
+    }
+
+    if (previousCombatantId) {
+      combatState.eventLog.push(
+        createCombatEventLogEntry("turn_ended", {
+          combatantId: previousCombatantId,
+          round: combatState.round,
+          turnIndex: combatState.turnIndex,
+        }),
+      );
+    }
+
+    combatState.eventLog.push(
+      createCombatEventLogEntry("status_tick", {
+        combatantId: previousCombatantId,
+        updatedStatusEffects: parsed.statusEffectsById ?? null,
+      }),
+    );
+
+    let nextIndex = combatState.turnIndex + 1;
+    let nextRound = combatState.round;
+    if (nextIndex >= combatState.initiativeOrder.length) {
+      nextIndex = 0;
+      nextRound += 1;
+    }
+
+    const nextTurn = this.resolveNextTurn(combatState, nextIndex, nextRound);
+    combatState.turnIndex = nextTurn.nextIndex;
+    combatState.round = nextTurn.nextRound;
+    combatState.activeCombatantId = nextTurn.activeCombatantId;
+
+    if (combatState.activeCombatantId) {
+      const activeId = combatState.activeCombatantId;
+      const maxActionPoints = combatState.actionPointsMaxById[activeId];
+      if (typeof maxActionPoints === "number") {
+        combatState.actionPointsById[activeId] = maxActionPoints;
+      }
+      combatState.eventLog.push(
+        createCombatEventLogEntry("turn_started", {
+          combatantId: activeId,
+          round: combatState.round,
+          turnIndex: combatState.turnIndex,
+        }),
+      );
+    }
+
+    if (nextTurn.skippedAmbushIds.length > 0) {
+      combatState.eventLog.push(
+        createCombatEventLogEntry("ambush_applied", {
+          skippedCombatants: nextTurn.skippedAmbushIds,
+        }),
+      );
+    }
+
+    const sequence = await this.saveCombatState(campaignId, combatState);
+    this.broadcast({
+      type: "turn_started",
+      campaignId,
+      sequence,
+      timestamp: now,
+      payload: {
+        state: combatState,
+        previousCombatantId,
+        skippedAmbushIds: nextTurn.skippedAmbushIds,
+      },
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState });
+  }
+
+  private async handleCombatSpend(campaignId: string, body: unknown): Promise<Response> {
+    const parsed = parseCombatSpend(body);
+    if (parsed instanceof Response) {
+      return parsed;
+    }
+
+    if (parsed.actionPointCost < 0 || parsed.energyCost < 0) {
+      return jsonResponse({ error: "Costs must be non-negative." }, 400);
+    }
+
+    const combatState = await this.loadCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404);
+    }
+
+    const currentAp = combatState.actionPointsById[parsed.combatantId] ?? 0;
+    const nextAp = currentAp - parsed.actionPointCost;
+    if (nextAp < 0) {
+      return jsonResponse({ error: "Insufficient action points." }, 400);
+    }
+
+    const currentEnergy = combatState.energyById[parsed.combatantId] ?? 0;
+    const nextEnergy = currentEnergy - parsed.energyCost;
+    if (nextEnergy < 0) {
+      return jsonResponse({ error: "Insufficient energy." }, 400);
+    }
+
+    combatState.actionPointsById[parsed.combatantId] = nextAp;
+    combatState.energyById[parsed.combatantId] = nextEnergy;
+
+    const actionEntry = createCombatEventLogEntry("action_spent", {
+      combatantId: parsed.combatantId,
+      actionPointCost: parsed.actionPointCost,
+      energyCost: parsed.energyCost,
+      actionType: parsed.actionType,
+      targetId: parsed.targetId,
+      rollResults: parsed.rollResults ?? null,
+      metadata: parsed.metadata ?? null,
+    });
+    combatState.eventLog.push(actionEntry);
+
+    const sequence = await this.saveCombatState(campaignId, combatState);
+    this.broadcast({
+      type: "action_spent",
+      campaignId,
+      sequence,
+      timestamp: actionEntry.timestamp,
+      payload: { state: combatState, action: actionEntry.payload },
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState });
+  }
+
+  private async handleCombatReaction(campaignId: string, body: unknown): Promise<Response> {
+    const parsed = parseCombatReaction(body);
+    if (parsed instanceof Response) {
+      return parsed;
+    }
+
+    if (parsed.actionPointCost < 0) {
+      return jsonResponse({ error: "Costs must be non-negative." }, 400);
+    }
+
+    const combatState = await this.loadCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404);
+    }
+
+    const currentAp = combatState.actionPointsById[parsed.combatantId] ?? 0;
+    const nextAp = currentAp - parsed.actionPointCost;
+    if (nextAp < 0) {
+      return jsonResponse({ error: "Insufficient action points." }, 400);
+    }
+
+    combatState.actionPointsById[parsed.combatantId] = nextAp;
+    combatState.reactionsUsedById[parsed.combatantId] =
+      (combatState.reactionsUsedById[parsed.combatantId] ?? 0) + 1;
+
+    const reactionEntry = createCombatEventLogEntry("reaction_spent", {
+      combatantId: parsed.combatantId,
+      actionPointCost: parsed.actionPointCost,
+      reactionType: parsed.reactionType,
+      metadata: parsed.metadata ?? null,
+    });
+    combatState.eventLog.push(reactionEntry);
+
+    const sequence = await this.saveCombatState(campaignId, combatState);
+    this.broadcast({
+      type: "reaction_spent",
+      campaignId,
+      sequence,
+      timestamp: reactionEntry.timestamp,
+      payload: { state: combatState, reaction: reactionEntry.payload },
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState });
+  }
+
+  private resolveNextTurn(
+    combatState: CombatState,
+    startIndex: number,
+    startRound: number,
+  ): {
+    nextIndex: number;
+    nextRound: number;
+    activeCombatantId: string | null;
+    skippedAmbushIds: string[];
+  } {
+    const order = combatState.initiativeOrder;
+    if (order.length === 0) {
+      return {
+        nextIndex: 0,
+        nextRound: startRound,
+        activeCombatantId: null,
+        skippedAmbushIds: [],
+      };
+    }
+
+    let index = startIndex;
+    let round = startRound;
+    const skippedAmbushIds: string[] = [];
+
+    for (let step = 0; step < order.length; step += 1) {
+      const combatantId = order[index];
+      if (round === 1 && combatState.ambushRoundFlags[combatantId]) {
+        combatState.ambushRoundFlags[combatantId] = false;
+        skippedAmbushIds.push(combatantId);
+        index += 1;
+        if (index >= order.length) {
+          index = 0;
+          round += 1;
+        }
+        continue;
+      }
+
+      return {
+        nextIndex: index,
+        nextRound: round,
+        activeCombatantId: combatantId,
+        skippedAmbushIds,
+      };
+    }
+
+    return {
+      nextIndex: index,
+      nextRound: round,
+      activeCombatantId: null,
+      skippedAmbushIds,
+    };
+  }
+
   private broadcast(event: CampaignEvent) {
     const message = JSON.stringify(event);
     for (const [connectionId, socket] of this.sessions) {
@@ -610,6 +1032,229 @@ function parseNumberField(
   return jsonResponse({ error: `Invalid ${field}.` }, 400);
 }
 
+function parseBooleanField(
+  value: unknown,
+  field: string,
+  fallback = false,
+): boolean | Response {
+  if (value == null) {
+    return fallback;
+  }
+  if (typeof value === "boolean") {
+    return value;
+  }
+  return jsonResponse({ error: `Invalid ${field}.` }, 400);
+}
+
+function parseStringArrayField(
+  value: unknown,
+  field: string,
+): string[] | Response | undefined {
+  if (value == null) {
+    return undefined;
+  }
+  if (!Array.isArray(value)) {
+    return jsonResponse({ error: `Invalid ${field}.` }, 400);
+  }
+  for (const entry of value) {
+    if (typeof entry !== "string") {
+      return jsonResponse({ error: `Invalid ${field}.` }, 400);
+    }
+  }
+  return value;
+}
+
+function parseCombatStart(body: unknown): CombatStartPayload | Response {
+  if (!isRecord(body)) {
+    return jsonResponse({ error: "Invalid payload." }, 400);
+  }
+
+  if (!Array.isArray(body.combatants)) {
+    return jsonResponse({ error: "Invalid combatants." }, 400);
+  }
+
+  const groupInitiative = parseBooleanField(body.groupInitiative, "groupInitiative");
+  if (groupInitiative instanceof Response) {
+    return groupInitiative;
+  }
+
+  const ambushedIds = parseStringArrayField(body.ambushedIds, "ambushedIds");
+  if (ambushedIds instanceof Response) {
+    return ambushedIds;
+  }
+
+  const combatants: CombatantStartPayload[] = [];
+
+  for (const entry of body.combatants) {
+    if (!isRecord(entry)) {
+      return jsonResponse({ error: "Invalid combatant entry." }, 400);
+    }
+    const id = parseRequiredStringField(entry.id, "combatants.id");
+    if (id instanceof Response) {
+      return id;
+    }
+    const initiative = parseNumberField(entry.initiative, "combatants.initiative");
+    if (initiative instanceof Response) {
+      return initiative;
+    }
+    const initiativeRoll = parseNumberField(entry.initiativeRoll, "combatants.initiativeRoll");
+    if (initiativeRoll instanceof Response) {
+      return initiativeRoll;
+    }
+    const initiativeBonus = parseNumberField(
+      entry.initiativeBonus,
+      "combatants.initiativeBonus",
+    );
+    if (initiativeBonus instanceof Response) {
+      return initiativeBonus;
+    }
+    const actionPoints = parseNumberField(entry.actionPoints, "combatants.actionPoints");
+    if (actionPoints instanceof Response) {
+      return actionPoints;
+    }
+    const energy = parseNumberField(entry.energy, "combatants.energy");
+    if (energy instanceof Response) {
+      return energy;
+    }
+    const wounds = parseNumberField(entry.wounds, "combatants.wounds");
+    if (wounds instanceof Response) {
+      return wounds;
+    }
+    const statusEffects = parseStringArrayField(
+      entry.statusEffects,
+      "combatants.statusEffects",
+    );
+    if (statusEffects instanceof Response) {
+      return statusEffects;
+    }
+    const groupId = parseStringField(entry.groupId, "combatants.groupId");
+    if (groupId instanceof Response) {
+      return groupId;
+    }
+    const ambushed = parseBooleanField(entry.ambushed, "combatants.ambushed");
+    if (ambushed instanceof Response) {
+      return ambushed;
+    }
+
+    combatants.push({
+      id,
+      initiative,
+      initiativeRoll,
+      initiativeBonus,
+      actionPoints,
+      energy,
+      statusEffects,
+      wounds,
+      ambushed,
+      groupId,
+    });
+  }
+
+  return {
+    combatants,
+    groupInitiative,
+    ambushedIds,
+  };
+}
+
+function parseCombatAdvance(body: unknown): CombatAdvancePayload | Response {
+  if (!isRecord(body)) {
+    return jsonResponse({ error: "Invalid payload." }, 400);
+  }
+
+  let statusEffectsById: Record<string, string[]> | undefined;
+  if (body.statusEffectsById != null) {
+    if (!isRecord(body.statusEffectsById)) {
+      return jsonResponse({ error: "Invalid statusEffectsById." }, 400);
+    }
+    statusEffectsById = {};
+    for (const [combatantId, statusList] of Object.entries(body.statusEffectsById)) {
+      const parsed = parseStringArrayField(statusList, "statusEffectsById");
+      if (parsed instanceof Response) {
+        return parsed;
+      }
+      statusEffectsById[combatantId] = parsed ?? [];
+    }
+  }
+
+  return { statusEffectsById };
+}
+
+function parseCombatSpend(body: unknown): CombatSpendPayload | Response {
+  if (!isRecord(body)) {
+    return jsonResponse({ error: "Invalid payload." }, 400);
+  }
+
+  const combatantId = parseRequiredStringField(body.combatantId, "combatantId");
+  if (combatantId instanceof Response) {
+    return combatantId;
+  }
+  const actionPointCost = parseNumberField(body.actionPointCost, "actionPointCost");
+  if (actionPointCost instanceof Response) {
+    return actionPointCost;
+  }
+  const energyCost = parseNumberField(body.energyCost, "energyCost");
+  if (energyCost instanceof Response) {
+    return energyCost;
+  }
+  const actionType = parseStringField(body.actionType, "actionType");
+  if (actionType instanceof Response) {
+    return actionType;
+  }
+  const targetId = parseStringField(body.targetId, "targetId");
+  if (targetId instanceof Response) {
+    return targetId;
+  }
+  const rollResults = body.rollResults;
+  const metadata = body.metadata;
+
+  return {
+    combatantId,
+    actionPointCost,
+    energyCost,
+    actionType,
+    targetId,
+    rollResults,
+    metadata,
+  };
+}
+
+function parseCombatReaction(body: unknown): CombatReactionPayload | Response {
+  if (!isRecord(body)) {
+    return jsonResponse({ error: "Invalid payload." }, 400);
+  }
+
+  const combatantId = parseRequiredStringField(body.combatantId, "combatantId");
+  if (combatantId instanceof Response) {
+    return combatantId;
+  }
+  const actionPointCost = parseNumberField(body.actionPointCost, "actionPointCost");
+  if (actionPointCost instanceof Response) {
+    return actionPointCost;
+  }
+  const reactionType = parseStringField(body.reactionType, "reactionType");
+  if (reactionType instanceof Response) {
+    return reactionType;
+  }
+  const metadata = body.metadata;
+
+  return {
+    combatantId,
+    actionPointCost,
+    reactionType,
+    metadata,
+  };
+}
+
+function createCombatEventLogEntry(type: CombatEventType, payload?: unknown): CombatEventLogEntry {
+  return {
+    id: crypto.randomUUID(),
+    type,
+    timestamp: new Date().toISOString(),
+    payload,
+  };
+}
+
 function parseRollRequest(body: unknown): RollRequestPayload | Response {
   if (!isRecord(body)) {
     return jsonResponse({ error: "Invalid payload." }, 400);
@@ -746,11 +1391,14 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const match = url.pathname.match(/^\/api\/campaigns\/([^/]+)\/(connect|roll|contest)$/);
-    if (!match) {
+    const combatMatch = url.pathname.match(
+      /^\/api\/campaigns\/([^/]+)\/combat\/[^/]+$/,
+    );
+    if (!match && !combatMatch) {
       return new Response("Not found", { status: 404 });
     }
 
-    const campaignId = decodeURIComponent(match[1]);
+    const campaignId = decodeURIComponent((match ?? combatMatch)![1]);
     const id = env.CAMPAIGN_DO.idFromName(campaignId);
     const stub = env.CAMPAIGN_DO.get(id);
 
