@@ -4,8 +4,39 @@ interface Env {
   SUPABASE_SERVICE_ROLE_KEY?: string;
 }
 
+type CombatEventType =
+  | "combat_started"
+  | "turn_started"
+  | "turn_ended"
+  | "combat_updated"
+  | "ambush_applied"
+  | "status_tick"
+  | "reaction_spent"
+  | "action_spent";
+
+type CombatEventLogEntry = {
+  id: string;
+  type: CombatEventType;
+  timestamp: string;
+  payload?: unknown;
+};
+
+type CombatState = {
+  round: number;
+  turnIndex: number;
+  initiativeOrder: string[];
+  activeCombatantId: string | null;
+  ambushRoundFlags: Record<string, boolean>;
+  actionPointsById: Record<string, number>;
+  energyById: Record<string, number>;
+  statusEffectsById: Record<string, string[]>;
+  woundsById: Record<string, number>;
+  reactionsUsedById: Record<string, number>;
+  eventLog: CombatEventLogEntry[];
+};
+
 type CampaignEvent = {
-  type: "roll" | "contest" | "presence" | "welcome";
+  type: "roll" | "contest" | "presence" | "welcome" | CombatEventType;
   sequence?: number;
   campaignId: string;
   timestamp: string;
@@ -243,6 +274,52 @@ export class CampaignDurableObject {
     this.sequence = next;
     await this.state.storage.put("sequence", next);
     return next;
+  }
+
+  private combatStateKey(campaignId: string) {
+    return `combat_state:${campaignId}`;
+  }
+
+  private async loadCombatState(campaignId: string): Promise<CombatState | null> {
+    return this.state.blockConcurrencyWhile(async () => {
+      return this.state.storage.get<CombatState>(this.combatStateKey(campaignId));
+    });
+  }
+
+  private async saveCombatState(campaignId: string, combatState: CombatState): Promise<number> {
+    return this.state.blockConcurrencyWhile(async () => {
+      const next = this.sequence + 1;
+      this.sequence = next;
+      await this.state.storage.put({
+        [this.combatStateKey(campaignId)]: combatState,
+        sequence: next,
+      });
+      return next;
+    });
+  }
+
+  private async broadcastCombatEvent(
+    campaignId: string,
+    type: CombatEventType,
+    payload?: unknown,
+  ) {
+    const sequence = await this.saveCombatStateSequence();
+    this.broadcast({
+      type,
+      campaignId,
+      sequence,
+      timestamp: new Date().toISOString(),
+      payload,
+    });
+  }
+
+  private async saveCombatStateSequence(): Promise<number> {
+    return this.state.blockConcurrencyWhile(async () => {
+      const next = this.sequence + 1;
+      this.sequence = next;
+      await this.state.storage.put("sequence", next);
+      return next;
+    });
   }
 
   private async handleRollRequest(campaignId: string, body: unknown): Promise<Response> {
