@@ -250,11 +250,29 @@ export async function startCombat(
   return postCombatAction<CombatActionResponse>(campaignId, "start", payload);
 }
 
+export async function getCombatState(campaignId: string): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "state", {});
+}
+
 export async function advanceCombat(
   campaignId: string,
   payload: { statusEffectsById?: Record<string, string[]> } = {}
 ): Promise<CombatActionResponse> {
   return postCombatAction<CombatActionResponse>(campaignId, "advance", payload);
+}
+
+export async function advanceCombatTurn(
+  campaignId: string,
+  payload: { statusEffectsById?: Record<string, string[]> } = {}
+): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "advance-turn", payload);
+}
+
+export async function resolveAmbushCheck(
+  campaignId: string,
+  payload: { combatantId?: string } = {}
+): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "resolve-ambush", payload);
 }
 
 export async function spendCombatResources(

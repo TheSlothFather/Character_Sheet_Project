@@ -485,11 +485,29 @@ async function startCombat(
   return postCombatAction<CombatActionResponse>(campaignId, "start", payload);
 }
 
+async function getCombatState(campaignId: string): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "state", {});
+}
+
 async function advanceCombat(
   campaignId: string,
   payload: { statusEffectsById?: Record<string, string[]> } = {}
 ): Promise<CombatActionResponse> {
   return postCombatAction<CombatActionResponse>(campaignId, "advance", payload);
+}
+
+async function advanceCombatTurn(
+  campaignId: string,
+  payload: { statusEffectsById?: Record<string, string[]> } = {}
+): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "advance-turn", payload);
+}
+
+async function resolveAmbushCheck(
+  campaignId: string,
+  payload: { combatantId?: string } = {}
+): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "resolve-ambush", payload);
 }
 
 async function spendCombatResources(
@@ -1055,6 +1073,9 @@ export const gmApi = {
   deleteSetting,
   startCombat,
   advanceCombat,
+  getCombatState,
+  advanceCombatTurn,
   spendCombatResources,
-  recordCombatReaction
+  recordCombatReaction,
+  resolveAmbushCheck
 };
