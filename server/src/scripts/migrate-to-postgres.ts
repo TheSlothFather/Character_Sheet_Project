@@ -243,6 +243,26 @@ async function createTables(client: Client): Promise<void> {
       payload JSONB NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS bestiary_entries (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      campaign_id UUID NOT NULL,
+      name TEXT NOT NULL,
+      stats_skills JSONB,
+      attributes JSONB,
+      skills JSONB,
+      abilities JSONB,
+      actions JSONB,
+      immunities JSONB,
+      resistances JSONB,
+      weaknesses JSONB,
+      tags JSONB,
+      dr INTEGER,
+      armor_type TEXT,
+      energy_bars INTEGER,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
     CREATE TABLE IF NOT EXISTS character_status_effects (
       id SERIAL PRIMARY KEY,
       character_id TEXT NOT NULL,
