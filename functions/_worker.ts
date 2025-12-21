@@ -524,11 +524,24 @@ export class CampaignDurableObject {
       return parsed;
     }
 
+    let combatants = parsed.combatants;
+    if (combatants.length === 0) {
+      const loaded = await this.loadCombatantsFromSupabase(campaignId);
+      if (loaded instanceof Response) {
+        return loaded;
+      }
+      combatants = loaded;
+    }
+
+    if (combatants.length === 0) {
+      return jsonResponse({ error: "No combatants available to start combat." }, 400);
+    }
+
     const ambushedSet = new Set(parsed.ambushedIds ?? []);
     const initiativeScores = new Map<string, number>();
     const groupScores = new Map<string, number>();
 
-    parsed.combatants.forEach((combatant) => {
+    combatants.forEach((combatant) => {
       const score =
         (combatant.initiative ?? 0) +
         (combatant.initiativeRoll ?? 0) +
@@ -543,7 +556,7 @@ export class CampaignDurableObject {
       }
     });
 
-    const initiativeOrder = [...parsed.combatants]
+    const initiativeOrder = [...combatants]
       .sort((left, right) => {
         const leftScore = parsed.groupInitiative
           ? groupScores.get(left.groupId ?? left.id) ?? 0
@@ -579,7 +592,7 @@ export class CampaignDurableObject {
       eventLog: [],
     };
 
-    for (const combatant of parsed.combatants) {
+    for (const combatant of combatants) {
       const id = combatant.id;
       const actionPoints = combatant.actionPoints ?? 0;
       combatState.actionPointsById[id] = actionPoints;
@@ -728,8 +741,8 @@ export class CampaignDurableObject {
       return parsed;
     }
 
-    if (parsed.actionPointCost < 0 || parsed.energyCost < 0) {
-      return jsonResponse({ error: "Costs must be non-negative." }, 400);
+    if (parsed.actionPointCost < 0) {
+      return jsonResponse({ error: "Action point costs must be non-negative." }, 400);
     }
 
     const combatState = await this.loadCombatState(campaignId);
@@ -954,6 +967,116 @@ export class CampaignDurableObject {
 
     return null;
   }
+
+  private async loadCombatantsFromSupabase(
+    campaignId: string,
+  ): Promise<CombatantStartPayload[] | Response> {
+    const config = this.supabaseConfig();
+    if (config instanceof Response) {
+      return config;
+    }
+
+    const headers = {
+      apikey: config.key,
+      authorization: `Bearer ${config.key}`,
+    };
+
+    const combatantsUrl = new URL("/rest/v1/campaign_combatants", config.url);
+    combatantsUrl.searchParams.set(
+      "select",
+      "id,initiative,ap_max,energy_max,ap_current,energy_current,is_active",
+    );
+    combatantsUrl.searchParams.set("campaign_id", `eq.${campaignId}`);
+    combatantsUrl.searchParams.set("is_active", "eq.true");
+
+    const statusUrl = new URL("/rest/v1/campaign_combatant_status_effects", config.url);
+    statusUrl.searchParams.set("select", "combatant_id,status_key,is_active");
+    statusUrl.searchParams.set("campaign_id", `eq.${campaignId}`);
+
+    const woundsUrl = new URL("/rest/v1/campaign_combatant_wounds", config.url);
+    woundsUrl.searchParams.set("select", "combatant_id,wound_count");
+    woundsUrl.searchParams.set("campaign_id", `eq.${campaignId}`);
+
+    const [combatantRes, statusRes, woundsRes] = await Promise.all([
+      fetch(combatantsUrl.toString(), { headers }),
+      fetch(statusUrl.toString(), { headers }),
+      fetch(woundsUrl.toString(), { headers }),
+    ]);
+
+    if (!combatantRes.ok) {
+      const details = await combatantRes.text();
+      return jsonResponse(
+        { error: "Failed to load combatants from Supabase.", details },
+        500,
+      );
+    }
+    if (!statusRes.ok) {
+      const details = await statusRes.text();
+      return jsonResponse(
+        { error: "Failed to load combatant status effects from Supabase.", details },
+        500,
+      );
+    }
+    if (!woundsRes.ok) {
+      const details = await woundsRes.text();
+      return jsonResponse(
+        { error: "Failed to load combatant wounds from Supabase.", details },
+        500,
+      );
+    }
+
+    const combatantRows = (await combatantRes.json()) as {
+      id: string;
+      initiative?: number | null;
+      ap_max?: number | null;
+      energy_max?: number | null;
+      ap_current?: number | null;
+      energy_current?: number | null;
+      is_active?: boolean | null;
+    }[];
+    const statusRows = (await statusRes.json()) as {
+      combatant_id: string;
+      status_key: string;
+      is_active?: boolean | null;
+    }[];
+    const woundRows = (await woundsRes.json()) as {
+      combatant_id: string;
+      wound_count?: number | null;
+    }[];
+
+    const statusById = new Map<string, string[]>();
+    statusRows.forEach((row) => {
+      if (row.is_active === false) return;
+      const list = statusById.get(row.combatant_id) ?? [];
+      list.push(row.status_key);
+      statusById.set(row.combatant_id, list);
+    });
+
+    const woundsById = new Map<string, number>();
+    woundRows.forEach((row) => {
+      const current = woundsById.get(row.combatant_id) ?? 0;
+      const increment = typeof row.wound_count === "number" ? row.wound_count : 0;
+      woundsById.set(row.combatant_id, current + increment);
+    });
+
+    const readNumber = (value?: number | null) =>
+      typeof value === "number" && Number.isFinite(value) ? value : 0;
+
+    return combatantRows.map((row) => ({
+      id: row.id,
+      initiative: readNumber(row.initiative),
+      actionPoints:
+        typeof row.ap_max === "number" && Number.isFinite(row.ap_max)
+          ? row.ap_max
+          : readNumber(row.ap_current),
+      energy:
+        typeof row.energy_max === "number" && Number.isFinite(row.energy_max)
+          ? row.energy_max
+          : readNumber(row.energy_current),
+      statusEffects: statusById.get(row.id) ?? [],
+      wounds: woundsById.get(row.id) ?? 0,
+    }));
+  }
 }
 
 function jsonResponse(body: unknown, status = 200, headers?: HeadersInit) {
@@ -1069,7 +1192,7 @@ function parseCombatStart(body: unknown): CombatStartPayload | Response {
     return jsonResponse({ error: "Invalid payload." }, 400);
   }
 
-  if (!Array.isArray(body.combatants)) {
+  if (body.combatants != null && !Array.isArray(body.combatants)) {
     return jsonResponse({ error: "Invalid combatants." }, 400);
   }
 
@@ -1085,7 +1208,7 @@ function parseCombatStart(body: unknown): CombatStartPayload | Response {
 
   const combatants: CombatantStartPayload[] = [];
 
-  for (const entry of body.combatants) {
+  for (const entry of body.combatants ?? []) {
     if (!isRecord(entry)) {
       return jsonResponse({ error: "Invalid combatant entry." }, 400);
     }

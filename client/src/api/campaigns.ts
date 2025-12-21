@@ -47,6 +47,27 @@ export interface PlayerCombatantWound {
   updatedAt?: string;
 }
 
+export interface CombatState {
+  round: number;
+  turnIndex: number;
+  initiativeOrder: string[];
+  activeCombatantId: string | null;
+  ambushRoundFlags: Record<string, boolean>;
+  actionPointsById: Record<string, number>;
+  actionPointsMaxById: Record<string, number>;
+  energyById: Record<string, number>;
+  statusEffectsById: Record<string, string[]>;
+  woundsById: Record<string, number>;
+  reactionsUsedById: Record<string, number>;
+  eventLog: { id: string; type: string; timestamp: string; payload?: unknown }[];
+}
+
+export type CombatActionResponse = {
+  ok: boolean;
+  sequence?: number;
+  state: CombatState;
+};
+
 type CampaignRow = {
   id: string;
   name: string;
@@ -192,6 +213,70 @@ function toCombatantWoundPayload(
     wound_count: payload.woundCount ?? 0,
     updated_at: payload.updatedAt ?? null
   };
+}
+
+async function postCombatAction<T>(campaignId: string, action: string, payload: unknown): Promise<T> {
+  const response = await fetch(`/api/campaigns/${encodeURIComponent(campaignId)}/combat/${action}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload ?? {})
+  });
+
+  const text = await response.text();
+  let parsed: unknown = null;
+  if (text) {
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = text;
+    }
+  }
+
+  if (!response.ok) {
+    const message =
+      typeof parsed === "object" && parsed && "error" in (parsed as Record<string, unknown>)
+        ? String((parsed as Record<string, unknown>).error)
+        : `Request failed with status ${response.status}`;
+    throw new ApiError(response.status, message, parsed);
+  }
+
+  return parsed as T;
+}
+
+export async function startCombat(
+  campaignId: string,
+  payload: { groupInitiative?: boolean; ambushedIds?: string[] } = {}
+): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "start", payload);
+}
+
+export async function advanceCombat(
+  campaignId: string,
+  payload: { statusEffectsById?: Record<string, string[]> } = {}
+): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "advance", payload);
+}
+
+export async function spendCombatResources(
+  campaignId: string,
+  payload: {
+    combatantId: string;
+    actionPointCost: number;
+    energyCost: number;
+    actionType?: string;
+    targetId?: string;
+    rollResults?: unknown;
+    metadata?: unknown;
+  }
+): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "spend", payload);
+}
+
+export async function recordCombatReaction(
+  campaignId: string,
+  payload: { combatantId: string; actionPointCost: number; reactionType?: string; metadata?: unknown }
+): Promise<CombatActionResponse> {
+  return postCombatAction<CombatActionResponse>(campaignId, "reaction", payload);
 }
 
 export async function getCampaign(campaignId: string): Promise<PlayerCampaign> {

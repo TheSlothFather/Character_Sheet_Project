@@ -5,6 +5,7 @@ import {
   type Campaign,
   type CampaignCombatant,
   type BestiaryEntry as ApiBestiaryEntry,
+  type CombatState,
   type CombatantStatusEffect,
   type CombatantWound
 } from "../../api/gm";
@@ -37,6 +38,13 @@ const fallbackNumber = (value?: number | null, fallback = 0): number =>
   typeof value === "number" && !Number.isNaN(value) ? value : fallback;
 
 const calculateEnergyGain = (ap: number, tier: number): number => ap * tier * 3;
+
+const applyCombatState = (entries: CombatEntry[], state: CombatState): CombatEntry[] =>
+  entries.map((entry) => ({
+    ...entry,
+    apCurrent: state.actionPointsById[entry.id] ?? entry.apCurrent,
+    energyCurrent: state.energyById[entry.id] ?? entry.energyCurrent
+  }));
 
 const deriveTier = (entry: ApiBestiaryEntry): number | undefined => {
   const stats = entry.statsSkills ?? {};
@@ -284,8 +292,8 @@ export const CombatPage: React.FC = () => {
         faction: addingFaction,
         isActive: addingActive,
         tier: deriveTier(entry),
-        energyCurrent: deriveEnergy(entry),
-        apCurrent: deriveAp(entry)
+        energyMax: deriveEnergy(entry),
+        apMax: deriveAp(entry)
       });
       setCombatants((prev) => [mapCombatant(created), ...prev]);
       setAddingId("");
@@ -295,17 +303,30 @@ export const CombatPage: React.FC = () => {
   };
 
   const handleStartTurn = async (entry: CombatEntry) => {
+    if (!selectedCampaignId) return;
+    setError(null);
     const apCurrent = fallbackNumber(entry.apCurrent);
     const tier = fallbackNumber(entry.tier);
     if (apCurrent <= 0 || tier <= 0) return;
     const energyCurrent = fallbackNumber(entry.energyCurrent);
     const energyGain = calculateEnergyGain(apCurrent, tier);
-    await updateCombatant(entry.id, {
-      energyCurrent: energyCurrent + energyGain
-    });
+    try {
+      const result = await gmApi.spendCombatResources(selectedCampaignId, {
+        combatantId: entry.id,
+        actionPointCost: 0,
+        energyCost: -energyGain,
+        actionType: "turn_start",
+        metadata: { previousEnergy: energyCurrent }
+      });
+      setCombatants((prev) => applyCombatState(prev, result.state));
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to start turn.");
+    }
   };
 
   const handleEndTurn = async (entry: CombatEntry) => {
+    if (!selectedCampaignId) return;
+    setError(null);
     const apCurrent = fallbackNumber(entry.apCurrent);
     const tier = fallbackNumber(entry.tier);
     if (apCurrent <= 0 || tier <= 0) return;
@@ -315,11 +336,19 @@ export const CombatPage: React.FC = () => {
     const clampedSpend = Math.min(Math.max(spendValue, 0), apCurrent);
     const energyCurrent = fallbackNumber(entry.energyCurrent);
     const energyGain = calculateEnergyGain(clampedSpend, tier);
-    await updateCombatant(entry.id, {
-      apCurrent: apCurrent - clampedSpend,
-      energyCurrent: energyCurrent + energyGain
-    });
-    setEndTurnSpend((prev) => ({ ...prev, [entry.id]: "" }));
+    try {
+      const result = await gmApi.spendCombatResources(selectedCampaignId, {
+        combatantId: entry.id,
+        actionPointCost: clampedSpend,
+        energyCost: -energyGain,
+        actionType: "turn_end",
+        metadata: { previousEnergy: energyCurrent }
+      });
+      setCombatants((prev) => applyCombatState(prev, result.state));
+      setEndTurnSpend((prev) => ({ ...prev, [entry.id]: "" }));
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to end turn.");
+    }
   };
 
   const handleAdvanceRound = async () => {
@@ -748,13 +777,13 @@ export const CombatPage: React.FC = () => {
                       </label>
                       <div className="gm-combat__metrics">
                         <label className="gm-combat__field">
-                          <span className="gm-combat__hint">Energy</span>
+                          <span className="gm-combat__hint">Energy Max</span>
                           <input
                             type="number"
-                            value={entry.energyCurrent ?? ""}
+                            value={entry.energyMax ?? ""}
                             onChange={(event) =>
                               updateCombatant(entry.id, {
-                                energyCurrent: event.target.value === "" ? null : Number(event.target.value)
+                                energyMax: event.target.value === "" ? null : Number(event.target.value)
                               })
                             }
                             className="gm-combat__input"
@@ -762,13 +791,13 @@ export const CombatPage: React.FC = () => {
                           />
                         </label>
                         <label className="gm-combat__field">
-                          <span className="gm-combat__hint">AP</span>
+                          <span className="gm-combat__hint">AP Max</span>
                           <input
                             type="number"
-                            value={entry.apCurrent ?? ""}
+                            value={entry.apMax ?? ""}
                             onChange={(event) =>
                               updateCombatant(entry.id, {
-                                apCurrent: event.target.value === "" ? null : Number(event.target.value)
+                                apMax: event.target.value === "" ? null : Number(event.target.value)
                               })
                             }
                             className="gm-combat__input"
