@@ -1,76 +1,404 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- * CHARACTERS PAGE STYLES
- * Using Adûrun Design System
+ * THE CHRONICLER'S TOME
+ * Characters Page - Immersive Manuscript Aesthetic
  * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Design Philosophy:
+ * This page should feel like reading from an ancient magical codex -
+ * weathered pages, illuminated margins, arcane inscriptions, and the
+ * warm glow of candlelight (parchment) or cool moonlit mystery (dark).
  */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PAGE LAYOUT
+   ATMOSPHERIC TEXTURES & BACKGROUNDS
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Parchment noise texture overlay */
+.characters-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  z-index: 1;
+}
+
+[data-theme="dark-fantasy"] .characters-page::before {
+  opacity: 0.05;
+}
 
 .characters-page {
+  position: relative;
   color: var(--text-primary, var(--text));
+  min-height: 100vh;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TOOLBAR
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.characters-toolbar {
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--border-subtle, var(--border));
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   CHARACTER SHEET
+   MANUSCRIPT PAGE CONTAINER
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .character-sheet {
-  animation: fade-in var(--duration-normal, 250ms) var(--ease-out);
+  position: relative;
+  animation: manuscript-reveal 0.8s var(--ease-out) forwards;
+  padding: var(--space-6);
 }
+
+@keyframes manuscript-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Illuminated page border effect */
+.character-sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--border-ornate, var(--border));
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+  opacity: 0.4;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 40%,
+    var(--accent-warm, var(--accent)) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 400% 400%;
+  animation: shimmer-border 8s ease-in-out infinite;
+}
+
+@keyframes shimmer-border {
+  0%, 100% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOOLBAR - SCRIBE'S IMPLEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.characters-toolbar {
+  position: relative;
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6);
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--surface-sunken, var(--surface-2)) 10%,
+    var(--surface-sunken, var(--surface-2)) 90%,
+    transparent
+  );
+  border-bottom: none;
+}
+
+/* Decorative line with center ornament */
+.characters-toolbar::after {
+  content: '✦';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--text-lg);
+  color: var(--accent-warm, var(--accent));
+  background: var(--surface-base, var(--surface-1));
+  padding: 0 var(--space-4);
+  letter-spacing: 0.5em;
+}
+
+.characters-toolbar::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border-ornate, var(--border)) 20%,
+    var(--border-ornate, var(--border)) 80%,
+    transparent
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHARACTER SUMMARY - THE TITLE PAGE
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .character-summary {
+  position: relative;
   min-width: 0;
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
-/* Two-column layout for skills + tabs */
+/* Ornate corner flourishes */
+.character-summary::before,
+.character-summary::after {
+  content: '❧';
+  position: absolute;
+  font-size: 1.5rem;
+  color: var(--accent-warm, var(--accent));
+  opacity: 0.6;
+}
+
+.character-summary::before {
+  top: 0;
+  left: var(--space-4);
+}
+
+.character-summary::after {
+  bottom: 0;
+  right: var(--space-4);
+  transform: rotate(180deg);
+}
+
+/* Character name styling - like a chapter title */
+.character-summary h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-heading, var(--text));
+  margin-bottom: var(--space-2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark-fantasy"] .character-summary h2 {
+  text-shadow: 0 0 20px var(--magic-arcane, var(--accent));
+}
+
+/* Subtitle info (level, race, etc.) */
+.character-summary .text-muted {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-base);
+  letter-spacing: 0.02em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TWO-COLUMN MANUSCRIPT LAYOUT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .character-sheet__layout {
   display: grid;
-  grid-template-columns: minmax(520px, 2fr) minmax(320px, 1fr);
-  gap: var(--space-6, 24px);
+  grid-template-columns: minmax(480px, 1.5fr) minmax(360px, 1fr);
+  gap: var(--space-8);
+  align-items: start;
 }
 
 @media (max-width: 1100px) {
   .character-sheet__layout {
     grid-template-columns: 1fr;
+    gap: var(--space-6);
   }
 }
 
-.character-sheet__skills-column {
-  min-width: 0;
-}
-
+.character-sheet__skills-column,
 .character-sheet__tabs-column {
   min-width: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   COMBAT METRICS GRID
+   COMBAT METRICS - WAX SEAL STAT DISPLAYS
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .combat-metrics {
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+/* Individual stat block as wax seal */
+.combat-metrics .stat-block {
+  position: relative;
+  background: radial-gradient(
+    circle at 30% 30%,
+    var(--surface-raised, var(--surface-2)) 0%,
+    var(--surface-sunken, var(--surface-2)) 100%
+  );
+  border: 2px solid var(--border-default, var(--border));
+  border-radius: 50%;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.combat-metrics .stat-block:hover {
+  transform: scale(1.05);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.15),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.combat-metrics .stat-block__label {
+  font-family: var(--font-display);
+  font-size: var(--text-2xs, 10px);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted, var(--muted));
+  text-align: center;
+  margin-bottom: var(--space-1);
+}
+
+.combat-metrics .stat-block__value {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl, 28px);
+  font-weight: 700;
+  color: var(--text-heading, var(--text));
+  line-height: 1;
+}
+
+/* Seal ribbon effect for special stats */
+.combat-metrics .stat-block--warning::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 8px;
+  background: var(--status-warning, var(--warning));
+  clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
+  opacity: 0.8;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SKILLS CARD
+   ATTRIBUTE POINTS - ARCANE SIGILS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.attribute-pill {
+  position: relative;
+  background: var(--surface-overlay, var(--surface-3));
+  border: 1px solid var(--border-subtle, var(--border));
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  transition: all var(--duration-fast) var(--ease-out);
+  overflow: hidden;
+}
+
+/* Arcane glow on hover */
+.attribute-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    var(--magic-arcane, var(--accent)) 0%,
+    transparent 50%
+  );
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.attribute-pill:hover::before {
+  opacity: 0.1;
+}
+
+.attribute-pill:hover {
+  border-color: var(--accent-warm, var(--accent));
+  transform: translateX(4px);
+}
+
+.attribute-pill--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.attribute-pill__header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.attribute-pill__label {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary, var(--muted));
+}
+
+.attribute-pill__value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  color: var(--text-primary, var(--text));
+}
+
+.attribute-pill__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.attribute-pill__hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted, var(--muted));
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SKILLS CARD - THE GRIMOIRE PAGE
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .skills-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: var(--surface-raised, var(--surface-2));
+  border: 1px solid var(--border-default, var(--border));
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Torn page edge effect on right side */
+.skills-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: 0;
+  width: 8px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--surface-raised, var(--surface-2)) 30%,
+    var(--surface-raised, var(--surface-2)) 100%
+  );
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 8 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,0 Q4,2 2,5 T4,10 T2,15 T4,20 T2,25 T4,30 T2,35 T4,40 T2,45 T4,50 T2,55 T4,60 T2,65 T4,70 T2,75 T4,80 T2,85 T4,90 T2,95 T4,100 L8,100 L8,0 Z' fill='white'/%3E%3C/svg%3E");
+  mask-size: 8px 100%;
+  pointer-events: none;
 }
 
 .skills-card__header {
@@ -78,13 +406,35 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: linear-gradient(
+    to bottom,
+    var(--surface-overlay, var(--surface-3)),
+    var(--surface-raised, var(--surface-2))
+  );
   border-bottom: 1px solid var(--border-subtle, var(--border));
+}
+
+.skills-card__header h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  letter-spacing: 0.05em;
+  color: var(--text-heading, var(--text));
 }
 
 .skills-card__warning {
   padding: var(--space-2) var(--space-4);
   margin: 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--status-warning) 10%, transparent) 20%,
+    color-mix(in srgb, var(--status-warning) 10%, transparent) 80%,
+    transparent
+  );
+  border-left: 3px solid var(--status-warning, var(--warning));
+  font-style: italic;
+  font-size: var(--text-sm);
 }
 
 .skills-card__list {
@@ -92,48 +442,119 @@
   overflow-y: auto;
   padding: var(--space-4);
   max-height: 600px;
+
+  /* Custom scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
+}
+
+.skills-card__list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.skills-card__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.skills-card__list::-webkit-scrollbar-thumb {
+  background: var(--border-default, var(--border));
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.skills-card__list::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong, var(--border));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SKILL GROUP CARD
+   SKILL GROUP - CHAPTER SECTIONS
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .skill-group-card {
   background: var(--surface-sunken, var(--surface-2));
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.skill-group-card:last-child {
+  margin-bottom: 0;
 }
 
 .skill-group-card__title {
-  color: var(--text-primary, var(--text));
-  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary, var(--muted));
+  margin: 0 0 var(--space-3) 0;
   padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--border-subtle, var(--border));
+  border-bottom: 1px dashed var(--border-subtle, var(--border));
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Decorative bullet before title */
+.skill-group-card__title::before {
+  content: '◆';
+  font-size: var(--text-xs);
+  color: var(--accent-warm, var(--accent));
 }
 
 .skill-group-card__list {
   display: flex;
   flex-direction: column;
+  gap: var(--space-1);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SKILL ROW
+   SKILL ROW - RUNIC INSCRIPTIONS
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .skill-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) auto 80px;
+  grid-template-columns: minmax(0, 1.5fr) auto 90px;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-1);
-  border-radius: var(--radius-sm, 3px);
-  transition: background-color var(--duration-fast, 150ms) var(--ease-out);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast) var(--ease-out);
+  position: relative;
+}
+
+/* Ink stroke effect on hover */
+.skill-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--accent-warm, var(--accent)),
+    transparent
+  );
+  transform: translateY(-50%);
+  transition: width var(--duration-normal) var(--ease-out);
+  opacity: 0.5;
 }
 
 .skill-row:hover {
   background: var(--surface-overlay, var(--surface-3));
 }
 
+.skill-row:hover::before {
+  width: 4px;
+}
+
 .skill-row--divider {
   border-bottom: 1px solid var(--border-subtle, var(--border));
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .skill-row__name {
@@ -141,9 +562,16 @@
 }
 
 .skill-row__name-text {
+  font-family: var(--font-serif);
   font-weight: 600;
-  font-size: var(--text-sm, 14px);
+  font-size: var(--text-sm);
+  color: var(--text-primary, var(--text));
   word-break: break-word;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.skill-row:hover .skill-row__name-text {
+  color: var(--text-heading, var(--text));
 }
 
 .skill-row__controls {
@@ -159,45 +587,154 @@
   font-family: var(--font-mono);
 }
 
+.skill-row__total strong {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-primary, var(--text));
+  min-width: 2ch;
+  text-align: right;
+}
+
 .skill-row__bonus {
-  font-size: var(--text-xs, 12px);
+  font-size: var(--text-xs);
   color: var(--status-success, var(--success));
+  font-weight: 600;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TAB CONTENT
+   TABS - MANUSCRIPT PAGE EDGES / BOOKMARKS
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .tab-content-card {
-  min-height: 300px;
+  min-height: 320px;
+  background: var(--surface-raised, var(--surface-2));
+  border: 1px solid var(--border-default, var(--border));
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Tab list styled as page bookmarks */
+.tabs__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--surface-sunken, var(--surface-2));
+  border-bottom: 1px solid var(--border-subtle, var(--border));
+}
+
+.tabs__tab {
+  position: relative;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary, var(--muted));
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.tabs__tab:hover {
+  color: var(--text-primary, var(--text));
+  background: var(--surface-overlay, var(--surface-3));
+}
+
+.tabs__tab--active {
+  color: var(--text-heading, var(--text));
+  background: var(--surface-raised, var(--surface-2));
+  border-color: var(--border-default, var(--border));
+  border-bottom-color: var(--surface-raised, var(--surface-2));
+  margin-bottom: -1px;
+}
+
+/* Bookmark ribbon effect for active tab */
+.tabs__tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid var(--accent-warm, var(--accent));
+}
+
+.tabs__panel {
+  padding: var(--space-4);
+  animation: page-turn 0.4s var(--ease-out) forwards;
+}
+
+@keyframes page-turn {
+  from {
+    opacity: 0;
+    transform: rotateY(-5deg) translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0) translateX(0);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PSIONIC DETAILS
+   PSIONIC DETAILS - MYSTIC SCROLLS
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .psionic-detail {
-  background: var(--surface-raised, var(--surface-2));
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    var(--surface-raised, var(--surface-2)) 0%,
+    color-mix(in srgb, var(--magic-psionic, var(--accent)) 5%, var(--surface-raised, var(--surface-2))) 100%
+  );
   border: 1px solid var(--border-subtle, var(--border));
-  border-radius: var(--radius-md, 6px);
-  transition:
-    border-color var(--duration-fast, 150ms) var(--ease-out),
-    box-shadow var(--duration-fast, 150ms) var(--ease-out);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.psionic-detail::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    var(--magic-psionic, var(--accent)),
+    transparent
+  );
+  opacity: 0.5;
+  transition: opacity var(--duration-fast) var(--ease-out);
 }
 
 .psionic-detail[open] {
   border-color: var(--magic-psionic, var(--accent));
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 0 30px color-mix(in srgb, var(--magic-psionic, var(--accent)) 15%, transparent);
+}
+
+.psionic-detail[open]::before {
+  opacity: 1;
 }
 
 .psionic-detail__summary {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   cursor: pointer;
   list-style: none;
+  user-select: none;
 }
 
 .psionic-detail__summary::-webkit-details-marker {
@@ -205,36 +742,112 @@
 }
 
 .psionic-detail__summary::before {
-  content: '▶';
-  font-size: var(--text-xs, 12px);
-  color: var(--text-muted, var(--muted));
-  transition: transform var(--duration-fast, 150ms) var(--ease-out);
+  content: '◈';
+  font-size: var(--text-sm);
+  color: var(--magic-psionic, var(--accent));
+  transition: transform var(--duration-fast) var(--ease-out);
   margin-right: var(--space-2);
 }
 
 .psionic-detail[open] .psionic-detail__summary::before {
-  transform: rotate(90deg);
+  transform: rotate(45deg);
 }
 
 .psionic-detail__name {
+  font-family: var(--font-serif);
   font-weight: 600;
+  font-size: var(--text-base);
   flex: 1;
+  color: var(--text-primary, var(--text));
 }
 
 .psionic-detail__content {
-  padding: 0 var(--space-3) var(--space-3);
-  border-top: 1px solid var(--border-subtle, var(--border));
+  padding: 0 var(--space-4) var(--space-4) var(--space-4);
+  border-top: 1px dashed var(--border-subtle, var(--border));
   margin-top: var(--space-2);
   padding-top: var(--space-3);
+  animation: scroll-unfurl 0.3s var(--ease-out) forwards;
+}
+
+@keyframes scroll-unfurl {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
 }
 
 .psionic-detail__content p {
   margin: 0;
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  color: var(--text-secondary, var(--muted));
   white-space: pre-wrap;
 }
 
 .psionic-detail__content p + p {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SPIN BUTTON - RUNE INSCRIBER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.spin-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.spin-button__input {
+  width: 48px;
+  text-align: center;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  background: var(--surface-sunken, var(--surface-2));
+  border: 1px solid var(--border-default, var(--border));
+  border-radius: var(--radius-sm);
+  color: var(--text-primary, var(--text));
+}
+
+.spin-button__decrement,
+.spin-button__increment {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--text-base);
+  background: var(--surface-overlay, var(--surface-3));
+  border: 1px solid var(--border-default, var(--border));
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary, var(--muted));
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.spin-button__decrement:hover,
+.spin-button__increment:hover {
+  background: var(--accent-warm, var(--accent));
+  border-color: var(--accent-warm, var(--accent));
+  color: var(--surface-base, white);
+  transform: scale(1.1);
+}
+
+.spin-button__decrement:disabled,
+.spin-button__increment:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -258,12 +871,73 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   DARK THEME ENHANCEMENTS - MOONLIT GRIMOIRE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-theme="dark-fantasy"] .character-sheet::before {
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    transparent 40%,
+    var(--magic-arcane, var(--accent)) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+}
+
+[data-theme="dark-fantasy"] .combat-metrics .stat-block {
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.05),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    0 0 20px color-mix(in srgb, var(--magic-arcane, var(--accent)) 10%, transparent);
+}
+
+[data-theme="dark-fantasy"] .skills-card {
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 40px color-mix(in srgb, var(--magic-arcane, var(--accent)) 5%, transparent);
+}
+
+[data-theme="dark-fantasy"] .skill-row:hover::before {
+  background: linear-gradient(
+    to right,
+    var(--magic-arcane, var(--accent)),
+    transparent
+  );
+}
+
+[data-theme="dark-fantasy"] .tabs__tab--active::after {
+  border-bottom-color: var(--magic-arcane, var(--accent));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE ADJUSTMENTS
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
+  .character-sheet {
+    padding: var(--space-4);
+  }
+
   .characters-toolbar {
     flex-wrap: wrap;
+    padding: var(--space-3);
+  }
+
+  .character-summary::before,
+  .character-summary::after {
+    display: none;
+  }
+
+  .combat-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .combat-metrics .stat-block {
+    aspect-ratio: auto;
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
   }
 
   .skill-row {
@@ -278,22 +952,135 @@
   .skills-card__header {
     flex-direction: column;
     gap: var(--space-3);
+    padding: var(--space-3);
   }
 
   .skills-card__list {
     max-height: none;
+    padding: var(--space-3);
+  }
+
+  .tabs__list {
+    padding: var(--space-2);
+  }
+
+  .tabs__tab {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-2xs, 10px);
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ANIMATIONS
+   PAGE HEADER - THE CHRONICLE TITLE
    ═══════════════════════════════════════════════════════════════════════════ */
 
-@keyframes fade-in {
+.characters-page .page__header {
+  position: relative;
+  padding: var(--space-8) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.characters-page .page__header::before,
+.characters-page .page__header::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border-ornate, var(--border)) 20%,
+    var(--accent-warm, var(--accent)) 50%,
+    var(--border-ornate, var(--border)) 80%,
+    transparent
+  );
+}
+
+.characters-page .page__header::before {
+  top: 0;
+}
+
+.characters-page .page__header::after {
+  bottom: 0;
+}
+
+.characters-page .heading-1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-heading, var(--text));
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: title-glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes title-glow {
   from {
-    opacity: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   to {
-    opacity: 1;
+    text-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      0 0 20px color-mix(in srgb, var(--accent-warm, var(--accent)) 30%, transparent);
+  }
+}
+
+[data-theme="dark-fantasy"] .characters-page .heading-1 {
+  text-shadow: 0 0 30px var(--magic-arcane, var(--accent));
+  animation: title-glow-dark 4s ease-in-out infinite alternate;
+}
+
+@keyframes title-glow-dark {
+  from {
+    text-shadow: 0 0 20px color-mix(in srgb, var(--magic-arcane, var(--accent)) 30%, transparent);
+  }
+  to {
+    text-shadow:
+      0 0 30px var(--magic-arcane, var(--accent)),
+      0 0 60px color-mix(in srgb, var(--magic-arcane, var(--accent)) 50%, transparent);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LOADING STATE - SCROLL UNFURLING
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.characters-page .body.text-muted[style*="text-align: center"] {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-lg);
+  padding: var(--space-8);
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media print {
+  .characters-page::before,
+  .character-sheet::before,
+  .characters-toolbar::after,
+  .characters-toolbar::before {
+    display: none;
+  }
+
+  .skills-card__list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .combat-metrics .stat-block {
+    box-shadow: none;
+    border: 1px solid #000;
   }
 }

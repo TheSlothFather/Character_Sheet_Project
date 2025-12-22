@@ -14,15 +14,12 @@ import { getAncillaryStorageKey, readAncillarySelection } from "../ancillaries/s
 import {
   Button,
   Card,
-  CardHeader,
   CardBody,
-  Panel,
   Select,
   Textarea,
   Field,
   SpinButton,
   StatBlock,
-  StatRow,
   AttributePill,
   Badge,
   Tabs,
@@ -228,7 +225,7 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
         />
       </div>
       <div className="skill-row__total">
-        <span className="stat-value">{total}</span>
+        <strong>{total}</strong>
         {bonus > 0 && <span className="skill-row__bonus">(+{bonus})</span>}
       </div>
     </div>
@@ -500,16 +497,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
   return (
     <Stack gap="lg" className="character-sheet">
-      {/* Character Summary */}
-      <Panel>
-        <Grid columns="auto-sm" gap="sm" className="character-summary">
-          <AttributePill label="Name" value={character.name} />
-          <AttributePill label="Level" value={character.level} />
-          <AttributePill label="Race" value={raceName || "Unselected"} />
-          <AttributePill label="Subrace" value={subraceName || "Unselected"} />
-          <AttributePill label="Speed" value={speed} />
-        </Grid>
-      </Panel>
+      {/* Character Summary - The Title Page */}
+      <section className="character-summary" aria-label="Character identity">
+        <h2>{character.name}</h2>
+        <p className="text-muted">
+          Level {character.level} {raceName || "Unknown"}{subraceName ? ` (${subraceName})` : ""} · Speed {speed}
+        </p>
+      </section>
 
       {/* Attribute Points */}
       <Card>
@@ -547,18 +541,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       <div className="character-sheet__layout">
         {/* Left Column: Combat Stats & Skills */}
         <Stack gap="md" className="character-sheet__skills-column">
-          {/* Combat Metrics */}
-          <Grid columns="auto-sm" gap="sm" className="combat-metrics">
-            <AttributePill label="Damage Reduction" value={damageReduction} />
-            <AttributePill
-              label="Damage"
-              value={totalDamage}
-              variant="stacked"
-              hint={`Base ${weaponDamageBase} + Physical ${physicalAttribute}`}
-            />
-            <AttributePill label="Fate" value={fatePoints} />
-            <AttributePill label="Energy" value={energy} />
+          {/* Combat Metrics - Wax Seal Stat Displays */}
+          <div className="combat-metrics" role="group" aria-label="Combat statistics">
+            <StatBlock label="DR" value={damageReduction} />
+            <StatBlock label="Damage" value={totalDamage} />
+            <StatBlock label="Fate" value={fatePoints} />
+            <StatBlock label="Energy" value={energy} />
+          </div>
 
+          {/* Equipment Selection - Arcane Sigils */}
+          <Grid columns={2} gap="sm">
             <div className="attribute-pill attribute-pill--stacked">
               <span className="attribute-pill__label">Weapon Category</span>
               <Select
@@ -601,43 +593,45 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               </Select>
             </div>
 
-            <AttributePill
-              label="Martial Bonus AP"
-              value={martialBonus.ap}
-              variant="stacked"
-              hint={martialBonus.notes.size > 0 ? Array.from(martialBonus.notes).join(", ") : undefined}
-            />
+            {martialBonus.ap > 0 && (
+              <div className="attribute-pill attribute-pill--stacked">
+                <span className="attribute-pill__label">Martial Bonus AP</span>
+                <span className="attribute-pill__value">+{martialBonus.ap}</span>
+                {martialBonus.notes.size > 0 && (
+                  <span className="attribute-pill__hint">{Array.from(martialBonus.notes).join(", ")}</span>
+                )}
+              </div>
+            )}
           </Grid>
 
           {equipmentError && (
             <p className="body-sm text-warning">{equipmentError}</p>
           )}
 
-          {/* Skill Points Card */}
-          <Card variant="flush" className="skills-card">
-            <div className="skills-card__header">
+          {/* Skill Points Card - The Grimoire Page */}
+          <article className="skills-card" aria-label="Skill allocations">
+            <header className="skills-card__header">
               <div>
-                <span className="caption">Skill Points Remaining</span>
-                <div className={`heading-2 ${remaining < 0 ? "text-danger" : "text-success"}`}>
-                  {remaining}
+                <h3>Skill Points</h3>
+                <div className={`heading-2 ${remaining < 0 ? "text-danger" : remaining > 0 ? "text-success" : ""}`}>
+                  {remaining} <span className="caption text-muted">remaining of {skillPointPool}</span>
                 </div>
               </div>
-              <Cluster gap="sm" align="center">
-                <span className="caption">Pool: {skillPointPool}</span>
-                <Button
-                  variant="secondary"
-                  onClick={onLockAllocations}
-                  disabled={lockDisabled || isLocking}
-                  loading={isLocking}
-                >
-                  Lock Skill Points
-                </Button>
-              </Cluster>
-            </div>
+              <Button
+                variant="secondary"
+                onClick={onLockAllocations}
+                disabled={lockDisabled || isLocking}
+                loading={isLocking}
+              >
+                Lock Allocations
+              </Button>
+            </header>
 
-            <p className="skills-card__warning body-sm text-warning">
-              Spend all skill points at level up and lock your allocations when finished.
-            </p>
+            {remaining > 0 && (
+              <p className="skills-card__warning text-warning">
+                Spend all skill points at level up and lock your allocations when finished.
+              </p>
+            )}
 
             <div className="skills-card__list">
               {skills.length === 0 ? (
@@ -692,10 +686,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 </Stack>
               )}
             </div>
-          </Card>
+          </article>
         </Stack>
 
-        {/* Right Column: Tabs */}
+        {/* Right Column: Tabs - Manuscript Page Edges */}
         <Stack gap="md" className="character-sheet__tabs-column">
           <Tabs value={activeTab} onChange={setActiveTab}>
             <TabList aria-label="Character details">
@@ -1117,26 +1111,27 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
 
   return (
     <div className="page characters-page">
-      <header className="page__header">
-        <h2 className="heading-2">Characters</h2>
-        {(definitionsError || error) && (
-          <p className="body text-danger">{definitionsError || error}</p>
-        )}
-      </header>
-
       <main className="page__content">
-        <Panel>
-          <Stack gap="md">
-            {/* Toolbar */}
-            <Cluster gap="sm" align="center" className="characters-toolbar">
-              <span className="body-sm" style={{ fontWeight: 600 }}>Selected character</span>
+        <Stack gap="lg">
+          {/* Page Header - The Chronicle Title */}
+          <header className="page__header" style={{ textAlign: 'center' }}>
+            <h1 className="heading-1">Chronicle of Heroes</h1>
+            {(definitionsError || error) && (
+              <p className="body text-danger" role="alert">{definitionsError || error}</p>
+            )}
+          </header>
+
+          {/* Toolbar - Scribe's Implements */}
+          <nav className="characters-toolbar" aria-label="Character management">
+            <Cluster gap="md" align="center" justify="center">
               <Select
                 value={selectedId ?? ""}
                 onChange={(e) => setSelectedId(e.target.value || null)}
                 disabled={loadingAny || characters.length === 0}
-                style={{ minWidth: 240 }}
+                style={{ minWidth: 260 }}
+                aria-label="Select character"
               >
-                {characters.length === 0 && <option value="">No characters</option>}
+                {characters.length === 0 && <option value="">No characters inscribed</option>}
                 {characters.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -1144,59 +1139,67 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
                 ))}
               </Select>
 
-              <Button variant="primary" onClick={() => navigate(createCharacterPath)}>
-                New Character
-              </Button>
+              <Cluster gap="sm">
+                <Button variant="primary" onClick={() => navigate(createCharacterPath)}>
+                  Inscribe New
+                </Button>
 
-              <Button
-                variant="danger"
-                onClick={() => setDeleteConfirmOpen(true)}
-                disabled={!selectedId || deletingId === selectedId || loadingAny}
-              >
-                Delete Character
-              </Button>
+                <Button
+                  variant="secondary"
+                  onClick={handleLevelUp}
+                  disabled={!selectedId || loadingAny || levelUpdatingId === selectedId || remaining > 0}
+                  loading={levelUpdatingId === selectedId}
+                >
+                  Advance Level
+                </Button>
 
-              <Button
-                variant="secondary"
-                onClick={handleLevelUp}
-                disabled={!selectedId || loadingAny || levelUpdatingId === selectedId || remaining > 0}
-                loading={levelUpdatingId === selectedId}
-              >
-                Level Up
-              </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => setDeleteConfirmOpen(true)}
+                  disabled={!selectedId || deletingId === selectedId || loadingAny}
+                >
+                  Erase
+                </Button>
+              </Cluster>
             </Cluster>
+          </nav>
 
-            {/* Content */}
-            {loadingAny && <p className="body text-muted">Loading sheet...</p>}
-            {!loadingAny && !selectedCharacter && (
-              <p className="body text-muted">Select a character to view the sheet.</p>
-            )}
-            {!loadingAny && selectedCharacter && definitions && (
-              <CharacterSheet
-                character={selectedCharacter}
-                skills={definitions.skills}
-                raceName={raceMap.get(selectedCharacter.raceKey || "")}
-                subraceName={subraceMap.get(selectedCharacter.subraceKey || "")?.name}
-                remaining={remaining}
-                skillPointPool={skillPointPool}
-                allocations={currentAllocations}
-                allocationMinimums={allocationMinimums}
-                skillBonuses={skillBonuses}
-                onChangeAllocation={onChangeAllocation}
-                onLockAllocations={handleLockAllocations}
-                disableAllocation={
-                  loadingAny || allocationSavingId === selectedCharacter.id || lockingAllocationId === selectedCharacter.id
-                }
-                lockDisabled={lockButtonDisabled}
-                isLocking={lockingAllocationId === selectedCharacter.id}
-                attributePointsAvailable={attributePointsAvailable}
-                onSpendAttributePoint={handleSpendAttributePoint}
-                isUpdating={loadingAny || isGeneralSaving}
-                onSaveNotes={handleSaveNotes}
-              />
-            )}
-          </Stack>
-        </Panel>
+          {/* Content - The Manuscript */}
+          {loadingAny && (
+            <p className="body text-muted" style={{ textAlign: 'center' }}>
+              Unfurling the ancient scrolls...
+            </p>
+          )}
+          {!loadingAny && !selectedCharacter && (
+            <p className="body text-muted" style={{ textAlign: 'center' }}>
+              Select a hero from the chronicles above to view their tale.
+            </p>
+          )}
+          {!loadingAny && selectedCharacter && definitions && (
+            <CharacterSheet
+              character={selectedCharacter}
+              skills={definitions.skills}
+              raceName={raceMap.get(selectedCharacter.raceKey || "")}
+              subraceName={subraceMap.get(selectedCharacter.subraceKey || "")?.name}
+              remaining={remaining}
+              skillPointPool={skillPointPool}
+              allocations={currentAllocations}
+              allocationMinimums={allocationMinimums}
+              skillBonuses={skillBonuses}
+              onChangeAllocation={onChangeAllocation}
+              onLockAllocations={handleLockAllocations}
+              disableAllocation={
+                loadingAny || allocationSavingId === selectedCharacter.id || lockingAllocationId === selectedCharacter.id
+              }
+              lockDisabled={lockButtonDisabled}
+              isLocking={lockingAllocationId === selectedCharacter.id}
+              attributePointsAvailable={attributePointsAvailable}
+              onSpendAttributePoint={handleSpendAttributePoint}
+              isUpdating={loadingAny || isGeneralSaving}
+              onSaveNotes={handleSaveNotes}
+            />
+          )}
+        </Stack>
       </main>
 
       {/* Delete Confirmation Dialog */}
