@@ -1,0 +1,262 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * UI COMPONENT STYLES
+ * Additional styles for React UI components
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BUTTON ADDITIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.btn__loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SPIN BUTTON
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.spin-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.spin-button__input {
+  width: 64px;
+  text-align: center;
+  padding: var(--space-2);
+  font-family: var(--font-mono);
+}
+
+.spin-button__decrement,
+.spin-button__increment {
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ATTRIBUTE PILL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.attribute-pill {
+  background: var(--surface-overlay, var(--surface-3));
+  border: 1px solid var(--border-default, var(--border));
+  border-radius: var(--radius-md, 6px);
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm, 14px);
+}
+
+.attribute-pill--stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.attribute-pill__header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.attribute-pill__label {
+  color: var(--text-secondary, var(--muted));
+  font-size: var(--text-xs, 12px);
+}
+
+.attribute-pill__value {
+  font-weight: 600;
+  color: var(--text-primary, var(--text));
+}
+
+.attribute-pill__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.attribute-pill__hint {
+  font-size: var(--text-xs, 12px);
+  color: var(--text-muted, var(--muted));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STAT INLINE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.stat-inline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stat-inline__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-inline__label {
+  font-size: var(--text-xs, 12px);
+  color: var(--text-secondary, var(--muted));
+}
+
+.stat-inline__value {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg, 18px);
+}
+
+.stat-inline__hint {
+  font-size: var(--text-xs, 12px);
+  color: var(--text-muted, var(--muted));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STAT BLOCK ADDITIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.stat-block__action {
+  margin-top: var(--space-2);
+}
+
+.stat-block--warning .stat-block__value {
+  color: var(--status-warning, var(--warning));
+}
+
+/* Justify utilities for stat rows */
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-around {
+  justify-content: space-around;
+}
+
+.justify-evenly {
+  justify-content: space-evenly;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TABS ADDITIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tabs-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tabs__panel {
+  animation: fade-in var(--duration-fast, 150ms) var(--ease-out);
+}
+
+/* Pill tabs variant */
+.pill-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pill-tabs__tab {
+  border-radius: var(--radius-md, 6px);
+}
+
+.pill-tabs__tab--active {
+  border-color: var(--status-warning, var(--warning));
+  background: color-mix(in srgb, var(--status-warning, var(--warning)) 15%, var(--surface-raised, var(--surface-2)));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FORM FIELD ADDITIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.field__required {
+  color: var(--status-danger, var(--danger));
+}
+
+.input--error,
+.select--error,
+.textarea--error {
+  border-color: var(--status-danger, var(--danger));
+}
+
+.input--error:focus,
+.select--error:focus,
+.textarea--error:focus {
+  box-shadow: var(--shadow-inner), 0 0 0 3px hsl(0 70% 50% / 0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHECKBOX & RADIO LABELS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.checkbox__label,
+.radio__label {
+  font-size: var(--text-sm, 14px);
+  color: var(--text-primary, var(--text));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CARD PANEL VARIANT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.panel {
+  background: var(--surface-base, var(--surface-1));
+  border: 1px solid var(--border-subtle, var(--border));
+  border-radius: var(--radius-lg, 10px);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE ADJUSTMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .spin-button__input {
+    width: 52px;
+  }
+
+  .attribute-pill {
+    font-size: var(--text-xs, 12px);
+  }
+
+  .pill-tabs {
+    gap: var(--space-1);
+  }
+
+  .pill-tabs__tab {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-xs, 12px);
+  }
+}

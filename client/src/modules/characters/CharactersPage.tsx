@@ -9,7 +9,37 @@ import psionicsCsv from "../../data/psionics.csv?raw";
 import { parsePsionicsCsv, PsionicAbility, replaceMentalAttributePlaceholders } from "../psionics/psionicsUtils";
 import { PSIONICS_STORAGE_KEY } from "../psionics/psionBackgrounds";
 import { getAncillaryStorageKey, readAncillarySelection } from "../ancillaries/storage";
+
+// New UI Components
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardBody,
+  Panel,
+  Select,
+  Textarea,
+  Field,
+  SpinButton,
+  StatBlock,
+  StatRow,
+  AttributePill,
+  Badge,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanel,
+  Stack,
+  Cluster,
+  Grid,
+  ConfirmDialog,
+} from "../../components/ui";
+
 import "./CharactersPage.css";
+
+// ============================================================================
+// CONSTANTS & TYPE GUARDS
+// ============================================================================
 
 const DEFAULT_SKILL_POINT_POOL = 100;
 const ENERGY_OVERRIDE_ANCILLARIES = new Set([
@@ -90,6 +120,10 @@ const mergeAttributeSkillBonuses = (
   return merged;
 };
 
+// ============================================================================
+// TYPES
+// ============================================================================
+
 type ArmorOption = {
   id: number;
   name: string;
@@ -132,7 +166,8 @@ const MARTIAL_AP_BONUS: Record<string, { ap: number; note: string }> = {
   "legendary-martial": { ap: 3, note: "Movement, attacks, reactions" },
   "mythic-martial": { ap: 3, note: "Movement, attacks, reactions" }
 };
-const ATTRIBUTE_DISPLAY: { key: keyof Required<Character>["attributes"] | string; label: string }[] = [
+
+const ATTRIBUTE_DISPLAY: { key: AttributeKey; label: string }[] = [
   { key: "PHYSICAL", label: "Physical" },
   { key: "MENTAL", label: "Mental" },
   { key: "SPIRITUAL", label: "Spiritual" },
@@ -144,6 +179,10 @@ const parseDamageValue = (raw: string | null | undefined): number => {
   const match = raw.match(/-?\d+(\.\d+)?/);
   return match ? Number(match[0]) : 0;
 };
+
+// ============================================================================
+// SKILL ALLOCATION ROW COMPONENT
+// ============================================================================
 
 interface SkillAllocationRowProps {
   skill: NamedDefinition;
@@ -173,110 +212,32 @@ const SkillAllocationRow: React.FC<SkillAllocationRowProps> = ({
   const total = allocated + bonus;
   const maxAllocatable = Math.max(minimum, allocated + Math.max(remaining, 0));
 
-  const allocationRef = React.useRef<number>(allocated);
-  React.useEffect(() => {
-    allocationRef.current = allocations[code] ?? 0;
-  }, [allocations, code]);
-
-  const [inputValue, setInputValue] = React.useState<string>(String(allocated));
-
-  React.useEffect(() => {
-    setInputValue(String(allocations[code] ?? 0));
-  }, [allocations, code]);
-
-  const repeatTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-  const repeatIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  const stopRepeating = React.useCallback(() => {
-    if (repeatTimeoutRef.current) {
-      clearTimeout(repeatTimeoutRef.current);
-      repeatTimeoutRef.current = null;
-    }
-    if (repeatIntervalRef.current) {
-      clearInterval(repeatIntervalRef.current);
-      repeatIntervalRef.current = null;
-    }
-  }, []);
-
-  React.useEffect(() => stopRepeating, [stopRepeating]);
-
-  const handleSpinChange = (value: number) => {
-    if (!Number.isFinite(value)) return;
-    const sanitized = Math.floor(value);
-    const clamped = Math.min(Math.max(sanitized, minimum), maxAllocatable);
-    setInputValue(String(clamped));
-    onChangeAllocation(code, clamped);
-  };
-
-  const applyDelta = (delta: number) => {
-    const current = allocationRef.current ?? 0;
-    handleSpinChange(current + delta);
-  };
-
-  const startRepeating = (delta: number) => {
-    if (disableAllocation) return;
-    stopRepeating();
-    applyDelta(delta);
-    repeatTimeoutRef.current = setTimeout(() => {
-      repeatIntervalRef.current = setInterval(() => applyDelta(delta), 125);
-    }, 350);
-  };
-
   return (
-    <div
-      className={`characters__skill-row${showDivider ? " characters__skill-row--divider" : ""}`}
-    >
-      <div className="characters__skill-name">
-        <div className="characters__skill-name-text">{formatSkillName(skill.name)}</div>
+    <div className={`skill-row${showDivider ? " skill-row--divider" : ""}`}>
+      <div className="skill-row__name">
+        <span className="skill-row__name-text">{formatSkillName(skill.name)}</span>
       </div>
-      <div className="characters__skill-controls">
-        <button
-          type="button"
-          onPointerDown={() => startRepeating(-1)}
-          onPointerUp={stopRepeating}
-          onPointerLeave={stopRepeating}
-          onPointerCancel={stopRepeating}
-          disabled={disableAllocation || allocated <= minimum}
-          className="btn characters__skill-button"
-        >
-          −
-        </button>
-        <input
-          type="text"
-          inputMode="numeric"
-          value={inputValue}
+      <div className="skill-row__controls">
+        <SpinButton
+          value={allocated}
+          onChange={(value) => onChangeAllocation(code, value)}
+          min={minimum}
+          max={maxAllocatable}
           disabled={disableAllocation}
-          onChange={(e) => {
-            const next = e.target.value;
-            setInputValue(next);
-            if (next.trim() === "" || next === "-") return;
-            const parsed = Number.parseInt(next, 10);
-            if (Number.isFinite(parsed)) handleSpinChange(parsed);
-          }}
-          onBlur={() => setInputValue(String(allocations[code] ?? 0))}
-          onWheel={(e) => {
-            e.preventDefault();
-            e.currentTarget.blur();
-          }}
-          onMouseUp={(e) => e.currentTarget.blur()}
-          className="input characters__skill-input"
+          label={`${skill.name} allocation`}
         />
-        <button
-          type="button"
-          onPointerDown={() => startRepeating(1)}
-          onPointerUp={stopRepeating}
-          onPointerLeave={stopRepeating}
-          onPointerCancel={stopRepeating}
-          disabled={disableAllocation || allocated >= maxAllocatable}
-          className="btn characters__skill-button"
-        >
-          +
-        </button>
       </div>
-      <div className="characters__skill-total">{total}</div>
+      <div className="skill-row__total">
+        <span className="stat-value">{total}</span>
+        {bonus > 0 && <span className="skill-row__bonus">(+{bonus})</span>}
+      </div>
     </div>
   );
 };
+
+// ============================================================================
+// CHARACTER SHEET COMPONENT
+// ============================================================================
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({
   character,
@@ -299,6 +260,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   onSaveNotes
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>("Weapons");
+
+  // Memoized skill groupings
   const regularSkills = React.useMemo(
     () => skills.filter((skill) => !SPECIAL_SKILL_CODES.includes(getSkillCode(skill).toUpperCase())),
     [skills]
@@ -314,14 +277,18 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     [skills]
   );
 
+  // Psionic abilities state
   const psionicAbilities = React.useMemo<PsionicAbility[]>(() => parsePsionicsCsv(psionicsCsv), []);
   const [unlockedPsionics, setUnlockedPsionics] = React.useState<PsionicAbility[]>([]);
   const [psionicEnergyOverrides, setPsionicEnergyOverrides] = React.useState<Map<string, number>>(new Map());
   const storageKey = React.useMemo(() => `${PSIONICS_STORAGE_KEY}:${character.id}`, [character.id]);
 
+  // Notes state
   const [weaponNotes, setWeaponNotes] = React.useState<string>(character.weaponNotes ?? "");
   const [defenseNotes, setDefenseNotes] = React.useState<string>(character.defenseNotes ?? "");
   const [gearNotes, setGearNotes] = React.useState<string>(character.gearNotes ?? "");
+
+  // Ancillary & equipment state
   const [ancillarySelection, setAncillarySelection] = React.useState(() => readAncillarySelection(character.id));
   const [armorOptions, setArmorOptions] = React.useState<ArmorOption[]>([]);
   const [weaponOptions, setWeaponOptions] = React.useState<WeaponCategoryOption[]>([]);
@@ -330,22 +297,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [selectedWeaponCategory, setSelectedWeaponCategory] = React.useState<string>("");
   const equipmentStorageKey = React.useMemo(() => `characters:equipment:${character.id}`, [character.id]);
 
-  React.useEffect(() => {
-    setAncillarySelection(readAncillarySelection(character.id));
-    const storageKey = getAncillaryStorageKey(character.id);
-
-    const handler = (event: StorageEvent) => {
-      if (event.key === storageKey) {
-        setAncillarySelection(readAncillarySelection(character.id));
-      }
-    };
-
-    if (typeof window !== "undefined") window.addEventListener("storage", handler);
-    return () => {
-      if (typeof window !== "undefined") window.removeEventListener("storage", handler);
-    };
-  }, [character.id]);
-
+  // Computed values
   const energyBase = character.raceKey === "ANZ" ? 140 : 100;
   const energyPerLevel = character.raceKey === "ANZ" ? 14 : 10;
   const energeticMultiplier = ancillarySelection.selected.includes("energetic")
@@ -372,6 +324,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
       { ap: 0, notes: new Set<string>() }
     );
   }, [ancillarySelection.selected]);
+
+  // Effects for syncing state
+  React.useEffect(() => {
+    setAncillarySelection(readAncillarySelection(character.id));
+    const storageKey = getAncillaryStorageKey(character.id);
+
+    const handler = (event: StorageEvent) => {
+      if (event.key === storageKey) {
+        setAncillarySelection(readAncillarySelection(character.id));
+      }
+    };
+
+    if (typeof window !== "undefined") window.addEventListener("storage", handler);
+    return () => {
+      if (typeof window !== "undefined") window.removeEventListener("storage", handler);
+    };
+  }, [character.id]);
 
   React.useEffect(() => {
     setWeaponNotes(character.weaponNotes ?? "");
@@ -511,116 +480,91 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
     }));
   }, [unlockedPsionics]);
 
+  // Event handlers
   const handleNoteBlur = (field: "weaponNotes" | "defenseNotes" | "gearNotes", value: string) => {
     const currentValue = character[field] ?? "";
     if (currentValue === value) return;
     onSaveNotes({ [field]: value });
   };
 
-  const renderNotesArea = (
-    label: string,
-    value: string,
-    setter: React.Dispatch<React.SetStateAction<string>>,
-    field: "weaponNotes" | "defenseNotes" | "gearNotes"
-  ) => (
-    <div className="stack characters__notes">
-      <div className="characters__notes-label">{label}</div>
-      <textarea
-        value={value}
-        onChange={(e) => setter(e.target.value)}
-        onBlur={() => handleNoteBlur(field, value)}
-        rows={8}
-        disabled={isUpdating}
-        className="textarea characters__notes-textarea"
-      />
-      <div className="characters__notes-hint">Changes are saved on blur.</div>
-    </div>
-  );
+  const tabs = [
+    { value: "Weapons", label: "Weapons" },
+    { value: "Defense", label: "Defense" },
+    { value: "Gear", label: "Gear" },
+    { value: "Psionics", label: "Psionics" },
+    { value: "Spells", label: "Spells" },
+    { value: "Details", label: "Details" },
+    { value: "Feats", label: "Feats" },
+    { value: "Actions", label: "Actions" },
+  ];
 
   return (
-    <div className="stack characters__sheet">
-      <div className="panel grid characters__summary">
-        <div className="characters__pill">
-          <span>Name</span>
-          <strong>{character.name}</strong>
-        </div>
-        <div className="characters__pill">
-          <span>Level</span>
-          <strong>{character.level}</strong>
-        </div>
-        <div className="characters__pill">
-          <span>Race</span>
-          <strong>{raceName || "Unselected"}</strong>
-        </div>
-        <div className="characters__pill">
-          <span>Subrace</span>
-          <strong>{subraceName || "Unselected"}</strong>
-        </div>
-        <div className="characters__pill">
-          <span>Speed</span>
-          <strong>{speed}</strong>
-        </div>
-      </div>
+    <Stack gap="lg" className="character-sheet">
+      {/* Character Summary */}
+      <Panel>
+        <Grid columns="auto-sm" gap="sm" className="character-summary">
+          <AttributePill label="Name" value={character.name} />
+          <AttributePill label="Level" value={character.level} />
+          <AttributePill label="Race" value={raceName || "Unselected"} />
+          <AttributePill label="Subrace" value={subraceName || "Unselected"} />
+          <AttributePill label="Speed" value={speed} />
+        </Grid>
+      </Panel>
 
-      <div className="card stack characters__attributes">
-        <div className="characters__attributes-header">
-          <div className="characters__attributes-label">Attribute Points Available</div>
-          <div
-            className={`characters__attributes-value${
-              attributePointsAvailable > 0 ? " characters__attributes-value--available" : ""
-            }`}
-          >
-            {attributePointsAvailable}
-          </div>
-        </div>
-        <div className="characters__attributes-grid">
-          {ATTRIBUTE_DISPLAY.map((attr) => (
-            <div key={attr.key as string} className="characters__pill characters__pill--compact">
-              <span>{attr.label}</span>
-              <div className="characters__pill-actions">
-                <strong>{attributeValues?.[attr.key as string] ?? 0}</strong>
-                <button
-                  onClick={() => onSpendAttributePoint(attr.key as AttributeKey)}
-                  disabled={attributePointsAvailable <= 0 || isUpdating}
-                  className="btn characters__pill-button"
-                >
-                  +1
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Attribute Points */}
+      <Card>
+        <CardBody>
+          <Stack gap="sm">
+            <Cluster justify="between" align="center">
+              <span className="caption">Attribute Points Available</span>
+              <span className={`heading-4 ${attributePointsAvailable > 0 ? "text-success" : ""}`}>
+                {attributePointsAvailable}
+              </span>
+            </Cluster>
+            <Grid columns="auto-sm" gap="sm">
+              {ATTRIBUTE_DISPLAY.map((attr) => (
+                <AttributePill
+                  key={attr.key}
+                  label={attr.label}
+                  value={attributeValues?.[attr.key] ?? 0}
+                  action={
+                    <Button
+                      size="sm"
+                      onClick={() => onSpendAttributePoint(attr.key)}
+                      disabled={attributePointsAvailable <= 0 || isUpdating}
+                    >
+                      +1
+                    </Button>
+                  }
+                />
+              ))}
+            </Grid>
+          </Stack>
+        </CardBody>
+      </Card>
 
-      <div className="grid characters__layout">
-        <div className="stack characters__column">
-          <div className="grid characters__metrics">
-            <div className="characters__pill">
-              <span>Damage Reduction</span>
-              <strong>{damageReduction}</strong>
-            </div>
-            <div className="characters__pill characters__pill--stacked">
-              <div className="characters__pill-stack-header">
-                <span>Damage</span>
-                <strong>{totalDamage}</strong>
-              </div>
-              <div className="characters__pill-hint">Base {weaponDamageBase} + Physical {physicalAttribute}</div>
-            </div>
-            <div className="characters__pill">
-              <span>Fate</span>
-              <strong>{fatePoints}</strong>
-            </div>
-            <div className="characters__pill">
-              <span>Energy</span>
-              <strong>{energy}</strong>
-            </div>
-            <div className="characters__pill characters__pill--stacked">
-              <span className="characters__pill-label">Weapon Category</span>
-              <select
-                className="select characters__pill-select"
+      {/* Main Layout: Skills + Tabs */}
+      <div className="character-sheet__layout">
+        {/* Left Column: Combat Stats & Skills */}
+        <Stack gap="md" className="character-sheet__skills-column">
+          {/* Combat Metrics */}
+          <Grid columns="auto-sm" gap="sm" className="combat-metrics">
+            <AttributePill label="Damage Reduction" value={damageReduction} />
+            <AttributePill
+              label="Damage"
+              value={totalDamage}
+              variant="stacked"
+              hint={`Base ${weaponDamageBase} + Physical ${physicalAttribute}`}
+            />
+            <AttributePill label="Fate" value={fatePoints} />
+            <AttributePill label="Energy" value={energy} />
+
+            <div className="attribute-pill attribute-pill--stacked">
+              <span className="attribute-pill__label">Weapon Category</span>
+              <Select
                 value={selectedWeaponCategory}
-                onChange={(event) => {
-                  const value = event.target.value;
+                onChange={(e) => {
+                  const value = e.target.value;
                   setSelectedWeaponCategory(value);
                   persistEquipment({ weaponCategory: value });
                 }}
@@ -632,15 +576,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                     {weapon.category}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
-            <div className="characters__pill characters__pill--stacked">
-              <span className="characters__pill-label">Armor Type</span>
-              <select
-                className="select characters__pill-select"
+
+            <div className="attribute-pill attribute-pill--stacked">
+              <span className="attribute-pill__label">Armor Type</span>
+              <Select
                 value={selectedArmorId === "" ? "" : String(selectedArmorId)}
-                onChange={(event) => {
-                  const value = event.target.value;
+                onChange={(e) => {
+                  const value = e.target.value;
                   const nextId = value ? Number(value) : "";
                   setSelectedArmorId(nextId);
                   persistEquipment({ armorId: nextId });
@@ -654,167 +598,219 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                     {armor.armorType ? ` (${armor.armorType})` : ""}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
-            <div className="characters__pill characters__pill--stacked">
-              <div className="characters__pill-stack-header">
-                <span>Martial Bonus AP</span>
-                <strong>{martialBonus.ap}</strong>
-              </div>
-              {martialBonus.notes.size > 0 && (
-                <div className="characters__pill-hint">
-                  {Array.from(martialBonus.notes).join(", ")}
-                </div>
-              )}
-            </div>
-          </div>
-          {equipmentError && <div className="characters__equipment-error">{equipmentError}</div>}
-          <div className="card characters__card--flush">
-            <div className="characters__skill-header">
+
+            <AttributePill
+              label="Martial Bonus AP"
+              value={martialBonus.ap}
+              variant="stacked"
+              hint={martialBonus.notes.size > 0 ? Array.from(martialBonus.notes).join(", ") : undefined}
+            />
+          </Grid>
+
+          {equipmentError && (
+            <p className="body-sm text-warning">{equipmentError}</p>
+          )}
+
+          {/* Skill Points Card */}
+          <Card variant="flush" className="skills-card">
+            <div className="skills-card__header">
               <div>
-                <div className="characters__skill-label">Skill Points Remaining</div>
-                <div className={`characters__skill-remaining${remaining < 0 ? " characters__skill-remaining--over" : ""}`}>
+                <span className="caption">Skill Points Remaining</span>
+                <div className={`heading-2 ${remaining < 0 ? "text-danger" : "text-success"}`}>
                   {remaining}
                 </div>
               </div>
-              <div className="characters__skill-actions">
-                <div className="characters__skill-pool">Pool: {skillPointPool}</div>
-                <button
+              <Cluster gap="sm" align="center">
+                <span className="caption">Pool: {skillPointPool}</span>
+                <Button
+                  variant="secondary"
                   onClick={onLockAllocations}
                   disabled={lockDisabled || isLocking}
-                  className="btn btn--secondary characters__lock-button"
+                  loading={isLocking}
                 >
-                  {isLocking ? "Locking..." : "Lock Skill Points"}
-                </button>
-              </div>
+                  Lock Skill Points
+                </Button>
+              </Cluster>
             </div>
-            <div className="characters__skill-warning">
+
+            <p className="skills-card__warning body-sm text-warning">
               Spend all skill points at level up and lock your allocations when finished.
-            </div>
-            <div className="characters__skill-list">
+            </p>
+
+            <div className="skills-card__list">
               {skills.length === 0 ? (
-                <div className="characters__skill-empty">No skills defined yet.</div>
+                <p className="body-sm text-muted">No skills defined yet.</p>
               ) : (
-                <div className="grid characters__skill-grid">
+                <Stack gap="sm">
+                  {/* Special Skills */}
                   {specialSkills.map((skill) => (
-                    <div
-                      key={getSkillCode(skill)}
-                      className="characters__skill-card"
-                    >
-                      <SkillAllocationRow
-                        skill={skill}
-                        showDivider={false}
-                        allocations={allocations}
-                        allocationMinimums={allocationMinimums}
-                        skillBonuses={skillBonuses}
-                        remaining={remaining}
-                        disableAllocation={disableAllocation}
-                        onChangeAllocation={onChangeAllocation}
-                      />
-                    </div>
+                    <Card key={getSkillCode(skill)} className="skill-group-card">
+                      <CardBody>
+                        <SkillAllocationRow
+                          skill={skill}
+                          showDivider={false}
+                          allocations={allocations}
+                          allocationMinimums={allocationMinimums}
+                          skillBonuses={skillBonuses}
+                          remaining={remaining}
+                          disableAllocation={disableAllocation}
+                          onChangeAllocation={onChangeAllocation}
+                        />
+                      </CardBody>
+                    </Card>
                   ))}
+
+                  {/* Grouped Skills */}
                   {groupedSkills.map((group) => (
-                    <div
-                      key={group.key}
-                      className="characters__skill-card"
-                    >
-                      <div className="characters__skill-group-title">{group.label}</div>
-                      <div className="characters__skill-group-list">
-                          {[...group.skills]
-                            .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((skill, idx, arr) => (
-                            <SkillAllocationRow
-                              key={getSkillCode(skill)}
-                              skill={skill}
-                              showDivider={idx < arr.length - 1}
-                              allocations={allocations}
-                              allocationMinimums={allocationMinimums}
-                              skillBonuses={skillBonuses}
-                              remaining={remaining}
-                              disableAllocation={disableAllocation}
-                              onChangeAllocation={onChangeAllocation}
-                            />
-                          ))}
-                      </div>
-                    </div>
+                    <Card key={group.key} className="skill-group-card">
+                      <CardBody>
+                        <Stack gap="xs">
+                          <h4 className="heading-4 skill-group-card__title">{group.label}</h4>
+                          <div className="skill-group-card__list">
+                            {[...group.skills]
+                              .sort((a, b) => a.name.localeCompare(b.name))
+                              .map((skill, idx, arr) => (
+                                <SkillAllocationRow
+                                  key={getSkillCode(skill)}
+                                  skill={skill}
+                                  showDivider={idx < arr.length - 1}
+                                  allocations={allocations}
+                                  allocationMinimums={allocationMinimums}
+                                  skillBonuses={skillBonuses}
+                                  remaining={remaining}
+                                  disableAllocation={disableAllocation}
+                                  onChangeAllocation={onChangeAllocation}
+                                />
+                              ))}
+                          </div>
+                        </Stack>
+                      </CardBody>
+                    </Card>
                   ))}
-                </div>
+                </Stack>
               )}
             </div>
-          </div>
-        </div>
+          </Card>
+        </Stack>
 
-        <div className="stack characters__column">
-          <div className="characters__tabs">
-            {["Weapons", "Defense", "Gear", "Psionics", "Spells", "Details", "Feats", "Actions"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`btn characters__tab${activeTab === tab ? " characters__tab--active" : ""}`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-          <div className="card characters__tab-panel">
-            {activeTab === "Weapons" && renderNotesArea("Weapons", weaponNotes, setWeaponNotes, "weaponNotes")}
-            {activeTab === "Defense" && renderNotesArea("Defense", defenseNotes, setDefenseNotes, "defenseNotes")}
-            {activeTab === "Gear" && renderNotesArea("Gear", gearNotes, setGearNotes, "gearNotes")}
-            {activeTab === "Psionics" && (
-              <div className="stack characters__psionics">
-                <div className="characters__psionics-hint">
-                  Unlocked psionic abilities are stored per character. Edit unlocks on the Psionics page; summaries appear here.
-                </div>
-                {unlockedPsionics.length === 0 ? (
-                  <div className="characters__psionics-empty">No psionic abilities unlocked yet.</div>
-                ) : (
-                  <div className="stack characters__psionics-list">
-                    {groupedPsionics.map(({ tree, abilities }) => (
-                      <div key={tree} className="stack characters__psionics-tree">
-                        <div className="characters__psionics-tree-title">{tree}</div>
-                        <div className="grid characters__psionics-grid">
-                          {abilities.map((ability) => (
-                            <details key={ability.id} className="characters__psionics-detail">
-                              <summary className="characters__psionics-summary">
-                                <span className="characters__psionics-name">{ability.name}</span>
-                                <span className="characters__psionics-meta">
-                                  {`Tier ${ability.tier} • Energy ${psionicEnergyOverrides.get(ability.id) ?? ability.energyCost}`}
-                                </span>
-                              </summary>
-                              <div className="characters__psionics-description">
-                                <div className="characters__psionics-text">
-                                  {replaceMentalAttributePlaceholders(ability.description, attributeValues?.MENTAL ?? 0)}
-                                </div>
-                                {ability.formula && (
-                                  <div className="characters__psionics-formula">
-                                    Formula: {replaceMentalAttributePlaceholders(ability.formula, attributeValues?.MENTAL ?? 0)}
+        {/* Right Column: Tabs */}
+        <Stack gap="md" className="character-sheet__tabs-column">
+          <Tabs value={activeTab} onChange={setActiveTab}>
+            <TabList aria-label="Character details">
+              {tabs.map((tab) => (
+                <Tab key={tab.value} value={tab.value}>
+                  {tab.label}
+                </Tab>
+              ))}
+            </TabList>
+
+            <Card className="tab-content-card">
+              <CardBody>
+                <TabPanel value="Weapons">
+                  <Field label="Weapons" hint="Changes are saved on blur.">
+                    <Textarea
+                      value={weaponNotes}
+                      onChange={(e) => setWeaponNotes(e.target.value)}
+                      onBlur={() => handleNoteBlur("weaponNotes", weaponNotes)}
+                      rows={8}
+                      disabled={isUpdating}
+                    />
+                  </Field>
+                </TabPanel>
+
+                <TabPanel value="Defense">
+                  <Field label="Defense" hint="Changes are saved on blur.">
+                    <Textarea
+                      value={defenseNotes}
+                      onChange={(e) => setDefenseNotes(e.target.value)}
+                      onBlur={() => handleNoteBlur("defenseNotes", defenseNotes)}
+                      rows={8}
+                      disabled={isUpdating}
+                    />
+                  </Field>
+                </TabPanel>
+
+                <TabPanel value="Gear">
+                  <Field label="Gear" hint="Changes are saved on blur.">
+                    <Textarea
+                      value={gearNotes}
+                      onChange={(e) => setGearNotes(e.target.value)}
+                      onBlur={() => handleNoteBlur("gearNotes", gearNotes)}
+                      rows={8}
+                      disabled={isUpdating}
+                    />
+                  </Field>
+                </TabPanel>
+
+                <TabPanel value="Psionics">
+                  <Stack gap="md">
+                    <p className="body-sm text-muted">
+                      Unlocked psionic abilities are stored per character. Edit unlocks on the Psionics page; summaries appear here.
+                    </p>
+                    {unlockedPsionics.length === 0 ? (
+                      <p className="body-sm text-muted">No psionic abilities unlocked yet.</p>
+                    ) : (
+                      <Stack gap="md">
+                        {groupedPsionics.map(({ tree, abilities }) => (
+                          <Stack key={tree} gap="sm">
+                            <h4 className="heading-4">{tree}</h4>
+                            <Grid columns="auto-md" gap="sm">
+                              {abilities.map((ability) => (
+                                <details key={ability.id} className="psionic-detail">
+                                  <summary className="psionic-detail__summary">
+                                    <span className="psionic-detail__name">{ability.name}</span>
+                                    <Badge variant="psionic">
+                                      Tier {ability.tier} · Energy {psionicEnergyOverrides.get(ability.id) ?? ability.energyCost}
+                                    </Badge>
+                                  </summary>
+                                  <div className="psionic-detail__content">
+                                    <p className="body-sm">
+                                      {replaceMentalAttributePlaceholders(ability.description, attributeValues?.MENTAL ?? 0)}
+                                    </p>
+                                    {ability.formula && (
+                                      <p className="caption text-muted">
+                                        Formula: {replaceMentalAttributePlaceholders(ability.formula, attributeValues?.MENTAL ?? 0)}
+                                      </p>
+                                    )}
                                   </div>
-                                )}
-                              </div>
-                            </details>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {!["Weapons", "Defense", "Gear", "Psionics"].includes(activeTab) && (
-              <div className="characters__tab-placeholder">This tab is a placeholder for future content.</div>
-            )}
-          </div>
-        </div>
+                                </details>
+                              ))}
+                            </Grid>
+                          </Stack>
+                        ))}
+                      </Stack>
+                    )}
+                  </Stack>
+                </TabPanel>
+
+                {["Spells", "Details", "Feats", "Actions"].map((tabName) => (
+                  <TabPanel key={tabName} value={tabName}>
+                    <p className="body-sm text-muted">
+                      This tab is a placeholder for future content.
+                    </p>
+                  </TabPanel>
+                ))}
+              </CardBody>
+            </Card>
+          </Tabs>
+        </Stack>
       </div>
-    </div>
+    </Stack>
   );
 };
+
+// ============================================================================
+// MAIN CHARACTERS PAGE COMPONENT
+// ============================================================================
 
 type CharactersPageProps = {
   campaignId?: string;
 };
 
 export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) => {
+  // State
   const [characters, setCharacters] = React.useState<Character[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -823,6 +819,7 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [levelUpdatingId, setLevelUpdatingId] = React.useState<string | null>(null);
   const [generalSavingId, setGeneralSavingId] = React.useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
 
   const { selectedId, setSelectedId } = useSelectedCharacter();
   const navigate = useNavigate();
@@ -840,6 +837,7 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
     error: definitionsError
   } = useDefinitions();
 
+  // Load characters
   React.useEffect(() => {
     let isMounted = true;
     setLoading(true);
@@ -867,8 +865,9 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [activeCampaignId]);
 
+  // Auto-select first character
   React.useEffect(() => {
     if (!characters.length) {
       if (!loading && selectedId) setSelectedId(null);
@@ -880,10 +879,10 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
     }
   }, [characters, loading, selectedId, setSelectedId]);
 
+  // Handlers
   const handleDeleteCharacter = async (id: string) => {
     const character = characters.find((c) => c.id === id);
     if (!character) return;
-    if (!window.confirm(`Delete ${character.name}? This cannot be undone.`)) return;
 
     setError(null);
     setDeletingId(id);
@@ -903,6 +902,7 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
       setError(message);
     } finally {
       setDeletingId(null);
+      setDeleteConfirmOpen(false);
     }
   };
 
@@ -1083,6 +1083,7 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
     }
   };
 
+  // Derived state
   const selectedCharacter = characters.find((c) => c.id === selectedId) || null;
   const currentAllocations = selectedCharacter?.skillAllocations ?? {};
   const allocationMinimums = selectedCharacter?.skillAllocationMinimums ?? {};
@@ -1116,81 +1117,99 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ campaignId }) =>
 
   return (
     <div className="page characters-page">
-      <header className="page__header characters-page__header">
-        <h2 className="characters-page__title h2">Characters</h2>
+      <header className="page__header">
+        <h2 className="heading-2">Characters</h2>
         {(definitionsError || error) && (
-          <p className="characters-page__error body">{definitionsError || error}</p>
+          <p className="body text-danger">{definitionsError || error}</p>
         )}
       </header>
+
       <main className="page__content">
-        <div className="panel stack characters-page__main">
-          <div className="cluster characters-page__toolbar">
-            <div className="characters-page__toolbar-label">Selected character</div>
-            <select
-              value={selectedId ?? ""}
-              onChange={(e) => setSelectedId(e.target.value || null)}
-              disabled={loadingAny || characters.length === 0}
-              className="select characters-page__select"
-            >
-              {characters.length === 0 && <option value="">No characters</option>}
-              {characters.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => navigate(createCharacterPath)}
-              className="btn btn--primary"
-            >
-              New Character
-            </button>
-            <button
-              onClick={() => selectedId && handleDeleteCharacter(selectedId)}
-              disabled={!selectedId || deletingId === selectedId || loadingAny}
-              className="btn btn--danger"
-            >
-              {deletingId === selectedId ? "Deleting..." : "Delete Character"}
-            </button>
-            <button
-              onClick={handleLevelUp}
-              disabled={!selectedId || loadingAny || levelUpdatingId === selectedId || remaining > 0}
-              className="btn btn--secondary"
-            >
-              {levelUpdatingId === selectedId ? "Leveling..." : "Level Up"}
-            </button>
-          </div>
-          {loadingAny && <p className="characters-page__status body muted">Loading sheet...</p>}
-          {!loadingAny && !selectedCharacter && (
-            <p className="characters-page__status body muted">Select a character to view the sheet.</p>
-          )}
-          {!loadingAny && selectedCharacter && definitions && (
-            <CharacterSheet
-              character={selectedCharacter}
-              skills={definitions.skills}
-              raceName={raceMap.get(selectedCharacter.raceKey || "")}
-              subraceName={subraceMap.get(selectedCharacter.subraceKey || "")?.name}
-              remaining={remaining}
-              skillPointPool={skillPointPool}
-              allocations={currentAllocations}
-              allocationMinimums={allocationMinimums}
-              skillBonuses={skillBonuses}
-              onChangeAllocation={onChangeAllocation}
-              onLockAllocations={handleLockAllocations}
-              disableAllocation={
-                loadingAny || allocationSavingId === selectedCharacter.id || lockingAllocationId === selectedCharacter.id
-              }
-              lockDisabled={lockButtonDisabled}
-              isLocking={lockingAllocationId === selectedCharacter.id}
-              attributePointsAvailable={attributePointsAvailable}
-              onSpendAttributePoint={handleSpendAttributePoint}
-              isUpdating={loadingAny || isGeneralSaving}
-              onSaveNotes={handleSaveNotes}
-            />
-          )}
-        </div>
+        <Panel>
+          <Stack gap="md">
+            {/* Toolbar */}
+            <Cluster gap="sm" align="center" className="characters-toolbar">
+              <span className="body-sm" style={{ fontWeight: 600 }}>Selected character</span>
+              <Select
+                value={selectedId ?? ""}
+                onChange={(e) => setSelectedId(e.target.value || null)}
+                disabled={loadingAny || characters.length === 0}
+                style={{ minWidth: 240 }}
+              >
+                {characters.length === 0 && <option value="">No characters</option>}
+                {characters.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+
+              <Button variant="primary" onClick={() => navigate(createCharacterPath)}>
+                New Character
+              </Button>
+
+              <Button
+                variant="danger"
+                onClick={() => setDeleteConfirmOpen(true)}
+                disabled={!selectedId || deletingId === selectedId || loadingAny}
+              >
+                Delete Character
+              </Button>
+
+              <Button
+                variant="secondary"
+                onClick={handleLevelUp}
+                disabled={!selectedId || loadingAny || levelUpdatingId === selectedId || remaining > 0}
+                loading={levelUpdatingId === selectedId}
+              >
+                Level Up
+              </Button>
+            </Cluster>
+
+            {/* Content */}
+            {loadingAny && <p className="body text-muted">Loading sheet...</p>}
+            {!loadingAny && !selectedCharacter && (
+              <p className="body text-muted">Select a character to view the sheet.</p>
+            )}
+            {!loadingAny && selectedCharacter && definitions && (
+              <CharacterSheet
+                character={selectedCharacter}
+                skills={definitions.skills}
+                raceName={raceMap.get(selectedCharacter.raceKey || "")}
+                subraceName={subraceMap.get(selectedCharacter.subraceKey || "")?.name}
+                remaining={remaining}
+                skillPointPool={skillPointPool}
+                allocations={currentAllocations}
+                allocationMinimums={allocationMinimums}
+                skillBonuses={skillBonuses}
+                onChangeAllocation={onChangeAllocation}
+                onLockAllocations={handleLockAllocations}
+                disableAllocation={
+                  loadingAny || allocationSavingId === selectedCharacter.id || lockingAllocationId === selectedCharacter.id
+                }
+                lockDisabled={lockButtonDisabled}
+                isLocking={lockingAllocationId === selectedCharacter.id}
+                attributePointsAvailable={attributePointsAvailable}
+                onSpendAttributePoint={handleSpendAttributePoint}
+                isUpdating={loadingAny || isGeneralSaving}
+                onSaveNotes={handleSaveNotes}
+              />
+            )}
+          </Stack>
+        </Panel>
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        onCancel={() => setDeleteConfirmOpen(false)}
+        onConfirm={() => selectedId && handleDeleteCharacter(selectedId)}
+        title="Delete Character"
+        message={`Are you sure you want to delete ${selectedCharacter?.name ?? "this character"}? This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deletingId === selectedId}
+      />
     </div>
   );
 };

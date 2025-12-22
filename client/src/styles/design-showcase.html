@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="parchment">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adûrun Design System Showcase</title>
+  <link rel="stylesheet" href="design-system.css">
+  <style>
+    /* Showcase-specific styles */
+    .showcase {
+      min-height: 100vh;
+      padding: var(--space-8) var(--space-4);
+    }
+
+    .showcase-header {
+      text-align: center;
+      margin-bottom: var(--space-12);
+      padding-bottom: var(--space-8);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .showcase-logo {
+      font-family: var(--font-display);
+      font-size: var(--text-5xl);
+      font-weight: 700;
+      letter-spacing: var(--tracking-wider);
+      text-transform: uppercase;
+      background: linear-gradient(
+        135deg,
+        var(--interactive-default) 0%,
+        var(--text-primary) 50%,
+        var(--interactive-default) 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--space-2);
+    }
+
+    .showcase-subtitle {
+      font-family: var(--font-body);
+      font-size: var(--text-lg);
+      font-style: italic;
+      color: var(--text-secondary);
+    }
+
+    .section {
+      margin-bottom: var(--space-12);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      font-weight: 500;
+      margin-bottom: var(--space-6);
+      padding-bottom: var(--space-2);
+      border-bottom: 2px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .section-title::before {
+      content: '◆';
+      color: var(--interactive-default);
+    }
+
+    .subsection {
+      margin-bottom: var(--space-8);
+    }
+
+    .subsection-title {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-4);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+      margin-bottom: var(--space-4);
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .color-swatch {
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .color-swatch__color {
+      height: 60px;
+    }
+
+    .color-swatch__label {
+      padding: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      background: var(--surface-sunken);
+      text-align: center;
+    }
+
+    .theme-toggle-demo {
+      position: fixed;
+      top: var(--space-4);
+      right: var(--space-4);
+      z-index: 1000;
+    }
+
+    .type-specimen {
+      padding: var(--space-4);
+      background: var(--surface-base);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-3);
+    }
+
+    .type-specimen__meta {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      margin-top: var(--space-2);
+    }
+
+    /* Demo character sheet section */
+    .character-sheet-demo {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: var(--space-6);
+      padding: var(--space-6);
+      background: var(--surface-ground);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+    }
+
+    @media (max-width: 900px) {
+      .character-sheet-demo {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .character-portrait {
+      aspect-ratio: 3/4;
+      background: var(--surface-sunken);
+      border: 2px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-toggle-demo">
+    <button class="btn btn--primary" onclick="toggleTheme()">
+      Toggle Theme
+    </button>
+  </div>
+
+  <div class="showcase container">
+    <!-- Header -->
+    <header class="showcase-header">
+      <h1 class="showcase-logo">Adûrun</h1>
+      <p class="showcase-subtitle">Design System for Fantasy TTRPG Applications</p>
+    </header>
+
+    <!-- Typography -->
+    <section class="section">
+      <h2 class="section-title">Typography</h2>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Display & Headings</h3>
+
+        <div class="type-specimen">
+          <div class="display-1">The Arcane Codex</div>
+          <div class="type-specimen__meta">display-1 · Cinzel 600 · 3.815rem</div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="display-2">Chronicles of the Realm</div>
+          <div class="type-specimen__meta">display-2 · Cinzel 600 · 3.052rem</div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="heading-1">Chapter I: The Beginning</div>
+          <div class="type-specimen__meta">heading-1 · Cinzel 500 · 2.441rem</div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="heading-2">The Hero's Journey</div>
+          <div class="type-specimen__meta">heading-2 · Cinzel 500 · 1.953rem</div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="heading-3">Entering the Dungeon</div>
+          <div class="type-specimen__meta">heading-3 · Cinzel 500 · 1.563rem</div>
+        </div>
+
+        <div class="type-specimen">
+          <div class="heading-4">Equipment & Inventory</div>
+          <div class="type-specimen__meta">heading-4 · Cinzel 500 · 1.25rem</div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Body Text</h3>
+
+        <div class="type-specimen">
+          <p class="subtitle">In the age before memory, when the world was young and magic flowed freely...</p>
+          <div class="type-specimen__meta">subtitle · Cormorant Garamond Italic · 1.25rem</div>
+        </div>
+
+        <div class="type-specimen">
+          <p class="body-lg">The ancient tome spoke of heroes who would rise when darkness threatened the realm. Their names were written in starlight, their deeds carved into the bones of mountains.</p>
+          <div class="type-specimen__meta">body-lg · Cormorant Garamond · 1.25rem</div>
+        </div>
+
+        <div class="type-specimen">
+          <p class="body">You find yourself at a crossroads. To the north, smoke rises from a distant village. To the east, the dark forest whispers secrets. The road west leads to the capital, while south lies the untamed wilderness.</p>
+          <div class="type-specimen__meta">body · Cormorant Garamond · 1rem</div>
+        </div>
+
+        <div class="type-specimen">
+          <p class="body-sm">Roll a Perception check (DC 15) to notice the hidden path among the brambles.</p>
+          <div class="type-specimen__meta">body-sm · Crimson Pro · 0.875rem</div>
+        </div>
+
+        <div class="type-specimen">
+          <span class="caption">Armor Class</span> &nbsp; <span class="stat-value">18</span> &nbsp; <span class="dice-notation">2d6+4</span>
+          <div class="type-specimen__meta">caption + stat-value + dice-notation</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Colors -->
+    <section class="section">
+      <h2 class="section-title">Color Palette</h2>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Semantic Colors</h3>
+        <div class="demo-grid">
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--surface-ground)"></div>
+            <div class="color-swatch__label">surface-ground</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--surface-base)"></div>
+            <div class="color-swatch__label">surface-base</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--surface-raised)"></div>
+            <div class="color-swatch__label">surface-raised</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--surface-overlay)"></div>
+            <div class="color-swatch__label">surface-overlay</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--interactive-default)"></div>
+            <div class="color-swatch__label">interactive</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--text-primary); color: var(--surface-base)"></div>
+            <div class="color-swatch__label">text-primary</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Status Colors</h3>
+        <div class="demo-grid">
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--status-success)"></div>
+            <div class="color-swatch__label">success</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--status-danger)"></div>
+            <div class="color-swatch__label">danger</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--status-warning)"></div>
+            <div class="color-swatch__label">warning</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--status-info)"></div>
+            <div class="color-swatch__label">info</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Magic School Colors</h3>
+        <div class="demo-grid">
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--magic-arcane)"></div>
+            <div class="color-swatch__label">arcane</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--magic-divine)"></div>
+            <div class="color-swatch__label">divine</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--magic-nature)"></div>
+            <div class="color-swatch__label">nature</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--magic-shadow)"></div>
+            <div class="color-swatch__label">shadow</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--magic-blood)"></div>
+            <div class="color-swatch__label">blood</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-swatch__color" style="background: var(--magic-psionic)"></div>
+            <div class="color-swatch__label">psionic</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <section class="section">
+      <h2 class="section-title">Buttons</h2>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Variants</h3>
+        <div class="demo-row">
+          <button class="btn">Default</button>
+          <button class="btn btn--primary">Primary</button>
+          <button class="btn btn--ghost">Ghost</button>
+          <button class="btn btn--danger">Danger</button>
+          <button class="btn btn--success">Success</button>
+          <button class="btn" disabled>Disabled</button>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Sizes</h3>
+        <div class="demo-row">
+          <button class="btn btn--sm">Small</button>
+          <button class="btn">Medium</button>
+          <button class="btn btn--lg">Large</button>
+        </div>
+        <div class="demo-row">
+          <button class="btn btn--primary btn--sm">Small Primary</button>
+          <button class="btn btn--primary">Medium Primary</button>
+          <button class="btn btn--primary btn--lg">Large Primary</button>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Icon Buttons</h3>
+        <div class="demo-row">
+          <button class="btn btn--icon btn--sm">+</button>
+          <button class="btn btn--icon">◆</button>
+          <button class="btn btn--icon btn--lg">✕</button>
+          <button class="btn btn--primary btn--icon">⚔</button>
+          <button class="btn btn--danger btn--icon">🗑</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Form Controls -->
+    <section class="section">
+      <h2 class="section-title">Form Controls</h2>
+
+      <div class="demo-grid" style="max-width: 600px;">
+        <div class="field">
+          <label class="field__label">Character Name</label>
+          <input type="text" class="input" placeholder="Enter name...">
+        </div>
+
+        <div class="field">
+          <label class="field__label">Class</label>
+          <select class="select">
+            <option>Select a class...</option>
+            <option>Fighter</option>
+            <option>Wizard</option>
+            <option>Rogue</option>
+            <option>Cleric</option>
+          </select>
+        </div>
+
+        <div class="field" style="grid-column: 1 / -1;">
+          <label class="field__label">Backstory</label>
+          <textarea class="textarea" placeholder="Write your character's history..."></textarea>
+          <span class="field__hint">Describe your character's origins and motivations.</span>
+        </div>
+
+        <div class="field">
+          <label class="checkbox">
+            <input type="checkbox" class="checkbox__input" checked>
+            <span>Proficient in Athletics</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="radio">
+            <input type="radio" name="align" class="radio__input" checked>
+            <span>Lawful Good</span>
+          </label>
+          <label class="radio">
+            <input type="radio" name="align" class="radio__input">
+            <span>Chaotic Neutral</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section class="section">
+      <h2 class="section-title">Cards</h2>
+
+      <div class="demo-grid">
+        <div class="card">
+          <div class="card__header">
+            <h3 class="card__title">Spell Card</h3>
+            <span class="badge badge--arcane">Arcane</span>
+          </div>
+          <div class="card__body">
+            <p class="body-sm">A bolt of lightning streaks toward a target within range. Make a ranged spell attack against the target.</p>
+            <div class="stack--xs" style="margin-top: var(--space-3);">
+              <span class="dice-notation">Damage: 4d6 lightning</span>
+            </div>
+          </div>
+          <div class="card__footer">
+            <button class="btn btn--sm">Cast</button>
+          </div>
+        </div>
+
+        <div class="card card--interactive">
+          <div class="card__header">
+            <h3 class="card__title">Equipment</h3>
+          </div>
+          <div class="card__body">
+            <div class="stack--sm">
+              <div class="cluster--sm">
+                <span class="tag">Longsword +1</span>
+                <span class="tag">Shield</span>
+              </div>
+              <div class="cluster--sm">
+                <span class="tag">Chain Mail</span>
+                <span class="tag">Torch</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card--selected">
+          <div class="card__header">
+            <h3 class="card__title">Selected Ability</h3>
+            <span class="badge badge--success">Active</span>
+          </div>
+          <div class="card__body">
+            <p class="body-sm">This card is currently selected, indicated by the accent border and subtle glow.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stat Blocks -->
+    <section class="section">
+      <h2 class="section-title">Stat Blocks</h2>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Ability Scores</h3>
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="stat-block__label">STR</span>
+            <span class="stat-block__value">16</span>
+            <span class="stat-block__modifier">+3</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block__label">DEX</span>
+            <span class="stat-block__value">14</span>
+            <span class="stat-block__modifier">+2</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block__label">CON</span>
+            <span class="stat-block__value">15</span>
+            <span class="stat-block__modifier">+2</span>
+          </div>
+          <div class="stat-block stat-block--primary">
+            <span class="stat-block__label">INT</span>
+            <span class="stat-block__value">18</span>
+            <span class="stat-block__modifier">+4</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block__label">WIS</span>
+            <span class="stat-block__value">12</span>
+            <span class="stat-block__modifier">+1</span>
+          </div>
+          <div class="stat-block stat-block--danger">
+            <span class="stat-block__label">CHA</span>
+            <span class="stat-block__value">8</span>
+            <span class="stat-block__modifier">-1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Combat Stats</h3>
+        <div class="stat-row">
+          <div class="stat-block stat-block--primary">
+            <span class="stat-block__label">AC</span>
+            <span class="stat-block__value">18</span>
+          </div>
+          <div class="stat-block stat-block--danger">
+            <span class="stat-block__label">HP</span>
+            <span class="stat-block__value">45</span>
+            <span class="stat-block__modifier">/52</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-block__label">Speed</span>
+            <span class="stat-block__value">30</span>
+            <span class="stat-block__modifier">ft</span>
+          </div>
+          <div class="stat-block stat-block--success">
+            <span class="stat-block__label">Initiative</span>
+            <span class="stat-block__value">+4</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Badges & Tags -->
+    <section class="section">
+      <h2 class="section-title">Badges & Tags</h2>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Status Badges</h3>
+        <div class="demo-row">
+          <span class="badge">Default</span>
+          <span class="badge badge--primary">Primary</span>
+          <span class="badge badge--success">Success</span>
+          <span class="badge badge--danger">Danger</span>
+          <span class="badge badge--warning">Warning</span>
+          <span class="badge badge--info">Info</span>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Magic School Badges</h3>
+        <div class="demo-row">
+          <span class="badge badge--arcane">Arcane</span>
+          <span class="badge badge--divine">Divine</span>
+          <span class="badge badge--nature">Nature</span>
+          <span class="badge badge--psionic">Psionic</span>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Tags</h3>
+        <div class="demo-row">
+          <span class="tag">Weapon</span>
+          <span class="tag">Armor</span>
+          <span class="tag tag--removable">
+            Consumable
+            <button class="tag__remove">×</button>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation -->
+    <section class="section">
+      <h2 class="section-title">Navigation</h2>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Vertical Nav</h3>
+        <div class="card" style="max-width: 240px;">
+          <nav class="nav nav--vertical" style="padding: var(--space-2);">
+            <a href="#" class="nav__link nav__link--active">
+              <span class="nav__icon">⚔</span>
+              Characters
+            </a>
+            <a href="#" class="nav__link">
+              <span class="nav__icon">📜</span>
+              Campaigns
+            </a>
+            <a href="#" class="nav__link">
+              <span class="nav__icon">✨</span>
+              Spells
+            </a>
+            <a href="#" class="nav__link">
+              <span class="nav__icon">🎒</span>
+              Inventory
+            </a>
+            <a href="#" class="nav__link">
+              <span class="nav__icon">⚙</span>
+              Settings
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Tabs</h3>
+        <div class="tabs">
+          <button class="tabs__tab tabs__tab--active">Overview</button>
+          <button class="tabs__tab">Abilities</button>
+          <button class="tabs__tab">Equipment</button>
+          <button class="tabs__tab">Spells</button>
+          <button class="tabs__tab">Notes</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Progress & Health -->
+    <section class="section">
+      <h2 class="section-title">Progress & Health Bars</h2>
+
+      <div class="subsection" style="max-width: 400px;">
+        <h3 class="subsection-title">Progress Bars</h3>
+        <div class="stack--md">
+          <div class="stack--xs">
+            <span class="caption">Experience Points</span>
+            <div class="progress">
+              <div class="progress__bar" style="width: 65%;"></div>
+            </div>
+          </div>
+          <div class="stack--xs">
+            <span class="caption">Health (Good)</span>
+            <div class="progress progress--success">
+              <div class="progress__bar" style="width: 80%;"></div>
+            </div>
+          </div>
+          <div class="stack--xs">
+            <span class="caption">Health (Critical)</span>
+            <div class="progress progress--danger">
+              <div class="progress__bar" style="width: 15%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection" style="max-width: 400px;">
+        <h3 class="subsection-title">Health Bar (Segmented)</h3>
+        <div class="health-bar">
+          <div class="health-bar__segment"></div>
+          <div class="health-bar__segment"></div>
+          <div class="health-bar__segment"></div>
+          <div class="health-bar__segment health-bar__segment--damaged"></div>
+          <div class="health-bar__segment health-bar__segment--damaged"></div>
+          <div class="health-bar__segment health-bar__segment--critical"></div>
+          <div class="health-bar__segment health-bar__segment--empty"></div>
+          <div class="health-bar__segment health-bar__segment--empty"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Initiative Tracker -->
+    <section class="section">
+      <h2 class="section-title">Initiative Tracker</h2>
+
+      <div class="initiative-list" style="max-width: 500px;">
+        <div class="initiative-item initiative-item--active initiative-item--player">
+          <span class="initiative-item__order">1</span>
+          <span class="initiative-item__name">Aldric the Bold</span>
+          <span class="initiative-item__hp">45/52 HP</span>
+        </div>
+        <div class="initiative-item initiative-item--enemy">
+          <span class="initiative-item__order">2</span>
+          <span class="initiative-item__name">Goblin Archer</span>
+          <span class="initiative-item__hp">12/12 HP</span>
+        </div>
+        <div class="initiative-item initiative-item--player">
+          <span class="initiative-item__order">3</span>
+          <span class="initiative-item__name">Sera Nightwhisper</span>
+          <span class="initiative-item__hp">28/28 HP</span>
+        </div>
+        <div class="initiative-item initiative-item--enemy">
+          <span class="initiative-item__order">4</span>
+          <span class="initiative-item__name">Orc Warchief</span>
+          <span class="initiative-item__hp">67/80 HP</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dice Results -->
+    <section class="section">
+      <h2 class="section-title">Dice & Rolling</h2>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Roll Results</h3>
+        <div class="demo-row">
+          <div class="dice-result">
+            <span class="dice-result__notation">2d6+4</span>
+            <span class="dice-result__total">14</span>
+          </div>
+          <div class="dice-result dice-result--crit">
+            <span class="dice-result__notation">1d20</span>
+            <span class="dice-result__total">20!</span>
+          </div>
+          <div class="dice-result dice-result--fumble">
+            <span class="dice-result__notation">1d20</span>
+            <span class="dice-result__total">1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Individual Dice</h3>
+        <div class="demo-row">
+          <span class="dice">4</span>
+          <span class="dice">2</span>
+          <span class="dice dice--max">6</span>
+          <span class="dice dice--min">1</span>
+          <span class="dice">5</span>
+          <span class="dice">3</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tables -->
+    <section class="section">
+      <h2 class="section-title">Tables</h2>
+
+      <div class="table-container">
+        <table class="table table--striped">
+          <thead>
+            <tr>
+              <th>Weapon</th>
+              <th>Damage</th>
+              <th>Properties</th>
+              <th>Weight</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Longsword +1</td>
+              <td><span class="dice-notation">1d8+1</span> slashing</td>
+              <td><span class="badge">Versatile</span></td>
+              <td>3 lb</td>
+            </tr>
+            <tr>
+              <td>Shortbow</td>
+              <td><span class="dice-notation">1d6</span> piercing</td>
+              <td><span class="badge">Ammunition</span> <span class="badge">Range</span></td>
+              <td>2 lb</td>
+            </tr>
+            <tr>
+              <td>Dagger</td>
+              <td><span class="dice-notation">1d4</span> piercing</td>
+              <td><span class="badge">Finesse</span> <span class="badge">Light</span> <span class="badge">Thrown</span></td>
+              <td>1 lb</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Modals -->
+    <section class="section">
+      <h2 class="section-title">Modal (Static Demo)</h2>
+
+      <div style="position: relative; background: hsl(0 0% 0% / 0.3); padding: var(--space-8); border-radius: var(--radius-xl);">
+        <div class="modal" style="position: relative; margin: 0 auto;">
+          <div class="modal__header">
+            <h3 class="modal__title">Level Up!</h3>
+            <button class="modal__close">×</button>
+          </div>
+          <div class="modal__body">
+            <p class="body">Congratulations! Your character has reached <strong>Level 5</strong>.</p>
+            <div class="stack--sm" style="margin-top: var(--space-4);">
+              <div class="cluster--sm">
+                <span class="badge badge--success">+5 HP</span>
+                <span class="badge badge--info">New Spell Slot</span>
+                <span class="badge badge--primary">Extra Attack</span>
+              </div>
+            </div>
+          </div>
+          <div class="modal__footer">
+            <button class="btn">Cancel</button>
+            <button class="btn btn--primary">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Decorative Elements -->
+    <section class="section">
+      <h2 class="section-title">Decorative Elements</h2>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Dividers</h3>
+        <div class="stack--lg" style="max-width: 500px;">
+          <div class="divider"></div>
+          <div class="divider divider--ornate">◆</div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">Animations</h3>
+        <div class="demo-row">
+          <button class="btn animate-pulse-glow">Pulsing Glow</button>
+          <div class="skeleton" style="width: 200px; height: 40px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Example: Character Sheet Layout -->
+    <section class="section">
+      <h2 class="section-title">Example: Character Sheet Layout</h2>
+
+      <div class="character-sheet-demo stagger-children">
+        <!-- Sidebar -->
+        <div class="stack--md">
+          <div class="character-portrait">Portrait Area</div>
+
+          <div class="card">
+            <div class="card__body">
+              <div class="heading-3" style="margin-bottom: var(--space-1);">Aldric Stormwind</div>
+              <div class="subtitle" style="margin-bottom: var(--space-3);">Human Fighter, Level 5</div>
+              <div class="cluster--sm">
+                <span class="badge badge--success">Lawful Good</span>
+                <span class="badge">Folk Hero</span>
+              </div>
+            </div>
+          </div>
+
+          <nav class="nav nav--vertical card" style="padding: var(--space-2);">
+            <a href="#" class="nav__link nav__link--active">Overview</a>
+            <a href="#" class="nav__link">Combat</a>
+            <a href="#" class="nav__link">Abilities</a>
+            <a href="#" class="nav__link">Equipment</a>
+            <a href="#" class="nav__link">Spells</a>
+            <a href="#" class="nav__link">Notes</a>
+          </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="stack--lg">
+          <!-- Combat Stats -->
+          <div class="card">
+            <div class="card__header">
+              <h3 class="card__title">Combat Statistics</h3>
+            </div>
+            <div class="card__body">
+              <div class="stat-row" style="justify-content: space-around;">
+                <div class="stat-block stat-block--primary">
+                  <span class="stat-block__label">Armor Class</span>
+                  <span class="stat-block__value">18</span>
+                </div>
+                <div class="stat-block stat-block--danger">
+                  <span class="stat-block__label">Hit Points</span>
+                  <span class="stat-block__value">45</span>
+                  <span class="stat-block__modifier">/52</span>
+                </div>
+                <div class="stat-block">
+                  <span class="stat-block__label">Speed</span>
+                  <span class="stat-block__value">30</span>
+                  <span class="stat-block__modifier">ft</span>
+                </div>
+                <div class="stat-block stat-block--success">
+                  <span class="stat-block__label">Initiative</span>
+                  <span class="stat-block__value">+2</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ability Scores -->
+          <div class="card">
+            <div class="card__header">
+              <h3 class="card__title">Ability Scores</h3>
+            </div>
+            <div class="card__body">
+              <div class="stat-row" style="justify-content: space-around;">
+                <div class="stat-block stat-block--primary">
+                  <span class="stat-block__label">STR</span>
+                  <span class="stat-block__value">18</span>
+                  <span class="stat-block__modifier">+4</span>
+                </div>
+                <div class="stat-block">
+                  <span class="stat-block__label">DEX</span>
+                  <span class="stat-block__value">14</span>
+                  <span class="stat-block__modifier">+2</span>
+                </div>
+                <div class="stat-block">
+                  <span class="stat-block__label">CON</span>
+                  <span class="stat-block__value">16</span>
+                  <span class="stat-block__modifier">+3</span>
+                </div>
+                <div class="stat-block">
+                  <span class="stat-block__label">INT</span>
+                  <span class="stat-block__value">10</span>
+                  <span class="stat-block__modifier">+0</span>
+                </div>
+                <div class="stat-block">
+                  <span class="stat-block__label">WIS</span>
+                  <span class="stat-block__value">12</span>
+                  <span class="stat-block__modifier">+1</span>
+                </div>
+                <div class="stat-block stat-block--danger">
+                  <span class="stat-block__label">CHA</span>
+                  <span class="stat-block__value">8</span>
+                  <span class="stat-block__modifier">-1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card">
+            <div class="card__header">
+              <h3 class="card__title">Actions</h3>
+            </div>
+            <div class="card__body">
+              <div class="grid--auto-sm">
+                <div class="card card--interactive">
+                  <div class="card__body" style="padding: var(--space-3);">
+                    <div class="heading-4" style="margin-bottom: var(--space-1);">Longsword Attack</div>
+                    <div class="cluster--xs" style="margin-bottom: var(--space-2);">
+                      <span class="badge">Melee</span>
+                      <span class="badge badge--primary">+7 to hit</span>
+                    </div>
+                    <div class="dice-notation">1d8+5 slashing</div>
+                  </div>
+                </div>
+                <div class="card card--interactive">
+                  <div class="card__body" style="padding: var(--space-3);">
+                    <div class="heading-4" style="margin-bottom: var(--space-1);">Second Wind</div>
+                    <div class="cluster--xs" style="margin-bottom: var(--space-2);">
+                      <span class="badge badge--success">Healing</span>
+                      <span class="badge">Bonus Action</span>
+                    </div>
+                    <div class="dice-notation">1d10+5 HP</div>
+                  </div>
+                </div>
+                <div class="card card--interactive">
+                  <div class="card__body" style="padding: var(--space-3);">
+                    <div class="heading-4" style="margin-bottom: var(--space-1);">Action Surge</div>
+                    <div class="cluster--xs" style="margin-bottom: var(--space-2);">
+                      <span class="badge badge--warning">1/rest</span>
+                    </div>
+                    <div class="body-sm">Take an additional action on your turn.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: var(--space-8) 0; margin-top: var(--space-12); border-top: 1px solid var(--border-subtle);">
+      <p class="caption">Adûrun Design System v1.0</p>
+      <p class="body-sm" style="color: var(--text-muted);">A thematic UI framework for fantasy TTRPG applications</p>
+    </footer>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'parchment' ? 'dark-fantasy' : 'parchment';
+      html.setAttribute('data-theme', newTheme);
+    }
+  </script>
+</body>
+</html>
