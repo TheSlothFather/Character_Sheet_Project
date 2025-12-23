@@ -20,6 +20,9 @@ export type ParsedBestiaryEntry = {
   tags?: string[];
   type?: string;
   description?: string;
+  immunities?: string[];
+  resistances?: string[];
+  weaknesses?: string[];
 };
 
 export type BestiaryParseMessage = {
@@ -167,6 +170,94 @@ const parseDr = (
   }
 };
 
+type DefenseParseResult = {
+  immunities: string[];
+  resistances: string[];
+  weaknesses: string[];
+  matched: boolean;
+};
+
+/**
+ * Parse defense-related lines for immunities, resistances, and weaknesses/vulnerabilities.
+ * Handles patterns like:
+ * - "Immune to Necrosis and Poison Damage, Resistant to Unholy Damage"
+ * - "Immune to Necrosis Damage, Resistant to Mental Damage, Vulnerable to Burn Damage"
+ * - "Cannot be killed by Necrosis Damage"
+ * - "Cannot be killed by Necrosis or Blunt Damage"
+ */
+const parseDefenses = (line: string): DefenseParseResult => {
+  const immunities: string[] = [];
+  const resistances: string[] = [];
+  const weaknesses: string[] = [];
+  let matched = false;
+
+  // Normalize common variations
+  const normalized = line
+    .replace(/Damage Type/gi, "Damage")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Pattern: "Immune to X [and Y] Damage"
+  const immuneMatches = normalized.matchAll(/Immune\s+to\s+([^,]+?)(?:\s+Damage)?(?:,|$)/gi);
+  for (const match of immuneMatches) {
+    matched = true;
+    const segment = match[1].trim().replace(/\s+Damage$/i, "");
+    // Handle "X and Y" patterns
+    const parts = segment.split(/\s+and\s+/i);
+    for (const part of parts) {
+      const cleaned = part.trim();
+      if (cleaned && !immunities.includes(cleaned)) {
+        immunities.push(cleaned);
+      }
+    }
+  }
+
+  // Pattern: "Cannot be killed by X [or Y] Damage"
+  const cannotKillMatch = normalized.match(/Cannot\s+be\s+killed\s+by\s+([^,]+?)(?:\s+Damage)?(?:,|$)/i);
+  if (cannotKillMatch) {
+    matched = true;
+    const segment = cannotKillMatch[1].trim().replace(/\s+Damage$/i, "");
+    // Handle "X or Y" patterns
+    const parts = segment.split(/\s+or\s+/i);
+    for (const part of parts) {
+      const cleaned = part.trim();
+      if (cleaned && !immunities.includes(cleaned)) {
+        immunities.push(cleaned);
+      }
+    }
+  }
+
+  // Pattern: "Resistant to X [and Y] Damage"
+  const resistMatches = normalized.matchAll(/Resistant\s+to\s+([^,]+?)(?:\s+Damage)?(?:,|$)/gi);
+  for (const match of resistMatches) {
+    matched = true;
+    const segment = match[1].trim().replace(/\s+Damage$/i, "");
+    const parts = segment.split(/\s+and\s+/i);
+    for (const part of parts) {
+      const cleaned = part.trim();
+      if (cleaned && !resistances.includes(cleaned)) {
+        resistances.push(cleaned);
+      }
+    }
+  }
+
+  // Pattern: "Vulnerable to X [and Y] Damage" (with optional parenthetical notes)
+  const vulnerableMatches = normalized.matchAll(/Vulnerable\s+to\s+([^,(]+?)(?:\s+Damage)?(?:\s*\([^)]*\))?(?:,|$)/gi);
+  for (const match of vulnerableMatches) {
+    matched = true;
+    const segment = match[1].trim().replace(/\s+Damage$/i, "");
+    const parts = segment.split(/\s+and\s+/i);
+    for (const part of parts) {
+      const cleaned = part.trim();
+      if (cleaned && !weaknesses.includes(cleaned)) {
+        weaknesses.push(cleaned);
+      }
+    }
+  }
+
+  return { immunities, resistances, weaknesses, matched };
+};
+
 const parseRange = (line: string): string | undefined => {
   const rangeMatch = line.match(/(\d+\s*-\s*\d+|\d+)\s*range/i);
   if (!rangeMatch) return undefined;
@@ -247,6 +338,9 @@ export const parseBestiaryImport = (
     const attributes: ParsedBestiaryEntry["attributes"] = {};
     const skills: Record<string, number> = {};
     const abilities: BestiaryAbility[] = [];
+    const immunities: string[] = [];
+    const resistances: string[] = [];
+    const weaknesses: string[] = [];
     let section: "attributes" | "skills" | null = null;
     let currentPhase: string | null = null;
 
@@ -257,7 +351,10 @@ export const parseBestiaryImport = (
       attributes,
       skills,
       abilities,
-      tags: parsedHeader.tags
+      tags: parsedHeader.tags,
+      immunities,
+      resistances,
+      weaknesses
     };
 
     let description: string | undefined;
@@ -318,6 +415,26 @@ export const parseBestiaryImport = (
 
       parseEnergyAp(line, attributes, entryRecord, messages, blockIndex, parsedHeader.name);
       parseDr(line, attributes, entryRecord, messages, blockIndex, parsedHeader.name);
+
+      // Parse defenses (immunities, resistances, weaknesses)
+      const defenseResult = parseDefenses(line);
+      if (defenseResult.matched) {
+        for (const immunity of defenseResult.immunities) {
+          if (!immunities.includes(immunity)) {
+            immunities.push(immunity);
+          }
+        }
+        for (const resistance of defenseResult.resistances) {
+          if (!resistances.includes(resistance)) {
+            resistances.push(resistance);
+          }
+        }
+        for (const weakness of defenseResult.weaknesses) {
+          if (!weaknesses.includes(weakness)) {
+            weaknesses.push(weakness);
+          }
+        }
+      }
 
       const actionMatch = line.match(/^([^:]+):\s*(.+)$/);
       if (actionMatch) {
