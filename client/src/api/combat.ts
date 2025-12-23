@@ -114,6 +114,20 @@ export interface EndCombatParams {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
+ * Get the Worker URL for API connections.
+ * In production, this points to the separate Cloudflare Worker with Durable Objects.
+ * In development, it uses the local origin (proxied via Vite).
+ */
+const getWorkerBaseUrl = () => {
+  const workerUrl = import.meta.env.VITE_WORKER_URL;
+  if (workerUrl) {
+    return workerUrl;
+  }
+  // Fallback to current origin for local development
+  return window.location.origin;
+};
+
+/**
  * Post to the authoritative combat endpoints on the Durable Object
  */
 async function postAuthoritativeCombatAction<T>(
@@ -121,14 +135,15 @@ async function postAuthoritativeCombatAction<T>(
   action: string,
   payload: unknown
 ): Promise<T> {
-  const response = await fetch(
-    `/api/campaigns/${encodeURIComponent(campaignId)}/combat/${action}`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload ?? {}),
-    }
-  );
+  const baseUrl = getWorkerBaseUrl();
+  const url = `${baseUrl}/api/campaigns/${encodeURIComponent(campaignId)}/combat/${action}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload ?? {}),
+  });
 
   const text = await response.text();
   let parsed: unknown = null;
