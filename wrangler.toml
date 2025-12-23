@@ -8,7 +8,3 @@ bindings = [{ name = "CAMPAIGN_DO", class_name = "CampaignDurableObject" }]
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["CampaignDurableObject"]
-
-routes = [
-  { pattern = "character-sheet-project.pages.dev/api/*", zone_name = "character-sheet-project.pages.dev" }
-]
