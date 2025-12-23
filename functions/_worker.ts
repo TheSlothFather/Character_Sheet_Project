@@ -1490,20 +1490,20 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
-    const entityId = parseRequiredStringField(body.entityId, "entityId");
+    const entityId = parseRequiredStringField(body.entityId, "entityId", request);
     if (entityId instanceof Response) return entityId;
 
-    const senderId = parseRequiredStringField(body.senderId, "senderId");
+    const senderId = parseRequiredStringField(body.senderId, "senderId", request);
     if (senderId instanceof Response) return senderId;
 
     const actionType = (body.type as ActionType) ?? "other";
-    const targetEntityId = parseStringField(body.targetEntityId, "targetEntityId");
+    const targetEntityId = parseStringField(body.targetEntityId, "targetEntityId", false, request);
     if (targetEntityId instanceof Response) return targetEntityId;
 
-    const apCost = parseNumberField(body.apCost, "apCost");
+    const apCost = parseNumberField(body.apCost, "apCost", 0, request);
     if (apCost instanceof Response) return apCost;
 
-    const energyCost = parseNumberField(body.energyCost, "energyCost");
+    const energyCost = parseNumberField(body.energyCost, "energyCost", 0, request);
     if (energyCost instanceof Response) return energyCost;
 
     const interruptible = body.interruptible !== false;
@@ -1566,18 +1566,18 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
-    const entityId = parseRequiredStringField(body.entityId, "entityId");
+    const entityId = parseRequiredStringField(body.entityId, "entityId", request);
     if (entityId instanceof Response) return entityId;
 
-    const senderId = parseRequiredStringField(body.senderId, "senderId");
+    const senderId = parseRequiredStringField(body.senderId, "senderId", request);
     if (senderId instanceof Response) return senderId;
 
     const reactionType = (body.type as ReactionType) ?? "other";
 
-    const apCost = parseNumberField(body.apCost, "apCost");
+    const apCost = parseNumberField(body.apCost, "apCost", 0, request);
     if (apCost instanceof Response) return apCost;
 
-    const energyCost = parseNumberField(body.energyCost, "energyCost");
+    const energyCost = parseNumberField(body.energyCost, "energyCost", 0, request);
     if (energyCost instanceof Response) return energyCost;
 
     // Validate the reaction
@@ -1860,7 +1860,7 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
-    const gmId = parseRequiredStringField(body.gmId, "gmId");
+    const gmId = parseRequiredStringField(body.gmId, "gmId", request);
     if (gmId instanceof Response) return gmId;
 
     const overrideType = body.type as GmOverrideType;
@@ -1868,10 +1868,10 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Override type required." }, 400, {}, request);
     }
 
-    const targetEntityId = parseStringField(body.targetEntityId, "targetEntityId");
+    const targetEntityId = parseStringField(body.targetEntityId, "targetEntityId", false, request);
     if (targetEntityId instanceof Response) return targetEntityId;
 
-    const reason = parseStringField(body.reason, "reason");
+    const reason = parseStringField(body.reason, "reason", false, request);
     if (reason instanceof Response) return reason;
 
     const override: GmOverride = {
@@ -1887,7 +1887,7 @@ export class CampaignDurableObject {
     switch (overrideType) {
       case "adjust_ap":
         if (targetEntityId && combatState.entities[targetEntityId]) {
-          const newAp = parseNumberField(body.data?.ap ?? body.data?.value, "ap");
+          const newAp = parseNumberField(body.data?.ap ?? body.data?.value, "ap", 0, request);
           if (typeof newAp === "number") {
             combatState.entities[targetEntityId].ap.current = newAp;
           }
@@ -1896,7 +1896,7 @@ export class CampaignDurableObject {
 
       case "adjust_energy":
         if (targetEntityId && combatState.entities[targetEntityId]) {
-          const newEnergy = parseNumberField(body.data?.energy ?? body.data?.value, "energy");
+          const newEnergy = parseNumberField(body.data?.energy ?? body.data?.value, "energy", 0, request);
           if (typeof newEnergy === "number") {
             combatState.entities[targetEntityId].energy.current = newEnergy;
           }
@@ -2267,23 +2267,24 @@ function parseStringField(
   value: unknown,
   field: string,
   required = false,
+  request?: Request,
 ): string | Response | undefined {
   if (value == null) {
     if (required) {
-      return jsonResponse({ error: `Missing ${field}.` }, 400);
+      return jsonResponse({ error: `Missing ${field}.` }, 400, {}, request);
     }
     return undefined;
   }
 
   if (typeof value !== "string" || value.trim().length === 0) {
-    return jsonResponse({ error: `Invalid ${field}.` }, 400);
+    return jsonResponse({ error: `Invalid ${field}.` }, 400, {}, request);
   }
 
   return value;
 }
 
-function parseRequiredStringField(value: unknown, field: string): string | Response {
-  const parsed = parseStringField(value, field, true);
+function parseRequiredStringField(value: unknown, field: string, request?: Request): string | Response {
+  const parsed = parseStringField(value, field, true, request);
   if (parsed instanceof Response) {
     return parsed;
   }
@@ -2294,6 +2295,7 @@ function parseNumberField(
   value: unknown,
   field: string,
   fallback = 0,
+  request?: Request,
 ): number | Response {
   if (value == null) {
     return fallback;
@@ -2310,13 +2312,14 @@ function parseNumberField(
     }
   }
 
-  return jsonResponse({ error: `Invalid ${field}.` }, 400);
+  return jsonResponse({ error: `Invalid ${field}.` }, 400, {}, request);
 }
 
 function parseBooleanField(
   value: unknown,
   field: string,
   fallback = false,
+  request?: Request,
 ): boolean | Response {
   if (value == null) {
     return fallback;
@@ -2324,22 +2327,23 @@ function parseBooleanField(
   if (typeof value === "boolean") {
     return value;
   }
-  return jsonResponse({ error: `Invalid ${field}.` }, 400);
+  return jsonResponse({ error: `Invalid ${field}.` }, 400, {}, request);
 }
 
 function parseStringArrayField(
   value: unknown,
   field: string,
+  request?: Request,
 ): string[] | Response | undefined {
   if (value == null) {
     return undefined;
   }
   if (!Array.isArray(value)) {
-    return jsonResponse({ error: `Invalid ${field}.` }, 400);
+    return jsonResponse({ error: `Invalid ${field}.` }, 400, {}, request);
   }
   for (const entry of value) {
     if (typeof entry !== "string") {
-      return jsonResponse({ error: `Invalid ${field}.` }, 400);
+      return jsonResponse({ error: `Invalid ${field}.` }, 400, {}, request);
     }
   }
   return value;

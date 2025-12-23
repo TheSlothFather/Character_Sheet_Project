@@ -26,7 +26,10 @@ import "./CombatPageNew.css";
 // COMBATANT TO ENTITY TRANSFORMER
 // ═══════════════════════════════════════════════════════════════════════════
 
-function transformCombatantToEntity(combatant: CampaignCombatant): CombatEntity {
+function transformCombatantToEntity(
+  combatant: CampaignCombatant,
+  bestiaryToPlayer: Map<string, string>
+): CombatEntity {
   // Transform wounds from array to WoundCounts record
   const wounds: WoundCounts = {};
   if (combatant.wounds) {
@@ -47,7 +50,10 @@ function transformCombatantToEntity(combatant: CampaignCombatant): CombatEntity 
 
   // Determine controller (GM controls enemies, players control allies)
   const faction = (combatant.faction?.toLowerCase() ?? "enemy") as EntityFaction;
-  const controller = faction === "ally" ? "gm" : "gm"; // For now, GM controls all in combat start
+
+  // Check if this combatant is controlled by a player
+  const playerUserId = bestiaryToPlayer.get(combatant.bestiaryEntryId);
+  const controller = playerUserId ? `player:${playerUserId}` : "gm";
 
   return {
     id: combatant.id,
@@ -145,9 +151,29 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
         return;
       }
 
+      // Load campaign members to map players to characters
+      const members = await gmApi.listCampaignMembers(campaignId);
+
+      // Build characterId → playerUserId map
+      const characterToPlayer = new Map<string, string>();
+      for (const member of members) {
+        if (member.characterId) {
+          characterToPlayer.set(member.characterId, member.playerUserId);
+        }
+      }
+
+      // Build bestiaryEntryId → playerUserId map
+      const bestiaryToPlayer = new Map<string, string>();
+      for (const entry of bestiaryEntries) {
+        if (entry.heroId && characterToPlayer.has(entry.heroId)) {
+          bestiaryToPlayer.set(entry.id, characterToPlayer.get(entry.heroId)!);
+        }
+      }
+
+      // Transform combatants to entities with player controller mapping
       const entities: Record<string, CombatEntity> = {};
       for (const c of activeCombatants) {
-        entities[c.id] = transformCombatantToEntity(c);
+        entities[c.id] = transformCombatantToEntity(c, bestiaryToPlayer);
       }
 
       await startCombat({ initiativeMode, entities });
