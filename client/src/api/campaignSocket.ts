@@ -117,9 +117,23 @@ export interface CombatSocketHandlers {
 // CONNECTION UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * Get the Worker URL for API/WebSocket connections.
+ * In production, this points to the separate Cloudflare Worker with Durable Objects.
+ * In development, it uses the local origin (proxied via Vite).
+ */
+const getWorkerBaseUrl = () => {
+  const workerUrl = import.meta.env.VITE_WORKER_URL;
+  if (workerUrl) {
+    return workerUrl;
+  }
+  // Fallback to current origin for local development
+  return window.location.origin;
+};
+
 const buildWebSocketUrl = (path: string) => {
-  const base = new URL(window.location.href);
-  base.pathname = path;
+  const baseUrl = getWorkerBaseUrl();
+  const base = new URL(path, baseUrl);
   base.search = "";
   base.hash = "";
   base.protocol = base.protocol === "https:" ? "wss:" : "ws:";

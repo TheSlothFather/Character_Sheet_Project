@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "npm run build:client",
-    "postbuild": "rm -rf dist && cp -R client/dist dist && cp -R functions dist/",
+    "postbuild": "rm -rf dist && cp -R client/dist dist",
     "build:client": "npm run build --workspace client",
     "dev:client": "npm run dev --workspace client",
     "preview:client": "npm run preview --workspace client",
