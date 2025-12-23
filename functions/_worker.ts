@@ -2683,11 +2683,13 @@ function mapContestForSupabase(record: ContestRecord): Record<string, unknown> {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    const corsHeaders = getCorsHeaders(request);
+
     // Handle CORS preflight requests
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
-        headers: getCorsHeaders(request),
+        headers: corsHeaders,
       });
     }
 
@@ -2697,7 +2699,16 @@ export default {
       /^\/api\/campaigns\/([^/]+)\/combat\/[^/]+$/,
     );
     if (!match && !combatMatch) {
-      return new Response("Not found", { status: 404 });
+      return new Response(
+        JSON.stringify({ error: "Not found" }),
+        {
+          status: 404,
+          headers: {
+            "content-type": "application/json",
+            ...corsHeaders,
+          }
+        }
+      );
     }
 
     const campaignId = decodeURIComponent((match ?? combatMatch)![1]);
