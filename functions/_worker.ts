@@ -14,6 +14,41 @@ interface Env {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// CORS HELPER
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Generate CORS headers for cross-origin requests
+ * Allows requests from production, preview deployments, and localhost
+ */
+function getCorsHeaders(request: Request): HeadersInit {
+  const origin = request.headers.get("Origin");
+
+  const allowedOrigins = [
+    "https://character-sheet-project.pages.dev",
+    "http://localhost:5173",
+  ];
+
+  const isAllowed = origin && (
+    allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed)) ||
+    /^https:\/\/[a-z0-9-]+\.character-sheet-project\.pages\.dev$/.test(origin) ||
+    /^http:\/\/localhost(:\d+)?$/.test(origin)
+  );
+
+  if (isAllowed) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, Upgrade, Connection",
+      "Access-Control-Max-Age": "86400",
+      "Access-Control-Allow-Credentials": "true",
+    };
+  }
+
+  return {};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // AUTHORITATIVE COMBAT TYPES (inline for Cloudflare Worker compatibility)
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -385,6 +420,15 @@ export class CampaignDurableObject {
 
   async fetch(request: Request): Promise<Response> {
     await this.ready;
+
+    // Handle CORS preflight requests FIRST
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: getCorsHeaders(request),
+      });
+    }
+
     const url = new URL(request.url);
     const match = url.pathname.match(/^\/api\/campaigns\/([^/]+)\/(connect|roll|contest)$/);
     const combatMatch = url.pathname.match(
@@ -397,12 +441,14 @@ export class CampaignDurableObject {
     const campaignId = decodeURIComponent((match ?? combatMatch)![1]);
     const action = (match ?? combatMatch)![2];
 
+    // Handle WebSocket upgrades (before POST check)
     if (action === "connect") {
       return this.handleConnect(request, campaignId);
     }
 
+    // Now check POST requirement for other endpoints
     if (request.method !== "POST") {
-      return jsonResponse({ error: "Method not allowed" }, 405, { Allow: "POST" });
+      return jsonResponse({ error: "Method not allowed" }, 405, { Allow: "POST" }, request);
     }
 
     const body = await readJsonBody(request);
@@ -411,23 +457,23 @@ export class CampaignDurableObject {
     }
 
     if (action === "roll") {
-      return this.handleRollRequest(campaignId, body);
+      return this.handleRollRequest(campaignId, body, request);
     }
 
     if (action === "contest") {
-      return this.handleContestRequest(campaignId, body);
+      return this.handleContestRequest(campaignId, body, request);
     }
 
     if (combatMatch) {
-      return this.handleCombatAction(campaignId, action, body);
+      return this.handleCombatAction(campaignId, action, body, request);
     }
 
-    return jsonResponse({ error: "Not found" }, 404);
+    return jsonResponse({ error: "Not found" }, 404, {}, request);
   }
 
   private async handleConnect(request: Request, campaignId: string): Promise<Response> {
     if (request.headers.get("Upgrade") !== "websocket") {
-      return jsonResponse({ error: "Expected WebSocket upgrade" }, 426);
+      return jsonResponse({ error: "Expected WebSocket upgrade" }, 426, {}, request);
     }
 
     const url = new URL(request.url);
@@ -480,7 +526,11 @@ export class CampaignDurableObject {
       },
     });
 
-    return new Response(null, { status: 101, webSocket: client });
+    return new Response(null, {
+      status: 101,
+      webSocket: client,
+      headers: getCorsHeaders(request),
+    });
   }
 
   private handleClientMessage(connectionId: string, campaignId: string, data: unknown) {
@@ -589,7 +639,7 @@ export class CampaignDurableObject {
     });
   }
 
-  private async handleRollRequest(campaignId: string, body: unknown): Promise<Response> {
+  private async handleRollRequest(campaignId: string, body: unknown, request: Request): Promise<Response> {
     const parsed = parseRollRequest(body);
     if (parsed instanceof Response) {
       return parsed;
@@ -637,19 +687,19 @@ export class CampaignDurableObject {
 
     this.broadcast(event);
 
-    return jsonResponse({ ok: true, sequence, request: record });
+    return jsonResponse({ ok: true, sequence, request: record }, 200, {}, request);
   }
 
-  private async handleContestRequest(campaignId: string, body: unknown): Promise<Response> {
+  private async handleContestRequest(campaignId: string, body: unknown, request: Request): Promise<Response> {
     const parsed = parseContestSelection(body);
     if (parsed instanceof Response) {
       return parsed;
     }
 
     const requestKey = this.rollRequestKey(parsed.requestId);
-    const request = await this.state.storage.get<RollRequestRecord>(requestKey);
-    if (!request) {
-      return jsonResponse({ error: "Roll request not found." }, 404);
+    const rollRequest = await this.state.storage.get<RollRequestRecord>(requestKey);
+    if (!rollRequest) {
+      return jsonResponse({ error: "Roll request not found." }, 404, {}, request);
     }
 
     const contestId = parsed.contestId ?? crypto.randomUUID();
@@ -658,27 +708,27 @@ export class CampaignDurableObject {
     const npcTotal = npcRoll + npcModifier;
     const createdAt = new Date().toISOString();
     const outcome =
-      request.total === npcTotal ? "tie" : request.total > npcTotal ? "player" : "npc";
+      rollRequest.total === npcTotal ? "tie" : rollRequest.total > npcTotal ? "player" : "npc";
 
     const contest: ContestRecord = {
       id: contestId,
       campaignId,
-      requestId: request.id,
+      requestId: rollRequest.id,
       gmId: parsed.gmId,
       gmName: parsed.gmName,
       npcName: parsed.npcName,
       npcModifier,
       npcRoll,
       npcTotal,
-      playerRoll: request.roll,
-      playerModifier: request.modifier,
-      playerTotal: request.total,
+      playerRoll: rollRequest.roll,
+      playerModifier: rollRequest.modifier,
+      playerTotal: rollRequest.total,
       outcome,
       createdAt,
     };
 
     const updatedRequest: RollRequestRecord = {
-      ...request,
+      ...rollRequest,
       status: "contested",
       contestId,
     };
@@ -715,66 +765,67 @@ export class CampaignDurableObject {
 
     this.broadcast(event);
 
-    return jsonResponse({ ok: true, sequence, contest });
+    return jsonResponse({ ok: true, sequence, contest }, 200, {}, request);
   }
 
   private async handleCombatAction(
     campaignId: string,
     action: string,
     body: unknown,
+    request: Request,
   ): Promise<Response> {
     switch (action) {
       // ═══════════════════════════════════════════════════════════════════════
       // AUTHORITATIVE COMBAT SYSTEM (new)
       // ═══════════════════════════════════════════════════════════════════════
       case "auth-state":
-        return this.handleAuthoritativeState(campaignId);
+        return this.handleAuthoritativeState(campaignId, request);
       case "auth-start":
-        return this.handleAuthoritativeStart(campaignId, body);
+        return this.handleAuthoritativeStart(campaignId, body, request);
       case "auth-declare-action":
-        return this.handleDeclareAction(campaignId, body);
+        return this.handleDeclareAction(campaignId, body, request);
       case "auth-declare-reaction":
-        return this.handleDeclareReaction(campaignId, body);
+        return this.handleDeclareReaction(campaignId, body, request);
       case "auth-resolve-reactions":
-        return this.handleResolveReactions(campaignId, body);
+        return this.handleResolveReactions(campaignId, body, request);
       case "auth-end-turn":
-        return this.handleAuthoritativeEndTurn(campaignId, body);
+        return this.handleAuthoritativeEndTurn(campaignId, body, request);
       case "auth-gm-override":
-        return this.handleGmOverride(campaignId, body);
+        return this.handleGmOverride(campaignId, body, request);
       case "auth-end-combat":
-        return this.handleEndCombat(campaignId, body);
+        return this.handleEndCombat(campaignId, body, request);
 
       // ═══════════════════════════════════════════════════════════════════════
       // LEGACY COMBAT SYSTEM (preserved for backward compatibility)
       // ═══════════════════════════════════════════════════════════════════════
       case "state":
-        return this.handleCombatState(campaignId);
+        return this.handleCombatState(campaignId, request);
       case "start":
-        return this.handleCombatStart(campaignId, body);
+        return this.handleCombatStart(campaignId, body, request);
       case "advance":
       case "advance-turn":
-        return this.handleCombatAdvance(campaignId, body);
+        return this.handleCombatAdvance(campaignId, body, request);
       case "resolve-ambush":
-        return this.handleCombatAmbush(campaignId, body);
+        return this.handleCombatAmbush(campaignId, body, request);
       case "spend":
-        return this.handleCombatSpend(campaignId, body);
+        return this.handleCombatSpend(campaignId, body, request);
       case "reaction":
-        return this.handleCombatReaction(campaignId, body);
+        return this.handleCombatReaction(campaignId, body, request);
       default:
-        return jsonResponse({ error: "Not found" }, 404);
+        return jsonResponse({ error: "Not found" }, 404, {}, request);
     }
   }
 
-  private async handleCombatState(campaignId: string): Promise<Response> {
+  private async handleCombatState(campaignId: string, request: Request): Promise<Response> {
     const combatState = await this.loadCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
-    return jsonResponse({ ok: true, sequence: this.sequence, state: combatState });
+    return jsonResponse({ ok: true, sequence: this.sequence, state: combatState }, 200, {}, request);
   }
 
-  private async handleCombatAmbush(campaignId: string, body: unknown): Promise<Response> {
+  private async handleCombatAmbush(campaignId: string, body: unknown, request: Request): Promise<Response> {
     const parsed = parseCombatAmbush(body);
     if (parsed instanceof Response) {
       return parsed;
@@ -782,12 +833,12 @@ export class CampaignDurableObject {
 
     const combatState = await this.loadCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const targetId = parsed.combatantId ?? combatState.activeCombatantId;
     if (!targetId) {
-      return jsonResponse({ error: "Combatant not available for ambush resolution." }, 400);
+      return jsonResponse({ error: "Combatant not available for ambush resolution." }, 400, {}, request);
     }
 
     const hadAmbushPenalty = combatState.ambushRoundFlags[targetId] ?? false;
@@ -810,10 +861,10 @@ export class CampaignDurableObject {
       payload: { state: combatState, combatantId: targetId, hadAmbushPenalty },
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState });
+    return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
   }
 
-  private async handleCombatStart(campaignId: string, body: unknown): Promise<Response> {
+  private async handleCombatStart(campaignId: string, body: unknown, request: Request): Promise<Response> {
     const parsed = parseCombatStart(body);
     if (parsed instanceof Response) {
       return parsed;
@@ -829,7 +880,7 @@ export class CampaignDurableObject {
     }
 
     if (combatants.length === 0) {
-      return jsonResponse({ error: "No combatants available to start combat." }, 400);
+      return jsonResponse({ error: "No combatants available to start combat." }, 400, {}, request);
     }
 
     const ambushedSet = new Set(parsed.ambushedIds ?? []);
@@ -926,10 +977,10 @@ export class CampaignDurableObject {
       payload: { state: combatState },
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState });
+    return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
   }
 
-  private async handleCombatAdvance(campaignId: string, body: unknown): Promise<Response> {
+  private async handleCombatAdvance(campaignId: string, body: unknown, request: Request): Promise<Response> {
     const parsed = parseCombatAdvance(body);
     if (parsed instanceof Response) {
       return parsed;
@@ -937,7 +988,7 @@ export class CampaignDurableObject {
 
     const combatState = await this.loadCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const now = new Date().toISOString();
@@ -1024,34 +1075,34 @@ export class CampaignDurableObject {
       },
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState });
+    return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
   }
 
-  private async handleCombatSpend(campaignId: string, body: unknown): Promise<Response> {
+  private async handleCombatSpend(campaignId: string, body: unknown, request: Request): Promise<Response> {
     const parsed = parseCombatSpend(body);
     if (parsed instanceof Response) {
       return parsed;
     }
 
     if (parsed.actionPointCost < 0) {
-      return jsonResponse({ error: "Action point costs must be non-negative." }, 400);
+      return jsonResponse({ error: "Action point costs must be non-negative." }, 400, {}, request);
     }
 
     const combatState = await this.loadCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const currentAp = combatState.actionPointsById[parsed.combatantId] ?? 0;
     const nextAp = currentAp - parsed.actionPointCost;
     if (nextAp < 0) {
-      return jsonResponse({ error: "Insufficient action points." }, 400);
+      return jsonResponse({ error: "Insufficient action points." }, 400, {}, request);
     }
 
     const currentEnergy = combatState.energyById[parsed.combatantId] ?? 0;
     const nextEnergy = currentEnergy - parsed.energyCost;
     if (nextEnergy < 0) {
-      return jsonResponse({ error: "Insufficient energy." }, 400);
+      return jsonResponse({ error: "Insufficient energy." }, 400, {}, request);
     }
 
     combatState.actionPointsById[parsed.combatantId] = nextAp;
@@ -1077,28 +1128,28 @@ export class CampaignDurableObject {
       payload: { state: combatState, action: actionEntry.payload },
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState });
+    return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
   }
 
-  private async handleCombatReaction(campaignId: string, body: unknown): Promise<Response> {
+  private async handleCombatReaction(campaignId: string, body: unknown, request: Request): Promise<Response> {
     const parsed = parseCombatReaction(body);
     if (parsed instanceof Response) {
       return parsed;
     }
 
     if (parsed.actionPointCost < 0) {
-      return jsonResponse({ error: "Costs must be non-negative." }, 400);
+      return jsonResponse({ error: "Costs must be non-negative." }, 400, {}, request);
     }
 
     const combatState = await this.loadCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const currentAp = combatState.actionPointsById[parsed.combatantId] ?? 0;
     const nextAp = currentAp - parsed.actionPointCost;
     if (nextAp < 0) {
-      return jsonResponse({ error: "Insufficient action points." }, 400);
+      return jsonResponse({ error: "Insufficient action points." }, 400, {}, request);
     }
 
     combatState.actionPointsById[parsed.combatantId] = nextAp;
@@ -1122,7 +1173,7 @@ export class CampaignDurableObject {
       payload: { state: combatState, reaction: reactionEntry.payload },
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState });
+    return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1326,26 +1377,26 @@ export class CampaignDurableObject {
   }
 
   // Handler: Get current authoritative combat state
-  private async handleAuthoritativeState(campaignId: string): Promise<Response> {
+  private async handleAuthoritativeState(campaignId: string, request: Request): Promise<Response> {
     const combatState = await this.loadAuthCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
-    return jsonResponse({ ok: true, sequence: this.sequence, state: combatState });
+    return jsonResponse({ ok: true, sequence: this.sequence, state: combatState }, 200, {}, request);
   }
 
   // Handler: Start authoritative combat
-  private async handleAuthoritativeStart(campaignId: string, body: unknown): Promise<Response> {
+  private async handleAuthoritativeStart(campaignId: string, body: unknown, request: Request): Promise<Response> {
     if (!isRecord(body)) {
-      return jsonResponse({ error: "Invalid payload." }, 400);
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
     const initiativeMode = body.initiativeMode === "group" ? "group" : "individual";
     const entities = body.entities as Record<string, CombatEntity> | undefined;
 
     if (!entities || Object.keys(entities).length === 0) {
-      return jsonResponse({ error: "No entities provided." }, 400);
+      return jsonResponse({ error: "No entities provided." }, 400, {}, request);
     }
 
     // Roll initiative for each entity
@@ -1425,18 +1476,18 @@ export class CampaignDurableObject {
     const sequence = await this.saveAuthCombatState(campaignId, combatState);
     this.broadcastAuthEvent("COMBAT_STARTED", campaignId, sequence, { state: combatState });
 
-    return jsonResponse({ ok: true, sequence, state: combatState });
+    return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
   }
 
   // Handler: Declare an action
-  private async handleDeclareAction(campaignId: string, body: unknown): Promise<Response> {
+  private async handleDeclareAction(campaignId: string, body: unknown, request: Request): Promise<Response> {
     if (!isRecord(body)) {
-      return jsonResponse({ error: "Invalid payload." }, 400);
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
     const combatState = await this.loadAuthCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const entityId = parseRequiredStringField(body.entityId, "entityId");
@@ -1465,7 +1516,7 @@ export class CampaignDurableObject {
         entityId,
         reason: validation.reason,
       });
-      return jsonResponse({ ok: false, error: validation.reason }, 400);
+      return jsonResponse({ ok: false, error: validation.reason }, 400, {}, request);
     }
 
     // Deduct resources
@@ -1501,18 +1552,18 @@ export class CampaignDurableObject {
       state: combatState,
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState, action: pendingAction });
+    return jsonResponse({ ok: true, sequence, state: combatState, action: pendingAction }, 200, {}, request);
   }
 
   // Handler: Declare a reaction
-  private async handleDeclareReaction(campaignId: string, body: unknown): Promise<Response> {
+  private async handleDeclareReaction(campaignId: string, body: unknown, request: Request): Promise<Response> {
     if (!isRecord(body)) {
-      return jsonResponse({ error: "Invalid payload." }, 400);
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
     const combatState = await this.loadAuthCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const entityId = parseRequiredStringField(body.entityId, "entityId");
@@ -1537,13 +1588,13 @@ export class CampaignDurableObject {
         entityId,
         reason: validation.reason,
       });
-      return jsonResponse({ ok: false, error: validation.reason }, 400);
+      return jsonResponse({ ok: false, error: validation.reason }, 400, {}, request);
     }
 
     // Check AP cost
     const entity = combatState.entities[entityId];
     if (entity.ap.current < apCost) {
-      return jsonResponse({ ok: false, error: "Insufficient AP for reaction" }, 400);
+      return jsonResponse({ ok: false, error: "Insufficient AP for reaction" }, 400, {}, request);
     }
 
     // Deduct resources and mark reaction as used
@@ -1585,18 +1636,18 @@ export class CampaignDurableObject {
       state: combatState,
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState, reaction: pendingReaction });
+    return jsonResponse({ ok: true, sequence, state: combatState, reaction: pendingReaction }, 200, {}, request);
   }
 
   // Handler: Resolve pending reactions (GM triggers this)
-  private async handleResolveReactions(campaignId: string, body: unknown): Promise<Response> {
+  private async handleResolveReactions(campaignId: string, body: unknown, request: Request): Promise<Response> {
     const combatState = await this.loadAuthCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     if (!combatState.pendingAction) {
-      return jsonResponse({ error: "No pending action to resolve." }, 400);
+      return jsonResponse({ error: "No pending action to resolve." }, 400, {}, request);
     }
 
     // Transition to resolution phase
@@ -1713,22 +1764,22 @@ export class CampaignDurableObject {
       reactions: resolvedReactions,
       actionCancelled,
       actionModified,
-    });
+    }, 200, {}, request);
   }
 
   // Handler: End turn (voluntary or forced)
-  private async handleAuthoritativeEndTurn(campaignId: string, body: unknown): Promise<Response> {
+  private async handleAuthoritativeEndTurn(campaignId: string, body: unknown, request: Request): Promise<Response> {
     if (!isRecord(body)) {
-      return jsonResponse({ error: "Invalid payload." }, 400);
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
     const combatState = await this.loadAuthCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     if (combatState.phase === "completed") {
-      return jsonResponse({ error: "Combat has already ended." }, 400);
+      return jsonResponse({ error: "Combat has already ended." }, 400, {}, request);
     }
 
     // Resolve any pending action/reactions first
@@ -1795,18 +1846,18 @@ export class CampaignDurableObject {
       state: combatState,
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState });
+    return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
   }
 
   // Handler: GM Override
-  private async handleGmOverride(campaignId: string, body: unknown): Promise<Response> {
+  private async handleGmOverride(campaignId: string, body: unknown, request: Request): Promise<Response> {
     if (!isRecord(body)) {
-      return jsonResponse({ error: "Invalid payload." }, 400);
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
     const combatState = await this.loadAuthCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const gmId = parseRequiredStringField(body.gmId, "gmId");
@@ -1814,7 +1865,7 @@ export class CampaignDurableObject {
 
     const overrideType = body.type as GmOverrideType;
     if (!overrideType) {
-      return jsonResponse({ error: "Override type required." }, 400);
+      return jsonResponse({ error: "Override type required." }, 400, {}, request);
     }
 
     const targetEntityId = parseStringField(body.targetEntityId, "targetEntityId");
@@ -1950,18 +2001,18 @@ export class CampaignDurableObject {
       state: combatState,
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState, override });
+    return jsonResponse({ ok: true, sequence, state: combatState, override }, 200, {}, request);
   }
 
   // Handler: End combat
-  private async handleEndCombat(campaignId: string, body: unknown): Promise<Response> {
+  private async handleEndCombat(campaignId: string, body: unknown, request: Request): Promise<Response> {
     if (!isRecord(body)) {
-      return jsonResponse({ error: "Invalid payload." }, 400);
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
     const combatState = await this.loadAuthCombatState(campaignId);
     if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404);
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const reason = (body.reason as "victory" | "defeat" | "gm_ended") ?? "gm_ended";
@@ -1984,7 +2035,7 @@ export class CampaignDurableObject {
       state: combatState,
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState, reason });
+    return jsonResponse({ ok: true, sequence, state: combatState, reason }, 200, {}, request);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -2184,11 +2235,13 @@ export class CampaignDurableObject {
   }
 }
 
-function jsonResponse(body: unknown, status = 200, headers?: HeadersInit) {
+function jsonResponse(body: unknown, status = 200, headers?: HeadersInit, request?: Request) {
+  const corsHeaders = request ? getCorsHeaders(request) : {};
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "content-type": "application/json",
+      ...corsHeaders,
       ...headers,
     },
   });
@@ -2196,13 +2249,13 @@ function jsonResponse(body: unknown, status = 200, headers?: HeadersInit) {
 
 async function readJsonBody(request: Request): Promise<unknown | Response> {
   if (!request.headers.get("content-type")?.includes("application/json")) {
-    return jsonResponse({ error: "Expected JSON body" }, 415);
+    return jsonResponse({ error: "Expected JSON body" }, 415, {}, request);
   }
 
   try {
     return await request.json();
   } catch {
-    return jsonResponse({ error: "Invalid JSON" }, 400);
+    return jsonResponse({ error: "Invalid JSON" }, 400, {}, request);
   }
 }
 
@@ -2630,6 +2683,14 @@ function mapContestForSupabase(record: ContestRecord): Record<string, unknown> {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    // Handle CORS preflight requests
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: getCorsHeaders(request),
+      });
+    }
+
     const url = new URL(request.url);
     const match = url.pathname.match(/^\/api\/campaigns\/([^/]+)\/(connect|roll|contest)$/);
     const combatMatch = url.pathname.match(
