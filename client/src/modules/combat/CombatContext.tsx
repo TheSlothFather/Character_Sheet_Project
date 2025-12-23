@@ -1,0 +1,833 @@
+/**
+ * Combat Context Provider
+ *
+ * Provides authoritative combat state and typed action methods to the component tree.
+ * Manages WebSocket connection to the Durable Object with automatic reconnection.
+ */
+
+import React from "react";
+import {
+  connectCombatSocket,
+  createReconnectingCombatSocket,
+  type CombatSocketHandlers,
+  type ReconnectingCombatSocket,
+} from "../../api/campaignSocket";
+import {
+  combatApi,
+  type StartCombatParams,
+  type DeclareActionParams,
+  type DeclareReactionParams,
+  type EndTurnParams,
+  type GmOverrideParams,
+  type EndCombatParams,
+} from "../../api/combat";
+
+import type {
+  CombatState,
+  CombatEntity,
+  CombatPhase,
+  PendingAction,
+  PendingReaction,
+  CombatLogEntry,
+  InitiativeMode,
+  EntityFaction,
+} from "@shared/rules/combat";
+
+import type {
+  StateSyncPayload,
+  CombatStartedPayload,
+  CombatEndedPayload,
+  TurnStartedPayload,
+  TurnEndedPayload,
+  ActionDeclaredPayload,
+  ActionResolvedPayload,
+  ReactionDeclaredPayload,
+  ReactionsResolvedPayload,
+  EntityUpdatedPayload,
+  WoundsAppliedPayload,
+  StatusAppliedPayload,
+  StatusRemovedPayload,
+  GmOverridePayload,
+  InitiativeModifiedPayload,
+} from "@shared/rules/combatEvents";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONTEXT TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type CombatConnectionStatus =
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "error";
+
+export interface CombatContextValue {
+  // Connection state
+  campaignId: string | null;
+  connectionStatus: CombatConnectionStatus;
+  reconnectAttempt: number;
+
+  // Combat state (null if no active combat)
+  state: CombatState | null;
+
+  // Derived state helpers
+  phase: CombatPhase | null;
+  round: number;
+  activeEntity: CombatEntity | null;
+  isMyTurn: boolean;
+  myControlledEntities: CombatEntity[];
+  canDeclareReaction: boolean;
+  pendingAction: PendingAction | null;
+  pendingReactions: PendingReaction[];
+
+  // Entity helpers
+  getEntity: (entityId: string) => CombatEntity | undefined;
+  getEntitiesByFaction: (faction: EntityFaction) => CombatEntity[];
+  getEntitiesInInitiativeOrder: () => CombatEntity[];
+
+  // Combat lifecycle actions
+  startCombat: (params: StartCombatParams) => Promise<void>;
+  endCombat: (params: EndCombatParams) => Promise<void>;
+  refreshState: () => Promise<void>;
+
+  // Player/GM actions
+  declareAction: (params: DeclareActionParams) => Promise<void>;
+  declareReaction: (params: DeclareReactionParams) => Promise<void>;
+  endTurn: (params: EndTurnParams) => Promise<void>;
+
+  // GM-only actions
+  resolveReactions: () => Promise<void>;
+  gmOverride: (params: GmOverrideParams) => Promise<void>;
+
+  // Error handling
+  error: string | null;
+  clearError: () => void;
+}
+
+const CombatContext = React.createContext<CombatContextValue | undefined>(
+  undefined
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PROVIDER PROPS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface CombatProviderProps {
+  children: React.ReactNode;
+  campaignId: string;
+  userId: string;
+  isGm?: boolean;
+  onCombatStarted?: (payload: CombatStartedPayload) => void;
+  onCombatEnded?: (payload: CombatEndedPayload) => void;
+  onTurnStarted?: (payload: TurnStartedPayload) => void;
+  onTurnEnded?: (payload: TurnEndedPayload) => void;
+  onActionDeclared?: (payload: ActionDeclaredPayload) => void;
+  onActionResolved?: (payload: ActionResolvedPayload) => void;
+  onReactionDeclared?: (payload: ReactionDeclaredPayload) => void;
+  onReactionsResolved?: (payload: ReactionsResolvedPayload) => void;
+  onEntityUpdated?: (payload: EntityUpdatedPayload) => void;
+  onWoundsApplied?: (payload: WoundsAppliedPayload) => void;
+  onStatusApplied?: (payload: StatusAppliedPayload) => void;
+  onStatusRemoved?: (payload: StatusRemovedPayload) => void;
+  onGmOverride?: (payload: GmOverridePayload) => void;
+  onInitiativeModified?: (payload: InitiativeModifiedPayload) => void;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PROVIDER IMPLEMENTATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const CombatProvider: React.FC<CombatProviderProps> = ({
+  children,
+  campaignId,
+  userId,
+  isGm = false,
+  onCombatStarted,
+  onCombatEnded,
+  onTurnStarted,
+  onTurnEnded,
+  onActionDeclared,
+  onActionResolved,
+  onReactionDeclared,
+  onReactionsResolved,
+  onEntityUpdated,
+  onWoundsApplied,
+  onStatusApplied,
+  onStatusRemoved,
+  onGmOverride,
+  onInitiativeModified,
+}) => {
+  // State
+  const [connectionStatus, setConnectionStatus] =
+    React.useState<CombatConnectionStatus>("disconnected");
+  const [reconnectAttempt, setReconnectAttempt] = React.useState(0);
+  const [state, setState] = React.useState<CombatState | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  // Socket ref
+  const socketRef = React.useRef<ReconnectingCombatSocket | null>(null);
+
+  // Controller ID for ownership checks
+  const controllerId = isGm ? "gm" : `player:${userId}`;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // WebSocket Connection
+  // ─────────────────────────────────────────────────────────────────────────
+
+  React.useEffect(() => {
+    if (!campaignId) return;
+
+    setConnectionStatus("connecting");
+    setError(null);
+
+    const handlers: CombatSocketHandlers = {
+      onStateSync: (payload: StateSyncPayload) => {
+        setState(payload.state);
+      },
+
+      onOpen: () => {
+        setConnectionStatus("connected");
+        setReconnectAttempt(0);
+      },
+
+      onClose: () => {
+        setConnectionStatus("disconnected");
+      },
+
+      onError: () => {
+        setConnectionStatus("error");
+        setError("WebSocket connection error");
+      },
+
+      onCombatStarted: (payload: CombatStartedPayload) => {
+        setState(payload.state);
+        onCombatStarted?.(payload);
+      },
+
+      onCombatEnded: (payload: CombatEndedPayload) => {
+        setState(null);
+        onCombatEnded?.(payload);
+      },
+
+      onTurnStarted: (payload: TurnStartedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            activeEntityId: payload.entityId,
+            round: payload.round,
+            turnIndex: payload.turnIndex,
+            phase: "active-turn",
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onTurnStarted?.(payload);
+      },
+
+      onTurnEnded: (payload: TurnEndedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          const entity = prev.entities[payload.entityId];
+          if (!entity) return prev;
+
+          return {
+            ...prev,
+            entities: {
+              ...prev.entities,
+              [payload.entityId]: {
+                ...entity,
+                energy: {
+                  ...entity.energy,
+                  current: Math.min(
+                    entity.energy.max,
+                    entity.energy.current + payload.energyGained
+                  ),
+                },
+              },
+            },
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onTurnEnded?.(payload);
+      },
+
+      onActionDeclared: (payload: ActionDeclaredPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            pendingAction: payload.action,
+            phase: payload.phase,
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onActionDeclared?.(payload);
+      },
+
+      onActionResolved: (payload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            pendingAction: null,
+            log: [...prev.log, payload.log],
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onActionResolved?.(payload);
+      },
+
+      onReactionDeclared: (payload: ReactionDeclaredPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          const entity = prev.entities[payload.reaction.entityId];
+          return {
+            ...prev,
+            pendingReactions: [...prev.pendingReactions, payload.reaction],
+            phase: "reaction-interrupt",
+            entities: entity
+              ? {
+                  ...prev.entities,
+                  [payload.reaction.entityId]: {
+                    ...entity,
+                    reaction: { available: false },
+                  },
+                }
+              : prev.entities,
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onReactionDeclared?.(payload);
+      },
+
+      onReactionsResolved: (payload: ReactionsResolvedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            pendingAction: payload.actionCancelled ? null : prev.pendingAction,
+            pendingReactions: [],
+            phase: "active-turn",
+            log: [...prev.log, ...payload.log],
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onReactionsResolved?.(payload);
+      },
+
+      onEntityUpdated: (payload: EntityUpdatedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          const entity = prev.entities[payload.entityId];
+          if (!entity) return prev;
+
+          return {
+            ...prev,
+            entities: {
+              ...prev.entities,
+              [payload.entityId]: {
+                ...entity,
+                ...payload.changes,
+              },
+            },
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onEntityUpdated?.(payload);
+      },
+
+      onWoundsApplied: (payload: WoundsAppliedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          const entity = prev.entities[payload.entityId];
+          if (!entity) return prev;
+
+          // Merge wound counts
+          const newWounds = { ...entity.wounds };
+          for (const [type, count] of Object.entries(payload.wounds)) {
+            newWounds[type as keyof typeof newWounds] =
+              (newWounds[type as keyof typeof newWounds] ?? 0) + (count ?? 0);
+          }
+
+          return {
+            ...prev,
+            entities: {
+              ...prev.entities,
+              [payload.entityId]: {
+                ...entity,
+                wounds: newWounds,
+              },
+            },
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onWoundsApplied?.(payload);
+      },
+
+      onStatusApplied: (payload: StatusAppliedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          const entity = prev.entities[payload.entityId];
+          if (!entity) return prev;
+
+          const existingIndex = entity.statusEffects.findIndex(
+            (s) => s.key === payload.statusKey
+          );
+
+          const newStatusEffects =
+            existingIndex >= 0
+              ? entity.statusEffects.map((s, i) =>
+                  i === existingIndex
+                    ? {
+                        ...s,
+                        stacks: payload.stacks,
+                        duration: payload.duration,
+                      }
+                    : s
+                )
+              : [
+                  ...entity.statusEffects,
+                  {
+                    key: payload.statusKey,
+                    stacks: payload.stacks,
+                    duration: payload.duration,
+                  },
+                ];
+
+          return {
+            ...prev,
+            entities: {
+              ...prev.entities,
+              [payload.entityId]: {
+                ...entity,
+                statusEffects: newStatusEffects,
+              },
+            },
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onStatusApplied?.(payload);
+      },
+
+      onStatusRemoved: (payload: StatusRemovedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          const entity = prev.entities[payload.entityId];
+          if (!entity) return prev;
+
+          return {
+            ...prev,
+            entities: {
+              ...prev.entities,
+              [payload.entityId]: {
+                ...entity,
+                statusEffects: entity.statusEffects.filter(
+                  (s) => s.key !== payload.statusKey
+                ),
+              },
+            },
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onStatusRemoved?.(payload);
+      },
+
+      onGmOverride: (payload: GmOverridePayload) => {
+        // State sync will handle the actual state update
+        onGmOverride?.(payload);
+      },
+
+      onInitiativeModified: (payload: InitiativeModifiedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            initiativeOrder: payload.newOrder,
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onInitiativeModified?.(payload);
+      },
+    };
+
+    const socket = createReconnectingCombatSocket(campaignId, handlers, userId, {
+      maxRetries: 10,
+      retryDelay: 2000,
+      onReconnecting: (attempt) => {
+        setConnectionStatus("reconnecting");
+        setReconnectAttempt(attempt);
+      },
+    });
+
+    socketRef.current = socket;
+
+    return () => {
+      socket.close();
+      socketRef.current = null;
+      setConnectionStatus("disconnected");
+    };
+  }, [campaignId, userId]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Derived State
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const phase = state?.phase ?? null;
+  const round = state?.round ?? 0;
+
+  const activeEntity = React.useMemo(() => {
+    if (!state?.activeEntityId) return null;
+    return state.entities[state.activeEntityId] ?? null;
+  }, [state?.activeEntityId, state?.entities]);
+
+  const isMyTurn = React.useMemo(() => {
+    if (!activeEntity) return false;
+    return activeEntity.controller === controllerId;
+  }, [activeEntity, controllerId]);
+
+  const myControlledEntities = React.useMemo(() => {
+    if (!state) return [];
+    return Object.values(state.entities).filter(
+      (entity) => entity.controller === controllerId
+    );
+  }, [state?.entities, controllerId]);
+
+  const canDeclareReaction = React.useMemo(() => {
+    if (!state) return false;
+    if (state.phase !== "active-turn" && state.phase !== "reaction-interrupt") {
+      return false;
+    }
+    if (!state.pendingAction?.interruptible) return false;
+
+    // Check if any of my entities can react
+    return myControlledEntities.some(
+      (entity) =>
+        entity.reaction.available &&
+        entity.alive &&
+        entity.id !== state.activeEntityId
+    );
+  }, [state, myControlledEntities]);
+
+  const pendingAction = state?.pendingAction ?? null;
+  const pendingReactions = state?.pendingReactions ?? [];
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Entity Helpers
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const getEntity = React.useCallback(
+    (entityId: string): CombatEntity | undefined => {
+      return state?.entities[entityId];
+    },
+    [state?.entities]
+  );
+
+  const getEntitiesByFaction = React.useCallback(
+    (faction: EntityFaction): CombatEntity[] => {
+      if (!state) return [];
+      return Object.values(state.entities).filter((e) => e.faction === faction);
+    },
+    [state?.entities]
+  );
+
+  const getEntitiesInInitiativeOrder = React.useCallback((): CombatEntity[] => {
+    if (!state) return [];
+    return state.initiativeOrder
+      .map((id) => state.entities[id])
+      .filter((e): e is CombatEntity => e !== undefined);
+  }, [state?.initiativeOrder, state?.entities]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Combat Lifecycle Actions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const startCombat = React.useCallback(
+    async (params: StartCombatParams) => {
+      try {
+        setError(null);
+        const response = await combatApi.startCombat(campaignId, params);
+        setState(response.state);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to start combat";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  const endCombat = React.useCallback(
+    async (params: EndCombatParams) => {
+      try {
+        setError(null);
+        await combatApi.endCombat(campaignId, params);
+        setState(null);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to end combat";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  const refreshState = React.useCallback(async () => {
+    try {
+      setError(null);
+      const response = await combatApi.getAuthoritativeState(campaignId);
+      setState(response.state);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to refresh state";
+      setError(message);
+      throw err;
+    }
+  }, [campaignId]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Player/GM Actions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const declareAction = React.useCallback(
+    async (params: DeclareActionParams) => {
+      try {
+        setError(null);
+        const response = await combatApi.declareAction(campaignId, params);
+        setState(response.state);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to declare action";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  const declareReaction = React.useCallback(
+    async (params: DeclareReactionParams) => {
+      try {
+        setError(null);
+        const response = await combatApi.declareReaction(campaignId, params);
+        setState(response.state);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to declare reaction";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  const endTurn = React.useCallback(
+    async (params: EndTurnParams) => {
+      try {
+        setError(null);
+        const response = await combatApi.endTurn(campaignId, params);
+        setState(response.state);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to end turn";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // GM-Only Actions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const resolveReactions = React.useCallback(async () => {
+    try {
+      setError(null);
+      const response = await combatApi.resolveReactions(campaignId);
+      setState(response.state);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to resolve reactions";
+      setError(message);
+      throw err;
+    }
+  }, [campaignId]);
+
+  const gmOverride = React.useCallback(
+    async (params: GmOverrideParams) => {
+      try {
+        setError(null);
+        const response = await combatApi.gmOverride(campaignId, params);
+        setState(response.state);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to apply GM override";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Error Handling
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const clearError = React.useCallback(() => {
+    setError(null);
+  }, []);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Context Value
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const value = React.useMemo<CombatContextValue>(
+    () => ({
+      // Connection state
+      campaignId,
+      connectionStatus,
+      reconnectAttempt,
+
+      // Combat state
+      state,
+
+      // Derived state
+      phase,
+      round,
+      activeEntity,
+      isMyTurn,
+      myControlledEntities,
+      canDeclareReaction,
+      pendingAction,
+      pendingReactions,
+
+      // Entity helpers
+      getEntity,
+      getEntitiesByFaction,
+      getEntitiesInInitiativeOrder,
+
+      // Combat lifecycle
+      startCombat,
+      endCombat,
+      refreshState,
+
+      // Player/GM actions
+      declareAction,
+      declareReaction,
+      endTurn,
+
+      // GM-only actions
+      resolveReactions,
+      gmOverride,
+
+      // Error handling
+      error,
+      clearError,
+    }),
+    [
+      campaignId,
+      connectionStatus,
+      reconnectAttempt,
+      state,
+      phase,
+      round,
+      activeEntity,
+      isMyTurn,
+      myControlledEntities,
+      canDeclareReaction,
+      pendingAction,
+      pendingReactions,
+      getEntity,
+      getEntitiesByFaction,
+      getEntitiesInInitiativeOrder,
+      startCombat,
+      endCombat,
+      refreshState,
+      declareAction,
+      declareReaction,
+      endTurn,
+      resolveReactions,
+      gmOverride,
+      error,
+      clearError,
+    ]
+  );
+
+  return (
+    <CombatContext.Provider value={value}>{children}</CombatContext.Provider>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HOOK
+// ═══════════════════════════════════════════════════════════════════════════
+
+export const useCombat = (): CombatContextValue => {
+  const ctx = React.useContext(CombatContext);
+  if (!ctx) {
+    throw new Error("useCombat must be used within CombatProvider");
+  }
+  return ctx;
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// OPTIONAL HOOKS FOR SPECIFIC CONCERNS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Hook for just the connection status
+ */
+export const useCombatConnection = () => {
+  const { connectionStatus, reconnectAttempt, error, clearError } = useCombat();
+  return { connectionStatus, reconnectAttempt, error, clearError };
+};
+
+/**
+ * Hook for turn-related state
+ */
+export const useCombatTurn = () => {
+  const { phase, round, activeEntity, isMyTurn, endTurn, pendingAction } =
+    useCombat();
+  return { phase, round, activeEntity, isMyTurn, endTurn, pendingAction };
+};
+
+/**
+ * Hook for reaction-related state
+ */
+export const useCombatReactions = () => {
+  const {
+    canDeclareReaction,
+    pendingReactions,
+    declareReaction,
+    resolveReactions,
+  } = useCombat();
+  return {
+    canDeclareReaction,
+    pendingReactions,
+    declareReaction,
+    resolveReactions,
+  };
+};
+
+/**
+ * Hook for entity lookup
+ */
+export const useCombatEntities = () => {
+  const {
+    state,
+    getEntity,
+    getEntitiesByFaction,
+    getEntitiesInInitiativeOrder,
+    myControlledEntities,
+  } = useCombat();
+  return {
+    entities: state?.entities ?? {},
+    getEntity,
+    getEntitiesByFaction,
+    getEntitiesInInitiativeOrder,
+    myControlledEntities,
+  };
+};
