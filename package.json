@@ -12,12 +12,15 @@
   },
   "scripts": {
     "build": "npm run build:client",
-    "postbuild": "rm -rf dist && cp -R client/dist dist",
+    "postbuild": "rm -rf dist && cp -R client/dist dist && cp -R functions dist/",
     "build:client": "npm run build --workspace client",
     "dev:client": "npm run dev --workspace client",
     "preview:client": "npm run preview --workspace client",
     "lint": "echo \"add linter\"",
     "test": "echo \"add tests\""
+  },
+  "devDependencies": {
+    "wrangler": "^4.56.0",
+    "wscat": "^6.1.0"
   }
 }
-
