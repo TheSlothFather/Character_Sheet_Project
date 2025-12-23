@@ -69,6 +69,7 @@ export interface TurnEndResponse extends CombatActionResponse {
 export interface StartCombatParams {
   initiativeMode: InitiativeMode;
   entityIds?: string[];
+  entities?: Record<string, CombatEntity>;
 }
 
 export interface DeclareActionParams {
@@ -187,6 +188,7 @@ export async function startCombat(
   const payload: GmStartCombatPayload = {
     initiativeMode: params.initiativeMode,
     entityIds: params.entityIds,
+    entities: params.entities,
   };
   return postAuthoritativeCombatAction<CombatStartResponse>(
     campaignId,

@@ -301,6 +301,7 @@ export interface EndTurnPayload {
 export interface GmStartCombatPayload {
   initiativeMode: InitiativeMode;
   entityIds?: string[];  // Optional subset of entities to include
+  entities?: Record<string, CombatEntity>;  // Full entity data for combat
 }
 
 export interface GmEndCombatPayload {

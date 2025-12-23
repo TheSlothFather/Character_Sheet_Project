@@ -18,8 +18,62 @@ import {
 } from "../../components/combat";
 import { gmApi, type BestiaryEntry, type CampaignCombatant } from "../../api/gm";
 import { useDefinitions } from "../definitions/DefinitionsContext";
-import type { CombatEntity, EntityFaction, InitiativeMode } from "@shared/rules/combat";
+import type { CombatEntity, EntityFaction, InitiativeMode, CombatStatusEffect, StatusKey } from "@shared/rules/combat";
+import type { WoundCounts, WoundType } from "@shared/rules/wounds";
 import "./CombatPageNew.css";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMBATANT TO ENTITY TRANSFORMER
+// ═══════════════════════════════════════════════════════════════════════════
+
+function transformCombatantToEntity(combatant: CampaignCombatant): CombatEntity {
+  // Transform wounds from array to WoundCounts record
+  const wounds: WoundCounts = {};
+  if (combatant.wounds) {
+    for (const wound of combatant.wounds) {
+      const woundType = wound.woundType as WoundType;
+      wounds[woundType] = (wounds[woundType] ?? 0) + wound.woundCount;
+    }
+  }
+
+  // Transform status effects
+  const statusEffects: CombatStatusEffect[] = (combatant.statusEffects ?? [])
+    .filter(se => se.isActive !== false)
+    .map(se => ({
+      key: se.statusKey.toUpperCase() as StatusKey,
+      stacks: se.stacks ?? 1,
+      duration: se.durationRemaining ?? null,
+    }));
+
+  // Determine controller (GM controls enemies, players control allies)
+  const faction = (combatant.faction?.toLowerCase() ?? "enemy") as EntityFaction;
+  const controller = faction === "ally" ? "gm" : "gm"; // For now, GM controls all in combat start
+
+  return {
+    id: combatant.id,
+    name: combatant.name,
+    controller,
+    faction,
+    skills: {}, // Skills would need to be loaded from bestiary
+    initiativeSkill: "initiative",
+    energy: {
+      current: combatant.energyCurrent ?? combatant.energyMax ?? 100,
+      max: combatant.energyMax ?? 100,
+    },
+    ap: {
+      current: combatant.apCurrent ?? combatant.apMax ?? 6,
+      max: combatant.apMax ?? 6,
+    },
+    tier: combatant.tier ?? 1,
+    reaction: {
+      available: true,
+    },
+    statusEffects,
+    wounds,
+    alive: true,
+    bestiaryEntryId: combatant.bestiaryEntryId,
+  };
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // INNER COMPONENT (Uses CombatContext)
@@ -84,7 +138,19 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
   // Handlers
   const handleStartCombat = async () => {
     try {
-      await startCombat({ initiativeMode });
+      // Filter active combatants and transform to CombatEntity format
+      const activeCombatants = combatants.filter(c => c.isActive);
+      if (activeCombatants.length === 0) {
+        setLocalError("No active combatants to start combat");
+        return;
+      }
+
+      const entities: Record<string, CombatEntity> = {};
+      for (const c of activeCombatants) {
+        entities[c.id] = transformCombatantToEntity(c);
+      }
+
+      await startCombat({ initiativeMode, entities });
       setShowStartModal(false);
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to start combat");
