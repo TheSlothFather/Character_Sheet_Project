@@ -755,6 +755,16 @@ export const BestiaryPage: React.FC = () => {
     return Object.keys(skillsPayload).length ? skillsPayload : undefined;
   };
 
+  const buildStatsSkillsPayload = (entry: ParsedBestiaryEntry): Record<string, unknown> | undefined => {
+    const statsSkills: Record<string, unknown> = {};
+    if (entry.groupName) statsSkills.type = entry.groupName;
+    if (entry.description) statsSkills.description = entry.description;
+    if (entry.immunities?.length) statsSkills.immunities = entry.immunities;
+    if (entry.resistances?.length) statsSkills.resistances = entry.resistances;
+    if (entry.weaknesses?.length) statsSkills.weaknesses = entry.weaknesses;
+    return Object.keys(statsSkills).length ? statsSkills : undefined;
+  };
+
   const normalizeRank = (rankValue: string): string => {
     const lower = rankValue.toLowerCase();
     if (lower === "hero") return "Hero";
@@ -790,7 +800,7 @@ export const BestiaryPage: React.FC = () => {
         const created = await gmApi.createBestiaryEntry({
           campaignId: selectedCampaignId,
           name: entry.name,
-          statsSkills: entry.groupName || entry.description ? { type: entry.groupName, description: entry.description } : undefined,
+          statsSkills: buildStatsSkillsPayload(entry),
           attributes: buildAttributesPayload(entry),
           skills: buildSkillsPayload(entry),
           abilities: entry.abilities,
@@ -811,7 +821,7 @@ export const BestiaryPage: React.FC = () => {
         const created = await gmApi.createBestiaryEntry({
           campaignId: selectedCampaignId,
           name: entry.name,
-          statsSkills: entry.groupName || entry.description ? { type: entry.groupName, description: entry.description } : undefined,
+          statsSkills: buildStatsSkillsPayload(entry),
           attributes: buildAttributesPayload(entry),
           skills: buildSkillsPayload(entry),
           abilities: entry.abilities,
@@ -833,7 +843,7 @@ export const BestiaryPage: React.FC = () => {
         await gmApi.createBestiaryEntry({
           campaignId: selectedCampaignId,
           name: entry.name,
-          statsSkills: entry.groupName || entry.description ? { type: entry.groupName, description: entry.description } : undefined,
+          statsSkills: buildStatsSkillsPayload(entry),
           attributes: buildAttributesPayload(entry),
           skills: buildSkillsPayload(entry),
           abilities: entry.abilities,
@@ -1267,19 +1277,19 @@ export const BestiaryPage: React.FC = () => {
   return (
     <div className={styles.root}>
       <header className={styles.header}>
-        <h2 className={`${styles.title} h2`}>Bestiary</h2>
-        <p className={`${styles.subtitle} subtitle muted`}>Maintain monster entries with quick edit controls.</p>
+        <h2 className={styles.title}>Grimoire of Beasts</h2>
+        <p className={styles.subtitle}>An arcane compendium of creatures, monsters, and adversaries</p>
       </header>
 
-      {error && <div className={`${styles.error} body`}>{error}</div>}
-      {loading && <div className={`${styles.loading} body muted`}>Loading...</div>}
+      {error && <div className={styles.error}>{error}</div>}
+      {loading && <div className={styles.mutedText} style={{ textAlign: 'center' }}>Consulting the ancient scrolls...</div>}
 
       <div className={styles.mainLayout}>
         <section className={`${styles.card} ${styles.sidebar}`}>
           <div className={styles.rowBetween}>
-            <h3 className={`${styles.title} h3`}>Creatures</h3>
+            <h3 className={styles.title} style={{ fontSize: '1rem' }}>Creature Index</h3>
             <button type="button" onClick={startCreate} className={styles.primaryButton}>
-              New
+              Inscribe
             </button>
           </div>
           {!campaignId && (
@@ -1345,18 +1355,7 @@ export const BestiaryPage: React.FC = () => {
             ) : (
               filteredEntries.map((entry) => {
                 const isSelected = entry.id === selectedEntryId;
-                const rankChipColor =
-                  entry.rank === "Hero"
-                    ? { background: "var(--tag-hero-bg)", color: "var(--tag-hero-text)", border: "1px solid var(--tag-hero-border)" }
-                    : entry.rank === "Lieutenant"
-                      ? {
-                          background: "var(--tag-lieutenant-bg)",
-                          color: "var(--tag-lieutenant-text)",
-                          border: "1px solid var(--tag-lieutenant-border)"
-                        }
-                      : entry.rank === "Minion"
-                        ? { background: "var(--tag-minion-bg)", color: "var(--tag-minion-text)", border: "1px solid var(--tag-minion-border)" }
-                        : { background: "var(--tag-npc-bg)", color: "var(--tag-npc-text)", border: "1px solid var(--tag-npc-border)" };
+                const rankSlug = (entry.rank || "NPC").toLowerCase();
                 const inlineLink =
                   entry.rank === "Minion" && entry.lieutenantId
                     ? `→ Lt: ${entryNameById.get(entry.lieutenantId) ?? "Unassigned"}`
@@ -1369,19 +1368,17 @@ export const BestiaryPage: React.FC = () => {
                     type="button"
                     onClick={() => selectEntry(entry.id)}
                     className={styles.entryButton}
-                    style={{
-                      border: isSelected ? "1px solid var(--accent)" : "1px solid var(--border)",
-                      background: isSelected ? "var(--accent-soft)" : "var(--surface-2)"
-                    }}
+                    aria-selected={isSelected}
+                    style={isSelected ? { borderColor: "var(--accent-warm, var(--accent))", background: "var(--accent-soft, var(--surface-2))" } : undefined}
                   >
                     <span className={styles.entryName}>{entry.name}</span>
                     <div className={styles.chipRow}>
-                      <span className={styles.rankChip} style={rankChipColor}>
+                      <span className={styles.rankChip} data-rank={rankSlug}>
                         {entry.rank || "NPC"}
                       </span>
                       <span className={styles.entryMeta}>
-                        {entry.tier ? `Tier ${entry.tier}` : "Tier —"} • {entry.type || "Unknown type"}
-                        {inlineLink ? ` • ${inlineLink}` : ""}
+                        {entry.tier ? `Tier ${entry.tier}` : "Tier —"} · {entry.type || "Unknown type"}
+                        {inlineLink ? ` · ${inlineLink}` : ""}
                       </span>
                     </div>
                   </button>
@@ -1395,14 +1392,14 @@ export const BestiaryPage: React.FC = () => {
           <div className={styles.detailSection}>
             <div className={styles.rowBetween}>
               <div>
-                <h3 className={styles.title}>Bulk Import</h3>
+                <h3 className={styles.title} style={{ fontSize: '1rem' }}>Transcription Chamber</h3>
                 <p className={styles.mutedTextSmall}>
-                  Paste formatted bestiary blocks. Add “Hero:” or “Lieutenant:” lines to link hierarchy when needed.
+                  Transcribe ancient texts into the grimoire. Include "Hero:" or "Lieutenant:" markings to establish dominion.
                 </p>
               </div>
               <div className={styles.rowWrap}>
                 <button type="button" className={styles.secondaryButton} onClick={handleParseImport}>
-                  Parse Preview
+                  Decipher Text
                 </button>
                 <button
                   type="button"
@@ -1410,12 +1407,12 @@ export const BestiaryPage: React.FC = () => {
                   onClick={handleCreateImport}
                   disabled={importing || importPreview.length === 0 || importMessages.some((msg) => msg.level === "error")}
                 >
-                  {importing ? "Creating..." : "Create Entries"}
+                  {importing ? "Inscribing..." : "Transcribe to Grimoire"}
                 </button>
               </div>
             </div>
             <label className={styles.field}>
-              <span className={styles.fieldLabel}>Formatted Import</span>
+              <span className={styles.fieldLabel}>Ancient Text</span>
               <textarea
                 value={importText}
                 onChange={(event) => setImportText(event.target.value)}
@@ -1466,6 +1463,15 @@ export const BestiaryPage: React.FC = () => {
                       )}
                       {entry.heroName && <span className={styles.mutedTextSmall}>Hero: {entry.heroName}</span>}
                       {entry.lieutenantName && <span className={styles.mutedTextSmall}>Lieutenant: {entry.lieutenantName}</span>}
+                      {entry.immunities?.length ? (
+                        <span className={styles.mutedTextSmall}>Immune: {entry.immunities.join(", ")}</span>
+                      ) : null}
+                      {entry.resistances?.length ? (
+                        <span className={styles.mutedTextSmall}>Resistant: {entry.resistances.join(", ")}</span>
+                      ) : null}
+                      {entry.weaknesses?.length ? (
+                        <span className={styles.mutedTextSmall}>Weak: {entry.weaknesses.join(", ")}</span>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -1479,9 +1485,9 @@ export const BestiaryPage: React.FC = () => {
           ) : isCreating ? (
             <form onSubmit={handleCreate} className={styles.form}>
               <div className={styles.rowBetween}>
-                <h3 className={styles.title}>Add Creature</h3>
+                <h3 className={styles.title} style={{ fontSize: '1rem' }}>Inscribe New Entry</h3>
                 <button type="button" onClick={() => setIsCreating(false)} className={styles.secondaryButton}>
-                  Cancel
+                  Abandon
                 </button>
               </div>
               <CollapsibleSection
