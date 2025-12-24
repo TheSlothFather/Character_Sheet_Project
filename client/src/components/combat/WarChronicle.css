@@ -1,0 +1,1034 @@
+/**
+ * War Chronicle Combat System CSS
+ *
+ * Theme-aware styling for the immersive "Arcane War Room" combat interface.
+ * All elements designed to feel like physical artifacts from the game world.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THEME VARIABLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root[data-theme="parchment"] {
+  /* Backgrounds */
+  --war-bg-primary: #f4e4c1;      /* Aged parchment */
+  --war-bg-secondary: #e8d4a8;    /* Darker parchment */
+  --war-bg-raised: #faf0dc;       /* Highlighted parchment */
+  --war-bg-overlay: rgba(244, 228, 193, 0.95);
+
+  /* Frame & Metal */
+  --war-frame-metal: #b87333;     /* Brass */
+  --war-frame-accent: #8b7355;    /* Aged bronze */
+  --war-frame-patina: #a0826d;    /* Verdigris */
+
+  /* Text */
+  --war-text-primary: #2c1810;    /* Dark sepia */
+  --war-text-secondary: #5c4033;  /* Medium sepia */
+  --war-text-tertiary: #8b7355;   /* Light sepia */
+
+  /* Borders & Dividers */
+  --war-border: #c4a574;
+  --war-divider: #d4b584;
+}
+
+:root[data-theme="dark-fantasy"] {
+  /* Backgrounds */
+  --war-bg-primary: #1a1412;      /* Deep obsidian */
+  --war-bg-secondary: #2d2420;    /* Warm charcoal */
+  --war-bg-raised: #3d3330;       /* Raised stone */
+  --war-bg-overlay: rgba(26, 20, 18, 0.95);
+
+  /* Frame & Metal */
+  --war-frame-metal: #4a4a4a;     /* Blackened iron */
+  --war-frame-accent: #e46a26;    /* Ember cracks */
+  --war-frame-patina: #3a3a3a;    /* Soot */
+
+  /* Text */
+  --war-text-primary: #e8dcc8;    /* Warm off-white */
+  --war-text-secondary: #a89888;  /* Muted tan */
+  --war-text-tertiary: #7a6a5a;   /* Darker tan */
+
+  /* Borders & Dividers */
+  --war-border: #4a4034;
+  --war-divider: #3a3024;
+}
+
+/* Common Combat Colors (theme-independent) */
+:root {
+  /* Combat Actions & States */
+  --war-ember: var(--color-ember-500, #e46a26);
+  --war-ember-glow: var(--color-ember-300, #f59e6c);
+  --war-ember-dark: var(--color-ember-700, #c44a06);
+
+  /* Factions */
+  --war-ally: var(--color-jade-500, #22c55e);
+  --war-ally-glow: var(--color-jade-300, #86efac);
+  --war-enemy: var(--color-blood-500, #ef4444);
+  --war-enemy-glow: var(--color-blood-300, #fca5a5);
+
+  /* Resources */
+  --war-ap-gradient: linear-gradient(135deg, var(--color-ember-600) 0%, var(--color-ember-400) 100%);
+  --war-energy-gradient: linear-gradient(135deg, var(--color-storm-600) 0%, var(--color-storm-400) 100%);
+
+  /* Status & Feedback */
+  --war-info: var(--color-storm-500, #0c8ee6);
+  --war-warning: var(--color-gold-500, #f59e0b);
+
+  /* Wound Types */
+  --war-wound-burn: var(--color-ember-500);
+  --war-wound-freeze: var(--color-storm-500);
+  --war-wound-laceration: var(--color-blood-500);
+  --war-wound-blunt: var(--color-bone-500, #d4a574);
+  --war-wound-mental: var(--color-gold-500);
+  --war-wound-necrosis: var(--color-shadow-500, #a855f7);
+  --war-wound-spiritual: var(--color-jade-500);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITY ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes war-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px currentColor,
+                0 0 40px currentColor;
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 30px currentColor,
+                0 0 60px currentColor;
+    opacity: 0.9;
+  }
+}
+
+@keyframes war-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes war-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes war-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes war-sigil-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--war-ember),
+                0 0 40px var(--war-ember-glow),
+                0 0 60px var(--war-ember-glow);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--war-ember),
+                0 0 60px var(--war-ember-glow),
+                0 0 90px var(--war-ember-glow);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes war-ember-burst {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes war-chain-flow {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes war-breathing {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.war-text-display {
+  font-family: var(--font-display, 'Cinzel', serif);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.war-text-body {
+  font-family: var(--font-body, 'Cormorant Garamond', serif);
+}
+
+.war-text-mono {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.war-text-roman {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMMON UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.war-glow-ember {
+  box-shadow: 0 0 20px var(--war-ember-glow),
+              0 0 40px var(--war-ember-glow);
+}
+
+.war-glow-ally {
+  box-shadow: 0 0 20px var(--war-ally-glow),
+              0 0 40px var(--war-ally-glow);
+}
+
+.war-glow-enemy {
+  box-shadow: 0 0 20px var(--war-enemy-glow),
+              0 0 40px var(--war-enemy-glow);
+}
+
+.war-border-ally {
+  border-color: var(--war-ally);
+}
+
+.war-border-enemy {
+  border-color: var(--war-enemy);
+}
+
+.war-border-ember {
+  border-color: var(--war-ember);
+}
+
+.war-hidden {
+  display: none;
+}
+
+.war-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENT PLACEHOLDER
+   (Individual component styles will be added below as components are built)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Components will be added in order:
+   1. PhaseDial ✓
+   2. InitiativeTower
+   3. EntityToken
+   4. ResourceSegments
+   5. WoundDisplay
+   6. StatusPill
+   7. ActionGrimoire
+   8. ReactionSigil
+   9. SkillDuelModal
+   10. CombatChronicle
+*/
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. PHASE DIAL - Brass/Iron Mechanism
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.phase-dial {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.phase-dial__frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, var(--war-bg-raised) 0%, var(--war-bg-secondary) 100%);
+  border: 3px solid var(--war-frame-metal);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    0 0 0 1px var(--war-frame-patina);
+}
+
+.phase-dial__decorative-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--war-frame-accent);
+  pointer-events: none;
+}
+
+/* Round Counter (Center) */
+.phase-dial__round {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+}
+
+.phase-dial__round-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--war-text-tertiary);
+  font-weight: 500;
+}
+
+.phase-dial__round-value {
+  font-size: 32px;
+  color: var(--war-text-primary);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Phase Indicator (Rotating Pointer) */
+.phase-dial__indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.phase-dial__indicator-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 16px solid var(--war-ember);
+  transform: translateX(-50%);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+/* Phase Runes (Around the Dial) */
+.phase-dial__phases {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.phase-dial__phase {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--war-bg-primary);
+  border: 2px solid var(--war-border);
+  border-radius: 50%;
+  padding: 8px;
+  min-width: 40px;
+  min-height: 40px;
+  cursor: pointer;
+  transition: all var(--duration-normal, 250ms) ease;
+  z-index: 2;
+}
+
+.phase-dial__phase:disabled {
+  cursor: default;
+}
+
+.phase-dial__phase:not(:disabled):hover {
+  border-color: var(--war-ember);
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.phase-dial__phase--active {
+  background: var(--war-ember);
+  border-color: var(--war-ember-dark);
+  animation: war-pulse-glow 2s ease-in-out infinite;
+  color: white;
+  z-index: 3;
+}
+
+.phase-dial__phase-rune {
+  font-size: 20px;
+  line-height: 1;
+  font-weight: bold;
+}
+
+.phase-dial__phase-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* Energy Connections */
+.phase-dial__connections {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.phase-dial__energy-ring {
+  opacity: 0.4;
+}
+
+.phase-dial[data-phase="active-turn"] .phase-dial__energy-ring,
+.phase-dial[data-phase="reaction-interrupt"] .phase-dial__energy-ring {
+  opacity: 0.8;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. INITIATIVE TOWER - Stone Tower with Mystical Chains
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.initiative-tower {
+  display: flex;
+  flex-direction: column;
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Header */
+.initiative-tower__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-3, 12px);
+  background: var(--war-bg-primary);
+  border-bottom: 2px solid var(--war-border);
+}
+
+.initiative-tower__header-icon {
+  font-size: 20px;
+  color: var(--war-ember);
+}
+
+.initiative-tower__title {
+  font-size: 16px;
+  margin: 0;
+  color: var(--war-text-primary);
+}
+
+/* List Container */
+.initiative-tower__list {
+  flex: 1;
+  padding: var(--space-2, 8px);
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+.initiative-tower__empty {
+  padding: var(--space-6, 24px);
+  text-align: center;
+  color: var(--war-text-tertiary);
+  font-style: italic;
+}
+
+/* Chain Connector */
+.initiative-tower__chain {
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  width: 20px;
+}
+
+.initiative-tower__chain-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.initiative-tower__chain-line {
+  color: var(--war-border);
+  animation: war-chain-flow 2s linear infinite;
+}
+
+/* Entity Entry */
+.initiative-tower__entry {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding: var(--space-3, 12px);
+  background: var(--war-bg-raised);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all var(--duration-normal, 250ms) ease;
+  text-align: left;
+  width: 100%;
+}
+
+.initiative-tower__entry:disabled {
+  cursor: default;
+}
+
+.initiative-tower__entry:not(:disabled):hover {
+  transform: translateX(4px);
+  box-shadow: -4px 0 0 var(--war-ember);
+}
+
+/* Faction Borders */
+.initiative-tower__entry--ally {
+  border-left: 4px solid var(--war-ally);
+}
+
+.initiative-tower__entry--enemy {
+  border-left: 4px solid var(--war-enemy);
+}
+
+/* Active State */
+.initiative-tower__entry--active {
+  background: var(--war-ember);
+  border-color: var(--war-ember-dark);
+  color: white;
+  animation: war-float 3s ease-in-out infinite;
+  box-shadow:
+    0 0 20px var(--war-ember-glow),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.initiative-tower__entry--active .initiative-tower__name,
+.initiative-tower__entry--active .initiative-tower__resources {
+  color: white;
+}
+
+/* Defeated State */
+.initiative-tower__entry--defeated {
+  opacity: 0.6;
+  filter: grayscale(1);
+}
+
+.initiative-tower__entry--defeated .initiative-tower__portrait {
+  position: relative;
+}
+
+/* Portrait */
+.initiative-tower__portrait {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.initiative-tower__portrait-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-border);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--war-text-primary);
+}
+
+.initiative-tower__entry--active .initiative-tower__portrait-placeholder {
+  background: var(--war-ember-dark);
+  border-color: white;
+  color: white;
+}
+
+.initiative-tower__active-indicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--war-ember-dark);
+  border: 2px solid white;
+  border-radius: 50%;
+  font-size: 12px;
+  color: white;
+  animation: war-pulse-glow 1.5s ease-in-out infinite;
+}
+
+.initiative-tower__defeated-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 50%;
+}
+
+.initiative-tower__defeated-mark {
+  font-size: 24px;
+  color: var(--war-enemy);
+  font-weight: bold;
+}
+
+/* Entity Info */
+.initiative-tower__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.initiative-tower__name {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--war-text-primary);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.initiative-tower__resources {
+  display: flex;
+  gap: var(--space-2, 8px);
+  font-size: 11px;
+}
+
+.initiative-tower__resource {
+  font-family: var(--font-mono);
+  color: var(--war-text-secondary);
+}
+
+.initiative-tower__resource--ap {
+  color: var(--war-ember);
+}
+
+.initiative-tower__resource--energy {
+  color: var(--war-info);
+}
+
+.initiative-tower__entry--active .initiative-tower__resource--ap,
+.initiative-tower__entry--active .initiative-tower__resource--energy {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Reaction Indicator */
+.initiative-tower__reaction {
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--war-ally);
+  animation: war-pulse-glow 2s ease-in-out infinite;
+}
+
+/* Footer */
+.initiative-tower__footer {
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--war-bg-primary);
+  border-top: 1px solid var(--war-border);
+  text-align: center;
+}
+
+.initiative-tower__count {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--war-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. ENTITY TOKEN - Physical Combat Tokens with Faction Framing
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.entity-token {
+  position: relative;
+  background: var(--war-bg-raised);
+  border: 3px solid var(--war-border);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-4, 16px);
+  transition: all var(--duration-normal, 250ms) ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.entity-token--clickable {
+  cursor: pointer;
+}
+
+.entity-token--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.entity-token--compact {
+  padding: var(--space-3, 12px);
+}
+
+/* Faction-Specific Framing */
+.entity-token--ally {
+  border-left: 6px solid var(--war-ally);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset -2px 0 8px rgba(34, 197, 94, 0.1);
+}
+
+.entity-token--ally .entity-token__frame {
+  background: linear-gradient(135deg, transparent 0%, rgba(34, 197, 94, 0.05) 100%);
+}
+
+.entity-token--enemy {
+  border-left: 6px solid var(--war-enemy);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset -2px 0 8px rgba(239, 68, 68, 0.1);
+}
+
+.entity-token--enemy .entity-token__frame {
+  background: linear-gradient(135deg, transparent 0%, rgba(239, 68, 68, 0.05) 100%);
+}
+
+/* Active State */
+.entity-token--active {
+  transform: scale(1.05);
+  border-color: var(--war-ember);
+  box-shadow:
+    0 0 24px var(--war-ember-glow),
+    0 0 48px var(--war-ember-glow),
+    0 8px 24px rgba(0, 0, 0, 0.3);
+  animation: war-ember-burst 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 20;
+}
+
+.entity-token--active .entity-token__frame {
+  background: radial-gradient(circle at top left, rgba(228, 106, 38, 0.15) 0%, transparent 70%);
+}
+
+/* Selected State */
+.entity-token--selected {
+  border-color: var(--war-ember);
+  box-shadow: 0 0 0 3px var(--war-ember-glow);
+}
+
+/* Defeated State */
+.entity-token--defeated {
+  opacity: 0.7;
+  filter: grayscale(0.8);
+}
+
+/* Frame & Ornaments */
+.entity-token__frame {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.entity-token__ornament {
+  position: absolute;
+  font-size: 32px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.entity-token__ornament--ally {
+  top: -8px;
+  right: -8px;
+  color: var(--war-ally);
+}
+
+.entity-token__ornament--enemy {
+  top: -8px;
+  right: -8px;
+  color: var(--war-enemy);
+}
+
+/* Active Banner */
+.entity-token__banner {
+  position: absolute;
+  top: 8px;
+  right: -8px;
+  background: var(--war-ember);
+  color: white;
+  padding: 4px 12px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  transform: rotate(3deg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+}
+
+.entity-token__banner::before {
+  content: "✦";
+  margin-right: 4px;
+}
+
+.entity-token__banner::after {
+  content: "✦";
+  margin-left: 4px;
+}
+
+/* Header */
+.entity-token__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3, 12px);
+  gap: var(--space-2, 8px);
+}
+
+.entity-token__name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--war-text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.entity-token--compact .entity-token__name {
+  font-size: 14px;
+}
+
+.entity-token__status-icon {
+  font-size: 20px;
+  color: var(--war-enemy);
+  font-weight: bold;
+}
+
+/* Resources */
+.entity-token__resources {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  margin-bottom: var(--space-3, 12px);
+}
+
+.entity-token__resource-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.entity-token__resource-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--war-text-secondary);
+  min-width: 24px;
+}
+
+.entity-token__resource-bar {
+  flex: 1;
+  height: 12px;
+  background: var(--war-bg-secondary);
+  border: 1px solid var(--war-border);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.entity-token__resource-fill {
+  height: 100%;
+  transition: width var(--duration-normal, 250ms) ease;
+  position: relative;
+}
+
+.entity-token__resource-fill--ap {
+  background: var(--war-ap-gradient);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.entity-token__resource-fill--energy {
+  background: var(--war-energy-gradient);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.entity-token__resource-value {
+  font-size: 11px;
+  color: var(--war-text-primary);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Compact Resources */
+.entity-token__resources-compact {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+  font-size: 11px;
+  color: var(--war-text-secondary);
+  margin-bottom: var(--space-2, 8px);
+}
+
+.entity-token__compact-separator {
+  opacity: 0.5;
+}
+
+/* Section Labels */
+.entity-token__section-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--war-text-tertiary);
+  margin-bottom: var(--space-1, 4px);
+}
+
+/* Wounds */
+.entity-token__wounds {
+  margin-bottom: var(--space-3, 12px);
+}
+
+.entity-token__wound-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1, 4px);
+}
+
+.entity-token__wound {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  background: var(--war-bg-secondary);
+  border: 1px solid var(--war-border);
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+.entity-token__wound--burn { border-left: 3px solid var(--war-wound-burn); }
+.entity-token__wound--freeze { border-left: 3px solid var(--war-wound-freeze); }
+.entity-token__wound--laceration { border-left: 3px solid var(--war-wound-laceration); }
+.entity-token__wound--blunt { border-left: 3px solid var(--war-wound-blunt); }
+.entity-token__wound--mental { border-left: 3px solid var(--war-wound-mental); }
+.entity-token__wound--necrosis { border-left: 3px solid var(--war-wound-necrosis); }
+.entity-token__wound--spiritual { border-left: 3px solid var(--war-wound-spiritual); }
+
+/* Status Effects */
+.entity-token__status-effects {
+  margin-bottom: var(--space-3, 12px);
+}
+
+.entity-token__status-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1, 4px);
+}
+
+.entity-token__status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--war-bg-secondary);
+  border: 1px solid var(--war-border);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--war-text-primary);
+}
+
+.entity-token__status-stack {
+  font-family: var(--font-mono);
+  opacity: 0.7;
+}
+
+/* Target Prompt */
+.entity-token__target-prompt {
+  margin-top: var(--space-3, 12px);
+  padding: var(--space-2, 8px);
+  background: var(--war-ember);
+  border-radius: 4px;
+  text-align: center;
+  animation: war-pulse-glow 2s ease-in-out infinite;
+}
+
+.entity-token__target-text {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.1em;
+}
+
+/* Reaction Badge */
+.entity-token__reaction-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--war-ally);
+  border: 2px solid white;
+  border-radius: 50%;
+  font-size: 16px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: war-pulse-glow 2s ease-in-out infinite;
+}
