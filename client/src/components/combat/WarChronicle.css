@@ -1383,3 +1383,1334 @@
   gap: var(--space-1, 4px);
   align-items: center;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7. ACTION GRIMOIRE - Leather-Bound Spellbook Interface
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.action-grimoire {
+  background: var(--war-bg-raised);
+  border: 3px solid var(--war-frame-metal);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-4, 16px);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.action-grimoire::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(184, 115, 51, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Closed State (when disabled) */
+.action-grimoire--closed {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: war-breathing 4s ease-in-out infinite;
+}
+
+.action-grimoire__closed-state {
+  text-align: center;
+  z-index: 1;
+}
+
+.action-grimoire__book-cover {
+  position: relative;
+  width: 180px;
+  height: 120px;
+  margin: 0 auto var(--space-4, 16px);
+  background: var(--war-frame-metal);
+  border: 2px solid var(--war-frame-accent);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.action-grimoire__book-title {
+  font-size: 14px;
+  color: var(--war-text-primary);
+  text-align: center;
+  padding: 0 var(--space-2, 8px);
+}
+
+.action-grimoire__lock {
+  font-size: 24px;
+  opacity: 0.7;
+}
+
+.action-grimoire__waiting-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--war-text-tertiary);
+  font-style: italic;
+}
+
+/* Header */
+.action-grimoire__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4, 16px);
+  gap: var(--space-3, 12px);
+}
+
+.action-grimoire__title {
+  font-size: 18px;
+  margin: 0;
+  color: var(--war-text-primary);
+}
+
+.action-grimoire__end-turn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-md, 8px);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--war-text-primary);
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.action-grimoire__end-turn:hover {
+  background: var(--war-ember);
+  border-color: var(--war-ember-dark);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.action-grimoire__end-turn-icon {
+  font-size: 16px;
+}
+
+/* Tabs */
+.action-grimoire__tabs {
+  display: flex;
+  gap: var(--space-1, 4px);
+  margin-bottom: var(--space-4, 16px);
+  padding-bottom: var(--space-3, 12px);
+  border-bottom: 2px solid var(--war-border);
+  overflow-x: auto;
+}
+
+.action-grimoire__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+  min-width: 80px;
+}
+
+.action-grimoire__tab:hover:not(:disabled) {
+  background: var(--war-bg-raised);
+  transform: translateY(-2px);
+}
+
+.action-grimoire__tab--selected {
+  background: var(--war-bg-raised);
+  border-color: var(--war-ember);
+  border-bottom-color: var(--war-bg-raised);
+  margin-bottom: -2px;
+  padding-bottom: calc(var(--space-2, 8px) + 2px);
+  box-shadow: 0 -2px 8px rgba(228, 106, 38, 0.2);
+}
+
+.action-grimoire__tab--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-grimoire__tab-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.action-grimoire__tab-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--war-text-primary);
+}
+
+.action-grimoire__tab-cost {
+  font-size: 10px;
+  color: var(--war-text-tertiary);
+}
+
+.action-grimoire__tab--selected .action-grimoire__tab-cost {
+  color: var(--war-ember);
+}
+
+/* Content Area */
+.action-grimoire__content {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+}
+
+.action-grimoire__description {
+  padding: var(--space-3, 12px);
+  background: var(--war-bg-secondary);
+  border-left: 3px solid var(--war-ember);
+  border-radius: var(--radius-sm, 4px);
+}
+
+.action-grimoire__description-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--war-text-primary);
+  margin: 0 0 var(--space-2, 8px) 0;
+}
+
+.action-grimoire__cost-display {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  font-size: 12px;
+}
+
+.action-grimoire__cost-label {
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--war-text-secondary);
+}
+
+.action-grimoire__cost-value {
+  color: var(--war-ember);
+  font-weight: bold;
+}
+
+/* Target Selection */
+.action-grimoire__targets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.action-grimoire__targets-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--war-text-secondary);
+}
+
+.action-grimoire__no-targets {
+  padding: var(--space-4, 16px);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--war-text-tertiary);
+  font-style: italic;
+}
+
+.action-grimoire__target-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-2, 8px);
+}
+
+.action-grimoire__target {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-3, 12px);
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-border);
+  border-left: 4px solid var(--war-enemy);
+  border-radius: var(--radius-md, 8px);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.action-grimoire__target:hover {
+  background: var(--war-bg-raised);
+  transform: translateX(4px);
+  box-shadow: -4px 0 0 var(--war-ember);
+}
+
+.action-grimoire__target--selected {
+  border-color: var(--war-ember);
+  background: var(--war-bg-raised);
+  box-shadow:
+    0 0 0 2px var(--war-ember-glow),
+    -4px 0 0 var(--war-ember);
+}
+
+.action-grimoire__target-name {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--war-text-primary);
+}
+
+.action-grimoire__target-info {
+  font-size: 11px;
+  color: var(--war-text-secondary);
+}
+
+.action-grimoire__target-status {
+  font-size: 10px;
+  color: var(--war-text-tertiary);
+}
+
+/* Submit Button */
+.action-grimoire__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  background: var(--war-ember);
+  border: 2px solid var(--war-ember-dark);
+  border-radius: var(--radius-md, 8px);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all var(--duration-normal, 250ms) ease;
+  box-shadow: 0 4px 12px rgba(228, 106, 38, 0.3);
+}
+
+.action-grimoire__submit:hover:not(:disabled) {
+  background: var(--war-ember-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(228, 106, 38, 0.4);
+}
+
+.action-grimoire__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.action-grimoire__submit-icon {
+  font-size: 20px;
+}
+
+/* Decorative Page Edge */
+.action-grimoire__page-edge {
+  position: absolute;
+  right: -8px;
+  top: 20px;
+  bottom: 20px;
+  width: 8px;
+  background: repeating-linear-gradient(
+    0deg,
+    var(--war-bg-secondary) 0px,
+    var(--war-bg-secondary) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ============================================
+   5. REACTION SIGIL (Magical Rune Button)
+   ============================================ */
+
+/* Base Sigil */
+.reaction-sigil {
+  position: fixed;
+  bottom: var(--space-6, 24px);
+  right: var(--space-6, 24px);
+  width: 120px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 8px);
+  background: var(--war-bg-raised);
+  border: 3px solid var(--war-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--duration-normal, 250ms) ease;
+  z-index: 100;
+  box-shadow: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.2));
+}
+
+.reaction-sigil:focus {
+  outline: 2px solid var(--war-jade);
+  outline-offset: 4px;
+}
+
+/* Dormant State (disabled, faded) */
+.reaction-sigil--dormant {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: var(--war-bg-secondary);
+  border-color: var(--war-border);
+}
+
+.reaction-sigil--dormant:hover {
+  transform: none;
+}
+
+/* Available State (ready, subtle glow) */
+.reaction-sigil--available {
+  border-color: var(--war-jade);
+  box-shadow:
+    0 0 20px var(--war-jade-glow),
+    var(--shadow-md, 0 6px 15px rgba(0, 0, 0, 0.15));
+  animation: war-pulse-glow 2s ease-in-out infinite;
+}
+
+.reaction-sigil--available:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 0 30px var(--war-jade-glow),
+    var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.2));
+}
+
+/* Pulsing State (action pending!) */
+.reaction-sigil--pulsing {
+  border-color: var(--war-ember);
+  background: var(--war-bg-raised);
+  box-shadow:
+    0 0 40px var(--war-ember-glow),
+    0 0 60px rgba(228, 106, 38, 0.3),
+    var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.2));
+  animation: war-ember-burst 0.8s ease-in-out infinite;
+}
+
+.reaction-sigil--pulsing:hover {
+  transform: scale(1.1);
+}
+
+/* Central Rune */
+.reaction-sigil__rune {
+  font-size: 48px;
+  line-height: 1;
+  color: var(--war-jade);
+  transition: all var(--duration-normal, 250ms) ease;
+  filter: drop-shadow(0 0 8px var(--war-jade-glow));
+}
+
+.reaction-sigil--pulsing .reaction-sigil__rune {
+  color: var(--war-ember);
+  filter: drop-shadow(0 0 12px var(--war-ember-glow));
+  animation: war-pulse-glow 0.8s ease-in-out infinite;
+}
+
+.reaction-sigil--dormant .reaction-sigil__rune {
+  color: var(--war-text-tertiary);
+  filter: none;
+}
+
+.reaction-sigil__rune--depleted {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+/* Pulsing Energy Rings */
+.reaction-sigil__ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--war-ember);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: war-ring-expand 1.5s ease-out infinite;
+}
+
+.reaction-sigil__ring--1 {
+  animation-delay: 0s;
+}
+
+.reaction-sigil__ring--2 {
+  animation-delay: 0.5s;
+}
+
+.reaction-sigil__ring--3 {
+  animation-delay: 1s;
+}
+
+@keyframes war-ring-expand {
+  0% {
+    width: 60px;
+    height: 60px;
+    opacity: 0.8;
+  }
+  100% {
+    width: 140px;
+    height: 140px;
+    opacity: 0;
+  }
+}
+
+/* Label */
+.reaction-sigil__label {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--war-text-primary);
+  text-align: center;
+}
+
+.reaction-sigil--pulsing .reaction-sigil__label {
+  color: var(--war-ember);
+}
+
+.reaction-sigil__label-emphasis {
+  font-size: 14px;
+  animation: war-pulse-glow 0.8s ease-in-out infinite;
+}
+
+/* Particle Effects */
+.reaction-sigil__particles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.reaction-sigil__particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: var(--war-ember);
+  border-radius: 50%;
+  transform-origin: center center;
+  animation: war-particle-radiate 1.5s ease-out infinite;
+  box-shadow: 0 0 8px var(--war-ember-glow);
+}
+
+@keyframes war-particle-radiate {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-40px);
+  }
+}
+
+/* ============================================
+   6. SKILL DUEL MODAL (Epic Split-Screen)
+   ============================================ */
+
+/* Modal Container */
+.skill-duel-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4, 16px);
+}
+
+.skill-duel-modal--open {
+  display: flex;
+}
+
+.skill-duel-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  animation: fadeIn var(--duration-normal, 250ms) ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.skill-duel-modal__container {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 90vh;
+  background: var(--war-bg-primary);
+  border: 4px solid var(--war-frame-metal);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.2));
+  overflow: hidden;
+  animation: slideUp var(--duration-normal, 250ms) ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.skill-duel-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4, 16px) var(--space-6, 24px);
+  background: var(--war-bg-secondary);
+  border-bottom: 2px solid var(--war-border);
+}
+
+.skill-duel-modal__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--war-text-primary);
+  margin: 0;
+}
+
+.skill-duel-modal__close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px solid var(--war-border);
+  border-radius: 50%;
+  font-size: 18px;
+  color: var(--war-text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.skill-duel-modal__close:hover {
+  background: var(--war-bg-raised);
+  border-color: var(--war-ember);
+  color: var(--war-ember);
+  transform: rotate(90deg);
+}
+
+/* Arena (Split-Screen Container) */
+.skill-duel-modal__arena {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-4, 16px);
+  padding: var(--space-6, 24px);
+  min-height: 400px;
+}
+
+/* Combatant Sides */
+.skill-duel-modal__combatant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+  padding: var(--space-4, 16px);
+  background: var(--war-bg-secondary);
+  border: 3px solid var(--war-border);
+  border-radius: var(--radius-md, 8px);
+  transition: all var(--duration-normal, 250ms) ease;
+}
+
+/* Initiator (Ember Tint) */
+.skill-duel-modal__combatant--initiator {
+  border-left: 6px solid var(--war-ember);
+  box-shadow: inset 6px 0 12px rgba(228, 106, 38, 0.1);
+}
+
+/* Defender (Storm Tint) */
+.skill-duel-modal__combatant--defender {
+  border-right: 6px solid var(--war-storm);
+  box-shadow: inset -6px 0 12px rgba(12, 142, 230, 0.1);
+}
+
+/* Winner State */
+.skill-duel-modal__combatant--winner {
+  border-color: var(--war-jade);
+  box-shadow:
+    0 0 20px var(--war-jade-glow),
+    var(--shadow-md, 0 6px 15px rgba(0, 0, 0, 0.15));
+  animation: war-float 3s ease-in-out infinite;
+}
+
+/* Combatant Header */
+.skill-duel-modal__combatant-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+}
+
+.skill-duel-modal__portrait {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.skill-duel-modal__portrait-image {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--war-bg-raised);
+  border: 3px solid var(--war-frame-metal);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--war-text-primary);
+  box-shadow: var(--shadow-md, 0 6px 15px rgba(0, 0, 0, 0.15));
+}
+
+.skill-duel-modal__winner-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--war-gold);
+  border: 2px solid var(--war-gold-dark);
+  border-radius: 50%;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  animation: war-pulse-glow 1.5s ease-in-out infinite;
+}
+
+.skill-duel-modal__combatant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.skill-duel-modal__combatant-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--war-text-primary);
+  margin: 0 0 4px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skill-duel-modal__combatant-role {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--war-text-secondary);
+}
+
+/* Combatant Stats */
+.skill-duel-modal__combatant-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+/* Roll Area */
+.skill-duel-modal__roll-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding: var(--space-4, 16px);
+  background: var(--war-bg-primary);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-md, 8px);
+  min-height: 120px;
+}
+
+.skill-duel-modal__skill-label {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--war-text-primary);
+}
+
+.skill-duel-modal__dice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.skill-duel-modal__dice-values {
+  display: flex;
+  gap: var(--space-2, 8px);
+}
+
+.skill-duel-modal__die {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--war-bg-raised);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--war-text-secondary);
+  box-shadow: var(--shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.1));
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.skill-duel-modal__die--selected {
+  background: var(--war-ember);
+  border-color: var(--war-ember-dark);
+  color: white;
+  box-shadow: 0 0 16px var(--war-ember-glow);
+  transform: scale(1.1);
+}
+
+.skill-duel-modal__total {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--war-text-primary);
+}
+
+.skill-duel-modal__waiting {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--war-text-tertiary);
+}
+
+/* Defense Selection */
+.skill-duel-modal__defense-selection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  width: 100%;
+}
+
+.skill-duel-modal__defense-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--war-text-secondary);
+}
+
+.skill-duel-modal__defense-input {
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--war-bg-raised);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--war-text-primary);
+  transition: border-color var(--duration-fast, 150ms) ease;
+}
+
+.skill-duel-modal__defense-input:focus {
+  outline: none;
+  border-color: var(--war-storm);
+  box-shadow: 0 0 0 2px var(--war-storm-glow);
+}
+
+.skill-duel-modal__dice-config {
+  display: flex;
+  gap: var(--space-3, 12px);
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--war-text-secondary);
+}
+
+.skill-duel-modal__dice-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.skill-duel-modal__dice-input {
+  width: 60px;
+  padding: 4px var(--space-2, 8px);
+  background: var(--war-bg-raised);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--war-text-primary);
+}
+
+.skill-duel-modal__dice-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* Divider (Crossed Swords) */
+.skill-duel-modal__divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4, 16px);
+  padding: var(--space-4, 16px) 0;
+}
+
+.skill-duel-modal__divider-icon {
+  font-size: 48px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  animation: war-rotate 20s linear infinite;
+}
+
+/* Result Badge */
+.skill-duel-modal__result-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1, 4px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  background: var(--war-bg-raised);
+  border: 3px solid var(--war-border);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-md, 0 6px 15px rgba(0, 0, 0, 0.15));
+}
+
+.skill-duel-modal__result-tie {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--war-text-secondary);
+}
+
+.skill-duel-modal__result-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.skill-duel-modal__result-label {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Result Animations */
+.war-result-normal {
+  border-color: var(--war-jade);
+  color: var(--war-jade);
+  animation: war-pulse-glow 2s ease-in-out 3;
+}
+
+.war-result-wicked {
+  border-color: var(--war-storm);
+  color: var(--war-storm);
+  animation: war-result-wicked-anim 0.6s ease-out;
+}
+
+@keyframes war-result-wicked-anim {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+.war-result-vicious {
+  border-color: var(--war-ember);
+  color: var(--war-ember);
+  animation: war-result-vicious-anim 0.8s ease-out;
+}
+
+@keyframes war-result-vicious-anim {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  10%,
+  30%,
+  50% {
+    transform: scale(1.15) translateX(-4px);
+  }
+  20%,
+  40% {
+    transform: scale(1.15) translateX(4px);
+  }
+}
+
+.war-result-brutal {
+  border-color: var(--war-blood);
+  color: var(--war-blood);
+  animation:
+    war-result-brutal-anim 1s ease-out,
+    war-pulse-glow 0.5s ease-in-out infinite 1s;
+  box-shadow: 0 0 40px var(--war-blood-glow);
+}
+
+@keyframes war-result-brutal-anim {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  20%,
+  40%,
+  60% {
+    transform: scale(1.3);
+  }
+  30%,
+  50%,
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1.2);
+  }
+}
+
+/* Action Buttons */
+.skill-duel-modal__actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+  padding: 0 var(--space-6, 24px) var(--space-4, 16px);
+}
+
+.skill-duel-modal__action-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  background: var(--war-ember);
+  border: 2px solid var(--war-ember-dark);
+  border-radius: var(--radius-md, 8px);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all var(--duration-normal, 250ms) ease;
+  box-shadow: 0 4px 12px rgba(228, 106, 38, 0.3);
+}
+
+.skill-duel-modal__action-btn:hover:not(:disabled) {
+  background: var(--war-ember-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(228, 106, 38, 0.4);
+}
+
+.skill-duel-modal__action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.skill-duel-modal__action-btn--defend {
+  background: var(--war-storm);
+  border-color: var(--war-storm-dark);
+  box-shadow: 0 4px 12px rgba(12, 142, 230, 0.3);
+}
+
+.skill-duel-modal__action-btn--defend:hover:not(:disabled) {
+  background: var(--war-storm-dark);
+  box-shadow: 0 6px 16px rgba(12, 142, 230, 0.4);
+}
+
+.skill-duel-modal__action-btn--acknowledge {
+  background: var(--war-jade);
+  border-color: var(--war-jade-dark);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.skill-duel-modal__action-btn--acknowledge:hover:not(:disabled) {
+  background: var(--war-jade-dark);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+
+/* Audit Trail */
+.skill-duel-modal__audit {
+  margin: 0 var(--space-6, 24px) var(--space-4, 16px);
+  padding: var(--space-3, 12px);
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+}
+
+.skill-duel-modal__audit-summary {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--war-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.skill-duel-modal__audit-summary:hover {
+  color: var(--war-text-primary);
+}
+
+.skill-duel-modal__audit-content {
+  margin-top: var(--space-2, 8px);
+  padding-top: var(--space-2, 8px);
+  border-top: 1px solid var(--war-border);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--war-text-tertiary);
+  white-space: pre-wrap;
+}
+
+.skill-duel-modal__audit-content > div {
+  margin-bottom: 4px;
+}
+
+/* ============================================
+   7. COMBAT CHRONICLE (Battle Log)
+   ============================================ */
+
+/* Chronicle Container */
+.combat-chronicle {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--war-bg-secondary);
+  border: 3px solid var(--war-frame-metal);
+  border-radius: var(--radius-md, 8px);
+  overflow: hidden;
+  box-shadow: var(--shadow-md, 0 6px 15px rgba(0, 0, 0, 0.15));
+}
+
+/* Header */
+.combat-chronicle__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  background: var(--war-bg-primary);
+  border-bottom: 2px solid var(--war-border);
+}
+
+.combat-chronicle__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--war-text-primary);
+  margin: 0;
+}
+
+.combat-chronicle__filter-toggle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.combat-chronicle__filter-toggle:hover {
+  background: var(--war-bg-raised);
+  border-color: var(--war-storm);
+}
+
+/* Pinned Section */
+.combat-chronicle__pinned {
+  border-bottom: 2px solid var(--war-border);
+  background: var(--war-bg-raised);
+}
+
+.combat-chronicle__pinned-label {
+  padding: var(--space-2, 8px) var(--space-4, 16px);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--war-text-secondary);
+  background: var(--war-bg-primary);
+  border-bottom: 1px solid var(--war-border);
+}
+
+/* Scrolling Log */
+.combat-chronicle__scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2, 8px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.combat-chronicle__scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.combat-chronicle__scroll::-webkit-scrollbar-track {
+  background: var(--war-bg-primary);
+  border-radius: var(--radius-sm, 4px);
+}
+
+.combat-chronicle__scroll::-webkit-scrollbar-thumb {
+  background: var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+}
+
+.combat-chronicle__scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--war-text-tertiary);
+}
+
+.combat-chronicle__empty {
+  padding: var(--space-8, 32px);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--war-text-tertiary);
+}
+
+/* Chronicle Entry */
+.combat-chronicle__entry {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-2, 8px);
+  align-items: start;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--war-bg-primary);
+  border: 1px solid var(--war-border);
+  border-left: 4px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.combat-chronicle__entry:hover {
+  background: var(--war-bg-raised);
+  box-shadow: var(--shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.1));
+}
+
+.combat-chronicle__entry--clickable {
+  cursor: pointer;
+}
+
+.combat-chronicle__entry--clickable:hover {
+  transform: translateX(2px);
+}
+
+.combat-chronicle__entry--important {
+  background: var(--war-bg-raised);
+  border-width: 2px;
+  border-left-width: 6px;
+  font-weight: 600;
+}
+
+.combat-chronicle__entry--pinned {
+  background: var(--war-bg-raised);
+  box-shadow: 0 0 0 2px var(--war-gold-glow);
+}
+
+/* Entry Icon */
+.combat-chronicle__entry-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Entry Content */
+.combat-chronicle__entry-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.combat-chronicle__entry-message {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--war-text-primary);
+  word-wrap: break-word;
+}
+
+.combat-chronicle__entry--important .combat-chronicle__entry-message {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.combat-chronicle__entry-details {
+  font-size: 11px;
+  color: var(--war-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pin Button */
+.combat-chronicle__entry-pin {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  opacity: 0.3;
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+  flex-shrink: 0;
+}
+
+.combat-chronicle__entry:hover .combat-chronicle__entry-pin {
+  opacity: 0.6;
+}
+
+.combat-chronicle__entry-pin:hover {
+  opacity: 1 !important;
+  transform: scale(1.2);
+}
+
+.combat-chronicle__entry-pin--active {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 4px var(--war-gold-glow));
+}
