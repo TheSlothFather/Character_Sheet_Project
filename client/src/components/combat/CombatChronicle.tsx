@@ -176,7 +176,7 @@ export const CombatChronicle: React.FC<CombatChronicleProps> = ({
 
       case "wounds_applied":
         return `${target} takes ${data.woundType || ""} wound${
-          data.count && data.count > 1 ? "s" : ""
+          typeof data.count === "number" && data.count > 1 ? "s" : ""
         }`;
 
       case "status_applied":
