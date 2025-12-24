@@ -16,7 +16,7 @@ import { CampaignHubLayout } from "./campaigns/CampaignHubLayout";
 import { CampaignCharactersPage } from "./campaigns/CampaignCharactersPage";
 import { CampaignSettingsPage } from "./campaigns/CampaignSettingsPage";
 import { ACTIVE_CAMPAIGN_STORAGE_KEY } from "./campaigns/campaignStorage";
-import { CombatPageNew } from "./characters/CombatPageNew";
+import CombatPage from "./characters/CombatPageNew";
 import { useTheme } from "../hooks/useTheme";
 import "./App.css";
 

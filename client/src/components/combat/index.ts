@@ -1,17 +1,40 @@
 /**
- * Combat Components
+ * War Chronicle Combat Components
  *
- * Reusable UI components for the authoritative combat system.
+ * Immersive TTRPG combat interface components with arcane war room aesthetic.
  */
 
-export { ResourceBar, ResourceInline, type ResourceBarProps, type ResourceInlineProps, type ResourceType } from "./ResourceBar";
-export { WoundTracker, WoundChip, type WoundTrackerProps, type WoundChipProps } from "./WoundTracker";
-export { StatusEffectBadge, StatusEffectList, type StatusEffectBadgeProps, type StatusEffectListProps, type StatusType } from "./StatusEffectBadge";
-export { InitiativeList, InitiativeItem, InitiativeBar, type InitiativeListProps, type InitiativeItemProps, type InitiativeBarProps } from "./InitiativeList";
-export { PhaseIndicator, PhaseChip, RoundDisplay, type PhaseIndicatorProps, type PhaseChipProps, type RoundDisplayProps } from "./PhaseIndicator";
-export { EntityCard, EntityMini, type EntityCardProps, type EntityMiniProps } from "./EntityCard";
-export { ReactionButton, ReactionIndicator, type ReactionButtonProps, type ReactionIndicatorProps } from "./ReactionButton";
+// Phase 1: Core Components
+export { PhaseDial, type PhaseDialProps } from "./PhaseDial";
+export { InitiativeTower, type InitiativeTowerProps } from "./InitiativeTower";
+export { EntityToken, type EntityTokenProps } from "./EntityToken";
+
+// Phase 2: Interactive Elements
+export {
+  ResourceSegments,
+  type ResourceSegmentsProps,
+} from "./ResourceSegments";
+export {
+  WoundDisplay,
+  WoundBadge,
+  type WoundDisplayProps,
+  type WoundBadgeProps,
+} from "./WoundDisplay";
+export {
+  StatusPill,
+  StatusList,
+  type StatusPillProps,
+  type StatusListProps,
+} from "./StatusPill";
+export {
+  ActionGrimoire,
+  type ActionGrimoireProps,
+} from "./ActionGrimoire";
+export { ReactionSigil, type ReactionSigilProps } from "./ReactionSigil";
+
+// Phase 3: Combat Interactions
+export { SkillDuelModal, type SkillDuelModalProps } from "./SkillDuelModal";
+export { CombatChronicle, type CombatChronicleProps } from "./CombatChronicle";
+
+// Utilities (kept from previous implementation)
 export { SkillSelector, type SkillSelectorProps } from "./SkillSelector";
-export { SkillContestModal, type SkillContestModalProps } from "./SkillContestModal";
-export { SkillCheckPrompt, type SkillCheckPromptProps } from "./SkillCheckPrompt";
-export { ContestResultDisplay, type ContestResultDisplayProps } from "./ContestResultDisplay";
