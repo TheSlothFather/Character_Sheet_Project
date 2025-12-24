@@ -62,6 +62,11 @@ import type {
   SkillCheckRequestedPayload,
   SkillCheckRolledPayload,
   EntityRemovedPayload,
+  LobbyPlayerJoinedPayload,
+  LobbyPlayerLeftPayload,
+  LobbyPlayerReadyPayload,
+  LobbyStateSyncPayload,
+  LobbyState,
 } from "@shared/rules/combatEvents";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -83,6 +88,9 @@ export interface CombatContextValue {
 
   // Combat state (null if no active combat)
   state: CombatState | null;
+
+  // Lobby state (pre-combat)
+  lobbyState: LobbyState | null;
 
   // Derived state helpers
   phase: CombatPhase | null;
@@ -127,6 +135,11 @@ export interface CombatContextValue {
   resolveReactions: () => Promise<void>;
   gmOverride: (params: GmOverrideParams) => Promise<void>;
   removeEntity: (params: RemoveEntityParams) => Promise<void>;
+
+  // Lobby actions
+  joinLobby: (characterId?: string) => void;
+  leaveLobby: () => void;
+  toggleReady: (isReady: boolean, characterId?: string) => void;
 
   // Error handling
   error: string | null;
@@ -191,6 +204,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
     React.useState<CombatConnectionStatus>("disconnected");
   const [reconnectAttempt, setReconnectAttempt] = React.useState(0);
   const [state, setState] = React.useState<CombatState | null>(null);
+  const [lobbyState, setLobbyState] = React.useState<LobbyState | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
   // Skill contest and check state
@@ -541,6 +555,22 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
           };
         });
       },
+
+      onLobbyPlayerJoined: (payload: LobbyPlayerJoinedPayload) => {
+        setLobbyState(payload.lobbyState);
+      },
+
+      onLobbyPlayerLeft: (payload: LobbyPlayerLeftPayload) => {
+        setLobbyState(payload.lobbyState);
+      },
+
+      onLobbyPlayerReady: (payload: LobbyPlayerReadyPayload) => {
+        setLobbyState(payload.lobbyState);
+      },
+
+      onLobbyStateSync: (payload: LobbyStateSyncPayload) => {
+        setLobbyState(payload.lobbyState);
+      },
     };
 
     const socket = createReconnectingCombatSocket(campaignId, handlers, userId, {
@@ -873,6 +903,49 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
   );
 
   // ─────────────────────────────────────────────────────────────────────────
+  // Lobby Actions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const joinLobby = React.useCallback(
+    (characterId?: string) => {
+      if (!socketRef.current?.socket) return;
+      socketRef.current.socket.send(
+        JSON.stringify({
+          type: "LOBBY_JOIN",
+          userId,
+          characterId,
+        })
+      );
+    },
+    [userId]
+  );
+
+  const leaveLobby = React.useCallback(() => {
+    if (!socketRef.current?.socket) return;
+    socketRef.current.socket.send(
+      JSON.stringify({
+        type: "LOBBY_LEAVE",
+        userId,
+      })
+    );
+  }, [userId]);
+
+  const toggleReady = React.useCallback(
+    (isReady: boolean, characterId?: string) => {
+      if (!socketRef.current?.socket) return;
+      socketRef.current.socket.send(
+        JSON.stringify({
+          type: "LOBBY_TOGGLE_READY",
+          userId,
+          isReady,
+          characterId,
+        })
+      );
+    },
+    [userId]
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
   // Error Handling
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -893,6 +966,9 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
 
       // Combat state
       state,
+
+      // Lobby state
+      lobbyState,
 
       // Derived state
       phase,
@@ -938,6 +1014,11 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       gmOverride,
       removeEntity,
 
+      // Lobby actions
+      joinLobby,
+      leaveLobby,
+      toggleReady,
+
       // Error handling
       error,
       clearError,
@@ -947,6 +1028,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       connectionStatus,
       reconnectAttempt,
       state,
+      lobbyState,
       phase,
       round,
       activeEntity,
@@ -975,6 +1057,9 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       resolveReactions,
       gmOverride,
       removeEntity,
+      joinLobby,
+      leaveLobby,
+      toggleReady,
       error,
       clearError,
     ]
