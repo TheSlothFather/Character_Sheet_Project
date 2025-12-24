@@ -448,11 +448,26 @@ type ContestRecord = {
   createdAt: string;
 };
 
+interface LobbyPlayerState {
+  userId: string;
+  characterId?: string;
+  isReady: boolean;
+  joinedAt: string;
+}
+
+interface LobbyState {
+  campaignId: string;
+  players: Record<string, LobbyPlayerState>;
+  readyCount: number;
+  totalCount: number;
+}
+
 export class CampaignDurableObject {
   private state: DurableObjectState;
   private env: Env;
   private sessions = new Map<string, WebSocket>();
   private presence = new Map<string, StoredPresence>();
+  private lobbyState: LobbyState | null = null;
   private sequence = 0;
   private ready: Promise<void>;
 
@@ -463,6 +478,12 @@ export class CampaignDurableObject {
       const storedSequence = await this.state.storage.get<number>("sequence");
       if (typeof storedSequence === "number") {
         this.sequence = storedSequence;
+      }
+
+      // Load lobby state from storage
+      const storedLobbyState = await this.state.storage.get<LobbyState>("lobbyState");
+      if (storedLobbyState) {
+        this.lobbyState = storedLobbyState;
       }
     });
   }
@@ -564,6 +585,19 @@ export class CampaignDurableObject {
     };
     server.send(JSON.stringify(welcomePayload));
 
+    // Send current lobby state to the new connection
+    if (this.lobbyState) {
+      const lobbyStateSync = {
+        type: "LOBBY_STATE_SYNC",
+        campaignId,
+        timestamp: new Date().toISOString(),
+        payload: {
+          lobbyState: this.lobbyState,
+        },
+      };
+      server.send(JSON.stringify(lobbyStateSync));
+    }
+
     this.broadcast({
       type: "presence",
       campaignId,
@@ -587,13 +621,14 @@ export class CampaignDurableObject {
       return;
     }
 
-    let payload: { type?: string; userId?: string } | undefined;
+    let payload: { type?: string; userId?: string; characterId?: string; isReady?: boolean } | undefined;
     try {
       payload = JSON.parse(data);
     } catch {
       return;
     }
 
+    // Handle presence updates
     if (payload?.type === "presence" && payload.userId) {
       const current = this.presence.get(connectionId);
       if (!current || current.userId === payload.userId) {
@@ -611,6 +646,19 @@ export class CampaignDurableObject {
           total: this.presence.size,
         },
       });
+    }
+
+    // Handle lobby events
+    if (payload?.type === "LOBBY_JOIN" && payload.userId) {
+      this.handleLobbyJoin(campaignId, payload.userId, payload.characterId);
+    }
+
+    if (payload?.type === "LOBBY_LEAVE" && payload.userId) {
+      this.handleLobbyLeave(campaignId, payload.userId);
+    }
+
+    if (payload?.type === "LOBBY_TOGGLE_READY" && payload.userId) {
+      this.handleLobbyToggleReady(campaignId, payload.userId, payload.isReady ?? false, payload.characterId);
     }
   }
 
@@ -631,6 +679,128 @@ export class CampaignDurableObject {
         action: "leave",
         ...presenceEntry,
         total: this.presence.size,
+      },
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LOBBY MANAGEMENT
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private initializeLobby(campaignId: string) {
+    if (!this.lobbyState) {
+      this.lobbyState = {
+        campaignId,
+        players: {},
+        readyCount: 0,
+        totalCount: 0,
+      };
+    }
+  }
+
+  private async saveLobbyState() {
+    if (this.lobbyState) {
+      await this.state.storage.put("lobbyState", this.lobbyState);
+    }
+  }
+
+  private handleLobbyJoin(campaignId: string, userId: string, characterId?: string) {
+    this.initializeLobby(campaignId);
+
+    if (!this.lobbyState) return;
+
+    const joinedAt = new Date().toISOString();
+    const wasReady = this.lobbyState.players[userId]?.isReady ?? false;
+
+    this.lobbyState.players[userId] = {
+      userId,
+      characterId,
+      isReady: wasReady, // Preserve ready state if rejoining
+      joinedAt,
+    };
+
+    this.lobbyState.totalCount = Object.keys(this.lobbyState.players).length;
+    this.lobbyState.readyCount = Object.values(this.lobbyState.players).filter(p => p.isReady).length;
+
+    // Save to storage
+    this.saveLobbyState();
+
+    // Broadcast to all clients
+    this.broadcast({
+      type: "LOBBY_PLAYER_JOINED",
+      campaignId,
+      timestamp: joinedAt,
+      payload: {
+        userId,
+        characterId,
+        joinedAt,
+        lobbyState: this.lobbyState,
+      },
+    });
+  }
+
+  private handleLobbyLeave(campaignId: string, userId: string) {
+    if (!this.lobbyState || !this.lobbyState.players[userId]) return;
+
+    delete this.lobbyState.players[userId];
+
+    this.lobbyState.totalCount = Object.keys(this.lobbyState.players).length;
+    this.lobbyState.readyCount = Object.values(this.lobbyState.players).filter(p => p.isReady).length;
+
+    const leftAt = new Date().toISOString();
+
+    // Save to storage
+    this.saveLobbyState();
+
+    // Broadcast to all clients
+    this.broadcast({
+      type: "LOBBY_PLAYER_LEFT",
+      campaignId,
+      timestamp: leftAt,
+      payload: {
+        userId,
+        leftAt,
+        lobbyState: this.lobbyState,
+      },
+    });
+  }
+
+  private handleLobbyToggleReady(campaignId: string, userId: string, isReady: boolean, characterId?: string) {
+    this.initializeLobby(campaignId);
+
+    if (!this.lobbyState) return;
+
+    // Ensure player exists in lobby
+    if (!this.lobbyState.players[userId]) {
+      this.lobbyState.players[userId] = {
+        userId,
+        characterId,
+        isReady: false,
+        joinedAt: new Date().toISOString(),
+      };
+    }
+
+    // Update ready state
+    this.lobbyState.players[userId].isReady = isReady;
+    if (characterId) {
+      this.lobbyState.players[userId].characterId = characterId;
+    }
+
+    this.lobbyState.readyCount = Object.values(this.lobbyState.players).filter(p => p.isReady).length;
+
+    // Save to storage
+    this.saveLobbyState();
+
+    // Broadcast to all clients
+    this.broadcast({
+      type: "LOBBY_PLAYER_READY",
+      campaignId,
+      timestamp: new Date().toISOString(),
+      payload: {
+        userId,
+        isReady,
+        characterId,
+        lobbyState: this.lobbyState,
       },
     });
   }

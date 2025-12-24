@@ -38,6 +38,10 @@ import type {
   SkillCheckRequestedPayload,
   SkillCheckRolledPayload,
   EntityRemovedPayload,
+  LobbyPlayerJoinedPayload,
+  LobbyPlayerLeftPayload,
+  LobbyPlayerReadyPayload,
+  LobbyStateSyncPayload,
 } from "@shared/rules/combatEvents";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -121,6 +125,12 @@ export interface CombatSocketHandlers {
 
   // Entity management
   onEntityRemoved?: (payload: EntityRemovedPayload) => void;
+
+  // Lobby events
+  onLobbyPlayerJoined?: (payload: LobbyPlayerJoinedPayload) => void;
+  onLobbyPlayerLeft?: (payload: LobbyPlayerLeftPayload) => void;
+  onLobbyPlayerReady?: (payload: LobbyPlayerReadyPayload) => void;
+  onLobbyStateSync?: (payload: LobbyStateSyncPayload) => void;
 
   // Connection lifecycle
   onOpen?: () => void;
@@ -326,6 +336,22 @@ export const connectCombatSocket = (
 
         case "ENTITY_REMOVED":
           handlers.onEntityRemoved?.(payload as unknown as EntityRemovedPayload);
+          break;
+
+        case "LOBBY_PLAYER_JOINED":
+          handlers.onLobbyPlayerJoined?.(payload as unknown as LobbyPlayerJoinedPayload);
+          break;
+
+        case "LOBBY_PLAYER_LEFT":
+          handlers.onLobbyPlayerLeft?.(payload as unknown as LobbyPlayerLeftPayload);
+          break;
+
+        case "LOBBY_PLAYER_READY":
+          handlers.onLobbyPlayerReady?.(payload as unknown as LobbyPlayerReadyPayload);
+          break;
+
+        case "LOBBY_STATE_SYNC":
+          handlers.onLobbyStateSync?.(payload as unknown as LobbyStateSyncPayload);
           break;
       }
     } catch {

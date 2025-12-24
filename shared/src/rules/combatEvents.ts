@@ -71,7 +71,13 @@ export type ServerEventType =
   | "SKILL_CHECK_ROLLED"
 
   // Entity management
-  | "ENTITY_REMOVED";
+  | "ENTITY_REMOVED"
+
+  // Lobby events
+  | "LOBBY_PLAYER_JOINED"
+  | "LOBBY_PLAYER_LEFT"
+  | "LOBBY_PLAYER_READY"
+  | "LOBBY_STATE_SYNC";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // State Sync Events
@@ -284,6 +290,48 @@ export interface EntityRemovedPayload {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Lobby Events
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface LobbyPlayerState {
+  userId: string;
+  characterId?: string;
+  isReady: boolean;
+  joinedAt: string;
+}
+
+export interface LobbyState {
+  campaignId: string;
+  players: Record<string, LobbyPlayerState>;
+  readyCount: number;
+  totalCount: number;
+}
+
+export interface LobbyPlayerJoinedPayload {
+  userId: string;
+  characterId?: string;
+  joinedAt: string;
+  lobbyState: LobbyState;
+}
+
+export interface LobbyPlayerLeftPayload {
+  userId: string;
+  leftAt: string;
+  lobbyState: LobbyState;
+}
+
+export interface LobbyPlayerReadyPayload {
+  userId: string;
+  isReady: boolean;
+  characterId?: string;
+  lobbyState: LobbyState;
+}
+
+export interface LobbyStateSyncPayload {
+  lobbyState: LobbyState;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Server Event Union Type
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -312,7 +360,11 @@ export type ServerEvent =
   | { type: "SKILL_CONTEST_RESOLVED"; payload: SkillContestResolvedPayload }
   | { type: "SKILL_CHECK_REQUESTED"; payload: SkillCheckRequestedPayload }
   | { type: "SKILL_CHECK_ROLLED"; payload: SkillCheckRolledPayload }
-  | { type: "ENTITY_REMOVED"; payload: EntityRemovedPayload };
+  | { type: "ENTITY_REMOVED"; payload: EntityRemovedPayload }
+  | { type: "LOBBY_PLAYER_JOINED"; payload: LobbyPlayerJoinedPayload }
+  | { type: "LOBBY_PLAYER_LEFT"; payload: LobbyPlayerLeftPayload }
+  | { type: "LOBBY_PLAYER_READY"; payload: LobbyPlayerReadyPayload }
+  | { type: "LOBBY_STATE_SYNC"; payload: LobbyStateSyncPayload };
 
 /**
  * Full server message with metadata
@@ -345,7 +397,10 @@ export type ClientMessageType =
   | "RESPOND_SKILL_CONTEST"
   | "REQUEST_SKILL_CHECK"
   | "SUBMIT_SKILL_CHECK"
-  | "REMOVE_ENTITY";
+  | "REMOVE_ENTITY"
+  | "LOBBY_JOIN"
+  | "LOBBY_LEAVE"
+  | "LOBBY_TOGGLE_READY";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Client Request Payloads
@@ -435,6 +490,21 @@ export interface RemoveEntityPayload {
   reason?: "gm_removed" | "defeated" | "fled";
 }
 
+export interface LobbyJoinPayload {
+  userId: string;
+  characterId?: string;
+}
+
+export interface LobbyLeavePayload {
+  userId: string;
+}
+
+export interface LobbyToggleReadyPayload {
+  userId: string;
+  isReady: boolean;
+  characterId?: string;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Client Message Union Type
 // ─────────────────────────────────────────────────────────────────────────────
@@ -452,7 +522,10 @@ export type ClientMessage =
   | { type: "RESPOND_SKILL_CONTEST"; payload: RespondSkillContestPayload }
   | { type: "REQUEST_SKILL_CHECK"; payload: RequestSkillCheckPayload }
   | { type: "SUBMIT_SKILL_CHECK"; payload: SubmitSkillCheckPayload }
-  | { type: "REMOVE_ENTITY"; payload: RemoveEntityPayload };
+  | { type: "REMOVE_ENTITY"; payload: RemoveEntityPayload }
+  | { type: "LOBBY_JOIN"; payload: LobbyJoinPayload }
+  | { type: "LOBBY_LEAVE"; payload: LobbyLeavePayload }
+  | { type: "LOBBY_TOGGLE_READY"; payload: LobbyToggleReadyPayload };
 
 /**
  * Full client message with metadata

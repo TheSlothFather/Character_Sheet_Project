@@ -23,6 +23,12 @@ import {
   SkillDuelModal,
   CombatChronicle,
 } from "../../components/combat";
+import {
+  PlayerCombatLobby,
+  type LobbyPlayer,
+} from "../combat/CombatLobby";
+import { gmApi, type Campaign, type CampaignMember } from "../../api/gm";
+import { getSupabaseClient } from "../../api/supabaseClient";
 import type {
   CombatEntity,
   ActionType,
@@ -34,9 +40,10 @@ import "./CombatPageNew.css";
 // INNER COMPONENT (Uses CombatContext)
 // ═══════════════════════════════════════════════════════════════════════════
 
-const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
+const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ campaignId, userId }) => {
   const {
     state,
+    lobbyState,
     connectionStatus,
     error,
     clearError,
@@ -48,6 +55,9 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
     submitSkillCheck,
     myPendingDefense,
     myPendingSkillChecks,
+    joinLobby,
+    leaveLobby,
+    toggleReady,
   } = useCombat();
 
   const { phase, round, activeEntity, isMyTurn, pendingAction } =
@@ -63,6 +73,9 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
   const [selectedEntityId, setSelectedEntityId] = React.useState<string | null>(
     null
   );
+  const [campaign, setCampaign] = React.useState<Campaign | null>(null);
+  const [members, setMembers] = React.useState<CampaignMember[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   // Derived data
   const allies = state ? getEntitiesByFaction("ally") : [];
@@ -70,6 +83,38 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
   const initiativeOrder = state ? getEntitiesInInitiativeOrder() : [];
   const hasCombat = state !== null && phase !== "completed";
   const displayError = error || localError;
+
+  // Load campaign data and members
+  React.useEffect(() => {
+    async function loadData() {
+      try {
+        setLoading(true);
+        const campaigns = await gmApi.listCampaigns();
+        const campaignData = campaigns.find(c => c.id === campaignId);
+        const membersData = await gmApi.listCampaignMembers(campaignId);
+
+        setCampaign(campaignData || null);
+        setMembers(membersData);
+      } catch (err) {
+        setLocalError('Failed to load campaign data');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [campaignId]);
+
+  // Join lobby when not in combat, leave on cleanup
+  React.useEffect(() => {
+    if (!hasCombat && !loading) {
+      const currentMember = members.find(m => m.playerUserId === userId);
+      joinLobby(currentMember?.characterId);
+      return () => {
+        leaveLobby();
+      };
+    }
+  }, [hasCombat, loading, userId, members, joinLobby, leaveLobby]);
 
   // Auto-select first controlled entity
   React.useEffect(() => {
@@ -200,16 +245,44 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
     (e) => e.reaction.available
   );
 
-  if (!hasCombat) {
+  if (loading) {
     return (
       <div className="war-page" data-theme="dark-fantasy">
         <div className="war-page__empty">
-          <h2 className="war-page__empty-title">No Active Combat</h2>
-          <p className="war-page__empty-text">
-            Waiting for combat to begin...
-          </p>
+          <h2 className="war-page__empty-title">Loading...</h2>
         </div>
       </div>
+    );
+  }
+
+  if (!hasCombat) {
+    // Find current player's info
+    const currentMember = members.find(m => m.playerUserId === userId);
+    const myLobbyState = lobbyState?.players[userId];
+
+    // Transform members to lobby players using real-time lobby state
+    const otherPlayers: LobbyPlayer[] = members
+      .filter(m => m.playerUserId !== userId)
+      .map(member => {
+        const playerLobbyState = lobbyState?.players[member.playerUserId];
+        return {
+          id: member.playerUserId,
+          name: member.playerUserId.substring(0, 8), // TODO: Get actual player name
+          characterName: member.characterId || undefined,
+          isReady: playerLobbyState?.isReady ?? false,
+          isConnected: !!playerLobbyState, // Connected if they're in the lobby state
+        };
+      });
+
+    return (
+      <PlayerCombatLobby
+        campaignName={campaign?.name || 'Campaign'}
+        playerName={userId.substring(0, 8)} // TODO: Get actual player name
+        characterName={currentMember?.characterId}
+        isReady={myLobbyState?.isReady ?? false}
+        onToggleReady={(ready) => toggleReady(ready, currentMember?.characterId)}
+        otherPlayers={otherPlayers}
+      />
     );
   }
 
@@ -387,6 +460,31 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
 
 const CombatPageNew: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
+  const [userId, setUserId] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function loadAuth() {
+      try {
+        const client = getSupabaseClient();
+        const { data, error: authError } = await client.auth.getUser();
+
+        if (authError || !data.user) {
+          setError('Not authenticated');
+          return;
+        }
+
+        setUserId(data.user.id);
+      } catch (err) {
+        setError('Failed to load user data');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadAuth();
+  }, []);
 
   if (!campaignId) {
     return (
@@ -397,9 +495,28 @@ const CombatPageNew: React.FC = () => {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="war-page" data-theme="dark-fantasy">
+        <div className="war-page__empty">
+          <h2>Loading...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !userId) {
+    return (
+      <div className="war-page__error-state">
+        <h2>Error: {error || 'Not authenticated'}</h2>
+        <p>Please log in to access combat.</p>
+      </div>
+    );
+  }
+
   return (
-    <CombatProvider campaignId={campaignId}>
-      <CombatPageInner campaignId={campaignId} />
+    <CombatProvider campaignId={campaignId} userId={userId} isGm={false}>
+      <CombatPageInner campaignId={campaignId} userId={userId} />
     </CombatProvider>
   );
 };
