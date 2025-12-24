@@ -100,6 +100,7 @@ export interface EndTurnParams {
 
 export interface GmOverrideParams {
   type: GmOverrideType;
+  gmId: string;
   targetEntityId?: string;
   data?: Record<string, unknown>;
   reason?: string;
@@ -378,6 +379,7 @@ export async function gmOverride(
 ): Promise<CombatActionResponse> {
   const payload: GmOverrideRequestPayload = {
     type: params.type,
+    gmId: params.gmId,
     targetEntityId: params.targetEntityId,
     data: params.data,
     reason: params.reason,
@@ -386,6 +388,111 @@ export async function gmOverride(
     campaignId,
     "auth-gm-override",
     payload
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SKILL CONTESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface InitiateContestParams {
+  initiatorEntityId: string;
+  targetEntityId: string;
+  skill: string;
+  roll: DiceRoll;
+}
+
+export interface RespondContestParams {
+  contestId: string;
+  entityId: string;
+  skill: string;
+  roll: DiceRoll;
+}
+
+export interface RequestSkillCheckParams {
+  targetPlayerId: string;
+  targetEntityId: string;
+  skill: string;
+  targetNumber?: number;
+}
+
+export interface SubmitSkillCheckParams {
+  checkId: string;
+  roll: DiceRoll;
+}
+
+export interface RemoveEntityParams {
+  entityId: string;
+  reason?: "gm_removed" | "defeated" | "fled";
+}
+
+/**
+ * Initiate a skill contest (attack) against another entity
+ */
+export async function initiateSkillContest(
+  campaignId: string,
+  params: InitiateContestParams
+): Promise<CombatActionResponse> {
+  return postAuthoritativeCombatAction<CombatActionResponse>(
+    campaignId,
+    "auth-initiate-skill-contest",
+    params
+  );
+}
+
+/**
+ * Respond to a skill contest with a defensive roll
+ */
+export async function respondToSkillContest(
+  campaignId: string,
+  params: RespondContestParams
+): Promise<CombatActionResponse> {
+  return postAuthoritativeCombatAction<CombatActionResponse>(
+    campaignId,
+    "auth-respond-skill-contest",
+    params
+  );
+}
+
+/**
+ * GM requests a skill check from a player
+ */
+export async function requestSkillCheck(
+  campaignId: string,
+  params: RequestSkillCheckParams
+): Promise<CombatActionResponse> {
+  return postAuthoritativeCombatAction<CombatActionResponse>(
+    campaignId,
+    "auth-request-skill-check",
+    params
+  );
+}
+
+/**
+ * Player submits a skill check roll
+ */
+export async function submitSkillCheck(
+  campaignId: string,
+  params: SubmitSkillCheckParams
+): Promise<CombatActionResponse> {
+  return postAuthoritativeCombatAction<CombatActionResponse>(
+    campaignId,
+    "auth-submit-skill-check",
+    params
+  );
+}
+
+/**
+ * GM removes an entity from combat
+ */
+export async function removeEntity(
+  campaignId: string,
+  params: RemoveEntityParams
+): Promise<CombatActionResponse> {
+  return postAuthoritativeCombatAction<CombatActionResponse>(
+    campaignId,
+    "auth-remove-entity",
+    params
   );
 }
 
@@ -481,6 +588,13 @@ export const combatApi = {
 
   // GM overrides
   gmOverride,
+
+  // Skill contests
+  initiateSkillContest,
+  respondToSkillContest,
+  requestSkillCheck,
+  submitSkillCheck,
+  removeEntity,
 
   // Utilities
   canEntityAct,

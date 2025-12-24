@@ -16,6 +16,9 @@ import {
   WoundTracker,
   StatusEffectList,
   ReactionButton,
+  SkillContestModal,
+  SkillCheckPrompt,
+  ContestResultDisplay,
 } from "../../components/combat";
 import type { CombatEntity, ActionType, ReactionType } from "@shared/rules/combat";
 import "./CombatPageNew.css";
@@ -270,6 +273,11 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
     declareAction,
     declareReaction,
     endTurn,
+    initiateSkillContest,
+    respondToSkillContest,
+    submitSkillCheck,
+    myPendingDefense,
+    myPendingSkillChecks,
   } = useCombat();
 
   const { phase, round, activeEntity, isMyTurn, pendingAction } = useCombatTurn();
@@ -280,6 +288,13 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
   const [showReactionModal, setShowReactionModal] = React.useState(false);
   const [reactionEntityId, setReactionEntityId] = React.useState<string | null>(null);
   const [localError, setLocalError] = React.useState<string | null>(null);
+
+  // Skill contest state
+  const [showAttackModal, setShowAttackModal] = React.useState(false);
+  const [attackTargetId, setAttackTargetId] = React.useState<string | null>(null);
+  const [showDefenseModal, setShowDefenseModal] = React.useState(false);
+  const [contestResult, setContestResult] = React.useState<any>(null);
+  const [showResultModal, setShowResultModal] = React.useState(false);
 
   // Derived data
   const allies = state ? getEntitiesByFaction("ally") : [];
@@ -298,6 +313,15 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
       setSelectedEntityId(myControlledEntities[0].id);
     }
   }, [myControlledEntities, selectedEntityId]);
+
+  // Auto-show defense modal when we need to defend
+  React.useEffect(() => {
+    if (myPendingDefense && myPendingDefense.status === "awaiting_defense") {
+      setShowDefenseModal(true);
+    } else {
+      setShowDefenseModal(false);
+    }
+  }, [myPendingDefense]);
 
   // Handlers
   const handleDeclareAction = async (
@@ -349,6 +373,57 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
       await endTurn({ entityId: activeEntity.id, voluntary: true });
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to end turn");
+    }
+  };
+
+  // Skill contest handlers
+  const handleOpenAttackModal = (targetEntityId: string) => {
+    setAttackTargetId(targetEntityId);
+    setShowAttackModal(true);
+  };
+
+  const handleInitiateAttack = async (skill: string, roll: any) => {
+    if (!activeEntity || !attackTargetId) return;
+    try {
+      await initiateSkillContest({
+        initiatorEntityId: activeEntity.id,
+        targetEntityId: attackTargetId,
+        skill,
+        roll,
+      });
+      setShowAttackModal(false);
+      setAttackTargetId(null);
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to initiate attack");
+    }
+  };
+
+  const handleDefend = async (contestId: string, skill: string, roll: any) => {
+    const defenderEntity = myControlledEntities.find(e =>
+      e.id === myPendingDefense?.targetId
+    );
+    if (!defenderEntity) return;
+    try {
+      await respondToSkillContest({
+        contestId,
+        entityId: defenderEntity.id,
+        skill,
+        roll,
+      });
+      setShowDefenseModal(false);
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to defend");
+    }
+  };
+
+  const handleSubmitSkillCheck = async (checkId: string, roll: any) => {
+    try {
+      await submitSkillCheck({
+        checkId,
+        roll,
+      });
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to submit skill check");
     }
   };
 
@@ -521,12 +596,21 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
               </h3>
               <div className="player-combat__faction-grid">
                 {enemies.map((entity) => (
-                  <EntityCard
+                  <div
                     key={entity.id}
-                    entity={entity}
-                    isActive={entity.id === state?.activeEntityId}
-                    compact
-                  />
+                    onClick={() => {
+                      if (isMyTurn && activeEntity) {
+                        handleOpenAttackModal(entity.id);
+                      }
+                    }}
+                    style={{ cursor: isMyTurn && activeEntity ? 'pointer' : 'default' }}
+                  >
+                    <EntityCard
+                      entity={entity}
+                      isActive={entity.id === state?.activeEntityId}
+                      compact
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -592,6 +676,60 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
             setShowReactionModal(false);
             setReactionEntityId(null);
           }}
+        />
+      )}
+
+      {/* Attack Modal */}
+      <SkillContestModal
+        isOpen={showAttackModal}
+        onClose={() => {
+          setShowAttackModal(false);
+          setAttackTargetId(null);
+        }}
+        mode="attack"
+        attackerEntity={activeEntity}
+        targetEntity={attackTargetId ? state?.entities[attackTargetId] : null}
+        onInitiateAttack={handleInitiateAttack}
+      />
+
+      {/* Defense Modal */}
+      {myPendingDefense && (
+        <SkillContestModal
+          isOpen={showDefenseModal}
+          onClose={() => setShowDefenseModal(false)}
+          mode="defend"
+          contest={myPendingDefense}
+          defenderEntity={myControlledEntities.find(e => e.id === myPendingDefense.targetId) ?? null}
+          onDefend={handleDefend}
+        />
+      )}
+
+      {/* Skill Check Prompt */}
+      {myPendingSkillChecks.length > 0 && (
+        <SkillCheckPrompt
+          isOpen={true}
+          onClose={() => {
+            // Optionally allow closing, but skill check remains pending
+          }}
+          check={myPendingSkillChecks[0]}
+          entity={myControlledEntities.find(e => e.id === myPendingSkillChecks[0].targetEntityId) ?? null}
+          onSubmit={handleSubmitSkillCheck}
+        />
+      )}
+
+      {/* Contest Result Display */}
+      {contestResult && (
+        <ContestResultDisplay
+          isOpen={showResultModal}
+          onClose={() => {
+            setShowResultModal(false);
+            setContestResult(null);
+          }}
+          outcome={contestResult.outcome}
+          winnerName={contestResult.winnerName}
+          loserName={contestResult.loserName}
+          winnerSkill={contestResult.winnerSkill}
+          loserSkill={contestResult.loserSkill}
         />
       )}
     </div>

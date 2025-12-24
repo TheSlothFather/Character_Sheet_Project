@@ -124,6 +124,12 @@ interface CombatEntity {
   wounds: WoundCounts;
   alive: boolean;
   bestiaryEntryId?: string;
+  // Monster numbering
+  displayName?: string;
+  baseNameForNumbering?: string;
+  // Auto-roll settings
+  autoRollDefense?: boolean;
+  defaultDefenseSkill?: string;
 }
 
 interface InitiativeEntry {
@@ -143,6 +149,46 @@ interface RollData {
   selectedDie: number;
   total: number;
   audit: string;
+}
+
+type CriticalTier = "normal" | "wicked" | "vicious" | "brutal";
+
+interface ContestOutcome {
+  winnerId: string | null;
+  loserId: string | null;
+  winnerTotal: number;
+  loserTotal: number;
+  criticalTier: CriticalTier;
+  isTie: boolean;
+}
+
+interface SkillContestRequest {
+  contestId: string;
+  initiatorId: string;
+  initiatorSkill: string;
+  initiatorRoll: RollData;
+  targetId: string;
+  suggestedDefenseSkill?: string;
+  autoRollDefense: boolean;
+  status: "pending" | "awaiting_defense" | "resolved";
+  createdAt: string;
+  resolvedAt?: string;
+  outcome?: ContestOutcome;
+  defenderSkill?: string;
+  defenderRoll?: RollData;
+}
+
+interface SkillCheckRequest {
+  checkId: string;
+  requesterId: string;
+  targetPlayerId: string;
+  targetEntityId: string;
+  skill: string;
+  targetNumber?: number;
+  status: "pending" | "rolled" | "acknowledged";
+  rollData?: RollData;
+  createdAt: string;
+  resolvedAt?: string;
 }
 
 interface PendingAction {
@@ -215,6 +261,9 @@ interface AuthoritativeCombatState {
   players: Record<string, PlayerCombatState>;
   pendingAction: PendingAction | null;
   pendingReactions: PendingReaction[];
+  pendingSkillContests: Record<string, SkillContestRequest>;
+  pendingSkillChecks: Record<string, SkillCheckRequest>;
+  monsterNameCounters: Record<string, number>;
   log: CombatLogEntry[];
   version: number;
   startedAt: string;
@@ -794,6 +843,16 @@ export class CampaignDurableObject {
         return this.handleGmOverride(campaignId, body, request);
       case "auth-end-combat":
         return this.handleEndCombat(campaignId, body, request);
+      case "auth-initiate-skill-contest":
+        return this.handleInitiateSkillContest(campaignId, body, request);
+      case "auth-respond-skill-contest":
+        return this.handleRespondSkillContest(campaignId, body, request);
+      case "auth-request-skill-check":
+        return this.handleRequestSkillCheck(campaignId, body, request);
+      case "auth-submit-skill-check":
+        return this.handleSubmitSkillCheck(campaignId, body, request);
+      case "auth-remove-entity":
+        return this.handleRemoveEntity(campaignId, body, request);
 
       // ═══════════════════════════════════════════════════════════════════════
       // LEGACY COMBAT SYSTEM (preserved for backward compatibility)
@@ -1428,6 +1487,9 @@ export class CampaignDurableObject {
       .filter(([_, e]) => e.faction === "enemy")
       .map(([id]) => id);
 
+    // Auto-number duplicate monsters
+    const numberedEntities = this.assignMonsterDisplayNames(entities);
+
     const combatState: AuthoritativeCombatState = {
       combatId,
       campaignId,
@@ -1438,11 +1500,14 @@ export class CampaignDurableObject {
       activeEntityId: initiativeOrder[0] ?? null,
       initiativeMode,
       initiativeRolls,
-      entities,
+      entities: numberedEntities,
       grid: { allies, enemies },
       players: {},
       pendingAction: null,
       pendingReactions: [],
+      pendingSkillContests: {},
+      pendingSkillChecks: {},
+      monsterNameCounters: {},
       log: [],
       version: 0,
       startedAt: now,
@@ -1887,18 +1952,20 @@ export class CampaignDurableObject {
     switch (overrideType) {
       case "adjust_ap":
         if (targetEntityId && combatState.entities[targetEntityId]) {
-          const newAp = parseNumberField(body.data?.ap ?? body.data?.value, "ap", 0, request);
-          if (typeof newAp === "number") {
-            combatState.entities[targetEntityId].ap.current = newAp;
+          const delta = parseNumberField(body.data?.delta, "delta", 0, request);
+          if (typeof delta === "number") {
+            const entity = combatState.entities[targetEntityId];
+            entity.ap.current = Math.max(0, Math.min(entity.ap.max, entity.ap.current + delta));
           }
         }
         break;
 
       case "adjust_energy":
         if (targetEntityId && combatState.entities[targetEntityId]) {
-          const newEnergy = parseNumberField(body.data?.energy ?? body.data?.value, "energy", 0, request);
-          if (typeof newEnergy === "number") {
-            combatState.entities[targetEntityId].energy.current = newEnergy;
+          const delta = parseNumberField(body.data?.delta, "delta", 0, request);
+          if (typeof delta === "number") {
+            const entity = combatState.entities[targetEntityId];
+            entity.energy.current = Math.max(0, Math.min(entity.energy.max, entity.energy.current + delta));
           }
         }
         break;
@@ -2036,6 +2103,464 @@ export class CampaignDurableObject {
     });
 
     return jsonResponse({ ok: true, sequence, state: combatState, reason }, 200, {}, request);
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // SKILL CONTEST HANDLERS
+  // ───────────────────────────────────────────────────────────────────────────
+
+  private async handleInitiateSkillContest(
+    campaignId: string,
+    body: unknown,
+    request: Request
+  ): Promise<Response> {
+    if (!isRecord(body)) {
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
+    }
+
+    const combatState = await this.loadAuthCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
+    }
+
+    const initiatorEntityId = parseRequiredStringField(body.initiatorEntityId, "initiatorEntityId", request);
+    if (initiatorEntityId instanceof Response) return initiatorEntityId;
+
+    const targetEntityId = parseRequiredStringField(body.targetEntityId, "targetEntityId", request);
+    if (targetEntityId instanceof Response) return targetEntityId;
+
+    const skill = parseRequiredStringField(body.skill, "skill", request);
+    if (skill instanceof Response) return skill;
+
+    const initiator = combatState.entities[initiatorEntityId];
+    const target = combatState.entities[targetEntityId];
+
+    if (!initiator) {
+      return jsonResponse({ error: "Initiator entity not found." }, 404, {}, request);
+    }
+    if (!target) {
+      return jsonResponse({ error: "Target entity not found." }, 404, {}, request);
+    }
+
+    // Validate and convert roll
+    const roll = body.roll;
+    if (!isRecord(roll)) {
+      return jsonResponse({ error: "Invalid roll data." }, 400, {}, request);
+    }
+
+    const skillModifier = initiator.skills[skill] ?? 0;
+    const rollData = this.validateAndConvertRoll(roll as DiceRoll, skill, skillModifier, request);
+    if (rollData instanceof Response) return rollData;
+
+    // Create contest
+    const contestId = crypto.randomUUID();
+    const contest: SkillContestRequest = {
+      contestId,
+      initiatorId: initiatorEntityId,
+      initiatorSkill: skill,
+      initiatorRoll: rollData,
+      targetId: targetEntityId,
+      autoRollDefense: target.autoRollDefense ?? false,
+      status: "awaiting_defense",
+      createdAt: new Date().toISOString(),
+    };
+
+    combatState.pendingSkillContests[contestId] = contest;
+
+    // If auto-roll defense, resolve immediately
+    if (contest.autoRollDefense && target.defaultDefenseSkill) {
+      return this.autoResolveContest(campaignId, combatState, contest, target, request);
+    }
+
+    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+
+    // Broadcast to all players
+    this.broadcastAuthEvent("SKILL_CONTEST_INITIATED", campaignId, sequence, {
+      contest,
+      initiatorName: initiator.displayName || initiator.name,
+      targetName: target.displayName || target.name,
+    });
+
+    // Send specific notification to target player
+    if (target.controller.startsWith("player:")) {
+      const targetPlayerId = target.controller.replace("player:", "");
+      this.broadcastAuthEvent("SKILL_CONTEST_DEFENSE_REQUESTED", campaignId, sequence, {
+        contestId,
+        targetEntityId,
+        targetPlayerId,
+        initiatorName: initiator.displayName || initiator.name,
+        initiatorSkill: skill,
+        initiatorTotal: rollData.total,
+      });
+    }
+
+    return jsonResponse({ ok: true, sequence, state: combatState, contestId }, 200, {}, request);
+  }
+
+  private async handleRespondSkillContest(
+    campaignId: string,
+    body: unknown,
+    request: Request
+  ): Promise<Response> {
+    if (!isRecord(body)) {
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
+    }
+
+    const combatState = await this.loadAuthCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
+    }
+
+    const contestId = parseRequiredStringField(body.contestId, "contestId", request);
+    if (contestId instanceof Response) return contestId;
+
+    const entityId = parseRequiredStringField(body.entityId, "entityId", request);
+    if (entityId instanceof Response) return entityId;
+
+    const skill = parseRequiredStringField(body.skill, "skill", request);
+    if (skill instanceof Response) return skill;
+
+    const contest = combatState.pendingSkillContests[contestId];
+    if (!contest) {
+      return jsonResponse({ error: "Contest not found." }, 404, {}, request);
+    }
+
+    if (contest.status !== "awaiting_defense") {
+      return jsonResponse({ error: "Contest already resolved." }, 400, {}, request);
+    }
+
+    const defender = combatState.entities[entityId];
+    if (!defender) {
+      return jsonResponse({ error: "Defender entity not found." }, 404, {}, request);
+    }
+
+    // Validate and convert roll
+    const roll = body.roll;
+    if (!isRecord(roll)) {
+      return jsonResponse({ error: "Invalid roll data." }, 400, {}, request);
+    }
+
+    const skillModifier = defender.skills[skill] ?? 0;
+    const rollData = this.validateAndConvertRoll(roll as DiceRoll, skill, skillModifier, request);
+    if (rollData instanceof Response) return rollData;
+
+    // Resolve contest
+    const outcome = this.resolveSkillContest(contest.initiatorRoll, rollData);
+    contest.defenderSkill = skill;
+    contest.defenderRoll = rollData;
+    contest.outcome = outcome;
+    contest.status = "resolved";
+    contest.resolvedAt = new Date().toISOString();
+
+    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+
+    const initiator = combatState.entities[contest.initiatorId];
+    const audit = `${initiator.displayName || initiator.name} (${contest.initiatorRoll.total}) vs ${defender.displayName || defender.name} (${rollData.total}) - ${outcome.isTie ? "TIE" : (outcome.winnerId === "initiator" ? "Initiator wins" : "Defender wins")} [${outcome.criticalTier.toUpperCase()}]`;
+
+    this.broadcastAuthEvent("SKILL_CONTEST_RESOLVED", campaignId, sequence, {
+      contest,
+      outcome,
+      initiatorName: initiator.displayName || initiator.name,
+      targetName: defender.displayName || defender.name,
+      audit,
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState, outcome }, 200, {}, request);
+  }
+
+  private async handleRequestSkillCheck(
+    campaignId: string,
+    body: unknown,
+    request: Request
+  ): Promise<Response> {
+    if (!isRecord(body)) {
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
+    }
+
+    const combatState = await this.loadAuthCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
+    }
+
+    const targetPlayerId = parseRequiredStringField(body.targetPlayerId, "targetPlayerId", request);
+    if (targetPlayerId instanceof Response) return targetPlayerId;
+
+    const targetEntityId = parseRequiredStringField(body.targetEntityId, "targetEntityId", request);
+    if (targetEntityId instanceof Response) return targetEntityId;
+
+    const skill = parseRequiredStringField(body.skill, "skill", request);
+    if (skill instanceof Response) return skill;
+
+    const targetNumber = body.targetNumber !== undefined ? parseNumberField(body.targetNumber, "targetNumber", undefined, request) : undefined;
+
+    const entity = combatState.entities[targetEntityId];
+    if (!entity) {
+      return jsonResponse({ error: "Entity not found." }, 404, {}, request);
+    }
+
+    // Create skill check request
+    const checkId = crypto.randomUUID();
+    const check: SkillCheckRequest = {
+      checkId,
+      requesterId: "gm", // Always GM for now
+      targetPlayerId,
+      targetEntityId,
+      skill,
+      targetNumber: typeof targetNumber === "number" ? targetNumber : undefined,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+    };
+
+    combatState.pendingSkillChecks[checkId] = check;
+
+    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+
+    this.broadcastAuthEvent("SKILL_CHECK_REQUESTED", campaignId, sequence, {
+      check,
+      targetPlayerName: targetPlayerId,
+      entityName: entity.displayName || entity.name,
+      skill,
+      targetNumber, // Only GM sees this
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState, checkId }, 200, {}, request);
+  }
+
+  private async handleSubmitSkillCheck(
+    campaignId: string,
+    body: unknown,
+    request: Request
+  ): Promise<Response> {
+    if (!isRecord(body)) {
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
+    }
+
+    const combatState = await this.loadAuthCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
+    }
+
+    const checkId = parseRequiredStringField(body.checkId, "checkId", request);
+    if (checkId instanceof Response) return checkId;
+
+    const check = combatState.pendingSkillChecks[checkId];
+    if (!check) {
+      return jsonResponse({ error: "Skill check not found." }, 404, {}, request);
+    }
+
+    if (check.status !== "pending") {
+      return jsonResponse({ error: "Skill check already completed." }, 400, {}, request);
+    }
+
+    const entity = combatState.entities[check.targetEntityId];
+    if (!entity) {
+      return jsonResponse({ error: "Entity not found." }, 404, {}, request);
+    }
+
+    // Validate and convert roll
+    const roll = body.roll;
+    if (!isRecord(roll)) {
+      return jsonResponse({ error: "Invalid roll data." }, 400, {}, request);
+    }
+
+    const skillModifier = entity.skills[check.skill] ?? 0;
+    const rollData = this.validateAndConvertRoll(roll as DiceRoll, check.skill, skillModifier, request);
+    if (rollData instanceof Response) return rollData;
+
+    check.rollData = rollData;
+    check.status = "rolled";
+    check.resolvedAt = new Date().toISOString();
+
+    const success = check.targetNumber !== undefined ? rollData.total >= check.targetNumber : undefined;
+
+    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+
+    this.broadcastAuthEvent("SKILL_CHECK_ROLLED", campaignId, sequence, {
+      check,
+      rollData,
+      success,
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState, rollData, success }, 200, {}, request);
+  }
+
+  private async handleRemoveEntity(
+    campaignId: string,
+    body: unknown,
+    request: Request
+  ): Promise<Response> {
+    if (!isRecord(body)) {
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
+    }
+
+    const combatState = await this.loadAuthCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
+    }
+
+    const entityId = parseRequiredStringField(body.entityId, "entityId", request);
+    if (entityId instanceof Response) return entityId;
+
+    const entity = combatState.entities[entityId];
+    if (!entity) {
+      return jsonResponse({ error: "Entity not found." }, 404, {}, request);
+    }
+
+    // Can't remove active entity
+    if (combatState.activeEntityId === entityId) {
+      return jsonResponse({ error: "Cannot remove active entity. End their turn first." }, 400, {}, request);
+    }
+
+    const reason = (body.reason as "gm_removed" | "defeated" | "fled") ?? "gm_removed";
+    const entityName = entity.displayName || entity.name;
+
+    // Remove from entities
+    delete combatState.entities[entityId];
+
+    // Remove from initiative order
+    combatState.initiativeOrder = combatState.initiativeOrder.filter(id => id !== entityId);
+
+    // Remove from grid
+    combatState.grid.allies = combatState.grid.allies.filter(id => id !== entityId);
+    combatState.grid.enemies = combatState.grid.enemies.filter(id => id !== entityId);
+
+    // Adjust turn index if needed
+    const removedIndex = combatState.initiativeOrder.indexOf(entityId);
+    if (removedIndex !== -1 && removedIndex < combatState.turnIndex) {
+      combatState.turnIndex = Math.max(0, combatState.turnIndex - 1);
+    }
+
+    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+
+    this.broadcastAuthEvent("ENTITY_REMOVED", campaignId, sequence, {
+      entityId,
+      entityName,
+      reason,
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // SKILL CONTEST HELPER METHODS
+  // ───────────────────────────────────────────────────────────────────────────
+
+  private calculateCriticalTier(winnerTotal: number, loserTotal: number): CriticalTier {
+    if (loserTotal <= 0) return "brutal";
+    const ratio = winnerTotal / loserTotal;
+    if (ratio >= 3.0) return "brutal";   // 200%+ higher
+    if (ratio >= 2.0) return "vicious";  // 100%+ higher
+    if (ratio >= 1.5) return "wicked";   // 50%+ higher
+    return "normal";
+  }
+
+  private resolveSkillContest(initiatorRoll: RollData, defenderRoll: RollData): ContestOutcome {
+    const initiatorTotal = initiatorRoll.total;
+    const defenderTotal = defenderRoll.total;
+
+    if (initiatorTotal === defenderTotal) {
+      return {
+        winnerId: null,
+        loserId: null,
+        winnerTotal: initiatorTotal,
+        loserTotal: defenderTotal,
+        criticalTier: "normal",
+        isTie: true,
+      };
+    }
+
+    const initiatorWins = initiatorTotal > defenderTotal;
+    const winnerTotal = initiatorWins ? initiatorTotal : defenderTotal;
+    const loserTotal = initiatorWins ? defenderTotal : initiatorTotal;
+
+    return {
+      winnerId: initiatorWins ? "initiator" : "defender",
+      loserId: initiatorWins ? "defender" : "initiator",
+      winnerTotal,
+      loserTotal,
+      criticalTier: this.calculateCriticalTier(winnerTotal, loserTotal),
+      isTie: false,
+    };
+  }
+
+  private async autoResolveContest(
+    campaignId: string,
+    combatState: AuthoritativeCombatState,
+    contest: SkillContestRequest,
+    defender: CombatEntity,
+    request: Request
+  ): Promise<Response> {
+    const defenseSkill = defender.defaultDefenseSkill!;
+    const skillModifier = defender.skills[defenseSkill] ?? 0;
+
+    // Auto-roll d100 for defense
+    const diceRoll = Math.floor(Math.random() * 100) + 1;
+    const defenderRoll: RollData = {
+      skill: defenseSkill,
+      modifier: skillModifier,
+      diceCount: 1,
+      keepHighest: true,
+      rawDice: [diceRoll],
+      selectedDie: diceRoll,
+      total: diceRoll + skillModifier,
+      audit: `1d100 [${diceRoll}] + ${skillModifier} = ${diceRoll + skillModifier}`,
+    };
+
+    // Resolve contest
+    const outcome = this.resolveSkillContest(contest.initiatorRoll, defenderRoll);
+    contest.defenderSkill = defenseSkill;
+    contest.defenderRoll = defenderRoll;
+    contest.outcome = outcome;
+    contest.status = "resolved";
+    contest.resolvedAt = new Date().toISOString();
+
+    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+
+    const initiator = combatState.entities[contest.initiatorId];
+    const audit = `${initiator.displayName || initiator.name} (${contest.initiatorRoll.total}) vs ${defender.displayName || defender.name} (${defenderRoll.total}) [AUTO] - ${outcome.isTie ? "TIE" : (outcome.winnerId === "initiator" ? "Initiator wins" : "Defender wins")} [${outcome.criticalTier.toUpperCase()}]`;
+
+    this.broadcastAuthEvent("SKILL_CONTEST_RESOLVED", campaignId, sequence, {
+      contest,
+      outcome,
+      initiatorName: initiator.displayName || initiator.name,
+      targetName: defender.displayName || defender.name,
+      audit,
+    });
+
+    return jsonResponse({ ok: true, sequence, state: combatState, outcome }, 200, {}, request);
+  }
+
+  private assignMonsterDisplayNames(entities: Record<string, CombatEntity>): Record<string, CombatEntity> {
+    const result: Record<string, CombatEntity> = {};
+    const nameCounts: Record<string, number> = {};
+
+    // First pass: count how many of each monster name
+    const monsterCounts: Record<string, number> = {};
+    for (const entity of Object.values(entities)) {
+      if (entity.controller === "gm") {
+        const baseName = entity.baseNameForNumbering ?? entity.name;
+        monsterCounts[baseName] = (monsterCounts[baseName] ?? 0) + 1;
+      }
+    }
+
+    // Second pass: assign display names
+    for (const [id, entity] of Object.entries(entities)) {
+      if (entity.controller === "gm") {
+        const baseName = entity.baseNameForNumbering ?? entity.name;
+        const count = (nameCounts[baseName] ?? 0) + 1;
+        nameCounts[baseName] = count;
+
+        result[id] = {
+          ...entity,
+          baseNameForNumbering: baseName,
+          displayName: monsterCounts[baseName] > 1 ? `${baseName} ${count}` : baseName,
+        };
+      } else {
+        result[id] = entity;
+      }
+    }
+
+    return result;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

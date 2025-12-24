@@ -16,7 +16,11 @@ import {
   ReactionType,
   GmOverrideType,
   DiceRoll,
-  InitiativeMode
+  InitiativeMode,
+  SkillContestRequest,
+  SkillCheckRequest,
+  ContestOutcome,
+  RollData
 } from "./combat";
 import { WoundCounts, StatusKey } from "./wounds";
 
@@ -55,7 +59,19 @@ export type ServerEventType =
 
   // GM actions
   | "GM_OVERRIDE"
-  | "INITIATIVE_MODIFIED";
+  | "INITIATIVE_MODIFIED"
+
+  // Skill contests
+  | "SKILL_CONTEST_INITIATED"
+  | "SKILL_CONTEST_DEFENSE_REQUESTED"
+  | "SKILL_CONTEST_RESOLVED"
+
+  // Skill checks
+  | "SKILL_CHECK_REQUESTED"
+  | "SKILL_CHECK_ROLLED"
+
+  // Entity management
+  | "ENTITY_REMOVED";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // State Sync Events
@@ -212,6 +228,62 @@ export interface InitiativeModifiedPayload {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Skill Contest Events
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SkillContestInitiatedPayload {
+  contest: SkillContestRequest;
+  initiatorName: string;
+  targetName: string;
+}
+
+export interface SkillContestDefenseRequestedPayload {
+  contestId: string;
+  targetEntityId: string;
+  targetPlayerId: string;
+  initiatorName: string;
+  initiatorSkill: string;
+  initiatorTotal: number;
+  suggestedDefenseSkill?: string;
+}
+
+export interface SkillContestResolvedPayload {
+  contest: SkillContestRequest;
+  outcome: ContestOutcome;
+  initiatorName: string;
+  targetName: string;
+  audit: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Skill Check Events
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SkillCheckRequestedPayload {
+  check: SkillCheckRequest;
+  targetPlayerName: string;
+  entityName: string;
+  skill: string;
+  targetNumber?: number;  // Only visible to GM
+}
+
+export interface SkillCheckRolledPayload {
+  check: SkillCheckRequest;
+  rollData: RollData;
+  success?: boolean;  // Only if targetNumber was set
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Entity Management Events
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface EntityRemovedPayload {
+  entityId: string;
+  entityName: string;
+  reason: "gm_removed" | "defeated" | "fled";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Server Event Union Type
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -234,7 +306,13 @@ export type ServerEvent =
   | { type: "STATUS_REMOVED"; payload: StatusRemovedPayload }
   | { type: "STATUS_TICK"; payload: StatusTickPayload }
   | { type: "GM_OVERRIDE"; payload: GmOverridePayload }
-  | { type: "INITIATIVE_MODIFIED"; payload: InitiativeModifiedPayload };
+  | { type: "INITIATIVE_MODIFIED"; payload: InitiativeModifiedPayload }
+  | { type: "SKILL_CONTEST_INITIATED"; payload: SkillContestInitiatedPayload }
+  | { type: "SKILL_CONTEST_DEFENSE_REQUESTED"; payload: SkillContestDefenseRequestedPayload }
+  | { type: "SKILL_CONTEST_RESOLVED"; payload: SkillContestResolvedPayload }
+  | { type: "SKILL_CHECK_REQUESTED"; payload: SkillCheckRequestedPayload }
+  | { type: "SKILL_CHECK_ROLLED"; payload: SkillCheckRolledPayload }
+  | { type: "ENTITY_REMOVED"; payload: EntityRemovedPayload };
 
 /**
  * Full server message with metadata
@@ -262,7 +340,12 @@ export type ClientMessageType =
   | "GM_OVERRIDE"
   | "GM_START_COMBAT"
   | "GM_END_COMBAT"
-  | "GM_RESOLVE_REACTIONS";
+  | "GM_RESOLVE_REACTIONS"
+  | "INITIATE_SKILL_CONTEST"
+  | "RESPOND_SKILL_CONTEST"
+  | "REQUEST_SKILL_CHECK"
+  | "SUBMIT_SKILL_CHECK"
+  | "REMOVE_ENTITY";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Client Request Payloads
@@ -315,9 +398,41 @@ export interface GmResolveReactionsPayload {
 
 export interface GmOverrideRequestPayload {
   type: GmOverrideType;
+  gmId: string;
   targetEntityId?: string;
   data?: Record<string, unknown>;
   reason?: string;
+}
+
+export interface InitiateSkillContestPayload {
+  initiatorEntityId: string;
+  targetEntityId: string;
+  skill: string;
+  roll: DiceRoll;
+}
+
+export interface RespondSkillContestPayload {
+  contestId: string;
+  entityId: string;
+  skill: string;
+  roll: DiceRoll;
+}
+
+export interface RequestSkillCheckPayload {
+  targetPlayerId: string;
+  targetEntityId: string;
+  skill: string;
+  targetNumber?: number;
+}
+
+export interface SubmitSkillCheckPayload {
+  checkId: string;
+  roll: DiceRoll;
+}
+
+export interface RemoveEntityPayload {
+  entityId: string;
+  reason?: "gm_removed" | "defeated" | "fled";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -332,7 +447,12 @@ export type ClientMessage =
   | { type: "GM_START_COMBAT"; payload: GmStartCombatPayload }
   | { type: "GM_END_COMBAT"; payload: GmEndCombatPayload }
   | { type: "GM_RESOLVE_REACTIONS"; payload: GmResolveReactionsPayload }
-  | { type: "GM_OVERRIDE"; payload: GmOverrideRequestPayload };
+  | { type: "GM_OVERRIDE"; payload: GmOverrideRequestPayload }
+  | { type: "INITIATE_SKILL_CONTEST"; payload: InitiateSkillContestPayload }
+  | { type: "RESPOND_SKILL_CONTEST"; payload: RespondSkillContestPayload }
+  | { type: "REQUEST_SKILL_CHECK"; payload: RequestSkillCheckPayload }
+  | { type: "SUBMIT_SKILL_CHECK"; payload: SubmitSkillCheckPayload }
+  | { type: "REMOVE_ENTITY"; payload: RemoveEntityPayload };
 
 /**
  * Full client message with metadata
