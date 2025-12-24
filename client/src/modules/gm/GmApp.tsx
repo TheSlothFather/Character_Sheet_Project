@@ -7,7 +7,7 @@ import { BestiaryPage } from "./BestiaryPage";
 import { NpcHubPage } from "./NpcHubPage";
 import { SettingInfoPage } from "./SettingInfoPage";
 import { PlayerCharactersPage } from "./PlayerCharactersPage";
-import { CombatPageNew } from "./CombatPageNew";
+import CombatPageNew from "./CombatPageNew";
 import { GmCampaignLayout } from "./GmCampaignLayout";
 import "./GmApp.css";
 
