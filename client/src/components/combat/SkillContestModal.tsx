@@ -87,7 +87,7 @@ export const SkillContestModal: React.FC<SkillContestModalProps> = ({
 
   if (!isOpen) return null;
 
-  const skillModifier = selectedSkill && activeEntity?.skills?.[selectedSkill] ?? 0;
+  const skillModifier = (selectedSkill && activeEntity?.skills?.[selectedSkill]) ?? 0;
   const total = diceRoll !== null && skillModifier !== undefined
     ? diceRoll + skillModifier
     : null;
