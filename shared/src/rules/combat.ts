@@ -90,6 +90,14 @@ export interface CombatEntity {
 
   // Metadata
   bestiaryEntryId?: string;  // Reference to bestiary for NPC stats
+
+  // Monster numbering (for duplicate monsters)
+  displayName?: string;          // "Goblin 1", "Goblin 2" for numbered monsters
+  baseNameForNumbering?: string; // Original "Goblin" for auto-numbering
+
+  // Auto-roll settings for monsters
+  autoRollDefense?: boolean;     // Auto-roll defense in skill contests
+  defaultDefenseSkill?: string;  // Default skill for auto-defense
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -600,4 +608,68 @@ export function createLogEntry(
     targetEntityId,
     data
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SKILL CONTEST TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Critical success tiers based on ratio of winner to loser total
+ * - normal: Winner's total < 1.5x loser's
+ * - wicked: Winner's total >= 1.5x loser's (50%+ higher)
+ * - vicious: Winner's total >= 2x loser's (100%+ higher)
+ * - brutal: Winner's total >= 3x loser's (200%+ higher)
+ */
+export type CriticalTier =
+  | "normal"
+  | "wicked"
+  | "vicious"
+  | "brutal";
+
+/**
+ * Contest outcome with winner and critical tier
+ */
+export interface ContestOutcome {
+  winnerId: string | null;  // null = tie
+  loserId: string | null;
+  winnerTotal: number;
+  loserTotal: number;
+  criticalTier: CriticalTier;
+  isTie: boolean;
+}
+
+/**
+ * Skill contest request - awaiting opponent's response
+ */
+export interface SkillContestRequest {
+  contestId: string;
+  initiatorId: string;          // Entity initiating the contest
+  initiatorSkill: string;       // Skill being used
+  initiatorRoll: RollData;      // Already-rolled data
+  targetId: string;             // Target entity
+  suggestedDefenseSkill?: string; // GM/system suggested skill
+  autoRollDefense: boolean;     // Whether to auto-roll for target
+  status: "pending" | "awaiting_defense" | "resolved";
+  createdAt: string;
+  resolvedAt?: string;
+  outcome?: ContestOutcome;
+  defenderSkill?: string;       // Skill used for defense
+  defenderRoll?: RollData;      // Defender's roll data
+}
+
+/**
+ * Skill check request (GM-initiated, against target number)
+ */
+export interface SkillCheckRequest {
+  checkId: string;
+  requesterId: string;          // GM who requested
+  targetPlayerId: string;       // Player who must roll
+  targetEntityId: string;       // Entity making the roll
+  skill: string;                // Required skill
+  targetNumber?: number;        // Optional DC (GM sees result either way)
+  status: "pending" | "rolled" | "acknowledged";
+  rollData?: RollData;          // Filled when player rolls
+  createdAt: string;
+  resolvedAt?: string;
 }

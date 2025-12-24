@@ -15,6 +15,9 @@ import {
   ResourceBar,
   WoundTracker,
   StatusEffectList,
+  SkillSelector,
+  SkillContestModal,
+  ContestResultDisplay,
 } from "../../components/combat";
 import { gmApi, type BestiaryEntry, type CampaignCombatant } from "../../api/gm";
 import { useDefinitions } from "../definitions/DefinitionsContext";
@@ -96,6 +99,11 @@ const CombatPageInner: React.FC<{ campaignId: string }> = ({ campaignId }) => {
     endTurn,
     resolveReactions,
     gmOverride,
+    initiateSkillContest,
+    respondToSkillContest,
+    requestSkillCheck,
+    removeEntity,
+    pendingSkillContests,
   } = useCombat();
 
   const { phase, round, activeEntity, isMyTurn, pendingAction } = useCombatTurn();

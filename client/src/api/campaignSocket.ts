@@ -32,6 +32,12 @@ import type {
   StatusRemovedPayload,
   GmOverridePayload,
   InitiativeModifiedPayload,
+  SkillContestInitiatedPayload,
+  SkillContestDefenseRequestedPayload,
+  SkillContestResolvedPayload,
+  SkillCheckRequestedPayload,
+  SkillCheckRolledPayload,
+  EntityRemovedPayload,
 } from "@shared/rules/combatEvents";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -103,6 +109,18 @@ export interface CombatSocketHandlers {
   // GM actions
   onGmOverride?: (payload: GmOverridePayload) => void;
   onInitiativeModified?: (payload: InitiativeModifiedPayload) => void;
+
+  // Skill contests
+  onSkillContestInitiated?: (payload: SkillContestInitiatedPayload) => void;
+  onSkillContestDefenseRequested?: (payload: SkillContestDefenseRequestedPayload) => void;
+  onSkillContestResolved?: (payload: SkillContestResolvedPayload) => void;
+
+  // Skill checks
+  onSkillCheckRequested?: (payload: SkillCheckRequestedPayload) => void;
+  onSkillCheckRolled?: (payload: SkillCheckRolledPayload) => void;
+
+  // Entity management
+  onEntityRemoved?: (payload: EntityRemovedPayload) => void;
 
   // Connection lifecycle
   onOpen?: () => void;
@@ -284,6 +302,30 @@ export const connectCombatSocket = (
 
         case "INITIATIVE_MODIFIED":
           handlers.onInitiativeModified?.(payload as unknown as InitiativeModifiedPayload);
+          break;
+
+        case "SKILL_CONTEST_INITIATED":
+          handlers.onSkillContestInitiated?.(payload as unknown as SkillContestInitiatedPayload);
+          break;
+
+        case "SKILL_CONTEST_DEFENSE_REQUESTED":
+          handlers.onSkillContestDefenseRequested?.(payload as unknown as SkillContestDefenseRequestedPayload);
+          break;
+
+        case "SKILL_CONTEST_RESOLVED":
+          handlers.onSkillContestResolved?.(payload as unknown as SkillContestResolvedPayload);
+          break;
+
+        case "SKILL_CHECK_REQUESTED":
+          handlers.onSkillCheckRequested?.(payload as unknown as SkillCheckRequestedPayload);
+          break;
+
+        case "SKILL_CHECK_ROLLED":
+          handlers.onSkillCheckRolled?.(payload as unknown as SkillCheckRolledPayload);
+          break;
+
+        case "ENTITY_REMOVED":
+          handlers.onEntityRemoved?.(payload as unknown as EntityRemovedPayload);
           break;
       }
     } catch {

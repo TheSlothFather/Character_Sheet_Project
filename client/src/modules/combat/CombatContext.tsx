@@ -20,6 +20,11 @@ import {
   type EndTurnParams,
   type GmOverrideParams,
   type EndCombatParams,
+  type InitiateContestParams,
+  type RespondContestParams,
+  type RequestSkillCheckParams,
+  type SubmitSkillCheckParams,
+  type RemoveEntityParams,
 } from "../../api/combat";
 
 import type {
@@ -31,6 +36,8 @@ import type {
   CombatLogEntry,
   InitiativeMode,
   EntityFaction,
+  SkillContestRequest,
+  SkillCheckRequest,
 } from "@shared/rules/combat";
 
 import type {
@@ -49,6 +56,12 @@ import type {
   StatusRemovedPayload,
   GmOverridePayload,
   InitiativeModifiedPayload,
+  SkillContestInitiatedPayload,
+  SkillContestDefenseRequestedPayload,
+  SkillContestResolvedPayload,
+  SkillCheckRequestedPayload,
+  SkillCheckRolledPayload,
+  EntityRemovedPayload,
 } from "@shared/rules/combatEvents";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -81,6 +94,12 @@ export interface CombatContextValue {
   pendingAction: PendingAction | null;
   pendingReactions: PendingReaction[];
 
+  // Skill contests and checks
+  pendingSkillContests: Record<string, SkillContestRequest>;
+  pendingSkillChecks: Record<string, SkillCheckRequest>;
+  myPendingDefense: SkillContestRequest | null;
+  myPendingSkillChecks: SkillCheckRequest[];
+
   // Entity helpers
   getEntity: (entityId: string) => CombatEntity | undefined;
   getEntitiesByFaction: (faction: EntityFaction) => CombatEntity[];
@@ -96,9 +115,18 @@ export interface CombatContextValue {
   declareReaction: (params: DeclareReactionParams) => Promise<void>;
   endTurn: (params: EndTurnParams) => Promise<void>;
 
+  // Skill contest actions
+  initiateSkillContest: (params: InitiateContestParams) => Promise<void>;
+  respondToSkillContest: (params: RespondContestParams) => Promise<void>;
+
+  // GM skill check actions
+  requestSkillCheck: (params: RequestSkillCheckParams) => Promise<void>;
+  submitSkillCheck: (params: SubmitSkillCheckParams) => Promise<void>;
+
   // GM-only actions
   resolveReactions: () => Promise<void>;
   gmOverride: (params: GmOverrideParams) => Promise<void>;
+  removeEntity: (params: RemoveEntityParams) => Promise<void>;
 
   // Error handling
   error: string | null;
@@ -164,6 +192,14 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
   const [reconnectAttempt, setReconnectAttempt] = React.useState(0);
   const [state, setState] = React.useState<CombatState | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+
+  // Skill contest and check state
+  const [pendingSkillContests, setPendingSkillContests] = React.useState<
+    Record<string, SkillContestRequest>
+  >({});
+  const [pendingSkillChecks, setPendingSkillChecks] = React.useState<
+    Record<string, SkillCheckRequest>
+  >({});
 
   // Socket ref
   const socketRef = React.useRef<ReconnectingCombatSocket | null>(null);
@@ -449,6 +485,62 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
         });
         onInitiativeModified?.(payload);
       },
+
+      onSkillContestInitiated: (payload: SkillContestInitiatedPayload) => {
+        setPendingSkillContests((prev) => ({
+          ...prev,
+          [payload.contest.contestId]: payload.contest,
+        }));
+      },
+
+      onSkillContestDefenseRequested: (payload: SkillContestDefenseRequestedPayload) => {
+        // Defense request is implicitly handled via pendingSkillContests state
+        // The UI will check if targetPlayerId matches current player
+      },
+
+      onSkillContestResolved: (payload: SkillContestResolvedPayload) => {
+        setPendingSkillContests((prev) => {
+          const updated = { ...prev };
+          delete updated[payload.contest.contestId];
+          return updated;
+        });
+      },
+
+      onSkillCheckRequested: (payload: SkillCheckRequestedPayload) => {
+        setPendingSkillChecks((prev) => ({
+          ...prev,
+          [payload.check.checkId]: payload.check,
+        }));
+      },
+
+      onSkillCheckRolled: (payload: SkillCheckRolledPayload) => {
+        setPendingSkillChecks((prev) => {
+          const updated = { ...prev };
+          // Update the check with roll data
+          if (updated[payload.check.checkId]) {
+            updated[payload.check.checkId] = {
+              ...updated[payload.check.checkId],
+              rollData: payload.rollData,
+              status: "rolled",
+            };
+          }
+          return updated;
+        });
+      },
+
+      onEntityRemoved: (payload: EntityRemovedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          const entities = { ...prev.entities };
+          delete entities[payload.entityId];
+          return {
+            ...prev,
+            entities,
+            initiativeOrder: prev.initiativeOrder.filter((id) => id !== payload.entityId),
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+      },
     };
 
     const socket = createReconnectingCombatSocket(campaignId, handlers, userId, {
@@ -511,6 +603,27 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
 
   const pendingAction = state?.pendingAction ?? null;
   const pendingReactions = state?.pendingReactions ?? [];
+
+  // Skill contest and check derived state
+  const myPendingDefense = React.useMemo(() => {
+    const contests = Object.values(pendingSkillContests);
+    // Find a contest where I need to defend (target is one of my entities)
+    return contests.find(
+      (contest) =>
+        contest.status === "awaiting_defense" &&
+        state?.entities[contest.targetId]?.controller === controllerId
+    ) ?? null;
+  }, [pendingSkillContests, state?.entities, controllerId]);
+
+  const myPendingSkillChecks = React.useMemo(() => {
+    const checks = Object.values(pendingSkillChecks);
+    // Find checks that are pending for me
+    return checks.filter(
+      (check) =>
+        check.status === "pending" &&
+        check.targetPlayerId === userId
+    );
+  }, [pendingSkillChecks, userId]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Entity Helpers
@@ -660,11 +773,98 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
     async (params: GmOverrideParams) => {
       try {
         setError(null);
-        const response = await combatApi.gmOverride(campaignId, params);
+        const response = await combatApi.gmOverride(campaignId, {
+          ...params,
+          gmId: userId,
+        });
         setState(response.state);
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Failed to apply GM override";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId, userId]
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Skill Contest Actions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const initiateSkillContest = React.useCallback(
+    async (params: InitiateContestParams) => {
+      try {
+        setError(null);
+        await combatApi.initiateSkillContest(campaignId, params);
+        // State will be updated via WebSocket event
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to initiate skill contest";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  const respondToSkillContest = React.useCallback(
+    async (params: RespondContestParams) => {
+      try {
+        setError(null);
+        await combatApi.respondToSkillContest(campaignId, params);
+        // State will be updated via WebSocket event
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to respond to skill contest";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  const requestSkillCheck = React.useCallback(
+    async (params: RequestSkillCheckParams) => {
+      try {
+        setError(null);
+        await combatApi.requestSkillCheck(campaignId, params);
+        // State will be updated via WebSocket event
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to request skill check";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  const submitSkillCheck = React.useCallback(
+    async (params: SubmitSkillCheckParams) => {
+      try {
+        setError(null);
+        await combatApi.submitSkillCheck(campaignId, params);
+        // State will be updated via WebSocket event
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to submit skill check";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
+
+  const removeEntity = React.useCallback(
+    async (params: RemoveEntityParams) => {
+      try {
+        setError(null);
+        await combatApi.removeEntity(campaignId, params);
+        // State will be updated via WebSocket event
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to remove entity";
         setError(message);
         throw err;
       }
@@ -704,6 +904,12 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       pendingAction,
       pendingReactions,
 
+      // Skill contests and checks
+      pendingSkillContests,
+      pendingSkillChecks,
+      myPendingDefense,
+      myPendingSkillChecks,
+
       // Entity helpers
       getEntity,
       getEntitiesByFaction,
@@ -719,9 +925,18 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       declareReaction,
       endTurn,
 
+      // Skill contest actions
+      initiateSkillContest,
+      respondToSkillContest,
+
+      // GM skill check actions
+      requestSkillCheck,
+      submitSkillCheck,
+
       // GM-only actions
       resolveReactions,
       gmOverride,
+      removeEntity,
 
       // Error handling
       error,
@@ -740,6 +955,10 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       canDeclareReaction,
       pendingAction,
       pendingReactions,
+      pendingSkillContests,
+      pendingSkillChecks,
+      myPendingDefense,
+      myPendingSkillChecks,
       getEntity,
       getEntitiesByFaction,
       getEntitiesInInitiativeOrder,
@@ -749,8 +968,13 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       declareAction,
       declareReaction,
       endTurn,
+      initiateSkillContest,
+      respondToSkillContest,
+      requestSkillCheck,
+      submitSkillCheck,
       resolveReactions,
       gmOverride,
+      removeEntity,
       error,
       clearError,
     ]
