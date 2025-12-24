@@ -35,11 +35,13 @@ import { useDefinitions } from "../definitions/DefinitionsContext";
 import type {
   CombatEntity,
   EntityFaction,
-  InitiativeMode,
+  InitiativeMode as CombatInitiativeMode,
   CombatStatusEffect,
   StatusKey,
+  GmOverrideType,
 } from "@shared/rules/combat";
 import type { WoundCounts, WoundType } from "@shared/rules/wounds";
+import type { InitiativeMode as LobbyInitiativeMode } from "../combat/CombatLobby";
 import "./CombatPageNew.css";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -80,7 +82,8 @@ function transformCombatantToEntity(
   // Determine controller
   const faction = (combatant.faction?.toLowerCase() ?? "enemy") as EntityFaction;
   const playerUserId = bestiaryToPlayer.get(combatant.bestiaryEntryId);
-  const controller = playerUserId ? `player:${playerUserId}` : "gm";
+  const controller: import("@shared/rules/combat").EntityController =
+    playerUserId ? `player:${playerUserId}` : "gm";
 
   return {
     id: combatant.id,
@@ -139,7 +142,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const [campaign, setCampaign] = React.useState<Campaign | null>(null);
   const [members, setMembers] = React.useState<CampaignMember[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [initiativeMode, setInitiativeMode] = React.useState<InitiativeMode>("players-first");
+  const [initiativeMode, setInitiativeMode] = React.useState<LobbyInitiativeMode>("players-first");
   const [isStarting, setIsStarting] = React.useState(false);
 
   // Derived data
@@ -159,8 +162,8 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
         const campaignData = campaigns.find(c => c.id === campaignId);
 
         const [combatantsData, bestiaryData, membersData] = await Promise.all([
-          gmApi.getCampaignCombatants(campaignId),
-          gmApi.getBestiaryEntries(campaignId),
+          gmApi.listCombatants(campaignId),
+          gmApi.listBestiaryEntries(campaignId),
           gmApi.listCampaignMembers(campaignId),
         ]);
 
@@ -226,13 +229,23 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       // This would need to be populated from campaign player assignments
 
       // Transform combatants to entities
-      const entities = combatants.map((c) =>
+      const entityList = combatants.map((c) =>
         transformCombatantToEntity(c, bestiaryToPlayer)
       );
 
+      // Convert array to Record
+      const entities: Record<string, CombatEntity> = {};
+      entityList.forEach(entity => {
+        entities[entity.id] = entity;
+      });
+
+      // Map lobby initiative mode to combat initiative mode
+      const combatInitMode: CombatInitiativeMode =
+        initiativeMode === "interleaved" ? "individual" : "group";
+
       await startCombat({
         entities,
-        initiativeMode,
+        initiativeMode: combatInitMode,
       });
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to start combat");
@@ -260,14 +273,14 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
 
   const handleResolveReactions = async () => {
     try {
-      await resolveReactions({});
+      await resolveReactions();
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to resolve reactions");
     }
   };
 
-  const handleEntityClick = (entity: CombatEntity) => {
-    setSelectedEntityId(entity.id);
+  const handleEntityClick = (entityId: string) => {
+    setSelectedEntityId(entityId);
   };
 
   const handleLogEntryClick = (entry: any) => {
@@ -276,13 +289,35 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     }
   };
 
-  const handleGMOverride = async (type: string, value: any) => {
+  const handleGMOverride = async (overrideType: string, value: any) => {
     if (!selectedEntity) return;
     try {
+      // Map simple override types to GM override types
+      let type: GmOverrideType;
+      let data: Record<string, unknown> = {};
+
+      switch (overrideType) {
+        case "heal":
+          type = "adjust_energy";
+          data = { amount: value };
+          break;
+        case "restore_ap":
+          type = "adjust_ap";
+          data = { amount: value };
+          break;
+        case "kill":
+          type = "modify_wounds";
+          data = { woundType: "laceration", count: 999 }; // Lethal wounds
+          break;
+        default:
+          type = "end_turn"; // Fallback to a valid type
+      }
+
       await gmOverride({
-        entityId: selectedEntity.id,
-        overrideType: type as any,
-        value,
+        type,
+        targetEntityId: selectedEntity.id,
+        data,
+        gmId: "", // Context will override this
       });
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to apply override");
@@ -501,7 +536,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
                       entity={entity}
                       isActive={entity.id === state?.activeEntityId}
                       isSelected={entity.id === selectedEntityId}
-                      onClick={() => handleEntityClick(entity)}
+                      onClick={() => handleEntityClick(entity.id)}
                     />
                   ))
                 )}
@@ -523,7 +558,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
                       entity={entity}
                       isActive={entity.id === state?.activeEntityId}
                       isSelected={entity.id === selectedEntityId}
-                      onClick={() => handleEntityClick(entity)}
+                      onClick={() => handleEntityClick(entity.id)}
                     />
                   ))
                 )}
