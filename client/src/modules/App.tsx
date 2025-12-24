@@ -164,7 +164,7 @@ const PlayerApp: React.FC = () => {
             <Route index element={<Navigate to="characters" replace />} />
             <Route path="characters" element={<CampaignCharactersPage />} />
             <Route path="settings" element={<CampaignSettingsPage />} />
-            <Route path="combat" element={<CombatPage />} />
+            <Route path="combat" element={<CombatPageNew />} />
           </Route>
           <Route path="characters" element={<CharactersPage />} />
           <Route path="character-creation" element={<CharacterCreationPage />} />
