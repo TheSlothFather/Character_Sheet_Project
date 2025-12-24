@@ -67,7 +67,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     getEntitiesInInitiativeOrder,
     myControlledEntities,
   } = useCombatEntities();
-  const { canDeclareReaction, interruptibleAction } = useCombatReactions();
+  const { canDeclareReaction } = useCombatReactions();
 
   const [localError, setLocalError] = React.useState<string | null>(null);
   const [selectedEntityId, setSelectedEntityId] = React.useState<string | null>(
@@ -158,29 +158,29 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   };
 
   const handleReactionClick = () => {
-    if (!interruptibleAction || !canDeclareReaction) return;
-    // For now, just declare a generic parry reaction
-    // In a full implementation, this could open a reaction selection modal
+    // TODO: Implement interruptible action detection
+    // For now, reaction system is disabled
+    if (!canDeclareReaction) return;
     const reactingEntity = myControlledEntities.find(
       (e) => e.reaction.available
     );
     if (!reactingEntity) return;
 
-    declareReaction({
-      entityId: reactingEntity.id,
-      type: "parry",
-      targetActionId: interruptibleAction.actionId,
-      apCost: 0,
-      energyCost: 0,
-    }).catch((err) => {
-      setLocalError(
-        err instanceof Error ? err.message : "Failed to declare reaction"
-      );
-    });
+    // declareReaction({
+    //   entityId: reactingEntity.id,
+    //   type: "parry",
+    //   targetActionId: "...",
+    //   apCost: 0,
+    //   energyCost: 0,
+    // }).catch((err) => {
+    //   setLocalError(
+    //     err instanceof Error ? err.message : "Failed to declare reaction"
+    //   );
+    // });
   };
 
-  const handleEntityClick = (entity: CombatEntity) => {
-    setSelectedEntityId(entity.id);
+  const handleEntityClick = (entityId: string) => {
+    setSelectedEntityId(entityId);
   };
 
   const handleLogEntryClick = (entry: any) => {
@@ -201,26 +201,23 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     try {
       // Roll dice (client-side for demo, server will validate)
       const rawDice = Array.from({ length: diceCount }, () =>
-        Math.floor(Math.random() * 20) + 1
+        Math.floor(Math.random() * 100) + 1
       );
-      const selectedDie = keepHighest
-        ? Math.max(...rawDice)
-        : Math.min(...rawDice);
       const modifier = 0; // Would come from entity stats
-      const total = selectedDie + modifier;
+
+      // Get the defending entity ID
+      const defendingEntityId = myControlledEntities[0]?.id || "";
 
       await respondToSkillContest({
         contestId: myPendingDefense.contestId,
+        entityId: defendingEntityId,
         skill,
         roll: {
-          skill,
           modifier,
           diceCount,
+          diceSize: 100,
+          rawValues: rawDice,
           keepHighest,
-          rawDice,
-          selectedDie,
-          total,
-          audit: `${skill}: rolled ${rawDice.join(", ")}, selected ${selectedDie}, total ${total}`,
         },
       });
     } catch (err) {
@@ -236,10 +233,11 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   };
 
   // Determine if reaction sigil should pulse
-  const shouldPulseReaction =
-    canDeclareReaction &&
-    !!interruptibleAction &&
-    myControlledEntities.some((e) => e.reaction.available);
+  // TODO: Re-enable when interruptible actions are implemented
+  const shouldPulseReaction = false;
+  // const shouldPulseReaction =
+  //   canDeclareReaction &&
+  //   myControlledEntities.some((e) => e.reaction.available);
 
   const hasReactionAvailable = myControlledEntities.some(
     (e) => e.reaction.available
@@ -366,7 +364,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
                     entity={entity}
                     isActive={entity.id === state?.activeEntityId}
                     isSelected={entity.id === selectedEntityId}
-                    onClick={() => handleEntityClick(entity)}
+                    onClick={() => handleEntityClick(entity.id)}
                   />
                 ))
               )}
@@ -388,7 +386,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
                     entity={entity}
                     isActive={entity.id === state?.activeEntityId}
                     isSelected={entity.id === selectedEntityId}
-                    onClick={() => handleEntityClick(entity)}
+                    onClick={() => handleEntityClick(entity.id)}
                   />
                 ))
               )}
