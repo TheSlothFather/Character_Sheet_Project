@@ -1032,3 +1032,354 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   animation: war-pulse-glow 2s ease-in-out infinite;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. RESOURCE SEGMENTS - Segmented Resource Bars
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.resource-segments {
+  --segment-fill-color: var(--war-ember);
+  --segment-empty-color: var(--war-bg-secondary);
+  --segment-border-color: var(--war-border);
+}
+
+.resource-segments--energy {
+  --segment-fill-color: var(--war-info);
+}
+
+.resource-segments__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1, 4px);
+}
+
+.resource-segments__label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--war-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resource-segments__value {
+  font-size: 11px;
+  color: var(--war-text-primary);
+}
+
+.resource-segments__bar {
+  display: flex;
+  gap: 2px;
+  height: 20px;
+  padding: 2px;
+  background: var(--war-bg-secondary);
+  border: 1px solid var(--segment-border-color);
+  border-radius: 4px;
+}
+
+.resource-segments--compact .resource-segments__bar {
+  height: 12px;
+  gap: 1px;
+}
+
+.resource-segments__segment {
+  flex: 1;
+  background: var(--segment-empty-color);
+  border-radius: 2px;
+  transition: all var(--duration-normal, 250ms) ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.resource-segments__segment--filled {
+  background: var(--segment-fill-color);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.resource-segments__segment--partial {
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Low resource warning */
+.resource-segments--low .resource-segments__segment--filled {
+  animation: war-pulse-glow 2s ease-in-out infinite;
+}
+
+.resource-segments--critical .resource-segments__segment--filled {
+  animation: war-pulse-glow 1s ease-in-out infinite;
+  background: var(--war-enemy);
+}
+
+/* Inline variant */
+.resource-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+  font-size: 11px;
+}
+
+.resource-inline__label {
+  font-weight: 600;
+  color: var(--war-text-secondary);
+}
+
+.resource-inline__value {
+  color: var(--war-text-primary);
+}
+
+.resource-inline--ap .resource-inline__value {
+  color: var(--war-ember);
+}
+
+.resource-inline--energy .resource-inline__value {
+  color: var(--war-info);
+}
+
+.resource-inline--low .resource-inline__value {
+  color: var(--war-enemy);
+  font-weight: bold;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. WOUND DISPLAY - Icon-Based Wound Tracking
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wound-display {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.wound-display--compact {
+  gap: var(--space-1, 4px);
+}
+
+.wound-display__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wound-display__label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--war-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wound-display__total {
+  font-size: 11px;
+  color: var(--war-text-tertiary);
+}
+
+.wound-display__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1, 4px);
+}
+
+.wound-display__empty {
+  font-size: 11px;
+  color: var(--war-text-tertiary);
+  font-style: italic;
+}
+
+.wound-display__wound {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--war-bg-secondary);
+  border-left: 3px solid currentColor;
+  border-radius: 4px;
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.wound-display__wound:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.wound-display__icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.wound-display--compact .wound-display__icon {
+  font-size: 12px;
+}
+
+.wound-display__count {
+  font-size: 11px;
+  color: var(--war-text-primary);
+  font-weight: 600;
+}
+
+.wound-display__penalty {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--war-text-tertiary);
+  margin-left: 4px;
+}
+
+/* Wound type specific colors */
+.wound-display__wound--burn { border-color: var(--war-wound-burn); }
+.wound-display__wound--freeze { border-color: var(--war-wound-freeze); }
+.wound-display__wound--laceration { border-color: var(--war-wound-laceration); }
+.wound-display__wound--blunt { border-color: var(--war-wound-blunt); }
+.wound-display__wound--mental { border-color: var(--war-wound-mental); }
+.wound-display__wound--necrosis { border-color: var(--war-wound-necrosis); }
+.wound-display__wound--spiritual { border-color: var(--war-wound-spiritual); }
+
+/* Wound Badge */
+.wound-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 6px;
+  background: var(--war-bg-secondary);
+  border-left: 2px solid currentColor;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.wound-badge__icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.wound-badge__count {
+  color: var(--war-text-primary);
+  font-weight: 600;
+}
+
+/* Wound badge type colors */
+.wound-badge--burn { border-color: var(--war-wound-burn); }
+.wound-badge--freeze { border-color: var(--war-wound-freeze); }
+.wound-badge--laceration { border-color: var(--war-wound-laceration); }
+.wound-badge--blunt { border-color: var(--war-wound-blunt); }
+.wound-badge--mental { border-color: var(--war-wound-mental); }
+.wound-badge--necrosis { border-color: var(--war-wound-necrosis); }
+.wound-badge--spiritual { border-color: var(--war-wound-spiritual); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   6. STATUS PILL - Status Effect Badges
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  transition: all var(--duration-fast, 150ms) ease;
+  border: 1px solid transparent;
+}
+
+.status-pill--clickable {
+  cursor: pointer;
+}
+
+.status-pill--clickable:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Sizes */
+.status-pill--sm {
+  padding: 2px 6px;
+  font-size: 9px;
+  gap: 2px;
+}
+
+.status-pill--md {
+  padding: 4px 10px;
+  font-size: 10px;
+  gap: 4px;
+}
+
+.status-pill--lg {
+  padding: 6px 12px;
+  font-size: 11px;
+  gap: 4px;
+}
+
+/* Buff (positive effects) */
+.status-pill--buff {
+  background: var(--war-ally);
+  color: white;
+  border-color: var(--war-ally-glow);
+}
+
+.status-pill--buff .status-pill__name {
+  color: white;
+}
+
+.status-pill--buff .status-pill__stacks,
+.status-pill--buff .status-pill__duration {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Debuff (negative effects) */
+.status-pill--debuff {
+  background: var(--war-enemy);
+  color: white;
+  border-color: var(--war-enemy-glow);
+}
+
+.status-pill--debuff .status-pill__name {
+  color: white;
+}
+
+.status-pill--debuff .status-pill__stacks,
+.status-pill--debuff .status-pill__duration {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Neutral (neither positive nor negative) */
+.status-pill--neutral {
+  background: var(--war-bg-secondary);
+  color: var(--war-text-primary);
+  border-color: var(--war-border);
+}
+
+.status-pill--neutral .status-pill__stacks,
+.status-pill--neutral .status-pill__duration {
+  color: var(--war-text-secondary);
+}
+
+/* Elements */
+.status-pill__name {
+  font-size: inherit;
+  line-height: 1;
+}
+
+.status-pill__stacks {
+  opacity: 0.9;
+  font-size: 0.9em;
+}
+
+.status-pill__duration {
+  opacity: 0.8;
+  font-size: 0.85em;
+  margin-left: 2px;
+}
+
+.status-pill--sm .status-pill__duration {
+  display: none; /* Hide duration in small size */
+}
+
+/* Status List */
+.status-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1, 4px);
+  align-items: center;
+}
