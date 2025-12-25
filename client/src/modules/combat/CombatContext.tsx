@@ -15,6 +15,7 @@ import {
 import {
   combatApi,
   type StartCombatParams,
+  type SubmitInitiativeRollParams,
   type DeclareActionParams,
   type DeclareReactionParams,
   type EndTurnParams,
@@ -117,6 +118,10 @@ export interface CombatContextValue {
   startCombat: (params: StartCombatParams) => Promise<void>;
   endCombat: (params: EndCombatParams) => Promise<void>;
   refreshState: () => Promise<void>;
+
+  // Initiative rolling
+  submitInitiativeRoll: (params: { entityId: string; roll: any }) => Promise<void>;
+  myPendingInitiativeRolls: CombatEntity[];
 
   // Player/GM actions
   declareAction: (params: DeclareActionParams) => Promise<void>;
@@ -655,6 +660,14 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
     );
   }, [pendingSkillChecks, userId]);
 
+  const myPendingInitiativeRolls = React.useMemo(() => {
+    if (!state || state.phase !== "initiative-rolling") return [];
+    // Find my entities that haven't rolled initiative yet
+    return myControlledEntities.filter(
+      (entity) => !state.initiativeRolls?.[entity.id]
+    );
+  }, [state, myControlledEntities]);
+
   // ─────────────────────────────────────────────────────────────────────────
   // Entity Helpers
   // ─────────────────────────────────────────────────────────────────────────
@@ -729,6 +742,26 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       throw err;
     }
   }, [campaignId]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Initiative Rolling
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const submitInitiativeRoll = React.useCallback(
+    async (params: SubmitInitiativeRollParams) => {
+      try {
+        setError(null);
+        const response = await combatApi.submitInitiativeRoll(campaignId, params);
+        setState(response.state);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to submit initiative roll";
+        setError(message);
+        throw err;
+      }
+    },
+    [campaignId]
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
   // Player/GM Actions
@@ -996,6 +1029,10 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       endCombat,
       refreshState,
 
+      // Initiative rolling
+      submitInitiativeRoll,
+      myPendingInitiativeRolls,
+
       // Player/GM actions
       declareAction,
       declareReaction,
@@ -1047,6 +1084,8 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       startCombat,
       endCombat,
       refreshState,
+      submitInitiativeRoll,
+      myPendingInitiativeRolls,
       declareAction,
       declareReaction,
       endTurn,

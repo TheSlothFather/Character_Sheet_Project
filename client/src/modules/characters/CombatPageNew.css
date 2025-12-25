@@ -347,6 +347,34 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   INITIATIVE ROLLING PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.war-page__initiative-panel {
+  flex-shrink: 0;
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-gold);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-4, 16px);
+  box-shadow: 0 0 20px var(--war-gold-glow);
+  animation: war-fade-in var(--duration-normal, 300ms) ease;
+  margin-bottom: var(--space-4, 16px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACTION PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.war-page__action-panel {
+  flex-shrink: 0;
+  animation: war-fade-in var(--duration-normal, 300ms) ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE LAYOUT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 /* Mobile: Single column */
 @media (max-width: 767px) {
   .war-page__header-content {

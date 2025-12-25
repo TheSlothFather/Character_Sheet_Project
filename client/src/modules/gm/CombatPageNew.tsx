@@ -22,6 +22,8 @@ import {
   ResourceSegments,
   StatusList,
   WoundDisplay,
+  GmContestResolutionPanel,
+  NpcActionPanel,
 } from "../../components/combat";
 import {
   GmCombatLobby,
@@ -130,6 +132,8 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     myPendingDefense,
     joinLobby,
     leaveLobby,
+    initiateSkillContest,
+    respondToSkillContest,
   } = useCombat();
 
   const { phase, round, activeEntity, pendingAction } = useCombatTurn();
@@ -152,6 +156,28 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const hasCombat = state !== null && phase !== "completed";
   const displayError = error || localError;
   const selectedEntity = selectedEntityId && state?.entities[selectedEntityId];
+
+  // GM-specific derived state
+  const gmEntities = React.useMemo(() => {
+    if (!state) return [];
+    return Object.values(state.entities).filter((entity) => entity.controller === "gm");
+  }, [state]);
+
+  const playerEntities = React.useMemo(() => {
+    if (!state) return [];
+    return Object.values(state.entities).filter((entity) => entity.controller.startsWith("player:"));
+  }, [state]);
+
+  const gmPendingContests = React.useMemo(() => {
+    if (!state?.pendingSkillContests) return [];
+    return Object.values(state.pendingSkillContests).filter(
+      (contest) =>
+        contest.status === "awaiting_defense" &&
+        state.entities[contest.targetId]?.controller === "gm"
+    );
+  }, [state]);
+
+  const isNpcTurn = activeEntity?.controller === "gm";
 
   // Load campaign data, combatants, and bestiary
   React.useEffect(() => {
@@ -321,6 +347,35 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       });
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to apply override");
+    }
+  };
+
+  const handleGmDefenseRoll = async (contestId: string, skill: string, roll: any) => {
+    try {
+      const contest = gmPendingContests.find((c) => c.id === contestId);
+      if (!contest) return;
+
+      await respondToSkillContest({
+        contestId,
+        entityId: contest.targetId,
+        skill,
+        roll,
+      });
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to resolve contest");
+    }
+  };
+
+  const handleNpcAttack = async (attackerId: string, targetId: string, skill: string, roll: any) => {
+    try {
+      await initiateSkillContest({
+        initiatorEntityId: attackerId,
+        targetEntityId: targetId,
+        skill,
+        roll,
+      });
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to initiate NPC attack");
     }
   };
 
@@ -516,6 +571,29 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* GM Contest Resolution Panel */}
+          {gmPendingContests.length > 0 && state && (
+            <div className="war-gm-page__contest-panel">
+              <GmContestResolutionPanel
+                pendingContests={gmPendingContests}
+                entities={state.entities}
+                onResolveContest={handleGmDefenseRoll}
+              />
+            </div>
+          )}
+
+          {/* NPC Action Panel */}
+          {isNpcTurn && activeEntity && phase === "active-turn" && (
+            <div className="war-gm-page__npc-panel">
+              <NpcActionPanel
+                npcEntities={gmEntities}
+                targetableEntities={playerEntities}
+                activeNpcId={activeEntity.id}
+                onInitiateAttack={handleNpcAttack}
+              />
             </div>
           )}
 

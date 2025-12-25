@@ -16,12 +16,13 @@ export { WoundType, WoundCounts, StatusKey };
 
 /**
  * Combat phase state machine:
- * setup -> initiative -> active-turn <-> reaction-interrupt -> resolution -> active-turn
- *                                                                         -> completed
+ * setup -> initiative-rolling -> initiative -> active-turn <-> reaction-interrupt -> resolution -> active-turn
+ *                                                                                                -> completed
  */
 export type CombatPhase =
   | "setup"              // Combat is being configured, entities being added
-  | "initiative"         // Rolling and sorting initiative
+  | "initiative-rolling" // Players manually rolling initiative
+  | "initiative"         // Initiative order computed and displayed
   | "active-turn"        // Entity is taking their turn
   | "reaction-interrupt" // Reactions have been declared, awaiting resolution
   | "resolution"         // Resolving reactions and pending action

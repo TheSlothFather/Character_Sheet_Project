@@ -6,13 +6,16 @@
  */
 
 import React from "react";
-import type { CombatEntity, ActionType } from "@shared/rules/combat";
+import type { CombatEntity, ActionType, DiceRoll } from "@shared/rules/combat";
+import { SkillSelector } from "./SkillSelector";
+import { DiceRollConfig } from "./DiceRollConfig";
 import "./WarChronicle.css";
 
 export interface ActionGrimoireProps {
   entity: CombatEntity;
   enemies: CombatEntity[];
   onDeclareAction: (type: ActionType, apCost: number, targetId?: string) => void;
+  onInitiateSkillContest?: (targetId: string, skill: string, roll: DiceRoll) => void;
   onEndTurn: () => void;
   disabled?: boolean;
   className?: string;
@@ -73,29 +76,64 @@ export const ActionGrimoire: React.FC<ActionGrimoireProps> = ({
   entity,
   enemies,
   onDeclareAction,
+  onInitiateSkillContest,
   onEndTurn,
   disabled = false,
   className = "",
 }) => {
   const [selectedTab, setSelectedTab] = React.useState<ActionType>("attack");
   const [selectedTarget, setSelectedTarget] = React.useState<string | null>(null);
+  const [selectedSkill, setSelectedSkill] = React.useState<string | null>(null);
+  const [diceCount, setDiceCount] = React.useState(2);
+  const [keepHighest, setKeepHighest] = React.useState(true);
+  const [showSkillSelection, setShowSkillSelection] = React.useState(false);
 
   const selectedAction = ACTION_TABS.find((tab) => tab.type === selectedTab);
   const canAfford = selectedAction ? entity.ap.current >= selectedAction.apCost : false;
   const needsTarget = selectedAction?.needsTarget ?? false;
-  const canSubmit = !disabled && canAfford && (!needsTarget || selectedTarget);
+  const needsSkillContest = (selectedAction?.type === "attack" || selectedAction?.type === "spell") && onInitiateSkillContest;
+  const canSubmit = !disabled && canAfford && (!needsTarget || selectedTarget) && (!needsSkillContest || (showSkillSelection && selectedSkill));
 
   const handleSubmit = () => {
     if (!canSubmit || !selectedAction) return;
 
-    onDeclareAction(
-      selectedAction.type,
-      selectedAction.apCost,
-      needsTarget ? selectedTarget ?? undefined : undefined
-    );
+    // If this action needs a skill contest, initiate it
+    if (needsSkillContest && selectedTarget && selectedSkill && onInitiateSkillContest) {
+      // Roll dice client-side
+      const rawValues = Array.from({ length: diceCount }, () =>
+        Math.floor(Math.random() * 100) + 1
+      );
+      const skillModifier = entity.skills[selectedSkill] || 0;
+
+      const roll: DiceRoll = {
+        diceCount,
+        diceSize: 100,
+        rawValues,
+        keepHighest,
+        modifier: skillModifier,
+      };
+
+      onInitiateSkillContest(selectedTarget, selectedSkill, roll);
+    } else {
+      // Regular action declaration
+      onDeclareAction(
+        selectedAction.type,
+        selectedAction.apCost,
+        needsTarget ? selectedTarget ?? undefined : undefined
+      );
+    }
 
     // Reset selection
     setSelectedTarget(null);
+    setSelectedSkill(null);
+    setShowSkillSelection(false);
+  };
+
+  const handleTargetSelected = (targetId: string) => {
+    setSelectedTarget(targetId);
+    if (needsSkillContest) {
+      setShowSkillSelection(true);
+    }
   };
 
   const grimoireClasses = [
@@ -207,7 +245,7 @@ export const ActionGrimoire: React.FC<ActionGrimoireProps> = ({
                             ? "action-grimoire__target--selected"
                             : ""
                         }`}
-                        onClick={() => setSelectedTarget(enemy.id)}
+                        onClick={() => handleTargetSelected(enemy.id)}
                       >
                         <span className="action-grimoire__target-name">
                           {enemy.name}
@@ -228,6 +266,26 @@ export const ActionGrimoire: React.FC<ActionGrimoireProps> = ({
               </div>
             )}
 
+            {/* Skill Selection for Contest Actions */}
+            {showSkillSelection && (
+              <div className="action-grimoire__skill-section">
+                <SkillSelector
+                  entity={entity}
+                  selectedSkill={selectedSkill}
+                  onSkillChange={setSelectedSkill}
+                  label="Attack Skill:"
+                  placeholder="Choose your attack skill..."
+                />
+
+                <DiceRollConfig
+                  diceCount={diceCount}
+                  keepHighest={keepHighest}
+                  onDiceCountChange={setDiceCount}
+                  onKeepHighestChange={setKeepHighest}
+                />
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               className="action-grimoire__submit"
@@ -238,7 +296,7 @@ export const ActionGrimoire: React.FC<ActionGrimoireProps> = ({
                 {selectedAction.icon}
               </span>
               <span className="action-grimoire__submit-text">
-                Declare {selectedAction.label}
+                {needsSkillContest && showSkillSelection ? "Roll Attack" : `Declare ${selectedAction.label}`}
               </span>
             </button>
           </>
