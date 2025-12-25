@@ -42,26 +42,40 @@ export const SkillSelector: React.FC<SkillSelectorProps> = ({
     a.localeCompare(b)
   );
 
+  const selectId = "skill-select";
+
   return (
     <div className="skill-selector">
-      <label htmlFor="skill-select">{label}</label>
-      <select
-        id="skill-select"
-        value={selectedSkill ?? ""}
-        onChange={(e) => onSkillChange(e.target.value)}
-        disabled={disabled || skillEntries.length === 0}
-        className="skill-select"
-      >
-        <option value="" disabled>
-          {skillEntries.length === 0 ? "No skills available" : placeholder}
-        </option>
-        {skillEntries.map(([skillName, modifier]) => (
-          <option key={skillName} value={skillName}>
-            {skillName} ({modifier >= 0 ? "+" : ""}
-            {modifier})
+      <label htmlFor={selectId}>{label}</label>
+      {skillEntries.length === 0 ? (
+        <input
+          id={selectId}
+          type="text"
+          value={selectedSkill ?? ""}
+          onChange={(e) => onSkillChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="skill-select"
+        />
+      ) : (
+        <select
+          id={selectId}
+          value={selectedSkill ?? ""}
+          onChange={(e) => onSkillChange(e.target.value)}
+          disabled={disabled}
+          className="skill-select"
+        >
+          <option value="" disabled>
+            {placeholder}
           </option>
-        ))}
-      </select>
+          {skillEntries.map(([skillName, modifier]) => (
+            <option key={skillName} value={skillName}>
+              {skillName} ({modifier >= 0 ? "+" : ""}
+              {modifier})
+            </option>
+          ))}
+        </select>
+      )}
     </div>
   );
 };

@@ -155,6 +155,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const [members, setMembers] = React.useState<CampaignMember[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [initiativeMode, setInitiativeMode] = React.useState<LobbyInitiativeMode>("players-first");
+  const [manualInitiative, setManualInitiative] = React.useState(false);
   const [isStarting, setIsStarting] = React.useState(false);
 
   // NPC Attack Roll State
@@ -293,6 +294,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       await startCombat({
         entities,
         initiativeMode: combatInitMode,
+        manualInitiative,
       });
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to start combat");
@@ -475,6 +477,8 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
         combatants={lobbyCombatants}
         bestiaryEntries={bestiaryPreviews}
         initiativeMode={initiativeMode}
+        manualInitiative={manualInitiative}
+        onManualInitiativeChange={setManualInitiative}
         onInitiativeModeChange={setInitiativeMode}
         onAddCombatant={handleAddCombatant}
         onRemoveCombatant={handleRemoveCombatant}

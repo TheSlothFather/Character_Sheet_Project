@@ -84,6 +84,8 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const [loading, setLoading] = React.useState(true);
   const [showTurnAnnouncement, setShowTurnAnnouncement] = React.useState(false);
   const [previousActiveEntityId, setPreviousActiveEntityId] = React.useState<string | null>(null);
+  const lastTurnEntityRef = React.useRef<string | null>(null);
+  const hasSeenTurnRef = React.useRef(false);
 
   // Notification system
   const {
@@ -182,6 +184,33 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       );
     }
   }, [myPendingDefense, state, notifyAttackIncoming]);
+
+  // Notify when turns advance
+  React.useEffect(() => {
+    if (!state?.activeEntityId) {
+      lastTurnEntityRef.current = null;
+      hasSeenTurnRef.current = false;
+      return;
+    }
+
+    if (!hasSeenTurnRef.current) {
+      hasSeenTurnRef.current = true;
+      lastTurnEntityRef.current = state.activeEntityId;
+      return;
+    }
+
+    if (lastTurnEntityRef.current && lastTurnEntityRef.current !== state.activeEntityId) {
+      const previousName = state.entities[lastTurnEntityRef.current]?.name || "Unknown";
+      notifyCombatEvent("Turn Ended", `${previousName} ended their turn.`);
+    }
+
+    if (lastTurnEntityRef.current !== state.activeEntityId) {
+      const currentName = state.entities[state.activeEntityId]?.name || "Unknown";
+      notifyCombatEvent("Turn Started", `${currentName} is now acting.`);
+    }
+
+    lastTurnEntityRef.current = state.activeEntityId;
+  }, [state?.activeEntityId, state?.entities, notifyCombatEvent]);
 
   // Handlers
   const handleDeclareAction = async (
@@ -435,6 +464,20 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
               <div className="war-page__your-turn">
                 <span className="war-page__your-turn-icon">⭐</span>
                 Your Turn: {activeEntity.name}
+              </div>
+            )}
+
+            {!isMyTurn && activeEntity && (
+              <div className="war-page__current-turn">
+                <span className="war-page__current-turn-icon">⏳</span>
+                Current Turn: {activeEntity.name}
+              </div>
+            )}
+
+            {!activeEntity && phase === "initiative-rolling" && (
+              <div className="war-page__current-turn war-page__current-turn--waiting">
+                <span className="war-page__current-turn-icon">🎲</span>
+                Rolling initiative...
               </div>
             )}
           </div>

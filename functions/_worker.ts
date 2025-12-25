@@ -1937,6 +1937,9 @@ export class CampaignDurableObject {
           }])
         ),
       });
+      this.broadcastAuthEvent("STATE_SYNC", campaignId, finalSequence, {
+        state: combatState,
+      });
 
       return jsonResponse({ ok: true, sequence: finalSequence, state: combatState }, 200, {}, request);
     }
