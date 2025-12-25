@@ -50,6 +50,8 @@ export interface GmCombatLobbyProps {
   combatants: LobbyCombatant[];
   bestiaryEntries: BestiaryEntryPreview[];
   initiativeMode: InitiativeMode;
+  manualInitiative: boolean;
+  onManualInitiativeChange: (enabled: boolean) => void;
   onInitiativeModeChange: (mode: InitiativeMode) => void;
   onAddCombatant: (bestiaryEntryId: string, faction: 'ally' | 'enemy') => void;
   onRemoveCombatant: (combatantId: string) => void;
@@ -63,6 +65,8 @@ export const GmCombatLobby: React.FC<GmCombatLobbyProps> = ({
   combatants,
   bestiaryEntries,
   initiativeMode,
+  manualInitiative,
+  onManualInitiativeChange,
   onInitiativeModeChange,
   onAddCombatant,
   onRemoveCombatant,
@@ -262,6 +266,14 @@ export const GmCombatLobby: React.FC<GmCombatLobbyProps> = ({
                   Interleaved
                 </button>
               </div>
+              <label className="initiative-manual">
+                <input
+                  type="checkbox"
+                  checked={manualInitiative}
+                  onChange={(event) => onManualInitiativeChange(event.target.checked)}
+                />
+                <span>Manual Initiative Rolls (players roll)</span>
+              </label>
             </div>
 
             {/* Start Combat Button */}

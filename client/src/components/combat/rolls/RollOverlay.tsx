@@ -103,15 +103,19 @@ export const RollOverlay: React.FC<RollOverlayProps> = ({
       )
     : null;
 
-  // Determine default skill
+  const availableSkills = Object.keys(entity.skills || {});
+  const contestDefaultSkill = contestMode === 'defender'
+    ? (contest?.suggestedDefenseSkill || contest?.initiatorSkill || '')
+    : (contest?.initiatorSkill || '');
   const defaultSkill = variant === 'initiative'
     ? (entity.initiativeSkill || 'initiative')
     : variant === 'skill-check'
     ? (checkRequest?.skill || '')
-    : contest?.initiatorSkill || '';
+    : contestDefaultSkill;
+  const resolvedSkill = defaultSkill || availableSkills[0] || '';
 
   // Get skill modifier
-  const skillModifier = entity.skills[selectedSkill || defaultSkill] || 0;
+  const skillModifier = entity.skills[selectedSkill || resolvedSkill] || 0;
 
   // Get roll title
   const rollTitle = variant === 'initiative'
@@ -119,11 +123,11 @@ export const RollOverlay: React.FC<RollOverlayProps> = ({
     : variant === 'skill-check'
     ? `Skill Check: ${defaultSkill}`
     : contestMode === 'initiator'
-    ? `Attack: ${defaultSkill}`
+    ? `Attack: ${resolvedSkill || 'Choose Skill'}`
     : 'Defend Yourself';
 
   // Can the player select skill?
-  const canSelectSkill = variant === 'contest' && contestMode === 'defender';
+  const canSelectSkill = variant === 'contest' && (contestMode === 'defender' || contestMode === 'initiator');
 
   // ─────────────────────────────────────────────────────────────────────────
   // EFFECTS
@@ -132,13 +136,13 @@ export const RollOverlay: React.FC<RollOverlayProps> = ({
   // Reset state when overlay opens
   useEffect(() => {
     if (isOpen) {
-      setSelectedSkill(defaultSkill);
+      setSelectedSkill(resolvedSkill);
       setDiceCount(2);
       setKeepHighest(true);
       setRollResult(null);
       setIsRolling(false);
     }
-  }, [isOpen, defaultSkill]);
+  }, [isOpen, resolvedSkill]);
 
   // Keyboard handler
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -209,7 +213,7 @@ export const RollOverlay: React.FC<RollOverlayProps> = ({
       onSubmit({
         variant: 'contest',
         contestId: contest.contestId,
-        skill: selectedSkill || defaultSkill,
+        skill: selectedSkill || resolvedSkill,
         roll,
       });
     }
@@ -323,6 +327,7 @@ export const RollOverlay: React.FC<RollOverlayProps> = ({
 
   const isContest = variant === 'contest';
   const hasTargetNumber = variant === 'skill-check' && checkRequest?.targetNumber;
+  const skillLabel = contestMode === 'initiator' ? 'Attack Skill:' : 'Defense Skill:';
 
   return (
     <div
@@ -396,22 +401,34 @@ export const RollOverlay: React.FC<RollOverlayProps> = ({
           {/* Skill selector (for defenders) */}
           {canSelectSkill && (
             <div className="roll-overlay__skill-selector">
-              <label htmlFor="defense-skill" className="roll-overlay__label">
-                Defense Skill:
+              <label htmlFor="contest-skill" className="roll-overlay__label">
+                {skillLabel}
               </label>
-              <select
-                id="defense-skill"
-                value={selectedSkill}
-                onChange={(e) => setSelectedSkill(e.target.value)}
-                className="roll-overlay__select"
-                disabled={!!rollResult}
-              >
-                {Object.keys(entity.skills).map((skill) => (
-                  <option key={skill} value={skill}>
-                    {skill} ({entity.skills[skill] >= 0 ? '+' : ''}{entity.skills[skill]})
-                  </option>
-                ))}
-              </select>
+              {availableSkills.length === 0 ? (
+                <input
+                  id="contest-skill"
+                  type="text"
+                  value={selectedSkill}
+                  onChange={(e) => setSelectedSkill(e.target.value)}
+                  className="roll-overlay__select"
+                  placeholder="Enter skill..."
+                  disabled={!!rollResult}
+                />
+              ) : (
+                <select
+                  id="contest-skill"
+                  value={selectedSkill}
+                  onChange={(e) => setSelectedSkill(e.target.value)}
+                  className="roll-overlay__select"
+                  disabled={!!rollResult}
+                >
+                  {availableSkills.map((skill) => (
+                    <option key={skill} value={skill}>
+                      {skill} ({entity.skills[skill] >= 0 ? '+' : ''}{entity.skills[skill]})
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           )}
 
