@@ -36,10 +36,12 @@ export { ReactionSigil, type ReactionSigilProps } from "./ReactionSigil";
 export { SkillDuelModal, type SkillDuelModalProps } from "./SkillDuelModal";
 export { CombatChronicle, type CombatChronicleProps } from "./CombatChronicle";
 export { InitiativeRollPanel, type InitiativeRollPanelProps } from "./InitiativeRollPanel";
+export { SkillCheckRequestModal, type SkillCheckRequestModalProps } from "./SkillCheckRequestModal";
 
 // GM Tools
 export { GmContestResolutionPanel, type GmContestResolutionPanelProps } from "./GmContestResolutionPanel";
 export { NpcActionPanel, type NpcActionPanelProps } from "./NpcActionPanel";
+export { SkillCheckRequestPanel, type SkillCheckRequestPanelProps } from "./SkillCheckRequestPanel";
 
 // Utilities (kept from previous implementation)
 export { SkillSelector, type SkillSelectorProps } from "./SkillSelector";

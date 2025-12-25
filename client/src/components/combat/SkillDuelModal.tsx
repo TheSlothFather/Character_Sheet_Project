@@ -14,6 +14,7 @@ import type {
 } from "@shared/rules/combat";
 import { ResourceSegments } from "./ResourceSegments";
 import { StatusList } from "./StatusPill";
+import { SkillSelector } from "./SkillSelector";
 import "./WarChronicle.css";
 
 export interface SkillDuelModalProps {
@@ -274,15 +275,12 @@ export const SkillDuelModal: React.FC<SkillDuelModalProps> = ({
             <div className="skill-duel-modal__roll-area">
               {isAwaitingDefense && canDefend ? (
                 <div className="skill-duel-modal__defense-selection">
-                  <label className="skill-duel-modal__defense-label">
-                    Choose Defense Skill:
-                  </label>
-                  <input
-                    type="text"
-                    className="skill-duel-modal__defense-input"
-                    value={selectedDefenseSkill || ""}
-                    onChange={(e) => setSelectedDefenseSkill(e.target.value)}
-                    placeholder="Enter skill name"
+                  <SkillSelector
+                    entity={defender}
+                    selectedSkill={selectedDefenseSkill}
+                    onSkillChange={setSelectedDefenseSkill}
+                    label="Choose Defense Skill:"
+                    placeholder="Select a skill..."
                   />
                   <div className="skill-duel-modal__dice-config">
                     <label className="skill-duel-modal__dice-label">

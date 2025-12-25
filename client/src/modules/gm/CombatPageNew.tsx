@@ -24,6 +24,7 @@ import {
   WoundDisplay,
   GmContestResolutionPanel,
   NpcActionPanel,
+  SkillCheckRequestPanel,
 } from "../../components/combat";
 import {
   GmCombatLobby,
@@ -134,6 +135,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     leaveLobby,
     initiateSkillContest,
     respondToSkillContest,
+    requestSkillCheck,
   } = useCombat();
 
   const { phase, round, activeEntity, pendingAction } = useCombatTurn();
@@ -379,6 +381,24 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     }
   };
 
+  const handleRequestSkillCheck = async (
+    targetPlayerId: string,
+    targetEntityId: string,
+    skill: string,
+    targetNumber?: number
+  ) => {
+    try {
+      await requestSkillCheck({
+        targetPlayerId,
+        targetEntityId,
+        skill,
+        targetNumber,
+      });
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to request skill check");
+    }
+  };
+
   if (loading) {
     return (
       <div className="war-gm-page" data-theme="dark-fantasy">
@@ -593,6 +613,16 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
                 targetableEntities={playerEntities}
                 activeNpcId={activeEntity.id}
                 onInitiateAttack={handleNpcAttack}
+              />
+            </div>
+          )}
+
+          {/* Skill Check Request Panel - Always visible during active combat */}
+          {phase === "active-turn" && playerEntities.length > 0 && (
+            <div className="war-gm-page__skill-check-panel">
+              <SkillCheckRequestPanel
+                playerEntities={playerEntities}
+                onRequestSkillCheck={handleRequestSkillCheck}
               />
             </div>
           )}

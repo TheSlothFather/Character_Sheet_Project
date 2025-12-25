@@ -3317,3 +3317,438 @@
     break-inside: avoid;
   }
 }
+
+/* ============================================
+   SKILL CHECK REQUEST MODAL
+   ============================================ */
+
+.skill-check-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6, 24px);
+}
+
+.skill-check-modal--open {
+  display: flex;
+}
+
+.skill-check-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  animation: fadeIn var(--duration-normal, 200ms) ease;
+}
+
+.skill-check-modal__container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 450px;
+  max-height: 90vh;
+  background: var(--war-bg-primary);
+  border: 3px solid var(--war-frame-metal);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow:
+    0 25px 50px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba(228, 106, 38, 0.2),
+    inset 0 1px 0 var(--war-frame-highlight);
+  animation: modalSlideIn var(--duration-normal, 200ms) ease;
+  overflow: hidden;
+}
+
+.skill-check-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4, 16px) var(--space-6, 24px);
+  background: var(--war-bg-secondary);
+  border-bottom: 2px solid var(--war-border);
+}
+
+.skill-check-modal__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--war-ember);
+  margin: 0;
+}
+
+.skill-check-modal__close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--war-text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.skill-check-modal__close:hover {
+  background: var(--war-blood);
+  border-color: var(--war-blood);
+  color: var(--war-text-primary);
+}
+
+.skill-check-modal__request-info {
+  padding: var(--space-4, 16px) var(--space-6, 24px);
+  text-align: center;
+  border-bottom: 1px solid var(--war-border);
+}
+
+.skill-check-modal__entity-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--war-text-primary);
+  margin-bottom: var(--space-2, 8px);
+}
+
+.skill-check-modal__request-text {
+  font-size: 14px;
+  color: var(--war-text-secondary);
+}
+
+.skill-check-modal__skill-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+  padding: var(--space-4, 16px) var(--space-6, 24px);
+  background: var(--war-bg-tertiary);
+  border-bottom: 1px solid var(--war-border);
+}
+
+.skill-check-modal__skill-label {
+  font-size: 14px;
+  color: var(--war-text-secondary);
+}
+
+.skill-check-modal__skill-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--war-ember);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.skill-check-modal__skill-modifier {
+  font-size: 16px;
+  color: var(--war-jade);
+}
+
+.skill-check-modal__config {
+  padding: var(--space-4, 16px) var(--space-6, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+}
+
+.skill-check-modal__config-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  font-size: 14px;
+  color: var(--war-text-secondary);
+}
+
+.skill-check-modal__config-input {
+  width: 60px;
+  padding: var(--space-2, 8px);
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--war-text-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  text-align: center;
+}
+
+.skill-check-modal__config-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  font-size: 14px;
+  color: var(--war-text-secondary);
+  cursor: pointer;
+}
+
+.skill-check-modal__results {
+  padding: var(--space-4, 16px) var(--space-6, 24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4, 16px);
+}
+
+.skill-check-modal__dice-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+  justify-content: center;
+}
+
+.skill-check-modal__die {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--war-bg-tertiary);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--war-text-secondary);
+}
+
+.skill-check-modal__die--selected {
+  background: var(--war-ember);
+  border-color: var(--war-ember-dark);
+  color: var(--war-text-inverse);
+  box-shadow: 0 0 12px rgba(228, 106, 38, 0.4);
+}
+
+.skill-check-modal__calculation {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  font-size: 18px;
+}
+
+.skill-check-modal__calc-selected {
+  color: var(--war-ember);
+  font-weight: 700;
+}
+
+.skill-check-modal__calc-operator {
+  color: var(--war-text-secondary);
+}
+
+.skill-check-modal__calc-modifier {
+  color: var(--war-jade);
+  font-weight: 600;
+}
+
+.skill-check-modal__calc-equals {
+  color: var(--war-text-secondary);
+}
+
+.skill-check-modal__calc-total {
+  color: var(--war-text-primary);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.skill-check-modal__target {
+  font-size: 14px;
+  color: var(--war-text-secondary);
+}
+
+.skill-check-modal__result--success {
+  color: var(--war-jade);
+  font-weight: 700;
+}
+
+.skill-check-modal__result--failure {
+  color: var(--war-blood);
+  font-weight: 700;
+}
+
+.skill-check-modal__submitted {
+  padding: var(--space-2, 8px) var(--space-4, 16px);
+  background: var(--war-jade);
+  border-radius: var(--radius-sm, 4px);
+  color: white;
+  font-weight: 600;
+}
+
+.skill-check-modal__actions {
+  padding: var(--space-4, 16px) var(--space-6, 24px);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+}
+
+.skill-check-modal__roll-btn,
+.skill-check-modal__confirm-btn,
+.skill-check-modal__close-btn {
+  padding: var(--space-3, 12px) var(--space-6, 24px);
+  background: var(--war-ember);
+  border: 2px solid var(--war-ember-dark);
+  border-radius: var(--radius-md, 8px);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.skill-check-modal__roll-btn:hover:not(:disabled),
+.skill-check-modal__confirm-btn:hover:not(:disabled) {
+  background: var(--war-ember-dark);
+  transform: translateY(-2px);
+}
+
+.skill-check-modal__roll-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.skill-check-modal__confirm-btn {
+  background: var(--war-jade);
+  border-color: var(--war-jade-dark);
+}
+
+.skill-check-modal__confirm-btn:hover:not(:disabled) {
+  background: var(--war-jade-dark);
+}
+
+.skill-check-modal__close-btn {
+  background: var(--war-bg-secondary);
+  border-color: var(--war-border);
+  color: var(--war-text-primary);
+}
+
+.skill-check-modal__spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   SKILL CHECK REQUEST PANEL (GM)
+   ============================================ */
+
+.skill-check-request-panel {
+  position: relative;
+  padding: var(--space-4, 16px);
+  background: var(--war-bg-secondary);
+  border: 3px solid var(--war-frame-metal);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-md, 0 6px 15px rgba(0, 0, 0, 0.15));
+}
+
+.skill-check-request-panel--empty {
+  text-align: center;
+  color: var(--war-text-secondary);
+}
+
+.skill-check-request-panel--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.skill-check-request-panel__header {
+  margin-bottom: var(--space-4, 16px);
+  padding-bottom: var(--space-3, 12px);
+  border-bottom: 2px solid var(--war-border);
+}
+
+.skill-check-request-panel__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--war-text-primary);
+  margin: 0;
+}
+
+.skill-check-request-panel__section {
+  margin-bottom: var(--space-4, 16px);
+}
+
+.skill-check-request-panel__label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--war-text-secondary);
+}
+
+.skill-check-request-panel__select,
+.skill-check-request-panel__input {
+  width: 100%;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--war-bg-tertiary);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--war-text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.skill-check-request-panel__select:focus,
+.skill-check-request-panel__input:focus {
+  outline: none;
+  border-color: var(--war-ember);
+}
+
+.skill-check-request-panel__input--number {
+  width: 120px;
+  margin-top: var(--space-2, 8px);
+}
+
+.skill-check-request-panel__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  font-size: 14px;
+  color: var(--war-text-secondary);
+  cursor: pointer;
+}
+
+.skill-check-request-panel__request-btn {
+  width: 100%;
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  background: var(--war-storm);
+  border: 2px solid var(--war-storm-dark);
+  border-radius: var(--radius-md, 8px);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+  box-shadow: 0 4px 12px rgba(12, 142, 230, 0.3);
+}
+
+.skill-check-request-panel__request-btn:hover:not(:disabled) {
+  background: var(--war-storm-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(12, 142, 230, 0.4);
+}
+
+.skill-check-request-panel__request-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.skill-check-request-panel__border {
+  position: absolute;
+  inset: -3px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--war-storm) 0%, transparent 50%) border-box;
+  mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.3;
+}
+
+/* GM Combat Page Panel Styling */
+.war-gm-page__skill-check-panel {
+  margin-top: var(--space-4, 16px);
+}
