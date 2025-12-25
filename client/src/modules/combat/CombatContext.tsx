@@ -45,6 +45,7 @@ import type {
   StateSyncPayload,
   CombatStartedPayload,
   CombatEndedPayload,
+  RoundStartedPayload,
   TurnStartedPayload,
   TurnEndedPayload,
   ActionDeclaredPayload,
@@ -170,6 +171,7 @@ export interface CombatProviderProps {
   isGm?: boolean;
   onCombatStarted?: (payload: CombatStartedPayload) => void;
   onCombatEnded?: (payload: CombatEndedPayload) => void;
+  onRoundStarted?: (payload: RoundStartedPayload) => void;
   onTurnStarted?: (payload: TurnStartedPayload) => void;
   onTurnEnded?: (payload: TurnEndedPayload) => void;
   onActionDeclared?: (payload: ActionDeclaredPayload) => void;
@@ -195,6 +197,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
   isGm = false,
   onCombatStarted,
   onCombatEnded,
+  onRoundStarted,
   onTurnStarted,
   onTurnEnded,
   onActionDeclared,
@@ -268,6 +271,19 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       onCombatEnded: (payload: CombatEndedPayload) => {
         setState(null);
         onCombatEnded?.(payload);
+      },
+
+      onRoundStarted: (payload: RoundStartedPayload) => {
+        setState((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            round: payload.round,
+            initiativeOrder: payload.initiativeOrder,
+            lastUpdatedAt: new Date().toISOString(),
+          };
+        });
+        onRoundStarted?.(payload);
       },
 
       onTurnStarted: (payload: TurnStartedPayload) => {
@@ -366,10 +382,10 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
           if (!prev) return prev;
           return {
             ...prev,
-            pendingAction: payload.actionCancelled ? null : prev.pendingAction,
+            pendingAction: null,
             pendingReactions: [],
             phase: "active-turn",
-            log: [...prev.log, ...payload.log],
+            log: [...prev.log, ...(payload.log ?? [])],
             lastUpdatedAt: new Date().toISOString(),
           };
         });

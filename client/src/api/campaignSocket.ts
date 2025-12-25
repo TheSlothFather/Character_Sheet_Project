@@ -18,6 +18,7 @@ import type {
   StateSyncPayload,
   CombatStartedPayload,
   CombatEndedPayload,
+  RoundStartedPayload,
   TurnStartedPayload,
   TurnEndedPayload,
   ActionDeclaredPayload,
@@ -91,6 +92,9 @@ export interface CombatSocketHandlers {
   onStateSync?: (payload: StateSyncPayload) => void;
   onCombatStarted?: (payload: CombatStartedPayload) => void;
   onCombatEnded?: (payload: CombatEndedPayload) => void;
+
+  // Round management
+  onRoundStarted?: (payload: RoundStartedPayload) => void;
 
   // Turn management
   onTurnStarted?: (payload: TurnStartedPayload) => void;
@@ -256,6 +260,10 @@ export const connectCombatSocket = (
 
         case "COMBAT_ENDED":
           handlers.onCombatEnded?.(payload as unknown as CombatEndedPayload);
+          break;
+
+        case "ROUND_STARTED":
+          handlers.onRoundStarted?.(payload as unknown as RoundStartedPayload);
           break;
 
         case "TURN_STARTED":
