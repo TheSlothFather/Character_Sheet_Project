@@ -38,8 +38,8 @@ export const SkillCheckRequestModal: React.FC<SkillCheckRequestModalProps> = ({
   // Reset state when request changes
   React.useEffect(() => {
     if (checkRequest) {
-      setDiceCount(2);
-      setKeepHighest(true);
+      setDiceCount(checkRequest.diceCount ?? 2);
+      setKeepHighest(checkRequest.keepHighest ?? true);
       setLocalRollResult(null);
       setIsRolling(false);
     }

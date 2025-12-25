@@ -434,6 +434,7 @@ export interface InitiateContestParams {
   targetEntityId: string;
   skill: string;
   roll: DiceRoll;
+  gmCanResolve?: boolean;
 }
 
 export interface RespondContestParams {
@@ -448,6 +449,9 @@ export interface RequestSkillCheckParams {
   targetEntityId: string;
   skill: string;
   targetNumber?: number;
+  diceCount?: number;
+  keepHighest?: boolean;
+  gmCanResolve?: boolean;
 }
 
 export interface SubmitSkillCheckParams {
