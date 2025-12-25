@@ -285,6 +285,25 @@ async function createTables(client: Client): Promise<void> {
       UNIQUE(character_id, wound_type)
     );
 
+    CREATE TABLE IF NOT EXISTS campaign_combatants (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      campaign_id UUID NOT NULL,
+      bestiary_entry_id UUID,
+      character_id UUID,
+      faction TEXT,
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      initiative INTEGER,
+      notes TEXT,
+      energy_current INTEGER,
+      ap_current INTEGER,
+      tier INTEGER,
+      energy_max INTEGER,
+      ap_max INTEGER,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
+      CHECK (bestiary_entry_id IS NOT NULL OR character_id IS NOT NULL)
+    );
+
     CREATE TABLE IF NOT EXISTS campaign_combatant_status_effects (
       id SERIAL PRIMARY KEY,
       campaign_id TEXT NOT NULL,

@@ -20,6 +20,8 @@
     "test": "echo \"add tests\""
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.3",
     "wrangler": "^4.56.0",
     "wscat": "^6.1.0"
   }
