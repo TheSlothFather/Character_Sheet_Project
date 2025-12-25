@@ -70,6 +70,10 @@ import type {
   LobbyState,
 } from "@shared/rules/combatEvents";
 
+type DeclareActionInput = Omit<DeclareActionParams, "senderId">;
+type DeclareReactionInput = Omit<DeclareReactionParams, "senderId">;
+type EndTurnInput = Omit<EndTurnParams, "senderId">;
+
 // ═══════════════════════════════════════════════════════════════════════════
 // CONTEXT TYPES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -124,9 +128,9 @@ export interface CombatContextValue {
   myPendingInitiativeRolls: CombatEntity[];
 
   // Player/GM actions
-  declareAction: (params: DeclareActionParams) => Promise<void>;
-  declareReaction: (params: DeclareReactionParams) => Promise<void>;
-  endTurn: (params: EndTurnParams) => Promise<void>;
+  declareAction: (params: DeclareActionInput) => Promise<void>;
+  declareReaction: (params: DeclareReactionInput) => Promise<void>;
+  endTurn: (params: EndTurnInput) => Promise<void>;
 
   // Skill contest actions
   initiateSkillContest: (params: InitiateContestParams) => Promise<void>;
@@ -225,6 +229,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
 
   // Controller ID for ownership checks
   const controllerId = isGm ? "gm" : `player:${userId}`;
+  const senderId = isGm ? "gm" : userId;
 
   // ─────────────────────────────────────────────────────────────────────────
   // WebSocket Connection
@@ -711,7 +716,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
         throw err;
       }
     },
-    [campaignId]
+    [campaignId, senderId]
   );
 
   const endCombat = React.useCallback(
@@ -727,7 +732,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
         throw err;
       }
     },
-    [campaignId]
+    [campaignId, senderId]
   );
 
   const refreshState = React.useCallback(async () => {
@@ -760,7 +765,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
         throw err;
       }
     },
-    [campaignId]
+    [campaignId, senderId]
   );
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -768,10 +773,13 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
   // ─────────────────────────────────────────────────────────────────────────
 
   const declareAction = React.useCallback(
-    async (params: DeclareActionParams) => {
+    async (params: DeclareActionInput) => {
       try {
         setError(null);
-        const response = await combatApi.declareAction(campaignId, params);
+        const response = await combatApi.declareAction(campaignId, {
+          ...params,
+          senderId,
+        });
         setState(response.state);
       } catch (err) {
         const message =
@@ -784,10 +792,13 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
   );
 
   const declareReaction = React.useCallback(
-    async (params: DeclareReactionParams) => {
+    async (params: DeclareReactionInput) => {
       try {
         setError(null);
-        const response = await combatApi.declareReaction(campaignId, params);
+        const response = await combatApi.declareReaction(campaignId, {
+          ...params,
+          senderId,
+        });
         setState(response.state);
       } catch (err) {
         const message =
@@ -800,10 +811,13 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
   );
 
   const endTurn = React.useCallback(
-    async (params: EndTurnParams) => {
+    async (params: EndTurnInput) => {
       try {
         setError(null);
-        const response = await combatApi.endTurn(campaignId, params);
+        const response = await combatApi.endTurn(campaignId, {
+          ...params,
+          senderId,
+        });
         setState(response.state);
       } catch (err) {
         const message =
@@ -822,7 +836,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
   const resolveReactions = React.useCallback(async () => {
     try {
       setError(null);
-      const response = await combatApi.resolveReactions(campaignId);
+      const response = await combatApi.resolveReactions(campaignId, senderId);
       setState(response.state);
     } catch (err) {
       const message =
@@ -830,7 +844,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       setError(message);
       throw err;
     }
-  }, [campaignId]);
+  }, [campaignId, senderId]);
 
   const gmOverride = React.useCallback(
     async (params: GmOverrideParams) => {

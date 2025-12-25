@@ -79,6 +79,7 @@ export interface SubmitInitiativeRollParams {
 }
 
 export interface DeclareActionParams {
+  senderId: string;
   entityId: string;
   type: ActionType;
   targetEntityId?: string;
@@ -90,6 +91,7 @@ export interface DeclareActionParams {
 }
 
 export interface DeclareReactionParams {
+  senderId: string;
   entityId: string;
   type: ReactionType;
   targetActionId: string;
@@ -100,6 +102,7 @@ export interface DeclareReactionParams {
 }
 
 export interface EndTurnParams {
+  senderId: string;
   entityId: string;
   voluntary?: boolean;
 }
@@ -280,6 +283,7 @@ export async function declareAction(
   params: DeclareActionParams
 ): Promise<ActionDeclareResponse> {
   const payload: DeclareActionPayload = {
+    senderId: params.senderId,
     entityId: params.entityId,
     type: params.type,
     targetEntityId: params.targetEntityId,
@@ -317,6 +321,7 @@ export async function declareReaction(
   params: DeclareReactionParams
 ): Promise<ReactionDeclareResponse> {
   const payload: DeclareReactionPayload = {
+    senderId: params.senderId,
     entityId: params.entityId,
     type: params.type,
     targetActionId: params.targetActionId,
@@ -342,12 +347,15 @@ export async function declareReaction(
  * @returns The updated state after all reactions are resolved
  */
 export async function resolveReactions(
-  campaignId: string
+  campaignId: string,
+  senderId: string
 ): Promise<CombatActionResponse> {
   return postAuthoritativeCombatAction<CombatActionResponse>(
     campaignId,
     "auth-resolve-reactions",
-    {}
+    {
+      senderId,
+    }
   );
 }
 
@@ -371,6 +379,7 @@ export async function endTurn(
   params: EndTurnParams
 ): Promise<TurnEndResponse> {
   const payload: EndTurnPayload = {
+    senderId: params.senderId,
     entityId: params.entityId,
     voluntary: params.voluntary ?? true,
   };
