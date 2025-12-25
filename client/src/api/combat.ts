@@ -68,8 +68,14 @@ export interface TurnEndResponse extends CombatActionResponse {
 
 export interface StartCombatParams {
   initiativeMode: InitiativeMode;
+  manualInitiative?: boolean;
   entityIds?: string[];
   entities?: Record<string, CombatEntity>;
+}
+
+export interface SubmitInitiativeRollParams {
+  entityId: string;
+  roll: DiceRoll;
 }
 
 export interface DeclareActionParams {
@@ -203,6 +209,7 @@ export async function startCombat(
 ): Promise<CombatStartResponse> {
   const payload: GmStartCombatPayload = {
     initiativeMode: params.initiativeMode,
+    manualInitiative: params.manualInitiative,
     entityIds: params.entityIds,
     entities: params.entities,
   };
@@ -210,6 +217,24 @@ export async function startCombat(
     campaignId,
     "auth-start",
     payload
+  );
+}
+
+/**
+ * Submit an initiative roll for an entity
+ *
+ * @param campaignId - The campaign ID
+ * @param params - Initiative roll parameters
+ * @returns The updated combat state
+ */
+export async function submitInitiativeRoll(
+  campaignId: string,
+  params: SubmitInitiativeRollParams
+): Promise<CombatActionResponse> {
+  return postAuthoritativeCombatAction<CombatActionResponse>(
+    campaignId,
+    "auth-submit-initiative-roll",
+    params
   );
 }
 

@@ -37,6 +37,11 @@ export type ServerEventType =
   | "COMBAT_STARTED"
   | "COMBAT_ENDED"
 
+  // Initiative
+  | "INITIATIVE_ROLL_REQUESTED"
+  | "INITIATIVE_ROLL_SUBMITTED"
+  | "ALL_INITIATIVE_ROLLED"
+
   // Turn management
   | "ROUND_STARTED"
   | "TURN_STARTED"
@@ -96,6 +101,28 @@ export interface CombatEndedPayload {
   combatId: string;
   reason: "victory" | "defeat" | "gm_ended" | "abandoned";
   finalLog: CombatLogEntry[];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Initiative Roll Events
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface InitiativeRollRequestedPayload {
+  entityId: string;
+  playerId?: string;
+  initiativeSkill: string;
+  skillModifier: number;
+}
+
+export interface InitiativeRollSubmittedPayload {
+  entityId: string;
+  playerId: string;
+  roll: RollData;
+}
+
+export interface AllInitiativeRolledPayload {
+  initiativeOrder: string[];
+  rollResults: Record<string, RollData>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -339,6 +366,9 @@ export type ServerEvent =
   | { type: "STATE_SYNC"; payload: StateSyncPayload }
   | { type: "COMBAT_STARTED"; payload: CombatStartedPayload }
   | { type: "COMBAT_ENDED"; payload: CombatEndedPayload }
+  | { type: "INITIATIVE_ROLL_REQUESTED"; payload: InitiativeRollRequestedPayload }
+  | { type: "INITIATIVE_ROLL_SUBMITTED"; payload: InitiativeRollSubmittedPayload }
+  | { type: "ALL_INITIATIVE_ROLLED"; payload: AllInitiativeRolledPayload }
   | { type: "ROUND_STARTED"; payload: RoundStartedPayload }
   | { type: "TURN_STARTED"; payload: TurnStartedPayload }
   | { type: "TURN_ENDED"; payload: TurnEndedPayload }
@@ -386,6 +416,7 @@ export interface ServerMessage {
  */
 export type ClientMessageType =
   | "REQUEST_STATE"
+  | "SUBMIT_INITIATIVE_ROLL"
   | "DECLARE_ACTION"
   | "DECLARE_REACTION"
   | "END_TURN"
@@ -408,6 +439,11 @@ export type ClientMessageType =
 
 export interface RequestStatePayload {
   // No data needed - just requesting current state
+}
+
+export interface SubmitInitiativeRollPayload {
+  entityId: string;
+  roll: DiceRoll;
 }
 
 export interface DeclareActionPayload {

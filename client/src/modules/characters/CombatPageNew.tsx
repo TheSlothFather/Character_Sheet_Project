@@ -22,6 +22,7 @@ import {
   ReactionSigil,
   SkillDuelModal,
   CombatChronicle,
+  InitiativeRollPanel,
 } from "../../components/combat";
 import {
   PlayerCombatLobby,
@@ -53,8 +54,10 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     initiateSkillContest,
     respondToSkillContest,
     submitSkillCheck,
+    submitInitiativeRoll,
     myPendingDefense,
     myPendingSkillChecks,
+    myPendingInitiativeRolls,
     joinLobby,
     leaveLobby,
     toggleReady,
@@ -232,6 +235,32 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     // Could add explicit acknowledge endpoint if needed
   };
 
+  const handleInitiativeRoll = async (entityId: string, roll: any) => {
+    try {
+      await submitInitiativeRoll({ entityId, roll });
+    } catch (err) {
+      setLocalError(
+        err instanceof Error ? err.message : "Failed to submit initiative roll"
+      );
+    }
+  };
+
+  const handleInitiateSkillContest = async (targetId: string, skill: string, roll: any) => {
+    if (!activeEntity) return;
+    try {
+      await initiateSkillContest({
+        initiatorEntityId: activeEntity.id,
+        targetEntityId: targetId,
+        skill,
+        roll,
+      });
+    } catch (err) {
+      setLocalError(
+        err instanceof Error ? err.message : "Failed to initiate skill contest"
+      );
+    }
+  };
+
   // Determine if reaction sigil should pulse
   // TODO: Re-enable when interruptible actions are implemented
   const shouldPulseReaction = false;
@@ -393,13 +422,28 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
             </div>
           </div>
 
+          {/* Initiative Rolling Panel */}
+          {phase === "initiative-rolling" && myPendingInitiativeRolls.length > 0 && (
+            <div className="war-page__initiative-panel">
+              {myPendingInitiativeRolls.map((entity) => (
+                <InitiativeRollPanel
+                  key={entity.id}
+                  entity={entity}
+                  onRoll={(roll) => handleInitiativeRoll(entity.id, roll)}
+                  disabled={false}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Action Grimoire (Bottom Panel - only visible on your turn) */}
-          {isMyTurn && activeEntity && (
+          {isMyTurn && activeEntity && phase === "active-turn" && (
             <div className="war-page__action-panel">
               <ActionGrimoire
                 entity={activeEntity}
                 enemies={enemies}
                 onDeclareAction={handleDeclareAction}
+                onInitiateSkillContest={handleInitiateSkillContest}
                 onEndTurn={handleEndTurn}
                 disabled={false}
               />

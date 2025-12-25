@@ -35,6 +35,12 @@ export { ReactionSigil, type ReactionSigilProps } from "./ReactionSigil";
 // Phase 3: Combat Interactions
 export { SkillDuelModal, type SkillDuelModalProps } from "./SkillDuelModal";
 export { CombatChronicle, type CombatChronicleProps } from "./CombatChronicle";
+export { InitiativeRollPanel, type InitiativeRollPanelProps } from "./InitiativeRollPanel";
+
+// GM Tools
+export { GmContestResolutionPanel, type GmContestResolutionPanelProps } from "./GmContestResolutionPanel";
+export { NpcActionPanel, type NpcActionPanelProps } from "./NpcActionPanel";
 
 // Utilities (kept from previous implementation)
 export { SkillSelector, type SkillSelectorProps } from "./SkillSelector";
+export { DiceRollConfig, type DiceRollConfigProps } from "./DiceRollConfig";

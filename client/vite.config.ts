@@ -18,6 +18,13 @@ export default defineConfig({
     port: 5173,
     allowedHosts: [".ngrok-free.app"],
     proxy: {
+      // Combat endpoints go to Cloudflare Worker with Durable Objects
+      "/api/campaigns/.*/combat": {
+        target: "http://localhost:8787",
+        changeOrigin: true,
+        ws: true,  // Enable WebSocket proxy
+      },
+      // All other API requests go to Express server
       "/api": "http://localhost:4000"
     }
   }

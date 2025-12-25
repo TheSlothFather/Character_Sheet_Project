@@ -58,6 +58,7 @@ type StatusKey = string; // Allowing dynamic status keys
 
 type CombatPhase =
   | "setup"
+  | "initiative-rolling"
   | "initiative"
   | "active-turn"
   | "reaction-interrupt"
@@ -1001,6 +1002,8 @@ export class CampaignDurableObject {
         return this.handleAuthoritativeState(campaignId, request);
       case "auth-start":
         return this.handleAuthoritativeStart(campaignId, body, request);
+      case "auth-submit-initiative-roll":
+        return this.handleSubmitInitiativeRoll(campaignId, body, request);
       case "auth-declare-action":
         return this.handleDeclareAction(campaignId, body, request);
       case "auth-declare-reaction":
@@ -1622,29 +1625,38 @@ export class CampaignDurableObject {
     }
 
     const initiativeMode = body.initiativeMode === "group" ? "group" : "individual";
+    const manualInitiative = body.manualInitiative === true;
     const entities = body.entities as Record<string, CombatEntity> | undefined;
 
     if (!entities || Object.keys(entities).length === 0) {
       return jsonResponse({ error: "No entities provided." }, 400, {}, request);
     }
 
-    // Roll initiative for each entity
-    const initiativeRolls: Record<string, InitiativeEntry> = {};
-    for (const [entityId, entity] of Object.entries(entities)) {
-      const roll = rollD100();
-      const skillValue = entity.skills[entity.initiativeSkill] ?? 0;
-      initiativeRolls[entityId] = {
-        entityId,
-        roll,
-        skillValue,
-        currentEnergy: entity.energy.current,
-      };
-    }
+    let initiativeRolls: Record<string, InitiativeEntry> = {};
+    let initiativeOrder: string[] = [];
 
-    // Sort initiative
-    const initiativeOrder = initiativeMode === "group"
-      ? this.sortGroupInitiative(Object.values(initiativeRolls), entities)
-      : this.sortInitiative(Object.values(initiativeRolls));
+    // If manual initiative, wait for player rolls
+    if (manualInitiative) {
+      // Don't roll initiative automatically
+      initiativeOrder = [];
+    } else {
+      // Roll initiative automatically for each entity
+      for (const [entityId, entity] of Object.entries(entities)) {
+        const roll = rollD100();
+        const skillValue = entity.skills[entity.initiativeSkill] ?? 0;
+        initiativeRolls[entityId] = {
+          entityId,
+          roll,
+          skillValue,
+          currentEnergy: entity.energy.current,
+        };
+      }
+
+      // Sort initiative
+      initiativeOrder = initiativeMode === "group"
+        ? this.sortGroupInitiative(Object.values(initiativeRolls), entities)
+        : this.sortInitiative(Object.values(initiativeRolls));
+    }
 
     const now = new Date().toISOString();
     const combatId = crypto.randomUUID();
@@ -1663,11 +1675,11 @@ export class CampaignDurableObject {
     const combatState: AuthoritativeCombatState = {
       combatId,
       campaignId,
-      phase: "active-turn",
+      phase: manualInitiative ? "initiative-rolling" : "active-turn",
       round: 1,
       turnIndex: 0,
       initiativeOrder,
-      activeEntityId: initiativeOrder[0] ?? null,
+      activeEntityId: manualInitiative ? null : (initiativeOrder[0] ?? null),
       initiativeMode,
       initiativeRolls,
       entities: numberedEntities,
@@ -1684,8 +1696,8 @@ export class CampaignDurableObject {
       lastUpdatedAt: now,
     };
 
-    // Reset AP and reaction for first entity
-    if (combatState.activeEntityId) {
+    // Reset AP and reaction for first entity (only if not manual initiative)
+    if (!manualInitiative && combatState.activeEntityId) {
       const activeEntity = combatState.entities[combatState.activeEntityId];
       if (activeEntity) {
         activeEntity.ap.current = activeEntity.ap.max;
@@ -1698,10 +1710,11 @@ export class CampaignDurableObject {
       initiativeOrder,
       initiativeMode,
       entityCount: Object.keys(entities).length,
+      manualInitiative,
     }));
 
-    // Add turn started log
-    if (combatState.activeEntityId) {
+    // Add turn started log (only if not manual initiative)
+    if (!manualInitiative && combatState.activeEntityId) {
       combatState.log.push(this.createAuthLogEntry("turn_started", combatState.activeEntityId, undefined, {
         round: 1,
         turnIndex: 0,
@@ -1710,6 +1723,117 @@ export class CampaignDurableObject {
 
     const sequence = await this.saveAuthCombatState(campaignId, combatState);
     this.broadcastAuthEvent("COMBAT_STARTED", campaignId, sequence, { state: combatState });
+
+    return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
+  }
+
+  // Handler: Submit initiative roll
+  private async handleSubmitInitiativeRoll(campaignId: string, body: unknown, request: Request): Promise<Response> {
+    if (!isRecord(body)) {
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
+    }
+
+    const entityId = body.entityId as string | undefined;
+    const roll = body.roll as any;
+
+    if (!entityId || !roll) {
+      return jsonResponse({ error: "Missing entityId or roll." }, 400, {}, request);
+    }
+
+    const combatState = await this.loadAuthCombatState(campaignId);
+    if (!combatState) {
+      return jsonResponse({ error: "Combat not found." }, 404, {}, request);
+    }
+
+    if (combatState.phase !== "initiative-rolling") {
+      return jsonResponse({ error: "Combat is not in initiative-rolling phase." }, 400, {}, request);
+    }
+
+    const entity = combatState.entities[entityId];
+    if (!entity) {
+      return jsonResponse({ error: "Entity not found." }, 404, {}, request);
+    }
+
+    // Validate dice roll
+    const validation = this.validateDiceRoll(roll);
+    if (validation !== true) {
+      return jsonResponse({ error: validation }, 400, {}, request);
+    }
+
+    // Calculate roll result
+    const skillModifier = entity.skills[entity.initiativeSkill] ?? 0;
+    const rollResult = this.calculateRollResult(roll, entity.initiativeSkill, skillModifier);
+
+    // Store initiative roll
+    combatState.initiativeRolls[entityId] = {
+      entityId,
+      roll: rollResult.selectedDie,
+      skillValue: skillModifier,
+      currentEnergy: entity.energy.current,
+    };
+
+    // Broadcast roll submitted event
+    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+    this.broadcastAuthEvent("INITIATIVE_ROLL_SUBMITTED", campaignId, sequence, {
+      entityId,
+      playerId: "", // TODO: Get from request
+      roll: rollResult,
+    });
+
+    // Check if all entities have rolled
+    const allEntityIds = Object.keys(combatState.entities);
+    const rolledEntityIds = Object.keys(combatState.initiativeRolls);
+    const allRolled = allEntityIds.every(id => rolledEntityIds.includes(id));
+
+    if (allRolled) {
+      // Compute initiative order
+      const initiativeOrder = combatState.initiativeMode === "group"
+        ? this.sortGroupInitiative(Object.values(combatState.initiativeRolls), combatState.entities)
+        : this.sortInitiative(Object.values(combatState.initiativeRolls));
+
+      combatState.initiativeOrder = initiativeOrder;
+      combatState.phase = "active-turn";
+      combatState.activeEntityId = initiativeOrder[0] ?? null;
+      combatState.turnIndex = 0;
+
+      // Reset AP and reaction for first entity
+      if (combatState.activeEntityId) {
+        const activeEntity = combatState.entities[combatState.activeEntityId];
+        if (activeEntity) {
+          activeEntity.ap.current = activeEntity.ap.max;
+          activeEntity.reaction.available = true;
+        }
+      }
+
+      // Add turn started log
+      if (combatState.activeEntityId) {
+        combatState.log.push(this.createAuthLogEntry("turn_started", combatState.activeEntityId, undefined, {
+          round: 1,
+          turnIndex: 0,
+        }));
+      }
+
+      const finalSequence = await this.saveAuthCombatState(campaignId, combatState);
+
+      // Broadcast all initiative rolled event
+      this.broadcastAuthEvent("ALL_INITIATIVE_ROLLED", campaignId, finalSequence, {
+        initiativeOrder,
+        rollResults: Object.fromEntries(
+          Object.entries(combatState.initiativeRolls).map(([id, entry]) => [id, {
+            skill: combatState.entities[id]?.initiativeSkill || "initiative",
+            modifier: entry.skillValue,
+            diceCount: 1,
+            keepHighest: true,
+            rawDice: [entry.roll],
+            selectedDie: entry.roll,
+            total: entry.roll + entry.skillValue,
+            audit: `1d100 [${entry.roll}] + ${entry.skillValue} = ${entry.roll + entry.skillValue}`,
+          }])
+        ),
+      });
+
+      return jsonResponse({ ok: true, sequence: finalSequence, state: combatState }, 200, {}, request);
+    }
 
     return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
   }

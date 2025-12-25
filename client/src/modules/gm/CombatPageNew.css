@@ -634,3 +634,31 @@
   color: var(--war-text-secondary);
   margin: 0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GM CONTEST RESOLUTION PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.war-gm-page__contest-panel {
+  flex-shrink: 0;
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-storm);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-4, 16px);
+  box-shadow: 0 0 15px var(--war-storm-glow);
+  animation: war-fade-in var(--duration-normal, 300ms) ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NPC ACTION PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.war-gm-page__npc-panel {
+  flex-shrink: 0;
+  background: var(--war-bg-secondary);
+  border: 2px solid var(--war-blood);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-4, 16px);
+  box-shadow: 0 0 15px var(--war-blood-glow);
+  animation: war-fade-in var(--duration-normal, 300ms) ease;
+}
