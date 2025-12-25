@@ -1,0 +1,538 @@
+/**
+ * TurnAnnouncement Styles - War Chronicle Edition
+ *
+ * Arcane summoning circle that commands absolute attention.
+ * Rotating runes, pulsing energy, and explosive spring entrance.
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════════ */
+
+.turn-announcement {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  /* Entrance animation with spring physics */
+  animation:
+    turn-announcement-fade-in 300ms ease-out,
+    turn-announcement-scale-in 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes turn-announcement-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes turn-announcement-scale-in {
+  from {
+    transform: scale(0.8);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BACKDROP
+   ═══════════════════════════════════════════════════════════ */
+
+.turn-announcement__backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(212, 175, 55, 0.15) 0%,
+      rgba(0, 0, 0, 0.85) 40%,
+      rgba(0, 0, 0, 0.95) 100%
+    );
+  backdrop-filter: blur(8px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ROTATING RUNE CIRCLES
+   ═══════════════════════════════════════════════════════════ */
+
+.turn-announcement__rune-circle {
+  position: absolute;
+  width: 90vmin;
+  height: 90vmin;
+  max-width: 800px;
+  max-height: 800px;
+  pointer-events: none;
+}
+
+.turn-announcement__rune-ring {
+  position: absolute;
+  inset: 0;
+}
+
+/* Outer ring - slower rotation */
+.turn-announcement__rune-ring--outer {
+  animation: turn-rune-rotate 20s linear infinite;
+}
+
+/* Inner ring - faster counter-rotation */
+.turn-announcement__rune-ring--inner {
+  width: 70%;
+  height: 70%;
+  top: 15%;
+  left: 15%;
+  animation: turn-rune-rotate-reverse 15s linear infinite;
+}
+
+@keyframes turn-rune-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes turn-rune-rotate-reverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+.turn-announcement__rune {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 32px;
+  color: #D4AF37;
+  text-shadow:
+    0 0 10px rgba(212, 175, 55, 0.8),
+    0 0 20px rgba(212, 175, 55, 0.4);
+  opacity: 0.9;
+
+  /* Position around circle based on index */
+  transform:
+    translate(-50%, -50%)
+    rotate(calc(var(--rune-index) * 360deg / 8))
+    translateY(-200px)
+    rotate(calc(var(--rune-index) * -360deg / 8));
+
+  /* Pulse animation */
+  animation: turn-rune-pulse 2s ease-in-out infinite;
+  animation-delay: calc(var(--rune-index) * 0.1s);
+}
+
+.turn-announcement__rune-ring--inner .turn-announcement__rune {
+  font-size: 28px;
+  transform:
+    translate(-50%, -50%)
+    rotate(calc(var(--rune-index) * 360deg / 6))
+    translateY(-140px)
+    rotate(calc(var(--rune-index) * -360deg / 6));
+}
+
+@keyframes turn-rune-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform:
+      translate(-50%, -50%)
+      rotate(calc(var(--rune-index) * 360deg / 8))
+      translateY(-200px)
+      rotate(calc(var(--rune-index) * -360deg / 8))
+      scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform:
+      translate(-50%, -50%)
+      rotate(calc(var(--rune-index) * 360deg / 8))
+      translateY(-200px)
+      rotate(calc(var(--rune-index) * -360deg / 8))
+      scale(1.1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTENT
+   ═══════════════════════════════════════════════════════════ */
+
+.turn-announcement__content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4, 16px);
+  text-align: center;
+  animation: turn-content-reveal 500ms ease-out 200ms backwards;
+}
+
+@keyframes turn-content-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.turn-announcement__icon {
+  font-size: 64px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 12px rgba(212, 175, 55, 0.4));
+  animation: turn-icon-bounce 600ms ease-out 300ms backwards;
+}
+
+@keyframes turn-icon-bounce {
+  0% {
+    transform: scale(0.5) translateY(30px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2) translateY(-10px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.turn-announcement__title {
+  font-family: 'Cinzel Decorative', 'Cinzel', 'Georgia', serif;
+  font-size: clamp(48px, 10vw, 96px);
+  font-weight: 900;
+  color: #D4AF37;
+  margin: 0;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(212, 175, 55, 0.6),
+    0 0 40px rgba(212, 175, 55, 0.3);
+  animation:
+    turn-title-scale 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 100ms backwards,
+    turn-title-glow 2s ease-in-out infinite;
+}
+
+@keyframes turn-title-scale {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes turn-title-glow {
+  0%, 100% {
+    text-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.8),
+      0 0 20px rgba(212, 175, 55, 0.6),
+      0 0 40px rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    text-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.8),
+      0 0 30px rgba(212, 175, 55, 0.8),
+      0 0 60px rgba(212, 175, 55, 0.5);
+  }
+}
+
+.turn-announcement__entity {
+  font-family: 'Cinzel', 'Georgia', serif;
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 600;
+  color: #E8DCC4;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESOURCES
+   ═══════════════════════════════════════════════════════════ */
+
+.turn-announcement__resources {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6, 24px);
+  margin-top: var(--space-2, 8px);
+}
+
+.turn-announcement__resource {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1, 4px);
+}
+
+.turn-announcement__resource-icon {
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
+.turn-announcement__resource-value {
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #D4AF37;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.8),
+    0 0 10px rgba(212, 175, 55, 0.4);
+}
+
+.turn-announcement__resource-label {
+  font-family: 'Merriweather', 'Georgia', serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #C4B5A0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.turn-announcement__resource-divider {
+  font-size: 20px;
+  color: #C4B5A0;
+  opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACTION HINT
+   ═══════════════════════════════════════════════════════════ */
+
+.turn-announcement__hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin-top: var(--space-4, 16px);
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  font-family: 'Merriweather', 'Georgia', serif;
+  font-size: 14px;
+  color: #C4B5A0;
+  animation: turn-hint-pulse 2s ease-in-out infinite;
+}
+
+@keyframes turn-hint-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+.turn-announcement__key {
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #3A3A3A, #2A2A2A);
+  border: 2px solid #5A5A5A;
+  border-bottom-width: 4px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: #E8DCC4;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CORNER RUNES
+   ═══════════════════════════════════════════════════════════ */
+
+.turn-announcement__corner-runes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.turn-announcement__corner-rune {
+  position: absolute;
+  font-size: 48px;
+  color: #D4AF37;
+  text-shadow:
+    0 0 15px rgba(212, 175, 55, 0.8),
+    0 0 30px rgba(212, 175, 55, 0.4);
+  opacity: 0.6;
+  animation: turn-corner-rune-rotate 4s linear infinite;
+}
+
+.turn-announcement__corner-rune--tl {
+  top: 40px;
+  left: 40px;
+}
+
+.turn-announcement__corner-rune--tr {
+  top: 40px;
+  right: 40px;
+  animation-delay: -1s;
+}
+
+.turn-announcement__corner-rune--bl {
+  bottom: 40px;
+  left: 40px;
+  animation-delay: -2s;
+}
+
+.turn-announcement__corner-rune--br {
+  bottom: 40px;
+  right: 40px;
+  animation-delay: -3s;
+}
+
+@keyframes turn-corner-rune-rotate {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ENERGY LINES (PULSING CIRCLES)
+   ═══════════════════════════════════════════════════════════ */
+
+.turn-announcement__energy-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.turn-announcement__energy-ring {
+  animation: turn-energy-pulse 3s ease-in-out infinite;
+}
+
+.turn-announcement__energy-ring--1 {
+  animation-delay: 0s;
+}
+
+.turn-announcement__energy-ring--2 {
+  animation-delay: 0.5s;
+}
+
+.turn-announcement__energy-ring--3 {
+  animation-delay: 1s;
+}
+
+@keyframes turn-energy-pulse {
+  0%, 100% {
+    opacity: 0.2;
+    stroke-width: 1;
+  }
+  50% {
+    opacity: 0.6;
+    stroke-width: 2;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .turn-announcement__rune-circle {
+    width: 95vmin;
+    height: 95vmin;
+  }
+
+  .turn-announcement__rune {
+    font-size: 24px;
+  }
+
+  .turn-announcement__rune-ring--inner .turn-announcement__rune {
+    font-size: 20px;
+  }
+
+  .turn-announcement__corner-rune {
+    font-size: 32px;
+  }
+
+  .turn-announcement__corner-rune--tl,
+  .turn-announcement__corner-rune--tr {
+    top: 20px;
+  }
+
+  .turn-announcement__corner-rune--bl,
+  .turn-announcement__corner-rune--br {
+    bottom: 20px;
+  }
+
+  .turn-announcement__corner-rune--tl,
+  .turn-announcement__corner-rune--bl {
+    left: 20px;
+  }
+
+  .turn-announcement__corner-rune--tr,
+  .turn-announcement__corner-rune--br {
+    right: 20px;
+  }
+
+  .turn-announcement__resources {
+    flex-direction: column;
+    gap: var(--space-3, 12px);
+  }
+
+  .turn-announcement__resource-divider {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACCESSIBILITY
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .turn-announcement,
+  .turn-announcement__icon,
+  .turn-announcement__title,
+  .turn-announcement__content {
+    animation: turn-announcement-simple 300ms ease-out !important;
+  }
+
+  @keyframes turn-announcement-simple {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .turn-announcement__rune-ring--outer,
+  .turn-announcement__rune-ring--inner,
+  .turn-announcement__corner-rune {
+    animation: none !important;
+  }
+
+  .turn-announcement__rune,
+  .turn-announcement__energy-ring,
+  .turn-announcement__hint {
+    animation: none !important;
+  }
+
+  .turn-announcement__title {
+    animation: turn-announcement-simple 300ms ease-out !important;
+  }
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

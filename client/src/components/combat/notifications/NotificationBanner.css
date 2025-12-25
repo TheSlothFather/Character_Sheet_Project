@@ -1,0 +1,414 @@
+/**
+ * NotificationBanner Styles - War Chronicle Edition
+ *
+ * Battle-worn parchment scrolls that unfurl from above.
+ * Medieval war room aesthetic with wax seals and torn edges.
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════════ */
+
+.notification-banner-container {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 100%;
+  max-width: 600px;
+  padding: var(--space-3, 12px);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATION SCROLL
+   ═══════════════════════════════════════════════════════════ */
+
+.notification-scroll {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    #2A2218 0%,
+    #1A1512 50%,
+    #2A2218 100%
+  );
+  border: 3px solid #3D332A;
+  border-radius: 8px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 20px rgba(228, 106, 38, 0.1);
+  padding: var(--space-4, 16px);
+  padding-left: 60px; /* Space for wax seal */
+  pointer-events: all;
+
+  /* Parchment texture */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px
+    ),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+
+  /* Entrance animation */
+  animation: notification-unfurl 300ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  animation-delay: var(--animation-delay, 0ms);
+
+  /* Stack offset */
+  transform: translateY(calc(var(--stack-index, 0) * 8px));
+  opacity: calc(1 - var(--stack-index, 0) * 0.2);
+}
+
+@keyframes notification-unfurl {
+  from {
+    transform: translateY(-120%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.notification-scroll--exiting {
+  animation: notification-roll-up 200ms ease-in forwards;
+}
+
+@keyframes notification-roll-up {
+  to {
+    transform: translateY(-120%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TYPE VARIANTS
+   ═══════════════════════════════════════════════════════════ */
+
+/* GM Request - Blood red */
+.notification-scroll--gm-request {
+  border-color: #8B0000;
+  box-shadow:
+    0 10px 30px rgba(139, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 30px rgba(139, 0, 0, 0.3);
+}
+
+/* Attack Incoming - Ember orange */
+.notification-scroll--attack-incoming {
+  border-color: #E46A26;
+  box-shadow:
+    0 10px 30px rgba(228, 106, 38, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 30px rgba(228, 106, 38, 0.3);
+}
+
+/* Turn Warning - Gold */
+.notification-scroll--turn-warning {
+  border-color: #D4AF37;
+  box-shadow:
+    0 10px 30px rgba(212, 175, 55, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 20px rgba(212, 175, 55, 0.2);
+}
+
+/* Combat Event - Jade */
+.notification-scroll--combat-event {
+  border-color: #22C55E;
+  box-shadow:
+    0 10px 30px rgba(34, 197, 94, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 15px rgba(34, 197, 94, 0.15);
+}
+
+/* System - Gray */
+.notification-scroll--system {
+  border-color: #4A4A4A;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATE MODIFIERS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Persistent (high priority) */
+.notification-scroll--persistent {
+  animation:
+    notification-unfurl 300ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards,
+    notification-pulse 2s ease-in-out infinite 500ms;
+}
+
+@keyframes notification-pulse {
+  0%, 100% {
+    box-shadow:
+      0 10px 30px rgba(139, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+      0 0 30px rgba(139, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 10px 40px rgba(139, 0, 0, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+      0 0 50px rgba(139, 0, 0, 0.5);
+  }
+}
+
+/* Urgent (shake animation) */
+.notification-scroll--urgent {
+  animation:
+    notification-unfurl 300ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards,
+    notification-shake 400ms ease-in-out 300ms;
+}
+
+@keyframes notification-shake {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px) translateY(1px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px) translateY(-1px); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WAX SEAL
+   ═══════════════════════════════════════════════════════════ */
+
+.notification-scroll__seal {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-scroll__seal-wax {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    0 0 0 2px rgba(0, 0, 0, 0.2) inset;
+  position: relative;
+  z-index: 1;
+}
+
+.notification-scroll__seal-ribbon {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 12px;
+  background: linear-gradient(to bottom, #8B4513, #654321);
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 50% 80%, 10% 100%);
+  opacity: 0.6;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CONTENT
+   ═══════════════════════════════════════════════════════════ */
+
+.notification-scroll__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.notification-scroll__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.notification-scroll__icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.notification-scroll__title {
+  font-family: 'Cinzel', 'Georgia', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #E8DCC4;
+  margin: 0;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  flex-grow: 1;
+}
+
+.notification-scroll__message {
+  font-family: 'Merriweather', 'Georgia', serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #C4B5A0;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACTIONS
+   ═══════════════════════════════════════════════════════════ */
+
+.notification-scroll__actions {
+  display: flex;
+  gap: var(--space-2, 8px);
+  margin-top: var(--space-1, 4px);
+}
+
+.notification-scroll__action-btn {
+  flex-grow: 1;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #8B0000, #A00000);
+  border: 2px solid #5A0000;
+  border-radius: 6px;
+  color: #FFF;
+  font-family: 'Cinzel', 'Georgia', serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+  box-shadow:
+    0 2px 8px rgba(139, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.notification-scroll__action-btn:hover {
+  background: linear-gradient(135deg, #A00000, #B00000);
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 12px rgba(139, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
+
+.notification-scroll__action-btn:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 4px rgba(139, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+.notification-scroll__dismiss-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #C4B5A0;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-scroll__dismiss-btn:hover {
+  background: rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #E8DCC4;
+  transform: scale(1.05);
+}
+
+.notification-scroll__dismiss-btn:active {
+  transform: scale(0.95);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TORN EDGE DECORATION
+   ═══════════════════════════════════════════════════════════ */
+
+.notification-scroll__torn-edge {
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #3D332A 0px,
+    #3D332A 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,5 Q5,2 10,5 T20,5 T30,5 T40,5 T50,5 T60,5 T70,5 T80,5 T90,5 T100,5 L100,10 L0,10 Z' fill='black'/%3E%3C/svg%3E");
+  mask-size: 100% 100%;
+  opacity: 0.3;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .notification-banner-container {
+    max-width: calc(100vw - 24px);
+  }
+
+  .notification-scroll {
+    padding: var(--space-3, 12px);
+    padding-left: 52px;
+  }
+
+  .notification-scroll__title {
+    font-size: 14px;
+  }
+
+  .notification-scroll__message {
+    font-size: 13px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACCESSIBILITY
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-scroll {
+    animation: notification-unfurl-simple 200ms ease-out backwards;
+  }
+
+  .notification-scroll--persistent {
+    animation: notification-unfurl-simple 200ms ease-out backwards;
+  }
+
+  .notification-scroll--urgent {
+    animation: notification-unfurl-simple 200ms ease-out backwards;
+  }
+
+  @keyframes notification-unfurl-simple {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Focus styles */
+.notification-scroll__action-btn:focus-visible,
+.notification-scroll__dismiss-btn:focus-visible {
+  outline: 3px solid #D4AF37;
+  outline-offset: 2px;
+}

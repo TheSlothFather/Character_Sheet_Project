@@ -38,10 +38,18 @@ export { CombatChronicle, type CombatChronicleProps } from "./CombatChronicle";
 export { InitiativeRollPanel, type InitiativeRollPanelProps } from "./InitiativeRollPanel";
 export { SkillCheckRequestModal, type SkillCheckRequestModalProps } from "./SkillCheckRequestModal";
 
+// Notifications
+export { NotificationBanner, type NotificationBannerProps, type Notification } from "./notifications/NotificationBanner";
+export { TurnAnnouncement, type TurnAnnouncementProps } from "./notifications/TurnAnnouncement";
+
 // GM Tools
 export { GmContestResolutionPanel, type GmContestResolutionPanelProps } from "./GmContestResolutionPanel";
 export { NpcActionPanel, type NpcActionPanelProps } from "./NpcActionPanel";
 export { SkillCheckRequestPanel, type SkillCheckRequestPanelProps } from "./SkillCheckRequestPanel";
+
+// Rolls
+export { default as RollOverlay } from "./rolls/RollOverlay";
+export type { RollOverlayProps, RollSubmitData, DiceRoll } from "./rolls/RollOverlay";
 
 // Utilities (kept from previous implementation)
 export { SkillSelector, type SkillSelectorProps } from "./SkillSelector";
