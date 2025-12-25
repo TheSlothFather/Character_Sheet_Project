@@ -363,6 +363,11 @@ type StoredPresence = {
   connectedAt: string;
 };
 
+type SocketAttachment = StoredPresence & {
+  connectionId: string;
+  campaignId: string;
+};
+
 type RollRequestPayload = {
   playerId: string;
   playerName?: string;
@@ -479,6 +484,7 @@ export class CampaignDurableObject {
   private lobbyState: LobbyState | null = null;
   private sequence = 0;
   private ready: Promise<void>;
+  private campaignId: string | null = null;
 
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
@@ -494,6 +500,10 @@ export class CampaignDurableObject {
       if (storedLobbyState) {
         this.lobbyState = storedLobbyState;
       }
+    });
+
+    void this.ready.then(() => {
+      this.restoreWebSockets();
     });
   }
 
@@ -518,6 +528,7 @@ export class CampaignDurableObject {
     }
 
     const campaignId = decodeURIComponent((match ?? combatMatch)![1]);
+    this.campaignId = campaignId;
     const action = (match ?? combatMatch)![2];
 
     // Handle WebSocket upgrades (before POST check)
@@ -562,25 +573,18 @@ export class CampaignDurableObject {
     const pair = new WebSocketPair();
     const client = pair[0];
     const server = pair[1];
-    server.accept();
+    this.state.acceptWebSocket(server);
+
+    const connectedAt = new Date().toISOString();
+    server.serializeAttachment({
+      connectionId,
+      userId,
+      connectedAt,
+      campaignId,
+    } satisfies SocketAttachment);
 
     this.sessions.set(connectionId, server);
-    this.presence.set(connectionId, {
-      userId,
-      connectedAt: new Date().toISOString(),
-    });
-
-    server.addEventListener("message", (event) => {
-      void this.handleClientMessage(connectionId, campaignId, event.data);
-    });
-
-    server.addEventListener("close", () => {
-      this.handleDisconnect(connectionId, campaignId);
-    });
-
-    server.addEventListener("error", () => {
-      this.handleDisconnect(connectionId, campaignId);
-    });
+    this.presence.set(connectionId, { userId, connectedAt });
 
     const welcomePayload: CampaignEvent = {
       type: "welcome",
@@ -693,6 +697,10 @@ export class CampaignDurableObject {
     const presenceEntry = this.serializePresence(connectionId);
     this.presence.delete(connectionId);
 
+    if (!campaignId) {
+      return;
+    }
+
     this.broadcast({
       type: "presence",
       campaignId,
@@ -703,6 +711,71 @@ export class CampaignDurableObject {
         total: this.presence.size,
       },
     });
+  }
+
+  private restoreWebSockets() {
+    const sockets = this.state.getWebSockets();
+    if (!sockets.length) {
+      return;
+    }
+
+    for (const socket of sockets) {
+      const attachment = this.getSocketAttachment(socket);
+      if (!attachment) {
+        const connectionId = crypto.randomUUID();
+        const connectedAt = new Date().toISOString();
+        const campaignId = this.campaignId ?? "unknown";
+        const userId = connectionId;
+        socket.serializeAttachment({
+          connectionId,
+          userId,
+          connectedAt,
+          campaignId,
+        } satisfies SocketAttachment);
+        this.sessions.set(connectionId, socket);
+        this.presence.set(connectionId, { userId, connectedAt });
+        continue;
+      }
+
+      this.sessions.set(attachment.connectionId, socket);
+      this.presence.set(attachment.connectionId, {
+        userId: attachment.userId,
+        connectedAt: attachment.connectedAt,
+      });
+    }
+  }
+
+  private getSocketAttachment(socket: WebSocket): SocketAttachment | null {
+    try {
+      return socket.deserializeAttachment() as SocketAttachment;
+    } catch {
+      return null;
+    }
+  }
+
+  webSocketMessage(socket: WebSocket, message: string | ArrayBuffer) {
+    const attachment = this.getSocketAttachment(socket);
+    if (!attachment) {
+      return;
+    }
+    this.campaignId = attachment.campaignId;
+    void this.handleClientMessage(attachment.connectionId, attachment.campaignId, message);
+  }
+
+  webSocketClose(socket: WebSocket, _code?: number, _reason?: string, _wasClean?: boolean) {
+    const attachment = this.getSocketAttachment(socket);
+    if (!attachment) {
+      return;
+    }
+    this.handleDisconnect(attachment.connectionId, attachment.campaignId);
+  }
+
+  webSocketError(socket: WebSocket, _error?: unknown) {
+    const attachment = this.getSocketAttachment(socket);
+    if (!attachment) {
+      return;
+    }
+    this.handleDisconnect(attachment.connectionId, attachment.campaignId);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1460,6 +1533,35 @@ export class CampaignDurableObject {
     });
   }
 
+  private async updateAuthCombatState<T>(
+    campaignId: string,
+    updater: (state: AuthoritativeCombatState) => Promise<T | Response> | T | Response,
+    request?: Request
+  ): Promise<{ state: AuthoritativeCombatState; sequence: number; result: T } | { response: Response }> {
+    return this.state.blockConcurrencyWhile(async () => {
+      const combatState = await this.state.storage.get<AuthoritativeCombatState>(this.authCombatStateKey(campaignId));
+      if (!combatState) {
+        return { response: jsonResponse({ error: "Combat state not found." }, 404, {}, request) };
+      }
+
+      const result = await updater(combatState);
+      if (result instanceof Response) {
+        return { response: result };
+      }
+
+      const next = this.sequence + 1;
+      this.sequence = next;
+      combatState.version = next;
+      combatState.lastUpdatedAt = new Date().toISOString();
+      await this.state.storage.put({
+        [this.authCombatStateKey(campaignId)]: combatState,
+        sequence: next,
+      });
+
+      return { state: combatState, sequence: next, result };
+    });
+  }
+
   private broadcastAuthEvent(
     type: ServerEventType,
     campaignId: string,
@@ -1828,7 +1930,26 @@ export class CampaignDurableObject {
     }
 
     const sequence = await this.saveAuthCombatState(campaignId, combatState);
-    this.broadcastAuthEvent("COMBAT_STARTED", campaignId, sequence, { state: combatState });
+    this.broadcastAuthEvent("COMBAT_STARTED", campaignId, sequence, {
+      state: combatState,
+      initiativeMode,
+    });
+    if (!manualInitiative) {
+      this.broadcastAuthEvent("ROUND_STARTED", campaignId, sequence, {
+        round: combatState.round,
+        initiativeOrder: combatState.initiativeOrder,
+      });
+      if (combatState.activeEntityId) {
+        const activeEntity = combatState.entities[combatState.activeEntityId];
+        this.broadcastAuthEvent("TURN_STARTED", campaignId, sequence, {
+          entityId: combatState.activeEntityId,
+          entityName: activeEntity?.displayName || activeEntity?.name || "Unknown",
+          round: combatState.round,
+          turnIndex: combatState.turnIndex,
+          apRestored: activeEntity?.ap.max ?? 0,
+        });
+      }
+    }
 
     return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
   }
@@ -1841,90 +1962,76 @@ export class CampaignDurableObject {
 
     const entityId = body.entityId as string | undefined;
     const roll = body.roll as any;
+    const playerId = typeof body.playerId === "string" ? body.playerId : "unknown";
 
     if (!entityId || !roll) {
       return jsonResponse({ error: "Missing entityId or roll." }, 400, {}, request);
     }
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      if (combatState.phase !== "initiative-rolling") {
+        return jsonResponse({ error: "Combat is not in initiative-rolling phase." }, 400, {}, request);
+      }
 
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat not found." }, 404, {}, request);
-    }
+      const entity = combatState.entities[entityId];
+      if (!entity) {
+        return jsonResponse({ error: "Entity not found." }, 404, {}, request);
+      }
 
-    if (combatState.phase !== "initiative-rolling") {
-      return jsonResponse({ error: "Combat is not in initiative-rolling phase." }, 400, {}, request);
-    }
+      // Validate dice roll
+      const validation = this.validateDiceRoll(roll);
+      if (validation !== true) {
+        return jsonResponse({ error: validation }, 400, {}, request);
+      }
 
-    const entity = combatState.entities[entityId];
-    if (!entity) {
-      return jsonResponse({ error: "Entity not found." }, 404, {}, request);
-    }
+      // Calculate roll result
+      const skillModifier = entity.skills[entity.initiativeSkill] ?? 0;
+      const rollResult = this.calculateRollResult(roll, entity.initiativeSkill, skillModifier);
 
-    // Validate dice roll
-    const validation = this.validateDiceRoll(roll);
-    if (validation !== true) {
-      return jsonResponse({ error: validation }, 400, {}, request);
-    }
+      // Store initiative roll
+      combatState.initiativeRolls[entityId] = {
+        entityId,
+        roll: rollResult.selectedDie,
+        skillValue: skillModifier,
+        currentEnergy: entity.energy.current,
+      };
 
-    // Calculate roll result
-    const skillModifier = entity.skills[entity.initiativeSkill] ?? 0;
-    const rollResult = this.calculateRollResult(roll, entity.initiativeSkill, skillModifier);
+      // Check if all entities have rolled
+      const allEntityIds = Object.keys(combatState.entities);
+      const rolledEntityIds = Object.keys(combatState.initiativeRolls);
+      const allRolled = allEntityIds.every(id => rolledEntityIds.includes(id));
 
-    // Store initiative roll
-    combatState.initiativeRolls[entityId] = {
-      entityId,
-      roll: rollResult.selectedDie,
-      skillValue: skillModifier,
-      currentEnergy: entity.energy.current,
-    };
+      let initiativeOrder: string[] = [];
+      let rollResults: Record<string, RollData> | null = null;
 
-    // Broadcast roll submitted event
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
-    this.broadcastAuthEvent("INITIATIVE_ROLL_SUBMITTED", campaignId, sequence, {
-      entityId,
-      playerId: "", // TODO: Get from request
-      roll: rollResult,
-    });
+      if (allRolled) {
+        // Compute initiative order
+        initiativeOrder = combatState.initiativeMode === "group"
+          ? this.sortGroupInitiative(Object.values(combatState.initiativeRolls), combatState.entities)
+          : this.sortInitiative(Object.values(combatState.initiativeRolls));
 
-    // Check if all entities have rolled
-    const allEntityIds = Object.keys(combatState.entities);
-    const rolledEntityIds = Object.keys(combatState.initiativeRolls);
-    const allRolled = allEntityIds.every(id => rolledEntityIds.includes(id));
+        combatState.initiativeOrder = initiativeOrder;
+        combatState.phase = "active-turn";
+        combatState.activeEntityId = initiativeOrder[0] ?? null;
+        combatState.turnIndex = 0;
 
-    if (allRolled) {
-      // Compute initiative order
-      const initiativeOrder = combatState.initiativeMode === "group"
-        ? this.sortGroupInitiative(Object.values(combatState.initiativeRolls), combatState.entities)
-        : this.sortInitiative(Object.values(combatState.initiativeRolls));
-
-      combatState.initiativeOrder = initiativeOrder;
-      combatState.phase = "active-turn";
-      combatState.activeEntityId = initiativeOrder[0] ?? null;
-      combatState.turnIndex = 0;
-
-      // Reset AP and reaction for first entity
-      if (combatState.activeEntityId) {
-        const activeEntity = combatState.entities[combatState.activeEntityId];
-        if (activeEntity) {
-          activeEntity.ap.current = activeEntity.ap.max;
-          activeEntity.reaction.available = true;
+        // Reset AP and reaction for first entity
+        if (combatState.activeEntityId) {
+          const activeEntity = combatState.entities[combatState.activeEntityId];
+          if (activeEntity) {
+            activeEntity.ap.current = activeEntity.ap.max;
+            activeEntity.reaction.available = true;
+          }
         }
-      }
 
-      // Add turn started log
-      if (combatState.activeEntityId) {
-        combatState.log.push(this.createAuthLogEntry("turn_started", combatState.activeEntityId, undefined, {
-          round: 1,
-          turnIndex: 0,
-        }));
-      }
+        // Add turn started log
+        if (combatState.activeEntityId) {
+          combatState.log.push(this.createAuthLogEntry("turn_started", combatState.activeEntityId, undefined, {
+            round: 1,
+            turnIndex: 0,
+          }));
+        }
 
-      const finalSequence = await this.saveAuthCombatState(campaignId, combatState);
-
-      // Broadcast all initiative rolled event
-      this.broadcastAuthEvent("ALL_INITIATIVE_ROLLED", campaignId, finalSequence, {
-        initiativeOrder,
-        rollResults: Object.fromEntries(
+        rollResults = Object.fromEntries(
           Object.entries(combatState.initiativeRolls).map(([id, entry]) => [id, {
             skill: combatState.entities[id]?.initiativeSkill || "initiative",
             modifier: entry.skillValue,
@@ -1935,13 +2042,45 @@ export class CampaignDurableObject {
             total: entry.roll + entry.skillValue,
             audit: `1d100 [${entry.roll}] + ${entry.skillValue} = ${entry.roll + entry.skillValue}`,
           }])
-        ),
+        );
+      }
+
+      return { rollResult, allRolled, initiativeOrder, rollResults };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
+    }
+
+    const { state: combatState, sequence } = update;
+    this.broadcastAuthEvent("INITIATIVE_ROLL_SUBMITTED", campaignId, sequence, {
+      entityId,
+      playerId,
+      roll: update.result.rollResult,
+    });
+
+    if (update.result.allRolled) {
+      this.broadcastAuthEvent("ALL_INITIATIVE_ROLLED", campaignId, sequence, {
+        initiativeOrder: update.result.initiativeOrder,
+        rollResults: update.result.rollResults ?? {},
       });
-      this.broadcastAuthEvent("STATE_SYNC", campaignId, finalSequence, {
+      this.broadcastAuthEvent("STATE_SYNC", campaignId, sequence, {
         state: combatState,
       });
-
-      return jsonResponse({ ok: true, sequence: finalSequence, state: combatState }, 200, {}, request);
+      this.broadcastAuthEvent("ROUND_STARTED", campaignId, sequence, {
+        round: combatState.round,
+        initiativeOrder: combatState.initiativeOrder,
+      });
+      if (combatState.activeEntityId) {
+        const activeEntity = combatState.entities[combatState.activeEntityId];
+        this.broadcastAuthEvent("TURN_STARTED", campaignId, sequence, {
+          entityId: combatState.activeEntityId,
+          entityName: activeEntity?.displayName || activeEntity?.name || "Unknown",
+          round: combatState.round,
+          turnIndex: combatState.turnIndex,
+          apRestored: activeEntity?.ap.max ?? 0,
+        });
+      }
     }
 
     return jsonResponse({ ok: true, sequence, state: combatState }, 200, {}, request);
@@ -1951,11 +2090,6 @@ export class CampaignDurableObject {
   private async handleDeclareAction(campaignId: string, body: unknown, request: Request): Promise<Response> {
     if (!isRecord(body)) {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
-    }
-
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const entityId = parseRequiredStringField(body.entityId, "entityId", request);
@@ -1977,61 +2111,65 @@ export class CampaignDurableObject {
     const interruptible = body.interruptible !== false;
 
     // Validate the action
-    const validation = this.validateAction(combatState, entityId, senderId, apCost, energyCost);
-    if (!validation.allowed) {
-      const sequence = await this.saveAuthCombatState(campaignId, combatState);
-      this.broadcastAuthEvent("ACTION_REJECTED", campaignId, sequence, {
-        entityId,
-        reason: validation.reason,
-      });
-      return jsonResponse({ ok: false, error: validation.reason }, 400, {}, request);
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      const validation = this.validateAction(combatState, entityId, senderId, apCost, energyCost);
+      if (!validation.allowed) {
+        return jsonResponse({ ok: false, error: validation.reason }, 400, {}, request);
+      }
+
+      // Deduct resources
+      const entity = combatState.entities[entityId];
+      entity.ap.current -= apCost;
+      entity.energy.current -= energyCost;
+
+      // Create pending action
+      const pendingAction: PendingAction = {
+        actionId: crypto.randomUUID(),
+        type: actionType,
+        sourceEntityId: entityId,
+        targetEntityId: targetEntityId ?? undefined,
+        apCost,
+        energyCost,
+        interruptible,
+        timestamp: new Date().toISOString(),
+        metadata: body.metadata as Record<string, unknown> | undefined,
+      };
+
+      combatState.pendingAction = pendingAction;
+      combatState.log.push(this.createAuthLogEntry("action_declared", entityId, targetEntityId ?? undefined, {
+        actionType,
+        apCost,
+        energyCost,
+        interruptible,
+      }));
+
+      return { pendingAction };
+    }, request);
+
+    if ("response" in update) {
+      if (update.response.status === 400) {
+        this.broadcastAuthEvent("ACTION_REJECTED", campaignId, this.sequence, {
+          entityId,
+          reason: (await update.response.clone().json().catch(() => ({}))).error ?? "Invalid action",
+        });
+      }
+      return update.response;
     }
 
-    // Deduct resources
-    const entity = combatState.entities[entityId];
-    entity.ap.current -= apCost;
-    entity.energy.current -= energyCost;
-
-    // Create pending action
-    const pendingAction: PendingAction = {
-      actionId: crypto.randomUUID(),
-      type: actionType,
-      sourceEntityId: entityId,
-      targetEntityId: targetEntityId ?? undefined,
-      apCost,
-      energyCost,
-      interruptible,
-      timestamp: new Date().toISOString(),
-      metadata: body.metadata as Record<string, unknown> | undefined,
-    };
-
-    combatState.pendingAction = pendingAction;
-    combatState.log.push(this.createAuthLogEntry("action_declared", entityId, targetEntityId ?? undefined, {
-      actionType,
-      apCost,
-      energyCost,
-      interruptible,
-    }));
-
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+    const { state: combatState, sequence } = update;
     this.broadcastAuthEvent("ACTION_DECLARED", campaignId, sequence, {
-      action: pendingAction,
+      action: update.result.pendingAction,
       phase: combatState.phase,
       state: combatState,
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState, action: pendingAction }, 200, {}, request);
+    return jsonResponse({ ok: true, sequence, state: combatState, action: update.result.pendingAction }, 200, {}, request);
   }
 
   // Handler: Declare a reaction
   private async handleDeclareReaction(campaignId: string, body: unknown, request: Request): Promise<Response> {
     if (!isRecord(body)) {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
-    }
-
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const entityId = parseRequiredStringField(body.entityId, "entityId", request);
@@ -2049,62 +2187,71 @@ export class CampaignDurableObject {
     if (energyCost instanceof Response) return energyCost;
 
     // Validate the reaction
-    const validation = this.validateReaction(combatState, entityId, senderId);
-    if (!validation.allowed) {
-      const sequence = await this.saveAuthCombatState(campaignId, combatState);
-      this.broadcastAuthEvent("REACTION_REJECTED", campaignId, sequence, {
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      const validation = this.validateReaction(combatState, entityId, senderId);
+      if (!validation.allowed) {
+        return jsonResponse({ ok: false, error: validation.reason }, 400, {}, request);
+      }
+
+      // Check AP cost
+      const entity = combatState.entities[entityId];
+      if (entity.ap.current < apCost) {
+        return jsonResponse({ ok: false, error: "Insufficient AP for reaction" }, 400, {}, request);
+      }
+
+      // Deduct resources and mark reaction as used
+      entity.ap.current -= apCost;
+      entity.energy.current = Math.max(0, entity.energy.current - energyCost);
+      entity.reaction.available = false;
+
+      // Create pending reaction
+      const pendingReaction: PendingReaction = {
+        reactionId: crypto.randomUUID(),
         entityId,
-        reason: validation.reason,
-      });
-      return jsonResponse({ ok: false, error: validation.reason }, 400, {}, request);
+        type: reactionType,
+        targetActionId: combatState.pendingAction!.actionId,
+        skill: body.skill as string | undefined,
+        apCost,
+        energyCost,
+        timestamp: new Date().toISOString(),
+        effects: body.effects as ReactionEffect[] | undefined,
+      };
+
+      combatState.pendingReactions.push(pendingReaction);
+
+      // Transition to reaction-interrupt phase if not already there
+      if (combatState.phase === "active-turn") {
+        combatState.phase = "reaction-interrupt";
+      }
+
+      combatState.log.push(this.createAuthLogEntry("reaction_declared", entityId, undefined, {
+        reactionType,
+        targetActionId: pendingReaction.targetActionId,
+        apCost,
+        energyCost,
+      }));
+
+      return { pendingReaction };
+    }, request);
+
+    if ("response" in update) {
+      if (update.response.status === 400) {
+        this.broadcastAuthEvent("REACTION_REJECTED", campaignId, this.sequence, {
+          entityId,
+          reason: (await update.response.clone().json().catch(() => ({}))).error ?? "Invalid reaction",
+        });
+      }
+      return update.response;
     }
 
-    // Check AP cost
-    const entity = combatState.entities[entityId];
-    if (entity.ap.current < apCost) {
-      return jsonResponse({ ok: false, error: "Insufficient AP for reaction" }, 400, {}, request);
-    }
-
-    // Deduct resources and mark reaction as used
-    entity.ap.current -= apCost;
-    entity.energy.current = Math.max(0, entity.energy.current - energyCost);
-    entity.reaction.available = false;
-
-    // Create pending reaction
-    const pendingReaction: PendingReaction = {
-      reactionId: crypto.randomUUID(),
-      entityId,
-      type: reactionType,
-      targetActionId: combatState.pendingAction!.actionId,
-      skill: body.skill as string | undefined,
-      apCost,
-      energyCost,
-      timestamp: new Date().toISOString(),
-      effects: body.effects as ReactionEffect[] | undefined,
-    };
-
-    combatState.pendingReactions.push(pendingReaction);
-
-    // Transition to reaction-interrupt phase if not already there
-    if (combatState.phase === "active-turn") {
-      combatState.phase = "reaction-interrupt";
-    }
-
-    combatState.log.push(this.createAuthLogEntry("reaction_declared", entityId, undefined, {
-      reactionType,
-      targetActionId: pendingReaction.targetActionId,
-      apCost,
-      energyCost,
-    }));
-
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+    const { state: combatState, sequence } = update;
     this.broadcastAuthEvent("REACTION_DECLARED", campaignId, sequence, {
-      reaction: pendingReaction,
+      reaction: update.result.pendingReaction,
       pendingReactionsCount: combatState.pendingReactions.length,
       state: combatState,
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState, reaction: pendingReaction }, 200, {}, request);
+    return jsonResponse({ ok: true, sequence, state: combatState, reaction: update.result.pendingReaction }, 200, {}, request);
   }
 
   // Handler: Resolve pending reactions (GM triggers this)
@@ -2121,129 +2268,146 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Only GM can resolve reactions." }, 403, {}, request);
     }
 
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
-    }
-
-    if (!combatState.pendingAction) {
-      return jsonResponse({ error: "No pending action to resolve." }, 400, {}, request);
-    }
-
-    // Transition to resolution phase
-    combatState.phase = "resolution";
-
-    // Sort reactions by initiative order
-    const reactorOrder = combatState.initiativeOrder.filter(id =>
-      combatState.pendingReactions.some(r => r.entityId === id)
-    );
-
-    const sortedReactions = reactorOrder
-      .map(id => combatState.pendingReactions.find(r => r.entityId === id)!)
-      .filter(Boolean);
-
-    let actionCancelled = false;
-    let actionModified = false;
-    const resolvedReactions: Array<{ reaction: PendingReaction; success: boolean; effects: ReactionEffect[] }> = [];
-
-    // Resolve each reaction in initiative order
-    for (const reaction of sortedReactions) {
-      // For now, assume all reactions succeed (actual contest logic would go here)
-      const success = true;
-      const effects = reaction.effects ?? [];
-
-      // Apply reaction effects
-      for (const effect of effects) {
-        switch (effect.type) {
-          case "cancel_action":
-            actionCancelled = true;
-            break;
-          case "modify_action":
-            actionModified = true;
-            break;
-          case "apply_wounds":
-            if (effect.data?.wounds) {
-              const target = combatState.entities[effect.targetEntityId];
-              if (target) {
-                for (const [woundType, count] of Object.entries(effect.data.wounds)) {
-                  const current = target.wounds[woundType as WoundType] ?? 0;
-                  target.wounds[woundType as WoundType] = current + (count as number);
-                }
-                combatState.log.push(this.createAuthLogEntry("wounds_applied", reaction.entityId, effect.targetEntityId, {
-                  wounds: effect.data.wounds,
-                  source: "reaction",
-                }));
-              }
-            }
-            break;
-          case "apply_status":
-            if (effect.data?.statusKey) {
-              const target = combatState.entities[effect.targetEntityId];
-              if (target) {
-                target.statusEffects.push({
-                  key: effect.data.statusKey,
-                  stacks: effect.data.statusStacks ?? 1,
-                  duration: effect.data.statusDuration ?? null,
-                });
-                combatState.log.push(this.createAuthLogEntry("status_applied", reaction.entityId, effect.targetEntityId, {
-                  statusKey: effect.data.statusKey,
-                  stacks: effect.data.statusStacks ?? 1,
-                  duration: effect.data.statusDuration ?? null,
-                }));
-              }
-            }
-            break;
-        }
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      if (!combatState.pendingAction) {
+        return jsonResponse({ error: "No pending action to resolve." }, 400, {}, request);
       }
 
-      resolvedReactions.push({ reaction, success, effects });
+      // Transition to resolution phase
+      combatState.phase = "resolution";
 
-      combatState.log.push(this.createAuthLogEntry("reaction_resolved", reaction.entityId, undefined, {
-        reactionId: reaction.reactionId,
-        success,
-        effectCount: effects.length,
-      }));
+      // Sort reactions by initiative order
+      const reactorOrder = combatState.initiativeOrder.filter(id =>
+        combatState.pendingReactions.some(r => r.entityId === id)
+      );
+
+      const sortedReactions = reactorOrder
+        .map(id => combatState.pendingReactions.find(r => r.entityId === id)!)
+        .filter(Boolean);
+
+      let actionCancelled = false;
+      let actionModified = false;
+      const resolvedReactions: Array<{ reaction: PendingReaction; success: boolean; effects: ReactionEffect[] }> = [];
+
+      const logEntries: CombatLogEntry[] = [];
+      const pushLog = (entry: CombatLogEntry) => {
+        combatState.log.push(entry);
+        logEntries.push(entry);
+      };
+
+      // Resolve each reaction in initiative order
+      for (const reaction of sortedReactions) {
+        // For now, assume all reactions succeed (actual contest logic would go here)
+        const success = true;
+        const effects = reaction.effects ?? [];
+
+        // Apply reaction effects
+        for (const effect of effects) {
+          switch (effect.type) {
+            case "cancel_action":
+              actionCancelled = true;
+              break;
+            case "modify_action":
+              actionModified = true;
+              break;
+            case "apply_wounds":
+              if (effect.data?.wounds) {
+                const target = combatState.entities[effect.targetEntityId];
+                if (target) {
+                  for (const [woundType, count] of Object.entries(effect.data.wounds)) {
+                    const current = target.wounds[woundType as WoundType] ?? 0;
+                    target.wounds[woundType as WoundType] = current + (count as number);
+                  }
+                  pushLog(this.createAuthLogEntry("wounds_applied", reaction.entityId, effect.targetEntityId, {
+                    wounds: effect.data.wounds,
+                    source: "reaction",
+                  }));
+                }
+              }
+              break;
+            case "apply_status":
+              if (effect.data?.statusKey) {
+                const target = combatState.entities[effect.targetEntityId];
+                if (target) {
+                  target.statusEffects.push({
+                    key: effect.data.statusKey,
+                    stacks: effect.data.statusStacks ?? 1,
+                    duration: effect.data.statusDuration ?? null,
+                  });
+                  pushLog(this.createAuthLogEntry("status_applied", reaction.entityId, effect.targetEntityId, {
+                    statusKey: effect.data.statusKey,
+                    stacks: effect.data.statusStacks ?? 1,
+                    duration: effect.data.statusDuration ?? null,
+                  }));
+                }
+              }
+              break;
+          }
+        }
+
+        resolvedReactions.push({ reaction, success, effects });
+
+        pushLog(this.createAuthLogEntry("reaction_resolved", reaction.entityId, undefined, {
+          reactionId: reaction.reactionId,
+          success,
+          effectCount: effects.length,
+        }));
+      }
+
+      // Clear pending reactions
+      combatState.pendingReactions = [];
+
+      // Resolve or cancel the original action
+      if (actionCancelled) {
+        pushLog(this.createAuthLogEntry("action_cancelled", combatState.pendingAction.sourceEntityId, undefined, {
+          actionId: combatState.pendingAction.actionId,
+          reason: "cancelled_by_reaction",
+        }));
+      } else {
+        pushLog(this.createAuthLogEntry("action_resolved", combatState.pendingAction.sourceEntityId, combatState.pendingAction.targetEntityId, {
+          actionId: combatState.pendingAction.actionId,
+          modified: actionModified,
+        }));
+      }
+
+      // Clear pending action
+      const resolvedAction = combatState.pendingAction;
+      combatState.pendingAction = null;
+
+      // Transition back to active-turn
+      combatState.phase = "active-turn";
+
+      return {
+        resolvedAction,
+        resolvedReactions,
+        actionCancelled,
+        actionModified,
+        logEntries,
+      };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
     }
 
-    // Clear pending reactions
-    combatState.pendingReactions = [];
-
-    // Resolve or cancel the original action
-    if (actionCancelled) {
-      combatState.log.push(this.createAuthLogEntry("action_cancelled", combatState.pendingAction.sourceEntityId, undefined, {
-        actionId: combatState.pendingAction.actionId,
-        reason: "cancelled_by_reaction",
-      }));
-    } else {
-      combatState.log.push(this.createAuthLogEntry("action_resolved", combatState.pendingAction.sourceEntityId, combatState.pendingAction.targetEntityId, {
-        actionId: combatState.pendingAction.actionId,
-        modified: actionModified,
-      }));
-    }
-
-    // Clear pending action
-    const resolvedAction = combatState.pendingAction;
-    combatState.pendingAction = null;
-
-    // Transition back to active-turn
-    combatState.phase = "active-turn";
-
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+    const { state: combatState, sequence } = update;
     this.broadcastAuthEvent("REACTIONS_RESOLVED", campaignId, sequence, {
-      reactions: resolvedReactions,
-      action: resolvedAction,
-      actionCancelled,
-      actionModified,
+      reactions: update.result.resolvedReactions,
+      action: update.result.resolvedAction,
+      actionCancelled: update.result.actionCancelled,
+      actionModified: update.result.actionModified,
+      log: update.result.logEntries,
       state: combatState,
     });
+    this.broadcastAuthEvent("STATE_SYNC", campaignId, sequence, { state: combatState });
 
     return jsonResponse({
       ok: true,
       sequence,
       state: combatState,
-      reactions: resolvedReactions,
-      actionCancelled,
-      actionModified,
+      reactions: update.result.resolvedReactions,
+      actionCancelled: update.result.actionCancelled,
+      actionModified: update.result.actionModified,
     }, 200, {}, request);
   }
 
@@ -2253,89 +2417,113 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
-    }
-
-    if (combatState.phase === "completed") {
-      return jsonResponse({ error: "Combat has already ended." }, 400, {}, request);
-    }
-
     const entityId = parseRequiredStringField(body.entityId, "entityId", request);
     if (entityId instanceof Response) return entityId;
 
     const senderId = parseRequiredStringField(body.senderId, "senderId", request);
     if (senderId instanceof Response) return senderId;
 
-    const validation = this.validateTurnEnd(combatState, entityId, senderId);
-    if (!validation.allowed) {
-      return jsonResponse({ error: validation.reason }, 403, {}, request);
-    }
-
-    // Resolve any pending action/reactions first
-    if (combatState.pendingAction) {
-      combatState.pendingAction = null;
-      combatState.pendingReactions = [];
-    }
-
-    const previousEntityId = combatState.activeEntityId;
-    const previousEntity = previousEntityId ? combatState.entities[previousEntityId] : null;
-
-    // Log turn end
-    if (previousEntityId) {
-      const voluntary = body.voluntary !== false;
-      combatState.log.push(this.createAuthLogEntry("turn_ended", previousEntityId, undefined, {
-        round: combatState.round,
-        turnIndex: combatState.turnIndex,
-        voluntary,
-      }));
-    }
-
-    // Advance to next entity
-    let nextIndex = combatState.turnIndex + 1;
-    let nextRound = combatState.round;
-
-    if (nextIndex >= combatState.initiativeOrder.length) {
-      nextIndex = 0;
-      nextRound += 1;
-
-      // Reset reactions for all entities at round start
-      for (const entity of Object.values(combatState.entities)) {
-        entity.reaction.available = true;
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      if (combatState.phase === "completed") {
+        return jsonResponse({ error: "Combat has already ended." }, 400, {}, request);
       }
 
-      combatState.log.push(this.createAuthLogEntry("round_started", undefined, undefined, {
-        round: nextRound,
-      }));
-    }
+      const validation = this.validateTurnEnd(combatState, entityId, senderId);
+      if (!validation.allowed) {
+        return jsonResponse({ error: validation.reason }, 403, {}, request);
+      }
 
-    combatState.turnIndex = nextIndex;
-    combatState.round = nextRound;
-    combatState.activeEntityId = combatState.initiativeOrder[nextIndex] ?? null;
-    combatState.phase = "active-turn";
+      // Resolve any pending action/reactions first
+      if (combatState.pendingAction) {
+        combatState.pendingAction = null;
+        combatState.pendingReactions = [];
+      }
 
-    // Reset AP for new active entity
-    if (combatState.activeEntityId) {
-      const activeEntity = combatState.entities[combatState.activeEntityId];
-      if (activeEntity) {
-        activeEntity.ap.current = activeEntity.ap.max;
+      const previousEntityId = combatState.activeEntityId;
+      const previousEntity = previousEntityId ? combatState.entities[previousEntityId] : null;
 
-        combatState.log.push(this.createAuthLogEntry("turn_started", combatState.activeEntityId, undefined, {
+      // Log turn end
+      if (previousEntityId) {
+        const voluntary = body.voluntary !== false;
+        combatState.log.push(this.createAuthLogEntry("turn_ended", previousEntityId, undefined, {
           round: combatState.round,
           turnIndex: combatState.turnIndex,
-          apRestored: activeEntity.ap.max,
+          voluntary,
         }));
       }
+
+      // Advance to next entity
+      let nextIndex = combatState.turnIndex + 1;
+      let nextRound = combatState.round;
+
+      const roundStarted = nextIndex >= combatState.initiativeOrder.length;
+      if (roundStarted) {
+        nextIndex = 0;
+        nextRound += 1;
+
+        // Reset reactions for all entities at round start
+        for (const entity of Object.values(combatState.entities)) {
+          entity.reaction.available = true;
+        }
+
+        combatState.log.push(this.createAuthLogEntry("round_started", undefined, undefined, {
+          round: nextRound,
+        }));
+      }
+
+      combatState.turnIndex = nextIndex;
+      combatState.round = nextRound;
+      combatState.activeEntityId = combatState.initiativeOrder[nextIndex] ?? null;
+      combatState.phase = "active-turn";
+
+      // Reset AP for new active entity
+      if (combatState.activeEntityId) {
+        const activeEntity = combatState.entities[combatState.activeEntityId];
+        if (activeEntity) {
+          activeEntity.ap.current = activeEntity.ap.max;
+
+          combatState.log.push(this.createAuthLogEntry("turn_started", combatState.activeEntityId, undefined, {
+            round: combatState.round,
+            turnIndex: combatState.turnIndex,
+            apRestored: activeEntity.ap.max,
+          }));
+        }
+      }
+
+      return {
+        previousEntityId,
+        previousEntityName: previousEntity?.displayName || previousEntity?.name || "Unknown",
+        roundStarted,
+      };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
     }
 
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+    const { state: combatState, sequence } = update;
     this.broadcastAuthEvent("TURN_ENDED", campaignId, sequence, {
-      entityId: previousEntityId ?? entityId,
-      entityName: previousEntity?.displayName || previousEntity?.name || "Unknown",
+      entityId: update.result.previousEntityId ?? entityId,
+      entityName: update.result.previousEntityName,
       reason: body.voluntary === false ? "no_ap" : "voluntary",
       energyGained: 0,
     });
+    if (update.result.roundStarted) {
+      this.broadcastAuthEvent("ROUND_STARTED", campaignId, sequence, {
+        round: combatState.round,
+        initiativeOrder: combatState.initiativeOrder,
+      });
+    }
+    if (combatState.activeEntityId) {
+      const activeEntity = combatState.entities[combatState.activeEntityId];
+      this.broadcastAuthEvent("TURN_STARTED", campaignId, sequence, {
+        entityId: combatState.activeEntityId,
+        entityName: activeEntity?.displayName || activeEntity?.name || "Unknown",
+        round: combatState.round,
+        turnIndex: combatState.turnIndex,
+        apRestored: activeEntity?.ap.max ?? 0,
+      });
+    }
     this.broadcastAuthEvent("STATE_SYNC", campaignId, sequence, {
       state: combatState,
     });
@@ -2347,11 +2535,6 @@ export class CampaignDurableObject {
   private async handleGmOverride(campaignId: string, body: unknown, request: Request): Promise<Response> {
     if (!isRecord(body)) {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
-    }
-
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
     }
 
     const gmId = parseRequiredStringField(body.gmId, "gmId", request);
@@ -2368,141 +2551,154 @@ export class CampaignDurableObject {
     const reason = parseStringField(body.reason, "reason", false, request);
     if (reason instanceof Response) return reason;
 
-    const override: GmOverride = {
-      type: overrideType,
-      gmId,
-      targetEntityId: targetEntityId ?? undefined,
-      data: body.data as Record<string, unknown> | undefined,
-      reason: reason ?? undefined,
-      timestamp: new Date().toISOString(),
-    };
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      const override: GmOverride = {
+        type: overrideType,
+        gmId,
+        targetEntityId: targetEntityId ?? undefined,
+        data: body.data as Record<string, unknown> | undefined,
+        reason: reason ?? undefined,
+        timestamp: new Date().toISOString(),
+      };
 
-    // Apply the override
-    switch (overrideType) {
-      case "adjust_ap":
-        if (targetEntityId && combatState.entities[targetEntityId]) {
-          const delta = parseNumberField(body.data?.delta ?? body.data?.amount, "delta", 0, request);
-          if (typeof delta === "number") {
-            const entity = combatState.entities[targetEntityId];
-            entity.ap.current = Math.max(0, Math.min(entity.ap.max, entity.ap.current + delta));
-          }
-        }
-        break;
-
-      case "adjust_energy":
-        if (targetEntityId && combatState.entities[targetEntityId]) {
-          const delta = parseNumberField(body.data?.delta ?? body.data?.amount, "delta", 0, request);
-          if (typeof delta === "number") {
-            const entity = combatState.entities[targetEntityId];
-            entity.energy.current = Math.max(0, Math.min(entity.energy.max, entity.energy.current + delta));
-          }
-        }
-        break;
-
-      case "skip_entity":
-        if (combatState.activeEntityId === targetEntityId) {
-          // Force end turn for this entity
-          const nextIndex = (combatState.turnIndex + 1) % combatState.initiativeOrder.length;
-          if (nextIndex < combatState.turnIndex) {
-            combatState.round += 1;
-          }
-          combatState.turnIndex = nextIndex;
-          combatState.activeEntityId = combatState.initiativeOrder[nextIndex] ?? null;
-        }
-        break;
-
-      case "end_turn":
-        // Just advance the turn
-        const nextIdx = (combatState.turnIndex + 1) % combatState.initiativeOrder.length;
-        if (nextIdx < combatState.turnIndex) {
-          combatState.round += 1;
-          for (const entity of Object.values(combatState.entities)) {
-            entity.reaction.available = true;
-          }
-        }
-        combatState.turnIndex = nextIdx;
-        combatState.activeEntityId = combatState.initiativeOrder[nextIdx] ?? null;
-        if (combatState.activeEntityId) {
-          const activeEntity = combatState.entities[combatState.activeEntityId];
-          if (activeEntity) {
-            activeEntity.ap.current = activeEntity.ap.max;
-          }
-        }
-        break;
-
-      case "modify_initiative":
-        if (Array.isArray(body.data?.newOrder)) {
-          combatState.initiativeOrder = body.data.newOrder as string[];
-        }
-        break;
-
-      case "add_status":
-        if (targetEntityId && combatState.entities[targetEntityId] && body.data?.statusKey) {
-          combatState.entities[targetEntityId].statusEffects.push({
-            key: body.data.statusKey as string,
-            stacks: (body.data.stacks as number) ?? 1,
-            duration: (body.data.duration as number) ?? null,
-          });
-        }
-        break;
-
-      case "remove_status":
-        if (targetEntityId && combatState.entities[targetEntityId] && body.data?.statusKey) {
-          combatState.entities[targetEntityId].statusEffects =
-            combatState.entities[targetEntityId].statusEffects.filter(
-              s => s.key !== body.data?.statusKey
-            );
-        }
-        break;
-
-      case "modify_wounds":
-        if (targetEntityId && combatState.entities[targetEntityId]) {
-          if (body.data?.wounds) {
-            const wounds = body.data.wounds as WoundCounts;
-            for (const [woundType, count] of Object.entries(wounds)) {
-              combatState.entities[targetEntityId].wounds[woundType as WoundType] = count as number;
+      // Apply the override
+      switch (overrideType) {
+        case "adjust_ap":
+          if (targetEntityId && combatState.entities[targetEntityId]) {
+            const delta = parseNumberField(body.data?.delta ?? body.data?.amount, "delta", 0, request);
+            if (typeof delta === "number") {
+              const entity = combatState.entities[targetEntityId];
+              entity.ap.current = Math.max(0, Math.min(entity.ap.max, entity.ap.current + delta));
             }
-          } else if (body.data?.woundType && body.data?.count !== undefined) {
-            combatState.entities[targetEntityId].wounds[body.data.woundType as WoundType] =
-              body.data.count as number;
           }
-        }
-        break;
+          break;
 
-      case "set_phase":
-        if (body.data?.phase) {
-          combatState.phase = body.data.phase as CombatPhase;
-        }
-        break;
+        case "adjust_energy":
+          if (targetEntityId && combatState.entities[targetEntityId]) {
+            const delta = parseNumberField(body.data?.delta ?? body.data?.amount, "delta", 0, request);
+            if (typeof delta === "number") {
+              const entity = combatState.entities[targetEntityId];
+              entity.energy.current = Math.max(0, Math.min(entity.energy.max, entity.energy.current + delta));
+            }
+          }
+          break;
 
-      case "cancel_reaction":
-        if (body.data?.reactionId) {
-          combatState.pendingReactions = combatState.pendingReactions.filter(
-            r => r.reactionId !== body.data?.reactionId
-          );
-        }
-        break;
+        case "skip_entity":
+          if (combatState.activeEntityId === targetEntityId) {
+            // Force end turn for this entity
+            const nextIndex = (combatState.turnIndex + 1) % combatState.initiativeOrder.length;
+            if (nextIndex < combatState.turnIndex) {
+              combatState.round += 1;
+            }
+            combatState.turnIndex = nextIndex;
+            combatState.activeEntityId = combatState.initiativeOrder[nextIndex] ?? null;
+          }
+          break;
 
-      case "end_combat":
-        combatState.phase = "completed";
-        break;
+        case "end_turn":
+          // Just advance the turn
+          const nextIdx = (combatState.turnIndex + 1) % combatState.initiativeOrder.length;
+          if (nextIdx < combatState.turnIndex) {
+            combatState.round += 1;
+            for (const entity of Object.values(combatState.entities)) {
+              entity.reaction.available = true;
+            }
+          }
+          combatState.turnIndex = nextIdx;
+          combatState.activeEntityId = combatState.initiativeOrder[nextIdx] ?? null;
+          if (combatState.activeEntityId) {
+            const activeEntity = combatState.entities[combatState.activeEntityId];
+            if (activeEntity) {
+              activeEntity.ap.current = activeEntity.ap.max;
+            }
+          }
+          break;
+
+        case "modify_initiative":
+          if (Array.isArray(body.data?.newOrder)) {
+            combatState.initiativeOrder = body.data.newOrder as string[];
+          }
+          break;
+
+        case "add_status":
+          if (targetEntityId && combatState.entities[targetEntityId] && body.data?.statusKey) {
+            combatState.entities[targetEntityId].statusEffects.push({
+              key: body.data.statusKey as string,
+              stacks: (body.data.stacks as number) ?? 1,
+              duration: (body.data.duration as number) ?? null,
+            });
+          }
+          break;
+
+        case "remove_status":
+          if (targetEntityId && combatState.entities[targetEntityId] && body.data?.statusKey) {
+            combatState.entities[targetEntityId].statusEffects =
+              combatState.entities[targetEntityId].statusEffects.filter(
+                s => s.key !== body.data?.statusKey
+              );
+          }
+          break;
+
+        case "modify_wounds":
+          if (targetEntityId && combatState.entities[targetEntityId]) {
+            if (body.data?.wounds) {
+              const wounds = body.data.wounds as WoundCounts;
+              for (const [woundType, count] of Object.entries(wounds)) {
+                combatState.entities[targetEntityId].wounds[woundType as WoundType] = count as number;
+              }
+            } else if (body.data?.woundType && body.data?.count !== undefined) {
+              combatState.entities[targetEntityId].wounds[body.data.woundType as WoundType] =
+                body.data.count as number;
+            }
+          }
+          break;
+
+        case "set_phase":
+          if (body.data?.phase) {
+            combatState.phase = body.data.phase as CombatPhase;
+          }
+          break;
+
+        case "cancel_reaction":
+          if (body.data?.reactionId) {
+            combatState.pendingReactions = combatState.pendingReactions.filter(
+              r => r.reactionId !== body.data?.reactionId
+            );
+          }
+          break;
+
+        case "end_combat":
+          combatState.phase = "completed";
+          break;
+      }
+
+      // Log the override
+      combatState.log.push(this.createAuthLogEntry("gm_override", undefined, targetEntityId ?? undefined, {
+        overrideType,
+        gmId,
+        reason: reason ?? undefined,
+        data: body.data,
+      }));
+
+      return { override };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
     }
 
-    // Log the override
-    combatState.log.push(this.createAuthLogEntry("gm_override", undefined, targetEntityId ?? undefined, {
-      overrideType,
-      gmId,
-      reason: reason ?? undefined,
-      data: body.data,
-    }));
-
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+    const { state: combatState, sequence } = update;
     this.broadcastAuthEvent("GM_OVERRIDE", campaignId, sequence, {
-      override,
+      type: update.result.override.type,
+      gmId: update.result.override.gmId,
+      targetEntityId: update.result.override.targetEntityId,
+      data: update.result.override.data,
+      reason: update.result.override.reason,
       state: combatState,
     });
+    this.broadcastAuthEvent("STATE_SYNC", campaignId, sequence, { state: combatState });
 
-    return jsonResponse({ ok: true, sequence, state: combatState, override }, 200, {}, request);
+    return jsonResponse({ ok: true, sequence, state: combatState, override: update.result.override }, 200, {}, request);
   }
 
   // Handler: End combat
@@ -2511,24 +2707,27 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
-    }
-
     const reason = (body.reason as "victory" | "defeat" | "gm_ended") ?? "gm_ended";
 
-    combatState.phase = "completed";
-    combatState.pendingAction = null;
-    combatState.pendingReactions = [];
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      combatState.phase = "completed";
+      combatState.pendingAction = null;
+      combatState.pendingReactions = [];
 
-    combatState.log.push(this.createAuthLogEntry("combat_ended", undefined, undefined, {
-      reason,
-      round: combatState.round,
-      turnIndex: combatState.turnIndex,
-    }));
+      combatState.log.push(this.createAuthLogEntry("combat_ended", undefined, undefined, {
+        reason,
+        round: combatState.round,
+        turnIndex: combatState.turnIndex,
+      }));
 
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+      return { reason };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
+    }
+
+    const { state: combatState, sequence } = update;
     this.broadcastAuthEvent("COMBAT_ENDED", campaignId, sequence, {
       combatId: combatState.combatId,
       reason,
@@ -2552,11 +2751,6 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
-    }
-
     const initiatorEntityId = parseRequiredStringField(body.initiatorEntityId, "initiatorEntityId", request);
     if (initiatorEntityId instanceof Response) return initiatorEntityId;
 
@@ -2566,47 +2760,61 @@ export class CampaignDurableObject {
     const skill = parseRequiredStringField(body.skill, "skill", request);
     if (skill instanceof Response) return skill;
 
-    const initiator = combatState.entities[initiatorEntityId];
-    const target = combatState.entities[targetEntityId];
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      const initiator = combatState.entities[initiatorEntityId];
+      const target = combatState.entities[targetEntityId];
 
-    if (!initiator) {
-      return jsonResponse({ error: "Initiator entity not found." }, 404, {}, request);
+      if (!initiator) {
+        return jsonResponse({ error: "Initiator entity not found." }, 404, {}, request);
+      }
+      if (!target) {
+        return jsonResponse({ error: "Target entity not found." }, 404, {}, request);
+      }
+
+      // Validate and convert roll
+      const roll = body.roll;
+      if (!isRecord(roll)) {
+        return jsonResponse({ error: "Invalid roll data." }, 400, {}, request);
+      }
+
+      const skillModifier = initiator.skills[skill] ?? 0;
+      const rollData = this.validateAndConvertRoll(roll as DiceRoll, skill, skillModifier, request);
+      if (rollData instanceof Response) return rollData;
+
+      // Create contest
+      const contestId = crypto.randomUUID();
+      const contest: SkillContestRequest = {
+        contestId,
+        initiatorId: initiatorEntityId,
+        initiatorSkill: skill,
+        initiatorRoll: rollData,
+        targetId: targetEntityId,
+        autoRollDefense: target.autoRollDefense ?? false,
+        status: "awaiting_defense",
+        createdAt: new Date().toISOString(),
+      };
+
+      combatState.pendingSkillContests[contestId] = contest;
+
+      return {
+        contest,
+        rollData,
+        initiator,
+        target,
+      };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
     }
-    if (!target) {
-      return jsonResponse({ error: "Target entity not found." }, 404, {}, request);
-    }
 
-    // Validate and convert roll
-    const roll = body.roll;
-    if (!isRecord(roll)) {
-      return jsonResponse({ error: "Invalid roll data." }, 400, {}, request);
-    }
-
-    const skillModifier = initiator.skills[skill] ?? 0;
-    const rollData = this.validateAndConvertRoll(roll as DiceRoll, skill, skillModifier, request);
-    if (rollData instanceof Response) return rollData;
-
-    // Create contest
-    const contestId = crypto.randomUUID();
-    const contest: SkillContestRequest = {
-      contestId,
-      initiatorId: initiatorEntityId,
-      initiatorSkill: skill,
-      initiatorRoll: rollData,
-      targetId: targetEntityId,
-      autoRollDefense: target.autoRollDefense ?? false,
-      status: "awaiting_defense",
-      createdAt: new Date().toISOString(),
-    };
-
-    combatState.pendingSkillContests[contestId] = contest;
+    const { state: combatState, sequence } = update;
+    const { contest, rollData, initiator, target } = update.result;
 
     // If auto-roll defense, resolve immediately
     if (contest.autoRollDefense && target.defaultDefenseSkill) {
-      return this.autoResolveContest(campaignId, combatState, contest, target, request);
+      return this.autoResolveContest(campaignId, contest.contestId, request);
     }
-
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
 
     // Broadcast to all players
     this.broadcastAuthEvent("SKILL_CONTEST_INITIATED", campaignId, sequence, {
@@ -2619,7 +2827,7 @@ export class CampaignDurableObject {
     if (target.controller.startsWith("player:")) {
       const targetPlayerId = target.controller.replace("player:", "");
       this.broadcastAuthEvent("SKILL_CONTEST_DEFENSE_REQUESTED", campaignId, sequence, {
-        contestId,
+        contestId: contest.contestId,
         targetEntityId,
         targetPlayerId,
         initiatorName: initiator.displayName || initiator.name,
@@ -2628,7 +2836,7 @@ export class CampaignDurableObject {
       });
     }
 
-    return jsonResponse({ ok: true, sequence, state: combatState, contestId }, 200, {}, request);
+    return jsonResponse({ ok: true, sequence, state: combatState, contestId: contest.contestId }, 200, {}, request);
   }
 
   private async handleRespondSkillContest(
@@ -2640,11 +2848,6 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
-    }
-
     const contestId = parseRequiredStringField(body.contestId, "contestId", request);
     if (contestId instanceof Response) return contestId;
 
@@ -2654,41 +2857,50 @@ export class CampaignDurableObject {
     const skill = parseRequiredStringField(body.skill, "skill", request);
     if (skill instanceof Response) return skill;
 
-    const contest = combatState.pendingSkillContests[contestId];
-    if (!contest) {
-      return jsonResponse({ error: "Contest not found." }, 404, {}, request);
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      const contest = combatState.pendingSkillContests[contestId];
+      if (!contest) {
+        return jsonResponse({ error: "Contest not found." }, 404, {}, request);
+      }
+
+      if (contest.status !== "awaiting_defense") {
+        return jsonResponse({ error: "Contest already resolved." }, 400, {}, request);
+      }
+
+      const defender = combatState.entities[entityId];
+      if (!defender) {
+        return jsonResponse({ error: "Defender entity not found." }, 404, {}, request);
+      }
+
+      // Validate and convert roll
+      const roll = body.roll;
+      if (!isRecord(roll)) {
+        return jsonResponse({ error: "Invalid roll data." }, 400, {}, request);
+      }
+
+      const skillModifier = defender.skills[skill] ?? 0;
+      const rollData = this.validateAndConvertRoll(roll as DiceRoll, skill, skillModifier, request);
+      if (rollData instanceof Response) return rollData;
+
+      // Resolve contest
+      const outcome = this.resolveSkillContest(contest.initiatorRoll, rollData);
+      contest.defenderSkill = skill;
+      contest.defenderRoll = rollData;
+      contest.outcome = outcome;
+      contest.status = "resolved";
+      contest.resolvedAt = new Date().toISOString();
+
+      const initiator = combatState.entities[contest.initiatorId];
+
+      return { contest, outcome, initiator, defender, rollData };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
     }
 
-    if (contest.status !== "awaiting_defense") {
-      return jsonResponse({ error: "Contest already resolved." }, 400, {}, request);
-    }
-
-    const defender = combatState.entities[entityId];
-    if (!defender) {
-      return jsonResponse({ error: "Defender entity not found." }, 404, {}, request);
-    }
-
-    // Validate and convert roll
-    const roll = body.roll;
-    if (!isRecord(roll)) {
-      return jsonResponse({ error: "Invalid roll data." }, 400, {}, request);
-    }
-
-    const skillModifier = defender.skills[skill] ?? 0;
-    const rollData = this.validateAndConvertRoll(roll as DiceRoll, skill, skillModifier, request);
-    if (rollData instanceof Response) return rollData;
-
-    // Resolve contest
-    const outcome = this.resolveSkillContest(contest.initiatorRoll, rollData);
-    contest.defenderSkill = skill;
-    contest.defenderRoll = rollData;
-    contest.outcome = outcome;
-    contest.status = "resolved";
-    contest.resolvedAt = new Date().toISOString();
-
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
-
-    const initiator = combatState.entities[contest.initiatorId];
+    const { state: combatState, sequence } = update;
+    const { contest, outcome, initiator, defender, rollData } = update.result;
     const audit = `${initiator.displayName || initiator.name} (${contest.initiatorRoll.total}) vs ${defender.displayName || defender.name} (${rollData.total}) - ${outcome.isTie ? "TIE" : (outcome.winnerId === "initiator" ? "Initiator wins" : "Defender wins")} [${outcome.criticalTier.toUpperCase()}]`;
 
     this.broadcastAuthEvent("SKILL_CONTEST_RESOLVED", campaignId, sequence, {
@@ -2711,11 +2923,6 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
-    }
-
     const targetPlayerId = parseRequiredStringField(body.targetPlayerId, "targetPlayerId", request);
     if (targetPlayerId instanceof Response) return targetPlayerId;
 
@@ -2727,27 +2934,36 @@ export class CampaignDurableObject {
 
     const targetNumber = body.targetNumber !== undefined ? parseNumberField(body.targetNumber, "targetNumber", undefined, request) : undefined;
 
-    const entity = combatState.entities[targetEntityId];
-    if (!entity) {
-      return jsonResponse({ error: "Entity not found." }, 404, {}, request);
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      const entity = combatState.entities[targetEntityId];
+      if (!entity) {
+        return jsonResponse({ error: "Entity not found." }, 404, {}, request);
+      }
+
+      // Create skill check request
+      const checkId = crypto.randomUUID();
+      const check: SkillCheckRequest = {
+        checkId,
+        requesterId: "gm", // Always GM for now
+        targetPlayerId,
+        targetEntityId,
+        skill,
+        targetNumber: typeof targetNumber === "number" ? targetNumber : undefined,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      };
+
+      combatState.pendingSkillChecks[checkId] = check;
+
+      return { check, entity };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
     }
 
-    // Create skill check request
-    const checkId = crypto.randomUUID();
-    const check: SkillCheckRequest = {
-      checkId,
-      requesterId: "gm", // Always GM for now
-      targetPlayerId,
-      targetEntityId,
-      skill,
-      targetNumber: typeof targetNumber === "number" ? targetNumber : undefined,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
-
-    combatState.pendingSkillChecks[checkId] = check;
-
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+    const { state: combatState, sequence } = update;
+    const { check, entity } = update.result;
 
     this.broadcastAuthEvent("SKILL_CHECK_REQUESTED", campaignId, sequence, {
       check,
@@ -2757,7 +2973,7 @@ export class CampaignDurableObject {
       targetNumber, // Only GM sees this
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState, checkId }, 200, {}, request);
+    return jsonResponse({ ok: true, sequence, state: combatState, checkId: check.checkId }, 200, {}, request);
   }
 
   private async handleSubmitSkillCheck(
@@ -2769,53 +2985,55 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
-    }
-
     const checkId = parseRequiredStringField(body.checkId, "checkId", request);
     if (checkId instanceof Response) return checkId;
 
-    const check = combatState.pendingSkillChecks[checkId];
-    if (!check) {
-      return jsonResponse({ error: "Skill check not found." }, 404, {}, request);
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      const check = combatState.pendingSkillChecks[checkId];
+      if (!check) {
+        return jsonResponse({ error: "Skill check not found." }, 404, {}, request);
+      }
+
+      if (check.status !== "pending") {
+        return jsonResponse({ error: "Skill check already completed." }, 400, {}, request);
+      }
+
+      const entity = combatState.entities[check.targetEntityId];
+      if (!entity) {
+        return jsonResponse({ error: "Entity not found." }, 404, {}, request);
+      }
+
+      // Validate and convert roll
+      const roll = body.roll;
+      if (!isRecord(roll)) {
+        return jsonResponse({ error: "Invalid roll data." }, 400, {}, request);
+      }
+
+      const skillModifier = entity.skills[check.skill] ?? 0;
+      const rollData = this.validateAndConvertRoll(roll as DiceRoll, check.skill, skillModifier, request);
+      if (rollData instanceof Response) return rollData;
+
+      check.rollData = rollData;
+      check.status = "rolled";
+      check.resolvedAt = new Date().toISOString();
+
+      const success = check.targetNumber !== undefined ? rollData.total >= check.targetNumber : undefined;
+
+      return { check, rollData, success };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
     }
 
-    if (check.status !== "pending") {
-      return jsonResponse({ error: "Skill check already completed." }, 400, {}, request);
-    }
-
-    const entity = combatState.entities[check.targetEntityId];
-    if (!entity) {
-      return jsonResponse({ error: "Entity not found." }, 404, {}, request);
-    }
-
-    // Validate and convert roll
-    const roll = body.roll;
-    if (!isRecord(roll)) {
-      return jsonResponse({ error: "Invalid roll data." }, 400, {}, request);
-    }
-
-    const skillModifier = entity.skills[check.skill] ?? 0;
-    const rollData = this.validateAndConvertRoll(roll as DiceRoll, check.skill, skillModifier, request);
-    if (rollData instanceof Response) return rollData;
-
-    check.rollData = rollData;
-    check.status = "rolled";
-    check.resolvedAt = new Date().toISOString();
-
-    const success = check.targetNumber !== undefined ? rollData.total >= check.targetNumber : undefined;
-
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
-
+    const { state: combatState, sequence } = update;
     this.broadcastAuthEvent("SKILL_CHECK_ROLLED", campaignId, sequence, {
-      check,
-      rollData,
-      success,
+      check: update.result.check,
+      rollData: update.result.rollData,
+      success: update.result.success,
     });
 
-    return jsonResponse({ ok: true, sequence, state: combatState, rollData, success }, 200, {}, request);
+    return jsonResponse({ ok: true, sequence, state: combatState, rollData: update.result.rollData, success: update.result.success }, 200, {}, request);
   }
 
   private async handleRemoveEntity(
@@ -2827,48 +3045,51 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
     }
 
-    const combatState = await this.loadAuthCombatState(campaignId);
-    if (!combatState) {
-      return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
-    }
-
     const entityId = parseRequiredStringField(body.entityId, "entityId", request);
     if (entityId instanceof Response) return entityId;
 
-    const entity = combatState.entities[entityId];
-    if (!entity) {
-      return jsonResponse({ error: "Entity not found." }, 404, {}, request);
-    }
-
-    // Can't remove active entity
-    if (combatState.activeEntityId === entityId) {
-      return jsonResponse({ error: "Cannot remove active entity. End their turn first." }, 400, {}, request);
-    }
-
     const reason = (body.reason as "gm_removed" | "defeated" | "fled") ?? "gm_removed";
-    const entityName = entity.displayName || entity.name;
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      const entity = combatState.entities[entityId];
+      if (!entity) {
+        return jsonResponse({ error: "Entity not found." }, 404, {}, request);
+      }
 
-    // Remove from entities
-    delete combatState.entities[entityId];
+      // Can't remove active entity
+      if (combatState.activeEntityId === entityId) {
+        return jsonResponse({ error: "Cannot remove active entity. End their turn first." }, 400, {}, request);
+      }
 
-    // Remove from initiative order
-    combatState.initiativeOrder = combatState.initiativeOrder.filter(id => id !== entityId);
+      const entityName = entity.displayName || entity.name;
+      const removedIndex = combatState.initiativeOrder.indexOf(entityId);
 
-    // Remove from grid
-    combatState.grid.allies = combatState.grid.allies.filter(id => id !== entityId);
-    combatState.grid.enemies = combatState.grid.enemies.filter(id => id !== entityId);
+      // Remove from entities
+      delete combatState.entities[entityId];
 
-    // Adjust turn index if needed
-    const removedIndex = combatState.initiativeOrder.indexOf(entityId);
-    if (removedIndex !== -1 && removedIndex < combatState.turnIndex) {
-      combatState.turnIndex = Math.max(0, combatState.turnIndex - 1);
+      // Remove from initiative order
+      combatState.initiativeOrder = combatState.initiativeOrder.filter(id => id !== entityId);
+
+      // Remove from grid
+      combatState.grid.allies = combatState.grid.allies.filter(id => id !== entityId);
+      combatState.grid.enemies = combatState.grid.enemies.filter(id => id !== entityId);
+
+      // Adjust turn index if needed
+      if (removedIndex !== -1 && removedIndex < combatState.turnIndex) {
+        combatState.turnIndex = Math.max(0, combatState.turnIndex - 1);
+      }
+
+      return { entityName };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
     }
 
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+    const { state: combatState, sequence } = update;
 
     this.broadcastAuthEvent("ENTITY_REMOVED", campaignId, sequence, {
       entityId,
-      entityName,
+      entityName: update.result.entityName,
       reason,
     });
 
@@ -2919,38 +3140,59 @@ export class CampaignDurableObject {
 
   private async autoResolveContest(
     campaignId: string,
-    combatState: AuthoritativeCombatState,
-    contest: SkillContestRequest,
-    defender: CombatEntity,
+    contestId: string,
     request: Request
   ): Promise<Response> {
-    const defenseSkill = defender.defaultDefenseSkill!;
-    const skillModifier = defender.skills[defenseSkill] ?? 0;
+    const update = await this.updateAuthCombatState(campaignId, (combatState) => {
+      const contest = combatState.pendingSkillContests[contestId];
+      if (!contest) {
+        return jsonResponse({ error: "Contest not found." }, 404, {}, request);
+      }
 
-    // Auto-roll d100 for defense
-    const diceRoll = Math.floor(Math.random() * 100) + 1;
-    const defenderRoll: RollData = {
-      skill: defenseSkill,
-      modifier: skillModifier,
-      diceCount: 1,
-      keepHighest: true,
-      rawDice: [diceRoll],
-      selectedDie: diceRoll,
-      total: diceRoll + skillModifier,
-      audit: `1d100 [${diceRoll}] + ${skillModifier} = ${diceRoll + skillModifier}`,
-    };
+      if (contest.status !== "awaiting_defense") {
+        return jsonResponse({ error: "Contest already resolved." }, 400, {}, request);
+      }
 
-    // Resolve contest
-    const outcome = this.resolveSkillContest(contest.initiatorRoll, defenderRoll);
-    contest.defenderSkill = defenseSkill;
-    contest.defenderRoll = defenderRoll;
-    contest.outcome = outcome;
-    contest.status = "resolved";
-    contest.resolvedAt = new Date().toISOString();
+      const defender = combatState.entities[contest.targetId];
+      if (!defender || !defender.defaultDefenseSkill) {
+        return jsonResponse({ error: "Defender cannot auto-roll." }, 400, {}, request);
+      }
 
-    const sequence = await this.saveAuthCombatState(campaignId, combatState);
+      const defenseSkill = defender.defaultDefenseSkill;
+      const skillModifier = defender.skills[defenseSkill] ?? 0;
 
-    const initiator = combatState.entities[contest.initiatorId];
+      // Auto-roll d100 for defense
+      const diceRoll = Math.floor(Math.random() * 100) + 1;
+      const defenderRoll: RollData = {
+        skill: defenseSkill,
+        modifier: skillModifier,
+        diceCount: 1,
+        keepHighest: true,
+        rawDice: [diceRoll],
+        selectedDie: diceRoll,
+        total: diceRoll + skillModifier,
+        audit: `1d100 [${diceRoll}] + ${skillModifier} = ${diceRoll + skillModifier}`,
+      };
+
+      // Resolve contest
+      const outcome = this.resolveSkillContest(contest.initiatorRoll, defenderRoll);
+      contest.defenderSkill = defenseSkill;
+      contest.defenderRoll = defenderRoll;
+      contest.outcome = outcome;
+      contest.status = "resolved";
+      contest.resolvedAt = new Date().toISOString();
+
+      const initiator = combatState.entities[contest.initiatorId];
+
+      return { contest, outcome, initiator, defender, defenderRoll };
+    }, request);
+
+    if ("response" in update) {
+      return update.response;
+    }
+
+    const { state: combatState, sequence } = update;
+    const { contest, outcome, initiator, defender, defenderRoll } = update.result;
     const audit = `${initiator.displayName || initiator.name} (${contest.initiatorRoll.total}) vs ${defender.displayName || defender.name} (${defenderRoll.total}) [AUTO] - ${outcome.isTie ? "TIE" : (outcome.winnerId === "initiator" ? "Initiator wins" : "Defender wins")} [${outcome.criticalTier.toUpperCase()}]`;
 
     this.broadcastAuthEvent("SKILL_CONTEST_RESOLVED", campaignId, sequence, {
