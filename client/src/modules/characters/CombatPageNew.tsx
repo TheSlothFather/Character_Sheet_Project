@@ -20,11 +20,13 @@ import {
   EntityToken,
   ActionGrimoire,
   ReactionSigil,
-  SkillDuelModal,
   CombatChronicle,
-  InitiativeRollPanel,
-  SkillCheckRequestModal,
+  NotificationBanner,
+  TurnAnnouncement,
+  RollOverlay,
+  type RollSubmitData,
 } from "../../components/combat";
+import { useCombatNotifications } from "../../hooks/useCombatNotifications";
 import {
   PlayerCombatLobby,
   type LobbyPlayer,
@@ -80,6 +82,17 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const [campaign, setCampaign] = React.useState<Campaign | null>(null);
   const [members, setMembers] = React.useState<CampaignMember[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [showTurnAnnouncement, setShowTurnAnnouncement] = React.useState(false);
+  const [previousActiveEntityId, setPreviousActiveEntityId] = React.useState<string | null>(null);
+
+  // Notification system
+  const {
+    notifications,
+    dismissNotification,
+    notifyGMRequest,
+    notifyAttackIncoming,
+    notifyCombatEvent,
+  } = useCombatNotifications();
 
   // Derived data
   const allies = state ? getEntitiesByFaction("ally") : [];
@@ -126,6 +139,49 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       setSelectedEntityId(myControlledEntities[0].id);
     }
   }, [myControlledEntities, selectedEntityId]);
+
+  // Show turn announcement when it becomes player's turn
+  React.useEffect(() => {
+    if (!activeEntity || !isMyTurn) return;
+
+    // Check if this is a new turn (different entity or was previously not my turn)
+    const isNewTurn = activeEntity.id !== previousActiveEntityId;
+
+    if (isNewTurn) {
+      setShowTurnAnnouncement(true);
+      setPreviousActiveEntityId(activeEntity.id);
+    }
+  }, [activeEntity, isMyTurn, previousActiveEntityId]);
+
+  // Notify when GM requests skill check
+  React.useEffect(() => {
+    if (myPendingSkillChecks.length === 0) return;
+
+    const latestCheck = myPendingSkillChecks[0];
+    notifyGMRequest(
+      `Roll a ${latestCheck.skill} check${latestCheck.targetNumber ? ` (DC ${latestCheck.targetNumber})` : ''}`,
+      () => {
+        // The SkillCheckRequestModal will handle the actual roll
+        // This just dismisses the notification when clicked
+      }
+    );
+  }, [myPendingSkillChecks, notifyGMRequest]);
+
+  // Notify when player is being attacked
+  React.useEffect(() => {
+    if (!myPendingDefense) return;
+
+    const attacker = state?.entities[myPendingDefense.initiatorId];
+    if (attacker) {
+      notifyAttackIncoming(
+        attacker.name,
+        () => {
+          // The SkillDuelModal will handle the defense
+          // This just dismisses the notification
+        }
+      );
+    }
+  }, [myPendingDefense, state, notifyAttackIncoming]);
 
   // Handlers
   const handleDeclareAction = async (
@@ -270,6 +326,31 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       setLocalError(
         err instanceof Error ? err.message : "Failed to submit skill check"
       );
+    }
+  };
+
+  // Unified roll overlay handler
+  const handleRollOverlaySubmit = async (data: RollSubmitData) => {
+    if (data.variant === 'initiative') {
+      // For initiative, we need the entity ID - use first pending initiative roll
+      if (myPendingInitiativeRolls.length > 0) {
+        await handleInitiativeRoll(myPendingInitiativeRolls[0].id, data.roll);
+      }
+    } else if (data.variant === 'skill-check') {
+      await handleSkillCheckSubmit(data.checkId, data.roll);
+    } else if (data.variant === 'contest' && myPendingDefense && myControlledEntities.length > 0) {
+      try {
+        await respondToSkillContest({
+          contestId: data.contestId,
+          entityId: myControlledEntities[0].id,
+          skill: data.skill,
+          roll: data.roll,
+        });
+      } catch (err) {
+        setLocalError(
+          err instanceof Error ? err.message : "Failed to submit defense"
+        );
+      }
     }
   };
 
@@ -434,19 +515,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
             </div>
           </div>
 
-          {/* Initiative Rolling Panel */}
-          {phase === "initiative-rolling" && myPendingInitiativeRolls.length > 0 && (
-            <div className="war-page__initiative-panel">
-              {myPendingInitiativeRolls.map((entity) => (
-                <InitiativeRollPanel
-                  key={entity.id}
-                  entity={entity}
-                  onRoll={(roll) => handleInitiativeRoll(entity.id, roll)}
-                  disabled={false}
-                />
-              ))}
-            </div>
-          )}
+          {/* Initiative Rolling Panel - Note: RollOverlay handles this via modal below */}
 
           {/* Action Grimoire (Bottom Panel - only visible on your turn) */}
           {isMyTurn && activeEntity && phase === "active-turn" && (
@@ -485,36 +554,70 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       />
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          MODALS
+          ROLL OVERLAY (Unified roll experience)
           ═══════════════════════════════════════════════════════════════════════ */}
-      {myPendingDefense && (
-        <SkillDuelModal
+
+      {/* Initiative Roll */}
+      {myPendingInitiativeRolls.length > 0 && (
+        <RollOverlay
           isOpen={true}
-          contest={myPendingDefense}
-          entities={state?.entities ? Object.values(state.entities) : []}
-          mode="defender"
-          onRoll={handleDefenseRoll}
-          onAcknowledge={
-            myPendingDefense.status === "resolved"
-              ? handleAcknowledgeResult
-              : undefined
-          }
+          variant="initiative"
+          entity={myPendingInitiativeRolls[0]}
+          onSubmit={handleRollOverlaySubmit}
           onClose={() => {
-            /* Defender can't close until they roll */
+            /* Can't close until initiative rolled */
           }}
         />
       )}
 
-      {/* Skill Check Request Modal - Shows when GM requests a skill check */}
-      {myPendingSkillChecks.length > 0 && (
-        <SkillCheckRequestModal
+      {/* Defense Contest */}
+      {myPendingDefense && myControlledEntities.length > 0 && (
+        <RollOverlay
           isOpen={true}
-          checkRequest={myPendingSkillChecks[0]}
-          entity={state?.entities[myPendingSkillChecks[0].targetEntityId] ?? null}
-          onSubmit={handleSkillCheckSubmit}
+          variant="contest"
+          entity={myControlledEntities[0]}
+          contest={myPendingDefense}
+          entities={state?.entities ? Object.values(state.entities) : []}
+          contestMode="defender"
+          onSubmit={handleRollOverlaySubmit}
           onClose={() => {
-            /* Player must roll to close */
+            /* Can't close until defense rolled */
           }}
+        />
+      )}
+
+      {/* GM Skill Check Request */}
+      {myPendingSkillChecks.length > 0 && myControlledEntities.length > 0 && (
+        <RollOverlay
+          isOpen={true}
+          variant="skill-check"
+          entity={myControlledEntities[0]}
+          checkRequest={myPendingSkillChecks[0]}
+          onSubmit={handleRollOverlaySubmit}
+          onClose={() => {
+            /* Can't close until skill check rolled */
+          }}
+        />
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          NOTIFICATION SYSTEM
+          ═══════════════════════════════════════════════════════════════════════ */}
+
+      {/* Notification Banner - Slide-down alerts for GM requests, attacks, events */}
+      <NotificationBanner
+        notifications={notifications}
+        onDismiss={dismissNotification}
+      />
+
+      {/* Turn Announcement - Full-screen flash when it becomes player's turn */}
+      {showTurnAnnouncement && activeEntity && (
+        <TurnAnnouncement
+          isVisible={showTurnAnnouncement}
+          entityName={activeEntity.name}
+          ap={activeEntity.ap}
+          energy={activeEntity.energy}
+          onDismiss={() => setShowTurnAnnouncement(false)}
         />
       )}
     </div>
