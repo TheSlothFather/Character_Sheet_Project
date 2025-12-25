@@ -23,6 +23,7 @@ import {
   SkillDuelModal,
   CombatChronicle,
   InitiativeRollPanel,
+  SkillCheckRequestModal,
 } from "../../components/combat";
 import {
   PlayerCombatLobby,
@@ -261,6 +262,17 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     }
   };
 
+  // Skill check handling (responding to GM requests)
+  const handleSkillCheckSubmit = async (checkId: string, roll: any) => {
+    try {
+      await submitSkillCheck({ checkId, roll });
+    } catch (err) {
+      setLocalError(
+        err instanceof Error ? err.message : "Failed to submit skill check"
+      );
+    }
+  };
+
   // Determine if reaction sigil should pulse
   // TODO: Re-enable when interruptible actions are implemented
   const shouldPulseReaction = false;
@@ -489,6 +501,19 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
           }
           onClose={() => {
             /* Defender can't close until they roll */
+          }}
+        />
+      )}
+
+      {/* Skill Check Request Modal - Shows when GM requests a skill check */}
+      {myPendingSkillChecks.length > 0 && (
+        <SkillCheckRequestModal
+          isOpen={true}
+          checkRequest={myPendingSkillChecks[0]}
+          entity={state?.entities[myPendingSkillChecks[0].targetEntityId] ?? null}
+          onSubmit={handleSkillCheckSubmit}
+          onClose={() => {
+            /* Player must roll to close */
           }}
         />
       )}
