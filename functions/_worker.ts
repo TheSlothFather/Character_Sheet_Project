@@ -141,6 +141,14 @@ interface InitiativeEntry {
   groupId?: string;
 }
 
+interface DiceRoll {
+  diceCount: number;
+  diceSize: number;
+  rawValues: number[];
+  keepHighest: boolean;
+  modifier: number;
+}
+
 interface RollData {
   skill: string;
   modifier: number;
@@ -563,7 +571,7 @@ export class CampaignDurableObject {
     });
 
     server.addEventListener("message", (event) => {
-      this.handleClientMessage(connectionId, campaignId, event.data);
+      void this.handleClientMessage(connectionId, campaignId, event.data);
     });
 
     server.addEventListener("close", () => {
@@ -617,7 +625,7 @@ export class CampaignDurableObject {
     });
   }
 
-  private handleClientMessage(connectionId: string, campaignId: string, data: unknown) {
+  private async handleClientMessage(connectionId: string, campaignId: string, data: unknown) {
     if (typeof data !== "string") {
       return;
     }
@@ -660,6 +668,19 @@ export class CampaignDurableObject {
 
     if (payload?.type === "LOBBY_TOGGLE_READY" && payload.userId) {
       this.handleLobbyToggleReady(campaignId, payload.userId, payload.isReady ?? false, payload.characterId);
+    }
+
+    if (payload?.type === "REQUEST_STATE") {
+      const combatState = await this.loadAuthCombatState(campaignId);
+      const socket = this.sessions.get(connectionId);
+      if (!combatState || !socket) return;
+
+      socket.send(JSON.stringify({
+        type: "STATE_SYNC",
+        campaignId,
+        timestamp: new Date().toISOString(),
+        payload: { state: combatState },
+      }));
     }
   }
 
@@ -1557,6 +1578,91 @@ export class CampaignDurableObject {
     return { allowed: true };
   }
 
+  private validateTurnEnd(
+    state: AuthoritativeCombatState,
+    entityId: string,
+    senderId: string
+  ): { allowed: boolean; reason?: string } {
+    const entity = state.entities[entityId];
+
+    if (!entity) {
+      return { allowed: false, reason: "Entity not found" };
+    }
+
+    if (state.activeEntityId !== entityId) {
+      return { allowed: false, reason: "Not the active entity's turn" };
+    }
+
+    const isGm = senderId === "gm" || senderId.startsWith("gm:");
+    if (!isGm && entity.controller !== senderId && entity.controller !== `player:${senderId}`) {
+      return { allowed: false, reason: "You do not control this entity" };
+    }
+
+    return { allowed: true };
+  }
+
+  private validateDiceRoll(roll: DiceRoll): true | string {
+    if (roll.diceCount < 1 || roll.diceCount > 20) {
+      return "Dice count must be between 1 and 20";
+    }
+
+    if (roll.diceSize < 2 || roll.diceSize > 100) {
+      return "Dice size must be between 2 and 100";
+    }
+
+    if (roll.rawValues.length !== roll.diceCount) {
+      return "Raw values count does not match dice count";
+    }
+
+    for (const value of roll.rawValues) {
+      if (value < 1 || value > roll.diceSize) {
+        return `Dice value ${value} is out of range [1, ${roll.diceSize}]`;
+      }
+      if (!Number.isInteger(value)) {
+        return "Dice values must be integers";
+      }
+    }
+
+    return true;
+  }
+
+  private calculateRollResult(roll: DiceRoll, skill: string, skillModifier: number): RollData {
+    const selectedDie = roll.keepHighest
+      ? Math.max(...roll.rawValues)
+      : Math.min(...roll.rawValues);
+
+    const total = selectedDie + roll.modifier + skillModifier;
+
+    const audit = `${roll.diceCount}d${roll.diceSize} [${roll.rawValues.join(", ")}] ` +
+      `${roll.keepHighest ? "highest" : "lowest"}=${selectedDie} ` +
+      `+ ${roll.modifier} (modifier) + ${skillModifier} (${skill}) = ${total}`;
+
+    return {
+      skill,
+      modifier: skillModifier,
+      diceCount: roll.diceCount,
+      keepHighest: roll.keepHighest,
+      rawDice: roll.rawValues,
+      selectedDie,
+      total,
+      audit
+    };
+  }
+
+  private validateAndConvertRoll(
+    roll: DiceRoll,
+    skill: string,
+    skillModifier: number,
+    request: Request
+  ): RollData | Response {
+    const validation = this.validateDiceRoll(roll);
+    if (validation !== true) {
+      return jsonResponse({ error: validation }, 400, {}, request);
+    }
+
+    return this.calculateRollResult(roll, skill, skillModifier);
+  }
+
   // Sort initiative with tiebreakers
   private sortInitiative(entries: InitiativeEntry[]): string[] {
     return [...entries]
@@ -2000,6 +2106,18 @@ export class CampaignDurableObject {
 
   // Handler: Resolve pending reactions (GM triggers this)
   private async handleResolveReactions(campaignId: string, body: unknown, request: Request): Promise<Response> {
+    if (!isRecord(body)) {
+      return jsonResponse({ error: "Invalid payload." }, 400, {}, request);
+    }
+
+    const senderId = parseRequiredStringField(body.senderId, "senderId", request);
+    if (senderId instanceof Response) return senderId;
+
+    const isGm = senderId === "gm" || senderId.startsWith("gm:");
+    if (!isGm) {
+      return jsonResponse({ error: "Only GM can resolve reactions." }, 403, {}, request);
+    }
+
     const combatState = await this.loadAuthCombatState(campaignId);
     if (!combatState) {
       return jsonResponse({ error: "Combat state not found." }, 404, {}, request);
@@ -2141,6 +2259,17 @@ export class CampaignDurableObject {
       return jsonResponse({ error: "Combat has already ended." }, 400, {}, request);
     }
 
+    const entityId = parseRequiredStringField(body.entityId, "entityId", request);
+    if (entityId instanceof Response) return entityId;
+
+    const senderId = parseRequiredStringField(body.senderId, "senderId", request);
+    if (senderId instanceof Response) return senderId;
+
+    const validation = this.validateTurnEnd(combatState, entityId, senderId);
+    if (!validation.allowed) {
+      return jsonResponse({ error: validation.reason }, 403, {}, request);
+    }
+
     // Resolve any pending action/reactions first
     if (combatState.pendingAction) {
       combatState.pendingAction = null;
@@ -2152,10 +2281,11 @@ export class CampaignDurableObject {
 
     // Log turn end
     if (previousEntityId) {
+      const voluntary = body.voluntary !== false;
       combatState.log.push(this.createAuthLogEntry("turn_ended", previousEntityId, undefined, {
         round: combatState.round,
         turnIndex: combatState.turnIndex,
-        voluntary: body.voluntary !== false,
+        voluntary,
       }));
     }
 
@@ -2198,10 +2328,12 @@ export class CampaignDurableObject {
 
     const sequence = await this.saveAuthCombatState(campaignId, combatState);
     this.broadcastAuthEvent("TURN_ENDED", campaignId, sequence, {
-      previousEntityId,
-      newActiveEntityId: combatState.activeEntityId,
-      round: combatState.round,
-      turnIndex: combatState.turnIndex,
+      entityId: previousEntityId ?? entityId,
+      entityName: previousEntity?.displayName || previousEntity?.name || "Unknown",
+      reason: body.voluntary === false ? "no_ap" : "voluntary",
+      energyGained: 0,
+    });
+    this.broadcastAuthEvent("STATE_SYNC", campaignId, sequence, {
       state: combatState,
     });
 
@@ -2246,7 +2378,7 @@ export class CampaignDurableObject {
     switch (overrideType) {
       case "adjust_ap":
         if (targetEntityId && combatState.entities[targetEntityId]) {
-          const delta = parseNumberField(body.data?.delta, "delta", 0, request);
+          const delta = parseNumberField(body.data?.delta ?? body.data?.amount, "delta", 0, request);
           if (typeof delta === "number") {
             const entity = combatState.entities[targetEntityId];
             entity.ap.current = Math.max(0, Math.min(entity.ap.max, entity.ap.current + delta));
@@ -2256,7 +2388,7 @@ export class CampaignDurableObject {
 
       case "adjust_energy":
         if (targetEntityId && combatState.entities[targetEntityId]) {
-          const delta = parseNumberField(body.data?.delta, "delta", 0, request);
+          const delta = parseNumberField(body.data?.delta ?? body.data?.amount, "delta", 0, request);
           if (typeof delta === "number") {
             const entity = combatState.entities[targetEntityId];
             entity.energy.current = Math.max(0, Math.min(entity.energy.max, entity.energy.current + delta));
@@ -2321,10 +2453,15 @@ export class CampaignDurableObject {
         break;
 
       case "modify_wounds":
-        if (targetEntityId && combatState.entities[targetEntityId] && body.data?.wounds) {
-          const wounds = body.data.wounds as WoundCounts;
-          for (const [woundType, count] of Object.entries(wounds)) {
-            combatState.entities[targetEntityId].wounds[woundType as WoundType] = count as number;
+        if (targetEntityId && combatState.entities[targetEntityId]) {
+          if (body.data?.wounds) {
+            const wounds = body.data.wounds as WoundCounts;
+            for (const [woundType, count] of Object.entries(wounds)) {
+              combatState.entities[targetEntityId].wounds[woundType as WoundType] = count as number;
+            }
+          } else if (body.data?.woundType && body.data?.count !== undefined) {
+            combatState.entities[targetEntityId].wounds[body.data.woundType as WoundType] =
+              body.data.count as number;
           }
         }
         break;

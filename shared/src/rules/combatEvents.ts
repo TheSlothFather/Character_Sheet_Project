@@ -447,6 +447,7 @@ export interface SubmitInitiativeRollPayload {
 }
 
 export interface DeclareActionPayload {
+  senderId: string;
   entityId: string;
   type: ActionType;
   targetEntityId?: string;
@@ -458,6 +459,7 @@ export interface DeclareActionPayload {
 }
 
 export interface DeclareReactionPayload {
+  senderId: string;
   entityId: string;
   type: ReactionType;
   targetActionId: string;
@@ -468,6 +470,7 @@ export interface DeclareReactionPayload {
 }
 
 export interface EndTurnPayload {
+  senderId: string;
   entityId: string;
   voluntary: boolean;  // True if player chose to end, false if forced (no AP)
 }
@@ -484,7 +487,7 @@ export interface GmEndCombatPayload {
 
 export interface GmResolveReactionsPayload {
   // GM triggers resolution of pending reactions
-  // No data needed
+  senderId: string;
 }
 
 export interface GmOverrideRequestPayload {

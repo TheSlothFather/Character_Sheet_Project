@@ -17,7 +17,6 @@ import {
   PhaseDial,
   InitiativeTower,
   EntityToken,
-  SkillDuelModal,
   CombatChronicle,
   ResourceSegments,
   StatusList,
@@ -25,6 +24,7 @@ import {
   GmContestResolutionPanel,
   NpcActionPanel,
   SkillCheckRequestPanel,
+  RollOverlay,
 } from "../../components/combat";
 import {
   GmCombatLobby,
@@ -53,8 +53,14 @@ import "./CombatPageNew.css";
 
 function transformCombatantToEntity(
   combatant: CampaignCombatant,
-  bestiaryToPlayer: Map<string, string>
+  bestiaryToPlayer: Map<string, string>,
+  bestiaryById: Map<string, BestiaryEntry>
 ): CombatEntity {
+  const bestiaryEntry = bestiaryById.get(combatant.bestiaryEntryId);
+  const skills =
+    (bestiaryEntry?.skills as Record<string, number> | undefined) ??
+    (bestiaryEntry?.statsSkills as Record<string, number> | undefined) ??
+    {};
   // Transform wounds from array to WoundCounts record
   const wounds: WoundCounts = {
     burn: 0,
@@ -93,7 +99,7 @@ function transformCombatantToEntity(
     name: combatant.name,
     controller,
     faction,
-    skills: {},
+    skills,
     initiativeSkill: "initiative",
     energy: {
       current: combatant.energyCurrent ?? combatant.energyMax ?? 100,
@@ -150,6 +156,13 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const [loading, setLoading] = React.useState(true);
   const [initiativeMode, setInitiativeMode] = React.useState<LobbyInitiativeMode>("players-first");
   const [isStarting, setIsStarting] = React.useState(false);
+
+  // NPC Attack Roll State
+  const [npcAttackRoll, setNpcAttackRoll] = React.useState<{
+    attackerId: string;
+    targetId: string;
+    skill: string;
+  } | null>(null);
 
   // Derived data
   const allies = state ? getEntitiesByFaction("ally") : [];
@@ -254,11 +267,17 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       setIsStarting(true);
       // Build bestiary-to-player mapping
       const bestiaryToPlayer = new Map<string, string>();
-      // This would need to be populated from campaign player assignments
+      members.forEach((member) => {
+        if (member.characterId) {
+          bestiaryToPlayer.set(member.characterId, member.playerUserId);
+        }
+      });
+
+      const bestiaryById = new Map(bestiaryEntries.map((entry) => [entry.id, entry]));
 
       // Transform combatants to entities
       const entityList = combatants.map((c) =>
-        transformCombatantToEntity(c, bestiaryToPlayer)
+        transformCombatantToEntity(c, bestiaryToPlayer, bestiaryById)
       );
 
       // Convert array to Record
@@ -327,15 +346,15 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       switch (overrideType) {
         case "heal":
           type = "adjust_energy";
-          data = { amount: value };
+          data = { delta: value };
           break;
         case "restore_ap":
           type = "adjust_ap";
-          data = { amount: value };
+          data = { delta: value };
           break;
         case "kill":
           type = "modify_wounds";
-          data = { woundType: "laceration", count: 999 }; // Lethal wounds
+          data = { wounds: { laceration: 999 } }; // Lethal wounds
           break;
         default:
           type = "end_turn"; // Fallback to a valid type
@@ -368,14 +387,22 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     }
   };
 
-  const handleNpcAttack = async (attackerId: string, targetId: string, skill: string, roll: any) => {
+  const handleNpcAttack = async (attackerId: string, targetId: string, skill: string, _roll?: any) => {
+    // Trigger RollOverlay for dramatic NPC attack roll (ignore inline roll from NpcActionPanel)
+    setNpcAttackRoll({ attackerId, targetId, skill });
+  };
+
+  const handleNpcAttackRollSubmit = async (data: any) => {
+    if (!npcAttackRoll || data.variant !== 'contest') return;
+
     try {
       await initiateSkillContest({
-        initiatorEntityId: attackerId,
-        targetEntityId: targetId,
-        skill,
-        roll,
+        initiatorEntityId: npcAttackRoll.attackerId,
+        targetEntityId: npcAttackRoll.targetId,
+        skill: data.skill,
+        roll: data.roll,
       });
+      setNpcAttackRoll(null); // Close overlay
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to initiate NPC attack");
     }
@@ -769,14 +796,37 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
         />
       </footer>
 
-      {/* MODALS */}
-      {myPendingDefense && (
-        <SkillDuelModal
+      {/* MODALS - GMs view contests through GmContestResolutionPanel */}
+
+      {/* NPC Attack Roll Overlay */}
+      {npcAttackRoll && state?.entities[npcAttackRoll.attackerId] && state?.entities[npcAttackRoll.targetId] && (
+        <RollOverlay
           isOpen={true}
-          contest={myPendingDefense}
+          variant="contest"
+          entity={state.entities[npcAttackRoll.attackerId]}
+          contest={{
+            contestId: `temp-${Date.now()}`, // Temporary ID for UI
+            initiatorId: npcAttackRoll.attackerId,
+            initiatorSkill: npcAttackRoll.skill,
+            initiatorRoll: {
+              skill: npcAttackRoll.skill,
+              modifier: 0,
+              diceCount: 0,
+              keepHighest: true,
+              rawDice: [],
+              selectedDie: 0,
+              total: 0,
+              audit: '',
+            },
+            targetId: npcAttackRoll.targetId,
+            autoRollDefense: false,
+            status: "pending",
+            createdAt: new Date().toISOString(),
+          }}
           entities={state?.entities ? Object.values(state.entities) : []}
-          mode="spectator"
-          onClose={() => {}}
+          contestMode="initiator"
+          onSubmit={handleNpcAttackRollSubmit}
+          onClose={() => setNpcAttackRoll(null)}
         />
       )}
     </div>
