@@ -30,11 +30,12 @@ import {
   GmCombatLobby,
   type LobbyPlayer,
   type LobbyCombatant,
+  type LobbyPlayerCharacter,
   type BestiaryEntryPreview,
 } from "../combat/CombatLobby";
 import { gmApi, type BestiaryEntry, type CampaignCombatant, type Campaign, type CampaignMember } from "../../api/gm";
+import { api as clientApi, type Character } from "../../api/client";
 import { getSupabaseClient } from "../../api/supabaseClient";
-import { useDefinitions } from "../definitions/DefinitionsContext";
 import type {
   CombatEntity,
   EntityFaction,
@@ -51,16 +52,37 @@ import "./CombatPageNew.css";
 // COMBATANT TO ENTITY TRANSFORMER
 // ═══════════════════════════════════════════════════════════════════════════
 
+const buildCharacterSkills = (character: Character): Record<string, number> => {
+  const allocations = character.skillAllocations ?? {};
+  const bonuses = character.skillBonuses ?? {};
+  const skills: Record<string, number> = {};
+  const keys = new Set([...Object.keys(allocations), ...Object.keys(bonuses)]);
+  keys.forEach((key) => {
+    skills[key] = (allocations[key] ?? 0) + (bonuses[key] ?? 0);
+  });
+  return skills;
+};
+
+const computeCharacterEnergyMax = (character: Character): number => {
+  const energyBase = character.raceKey === "ANZ" ? 140 : 100;
+  const energyPerLevel = character.raceKey === "ANZ" ? 14 : 10;
+  const level = Math.max(1, character.level);
+  return Math.round(energyBase + energyPerLevel * (level - 1));
+};
+
 function transformCombatantToEntity(
   combatant: CampaignCombatant,
-  bestiaryToPlayer: Map<string, string>,
-  bestiaryById: Map<string, BestiaryEntry>
+  characterToPlayer: Map<string, string>,
+  bestiaryById: Map<string, BestiaryEntry>,
+  charactersById: Map<string, Character>
 ): CombatEntity {
-  const bestiaryEntry = bestiaryById.get(combatant.bestiaryEntryId);
-  const skills =
-    (bestiaryEntry?.skills as Record<string, number> | undefined) ??
-    (bestiaryEntry?.statsSkills as Record<string, number> | undefined) ??
-    {};
+  const character = combatant.characterId ? charactersById.get(combatant.characterId) : undefined;
+  const bestiaryEntry = combatant.bestiaryEntryId ? bestiaryById.get(combatant.bestiaryEntryId) : undefined;
+  const skills = character
+    ? buildCharacterSkills(character)
+    : (bestiaryEntry?.skills as Record<string, number> | undefined) ??
+      (bestiaryEntry?.statsSkills as Record<string, number> | undefined) ??
+      {};
   // Transform wounds from array to WoundCounts record
   const wounds: WoundCounts = {
     burn: 0,
@@ -90,26 +112,30 @@ function transformCombatantToEntity(
 
   // Determine controller
   const faction = (combatant.faction?.toLowerCase() ?? "enemy") as EntityFaction;
-  const playerUserId = bestiaryToPlayer.get(combatant.bestiaryEntryId);
+  const playerUserId = combatant.characterId ? characterToPlayer.get(combatant.characterId) : undefined;
   const controller: import("@shared/rules/combat").EntityController =
     playerUserId ? `player:${playerUserId}` : "gm";
 
+  const energyMax = character ? computeCharacterEnergyMax(character) : combatant.energyMax ?? 100;
+  const apMax = combatant.apMax ?? 6;
+  const tier = combatant.tier ?? (character ? Math.max(1, character.level) : 1);
+
   return {
     id: combatant.id,
-    name: combatant.name,
+    name: character?.name ?? combatant.name,
     controller,
     faction,
     skills,
     initiativeSkill: "initiative",
     energy: {
-      current: combatant.energyCurrent ?? combatant.energyMax ?? 100,
-      max: combatant.energyMax ?? 100,
+      current: combatant.energyCurrent ?? energyMax,
+      max: energyMax,
     },
     ap: {
-      current: combatant.apCurrent ?? combatant.apMax ?? 6,
-      max: combatant.apMax ?? 6,
+      current: combatant.apCurrent ?? apMax,
+      max: apMax,
     },
-    tier: combatant.tier ?? 1,
+    tier,
     reaction: {
       available: true,
     },
@@ -151,6 +177,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const [selectedEntityId, setSelectedEntityId] = React.useState<string | null>(null);
   const [combatants, setCombatants] = React.useState<CampaignCombatant[]>([]);
   const [bestiaryEntries, setBestiaryEntries] = React.useState<BestiaryEntry[]>([]);
+  const [characters, setCharacters] = React.useState<Character[]>([]);
   const [campaign, setCampaign] = React.useState<Campaign | null>(null);
   const [members, setMembers] = React.useState<CampaignMember[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -172,6 +199,10 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const hasCombat = state !== null && phase !== "completed";
   const displayError = error || localError;
   const selectedEntity = selectedEntityId && state?.entities[selectedEntityId];
+  const charactersById = React.useMemo(
+    () => new Map(characters.map((character) => [character.id, character])),
+    [characters]
+  );
 
   // GM-specific derived state
   const gmEntities = React.useMemo(() => {
@@ -203,16 +234,18 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
         const campaigns = await gmApi.listCampaigns();
         const campaignData = campaigns.find(c => c.id === campaignId);
 
-        const [combatantsData, bestiaryData, membersData] = await Promise.all([
+        const [combatantsData, bestiaryData, membersData, characterData] = await Promise.all([
           gmApi.listCombatants(campaignId),
           gmApi.listBestiaryEntries(campaignId),
           gmApi.listCampaignMembers(campaignId),
+          clientApi.listCampaignCharacters(campaignId),
         ]);
 
         setCampaign(campaignData || null);
         setCombatants(combatantsData);
         setBestiaryEntries(bestiaryData);
         setMembers(membersData);
+        setCharacters(characterData);
       } catch (err) {
         setLocalError("Failed to load campaign data");
         console.error(err);
@@ -254,6 +287,28 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     }
   };
 
+  const handleAddPlayerCharacter = async (characterId: string) => {
+    try {
+      const character = charactersById.get(characterId);
+      if (!character) {
+        throw new Error("Character not found");
+      }
+
+      const newCombatant = await gmApi.createCombatant({
+        campaignId,
+        characterId,
+        faction: "ally",
+        energyMax: computeCharacterEnergyMax(character),
+        apMax: 6,
+        tier: Math.max(1, character.level),
+      });
+
+      setCombatants(prev => [...prev, newCombatant]);
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to add player character");
+    }
+  };
+
   const handleRemoveCombatant = async (combatantId: string) => {
     try {
       await gmApi.deleteCombatant(combatantId);
@@ -266,11 +321,11 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const handleStartCombat = async () => {
     try {
       setIsStarting(true);
-      // Build bestiary-to-player mapping
-      const bestiaryToPlayer = new Map<string, string>();
+      // Build character-to-player mapping
+      const characterToPlayer = new Map<string, string>();
       members.forEach((member) => {
         if (member.characterId) {
-          bestiaryToPlayer.set(member.characterId, member.playerUserId);
+          characterToPlayer.set(member.characterId, member.playerUserId);
         }
       });
 
@@ -278,7 +333,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
 
       // Transform combatants to entities
       const entityList = combatants.map((c) =>
-        transformCombatantToEntity(c, bestiaryToPlayer, bestiaryById)
+        transformCombatantToEntity(c, characterToPlayer, bestiaryById, charactersById)
       );
 
       // Convert array to Record
@@ -442,24 +497,48 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     // Transform data for lobby using real-time lobby state
     const lobbyPlayers: LobbyPlayer[] = members.map(member => {
       const playerLobbyState = lobbyState?.players[member.playerUserId];
+      const characterName = member.characterId ? charactersById.get(member.characterId)?.name : undefined;
       return {
         id: member.playerUserId,
         name: member.playerUserId.substring(0, 8), // TODO: Get actual player name
-        characterName: member.characterId || undefined,
+        characterName,
         isReady: playerLobbyState?.isReady ?? false,
         isConnected: !!playerLobbyState, // Connected if they're in the lobby state
       };
     });
 
-    const lobbyCombatants: LobbyCombatant[] = combatants.map(c => ({
-      id: c.id,
-      bestiaryEntryId: c.bestiaryEntryId,
-      name: c.name,
-      faction: (c.faction?.toLowerCase() || 'enemy') as 'ally' | 'enemy',
-      tier: c.tier || 1,
-      energyMax: c.energyMax || 100,
-      apMax: c.apMax || 6,
-    }));
+    const lobbyCombatants: LobbyCombatant[] = combatants.map((combatant) => {
+      const character = combatant.characterId ? charactersById.get(combatant.characterId) : undefined;
+      return {
+        id: combatant.id,
+        bestiaryEntryId: combatant.bestiaryEntryId,
+        characterId: combatant.characterId,
+        name: character?.name ?? combatant.name,
+        faction: (combatant.faction?.toLowerCase() || "enemy") as "ally" | "enemy",
+        tier: combatant.tier ?? (character ? Math.max(1, character.level) : 1),
+        energyMax: character ? computeCharacterEnergyMax(character) : combatant.energyMax || 100,
+        apMax: combatant.apMax || 6,
+      };
+    });
+
+    const deployedCharacterIds = new Set(
+      combatants.map((combatant) => combatant.characterId).filter((id): id is string => !!id)
+    );
+
+    const membersWithCharacters = members.filter(
+      (member): member is CampaignMember & { characterId: string } => !!member.characterId
+    );
+
+    const lobbyPlayerCharacters: LobbyPlayerCharacter[] = membersWithCharacters.map((member) => {
+      const character = charactersById.get(member.characterId);
+      return {
+        playerId: member.playerUserId,
+        playerName: member.playerUserId.substring(0, 8),
+        characterId: member.characterId,
+        characterName: character?.name ?? "Unknown Character",
+        isDeployed: deployedCharacterIds.has(member.characterId),
+      };
+    });
 
     const bestiaryPreviews: BestiaryEntryPreview[] = bestiaryEntries.map(entry => ({
       id: entry.id,
@@ -475,12 +554,14 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
         campaignName={campaign?.name || 'Campaign'}
         players={lobbyPlayers}
         combatants={lobbyCombatants}
+        playerCharacters={lobbyPlayerCharacters}
         bestiaryEntries={bestiaryPreviews}
         initiativeMode={initiativeMode}
         manualInitiative={manualInitiative}
         onManualInitiativeChange={setManualInitiative}
         onInitiativeModeChange={setInitiativeMode}
         onAddCombatant={handleAddCombatant}
+        onAddPlayerCharacter={handleAddPlayerCharacter}
         onRemoveCombatant={handleRemoveCombatant}
         onStartCombat={handleStartCombat}
         isStarting={isStarting}

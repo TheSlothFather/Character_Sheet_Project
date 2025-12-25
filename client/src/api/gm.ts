@@ -47,7 +47,8 @@ export interface BestiaryEntry {
 export interface CampaignCombatant {
   id: string;
   campaignId: string;
-  bestiaryEntryId: string;
+  bestiaryEntryId?: string;
+  characterId?: string;
   name: string;
   faction?: string;
   isActive?: boolean;
@@ -190,7 +191,8 @@ type BestiaryPinRow = {
 type CampaignCombatantRow = {
   id: string;
   campaign_id: string;
-  bestiary_entry_id: string;
+  bestiary_entry_id?: string | null;
+  character_id?: string | null;
   faction?: string | null;
   is_active?: boolean | null;
   initiative?: number | null;
@@ -345,11 +347,14 @@ function mapSetting(row: CampaignSettingRow): CampaignSetting {
 }
 
 function mapCombatant(row: CampaignCombatantRow): CampaignCombatant {
+  const bestiaryName = row.bestiary_entries?.name ?? undefined;
+  const fallbackName = row.character_id ?? "Unknown";
   return {
     id: row.id,
     campaignId: row.campaign_id,
-    bestiaryEntryId: row.bestiary_entry_id,
-    name: row.bestiary_entries?.name ?? "Unknown",
+    bestiaryEntryId: row.bestiary_entry_id ?? undefined,
+    characterId: row.character_id ?? undefined,
+    name: bestiaryName ?? fallbackName,
     faction: row.faction ?? undefined,
     isActive: row.is_active ?? undefined,
     initiative: row.initiative ?? undefined,
@@ -456,7 +461,8 @@ function toCombatantPayload(payload: Partial<CampaignCombatant>): Partial<Campai
   const record: Partial<CampaignCombatantRow> = {};
 
   if (payload.campaignId !== undefined) record.campaign_id = payload.campaignId;
-  if (payload.bestiaryEntryId !== undefined) record.bestiary_entry_id = payload.bestiaryEntryId;
+  if (payload.bestiaryEntryId !== undefined) record.bestiary_entry_id = payload.bestiaryEntryId ?? null;
+  if (payload.characterId !== undefined) record.character_id = payload.characterId ?? null;
   if (payload.faction !== undefined) record.faction = payload.faction ?? null;
   if (payload.isActive !== undefined) record.is_active = payload.isActive ?? null;
   if (payload.initiative !== undefined) record.initiative = payload.initiative ?? null;
@@ -832,7 +838,7 @@ async function listCombatants(campaignId: string): Promise<CampaignCombatant[]> 
     client
       .from("campaign_combatants")
       .select(
-        "id, campaign_id, bestiary_entry_id, faction, is_active, initiative, notes, energy_current, ap_current, tier, energy_max, ap_max, bestiary_entries(id, name)"
+        "id, campaign_id, bestiary_entry_id, character_id, faction, is_active, initiative, notes, energy_current, ap_current, tier, energy_max, ap_max, bestiary_entries(id, name)"
       )
       .eq("campaign_id", campaignId)
       .order("initiative", { ascending: false }),
@@ -889,15 +895,15 @@ async function listCombatants(campaignId: string): Promise<CampaignCombatant[]> 
 async function createCombatant(payload: Partial<CampaignCombatant>): Promise<CampaignCombatant> {
   ensureSupabaseEnv();
   const client = getSupabaseClient();
-  if (!payload.campaignId || !payload.bestiaryEntryId) {
-    throw new ApiError(0, "campaignId and bestiaryEntryId are required to create a combatant");
+  if (!payload.campaignId || (!payload.bestiaryEntryId && !payload.characterId)) {
+    throw new ApiError(0, "campaignId and a bestiaryEntryId or characterId are required to create a combatant");
   }
   const record = toCombatantPayload(payload);
   const { data, error } = (await client
     .from("campaign_combatants")
     .insert(record)
     .select(
-      "id, campaign_id, bestiary_entry_id, faction, is_active, initiative, notes, energy_current, ap_current, tier, energy_max, ap_max, bestiary_entries(id, name)"
+      "id, campaign_id, bestiary_entry_id, character_id, faction, is_active, initiative, notes, energy_current, ap_current, tier, energy_max, ap_max, bestiary_entries(id, name)"
     )
     .single()) as SupabaseResult<CampaignCombatantRow>;
   if (error || !data) {
@@ -915,7 +921,7 @@ async function updateCombatant(id: string, payload: Partial<CampaignCombatant>):
     .update(record)
     .eq("id", id)
     .select(
-      "id, campaign_id, bestiary_entry_id, faction, is_active, initiative, notes, energy_current, ap_current, tier, energy_max, ap_max, bestiary_entries(id, name)"
+      "id, campaign_id, bestiary_entry_id, character_id, faction, is_active, initiative, notes, energy_current, ap_current, tier, energy_max, ap_max, bestiary_entries(id, name)"
     )
     .single()) as SupabaseResult<CampaignCombatantRow>;
   if (error || !data) {

@@ -21,12 +21,21 @@ export interface LobbyPlayer {
 
 export interface LobbyCombatant {
   id: string;
-  bestiaryEntryId: string;
+  bestiaryEntryId?: string;
+  characterId?: string;
   name: string;
   faction: 'ally' | 'enemy';
   tier: number;
   energyMax: number;
   apMax: number;
+}
+
+export interface LobbyPlayerCharacter {
+  playerId: string;
+  playerName: string;
+  characterId: string;
+  characterName: string;
+  isDeployed: boolean;
 }
 
 export interface BestiaryEntryPreview {
@@ -48,12 +57,14 @@ export interface GmCombatLobbyProps {
   campaignName: string;
   players: LobbyPlayer[];
   combatants: LobbyCombatant[];
+  playerCharacters: LobbyPlayerCharacter[];
   bestiaryEntries: BestiaryEntryPreview[];
   initiativeMode: InitiativeMode;
   manualInitiative: boolean;
   onManualInitiativeChange: (enabled: boolean) => void;
   onInitiativeModeChange: (mode: InitiativeMode) => void;
   onAddCombatant: (bestiaryEntryId: string, faction: 'ally' | 'enemy') => void;
+  onAddPlayerCharacter: (characterId: string) => void;
   onRemoveCombatant: (combatantId: string) => void;
   onStartCombat: () => void;
   isStarting?: boolean;
@@ -63,12 +74,14 @@ export const GmCombatLobby: React.FC<GmCombatLobbyProps> = ({
   campaignName,
   players,
   combatants,
+  playerCharacters,
   bestiaryEntries,
   initiativeMode,
   manualInitiative,
   onManualInitiativeChange,
   onInitiativeModeChange,
   onAddCombatant,
+  onAddPlayerCharacter,
   onRemoveCombatant,
   onStartCombat,
   isStarting = false,
@@ -101,6 +114,39 @@ export const GmCombatLobby: React.FC<GmCombatLobbyProps> = ({
       <div className="lobby-content">
         {/* LEFT COLUMN: Bestiary Browser */}
         <aside className="lobby-sidebar lobby-sidebar--left">
+          <div className="player-roster">
+            <div className="player-roster__header">
+              <h2 className="section-title">
+                <span className="section-title__icon">🧑</span>
+                Player Characters
+              </h2>
+            </div>
+            <div className="player-roster__list">
+              {playerCharacters.length === 0 ? (
+                <div className="player-roster__empty">No player characters assigned</div>
+              ) : (
+                playerCharacters.map((member) => (
+                  <div
+                    key={member.characterId}
+                    className={`player-roster-card ${member.isDeployed ? "player-roster-card--deployed" : ""}`}
+                  >
+                    <div className="player-roster-card__header">
+                      <h3 className="player-roster-card__name">{member.characterName}</h3>
+                      {member.isDeployed && <span className="player-roster-card__status">Deployed</span>}
+                    </div>
+                    <p className="player-roster-card__player">Player: {member.playerName}</p>
+                    <button
+                      className="player-roster-card__add"
+                      onClick={() => onAddPlayerCharacter(member.characterId)}
+                      disabled={member.isDeployed}
+                    >
+                      {member.isDeployed ? "Already Deployed" : "Deploy player character"}
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
           <div className="bestiary-browser">
             <div className="bestiary-browser__header">
               <h2 className="section-title">

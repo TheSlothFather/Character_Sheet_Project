@@ -177,6 +177,7 @@
 .lobby-sidebar {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
 }
 
 .lobby-main {
@@ -189,6 +190,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .bestiary-browser,
+.player-roster,
 .battle-roster,
 .readiness-panel,
 .character-panel,
@@ -203,6 +205,7 @@
 
 /* Ink stain decoration */
 .bestiary-browser::before,
+.player-roster::before,
 .battle-roster::before {
   content: '';
   position: absolute;
@@ -237,6 +240,115 @@
 .section-title__icon {
   font-size: 1.25rem;
   opacity: 0.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PLAYER ROSTER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.player-roster__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.player-roster__list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.player-roster__list::-webkit-scrollbar-track {
+  background: rgba(42, 24, 16, 0.05);
+  border-radius: 4px;
+}
+
+.player-roster__list::-webkit-scrollbar-thumb {
+  background: var(--parchment-edge);
+  border-radius: 4px;
+}
+
+.player-roster__list::-webkit-scrollbar-thumb:hover {
+  background: var(--bronze);
+}
+
+.player-roster__empty {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--ink-faded);
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+
+.player-roster-card {
+  background: rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(184, 165, 135, 0.4);
+  border-radius: 6px;
+  padding: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.player-roster-card--deployed {
+  border-color: rgba(45, 80, 22, 0.6);
+  background: rgba(45, 80, 22, 0.12);
+}
+
+.player-roster-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.player-roster-card__name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink-black);
+  margin: 0;
+}
+
+.player-roster-card__status {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--forest-green);
+}
+
+.player-roster-card__player {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink-faded);
+  margin: 0 0 0.75rem;
+}
+
+.player-roster-card__add {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--forest-green);
+  background: linear-gradient(135deg, #3b6a2a 0%, var(--forest-green) 100%);
+  color: var(--parchment-light);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.player-roster-card__add:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.player-roster-card__add:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
