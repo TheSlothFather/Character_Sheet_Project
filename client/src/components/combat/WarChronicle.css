@@ -3752,3 +3752,120 @@
 .war-gm-page__skill-check-panel {
   margin-top: var(--space-4, 16px);
 }
+
+/* ============================================
+   GM SKILL CHECK RESOLUTION PANEL
+   ============================================ */
+
+.gm-skill-check-resolution {
+  position: relative;
+  padding: var(--space-4, 16px);
+  background: var(--war-bg-secondary);
+  border: 3px solid var(--war-frame-metal);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-md, 0 6px 15px rgba(0, 0, 0, 0.15));
+}
+
+.gm-skill-check-resolution__header {
+  margin-bottom: var(--space-3, 12px);
+  padding-bottom: var(--space-2, 8px);
+  border-bottom: 2px solid var(--war-border);
+}
+
+.gm-skill-check-resolution__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--war-text-primary);
+  margin: 0;
+}
+
+.gm-skill-check-resolution__list {
+  display: grid;
+  gap: var(--space-2, 8px);
+}
+
+.gm-skill-check-resolution__check {
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--war-bg-tertiary);
+  border: 2px solid var(--war-border);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--war-text-primary);
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.gm-skill-check-resolution__check:hover {
+  border-color: var(--war-ember);
+}
+
+.gm-skill-check-resolution__check--selected {
+  border-color: var(--war-ember);
+  box-shadow: 0 0 12px rgba(228, 106, 38, 0.2);
+}
+
+.gm-skill-check-resolution__check-header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2, 8px);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.gm-skill-check-resolution__skill {
+  color: var(--war-ember);
+}
+
+.gm-skill-check-resolution__target-number {
+  margin-top: var(--space-1, 4px);
+  font-size: 12px;
+  color: var(--war-text-secondary);
+}
+
+.gm-skill-check-resolution__interface {
+  margin-top: var(--space-4, 16px);
+  display: grid;
+  gap: var(--space-3, 12px);
+}
+
+.gm-skill-check-resolution__details {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2, 8px);
+  font-size: 14px;
+  color: var(--war-text-secondary);
+}
+
+.gm-skill-check-resolution__resolve-btn {
+  width: 100%;
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  background: var(--war-ember);
+  border: 2px solid var(--war-ember-dark);
+  border-radius: var(--radius-md, 8px);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.gm-skill-check-resolution__resolve-btn:hover {
+  background: var(--war-ember-dark);
+  transform: translateY(-2px);
+}
+
+.gm-skill-check-resolution__border {
+  position: absolute;
+  inset: -3px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-md, 8px);
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--war-ember) 0%, transparent 50%) border-box;
+  mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.3;
+}

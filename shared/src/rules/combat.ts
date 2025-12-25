@@ -651,6 +651,7 @@ export interface SkillContestRequest {
   targetId: string;             // Target entity
   suggestedDefenseSkill?: string; // GM/system suggested skill
   autoRollDefense: boolean;     // Whether to auto-roll for target
+  gmCanResolve?: boolean;       // GM may resolve for player-controlled target
   status: "pending" | "awaiting_defense" | "resolved";
   createdAt: string;
   resolvedAt?: string;
@@ -669,6 +670,9 @@ export interface SkillCheckRequest {
   targetEntityId: string;       // Entity making the roll
   skill: string;                // Required skill
   targetNumber?: number;        // Optional DC (GM sees result either way)
+  diceCount?: number;           // Suggested dice count for the roll
+  keepHighest?: boolean;        // Suggested keep highest/lowest for the roll
+  gmCanResolve?: boolean;       // GM may resolve for player-controlled roller
   status: "pending" | "rolled" | "acknowledged";
   rollData?: RollData;          // Filled when player rolls
   createdAt: string;
