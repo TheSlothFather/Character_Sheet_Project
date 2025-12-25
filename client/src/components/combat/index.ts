@@ -44,6 +44,8 @@ export { TurnAnnouncement, type TurnAnnouncementProps } from "./notifications/Tu
 
 // GM Tools
 export { GmContestResolutionPanel, type GmContestResolutionPanelProps } from "./GmContestResolutionPanel";
+export { GmSkillActionPanel, type GmSkillActionPanelProps } from "./GmSkillActionPanel";
+export { GmSkillCheckResolutionPanel, type GmSkillCheckResolutionPanelProps } from "./GmSkillCheckResolutionPanel";
 export { NpcActionPanel, type NpcActionPanelProps } from "./NpcActionPanel";
 export { SkillCheckRequestPanel, type SkillCheckRequestPanelProps } from "./SkillCheckRequestPanel";
 

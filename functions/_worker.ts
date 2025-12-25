@@ -179,6 +179,7 @@ interface SkillContestRequest {
   targetId: string;
   suggestedDefenseSkill?: string;
   autoRollDefense: boolean;
+  gmCanResolve?: boolean;
   status: "pending" | "awaiting_defense" | "resolved";
   createdAt: string;
   resolvedAt?: string;
@@ -194,6 +195,9 @@ interface SkillCheckRequest {
   targetEntityId: string;
   skill: string;
   targetNumber?: number;
+  diceCount?: number;
+  keepHighest?: boolean;
+  gmCanResolve?: boolean;
   status: "pending" | "rolled" | "acknowledged";
   rollData?: RollData;
   createdAt: string;
@@ -2760,6 +2764,9 @@ export class CampaignDurableObject {
     const skill = parseRequiredStringField(body.skill, "skill", request);
     if (skill instanceof Response) return skill;
 
+    const gmCanResolve = parseBooleanField(body.gmCanResolve, "gmCanResolve", false, request);
+    if (gmCanResolve instanceof Response) return gmCanResolve;
+
     const update = await this.updateAuthCombatState(campaignId, (combatState) => {
       const initiator = combatState.entities[initiatorEntityId];
       const target = combatState.entities[targetEntityId];
@@ -2790,6 +2797,7 @@ export class CampaignDurableObject {
         initiatorRoll: rollData,
         targetId: targetEntityId,
         autoRollDefense: target.autoRollDefense ?? false,
+        gmCanResolve,
         status: "awaiting_defense",
         createdAt: new Date().toISOString(),
       };
@@ -2933,6 +2941,16 @@ export class CampaignDurableObject {
     if (skill instanceof Response) return skill;
 
     const targetNumber = body.targetNumber !== undefined ? parseNumberField(body.targetNumber, "targetNumber", undefined, request) : undefined;
+    if (targetNumber instanceof Response) return targetNumber;
+
+    const gmCanResolve = parseBooleanField(body.gmCanResolve, "gmCanResolve", false, request);
+    if (gmCanResolve instanceof Response) return gmCanResolve;
+
+    const diceCount = body.diceCount !== undefined ? parseNumberField(body.diceCount, "diceCount", 0, request) : undefined;
+    if (diceCount instanceof Response) return diceCount;
+
+    const keepHighest = body.keepHighest !== undefined ? parseBooleanField(body.keepHighest, "keepHighest", true, request) : undefined;
+    if (keepHighest instanceof Response) return keepHighest;
 
     const update = await this.updateAuthCombatState(campaignId, (combatState) => {
       const entity = combatState.entities[targetEntityId];
@@ -2949,6 +2967,9 @@ export class CampaignDurableObject {
         targetEntityId,
         skill,
         targetNumber: typeof targetNumber === "number" ? targetNumber : undefined,
+        diceCount: typeof diceCount === "number" ? diceCount : undefined,
+        keepHighest: typeof keepHighest === "boolean" ? keepHighest : undefined,
+        gmCanResolve,
         status: "pending",
         createdAt: new Date().toISOString(),
       };

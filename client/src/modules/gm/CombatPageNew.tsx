@@ -22,8 +22,9 @@ import {
   StatusList,
   WoundDisplay,
   GmContestResolutionPanel,
+  GmSkillActionPanel,
+  GmSkillCheckResolutionPanel,
   NpcActionPanel,
-  SkillCheckRequestPanel,
   RollOverlay,
 } from "../../components/combat";
 import {
@@ -168,6 +169,8 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     initiateSkillContest,
     respondToSkillContest,
     requestSkillCheck,
+    submitSkillCheck,
+    pendingSkillChecks,
   } = useCombat();
 
   const { phase, round, activeEntity, pendingAction } = useCombatTurn();
@@ -199,6 +202,10 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const hasCombat = state !== null && phase !== "completed";
   const displayError = error || localError;
   const selectedEntity = selectedEntityId && state?.entities[selectedEntityId];
+  const allEntities = React.useMemo(
+    () => (state ? Object.values(state.entities) : []),
+    [state]
+  );
   const charactersById = React.useMemo(
     () => new Map(characters.map((character) => [character.id, character])),
     [characters]
@@ -210,19 +217,22 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     return Object.values(state.entities).filter((entity) => entity.controller === "gm");
   }, [state]);
 
-  const playerEntities = React.useMemo(() => {
-    if (!state) return [];
-    return Object.values(state.entities).filter((entity) => entity.controller.startsWith("player:"));
-  }, [state]);
-
   const gmPendingContests = React.useMemo(() => {
     if (!state?.pendingSkillContests) return [];
     return Object.values(state.pendingSkillContests).filter(
-      (contest) =>
-        contest.status === "awaiting_defense" &&
-        state.entities[contest.targetId]?.controller === "gm"
+      (contest) => {
+        if (contest.status !== "awaiting_defense") return false;
+        const target = state.entities[contest.targetId];
+        if (!target) return false;
+        return target.controller === "gm" || contest.gmCanResolve;
+      }
     );
   }, [state]);
+
+  const gmPendingChecks = React.useMemo(() => {
+    const checks = Object.values(pendingSkillChecks ?? {});
+    return checks.filter((check) => check.status === "pending" && check.gmCanResolve);
+  }, [pendingSkillChecks]);
 
   const isNpcTurn = activeEntity?.controller === "gm";
 
@@ -430,7 +440,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
 
   const handleGmDefenseRoll = async (contestId: string, skill: string, roll: any) => {
     try {
-      const contest = gmPendingContests.find((c) => c.id === contestId);
+      const contest = gmPendingContests.find((c) => c.contestId === contestId);
       if (!contest) return;
 
       await respondToSkillContest({
@@ -441,6 +451,21 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       });
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to resolve contest");
+    }
+  };
+
+  const handleInitiateSkillContest = async (params: {
+    initiatorEntityId: string;
+    targetEntityId: string;
+    skill: string;
+    roll: any;
+    gmCanResolve?: boolean;
+  }) => {
+    try {
+      await initiateSkillContest(params);
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to initiate contest");
+      throw err;
     }
   };
 
@@ -465,21 +490,28 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     }
   };
 
-  const handleRequestSkillCheck = async (
-    targetPlayerId: string,
-    targetEntityId: string,
-    skill: string,
-    targetNumber?: number
-  ) => {
+  const handleRequestSkillCheck = async (params: {
+    targetPlayerId: string;
+    targetEntityId: string;
+    skill: string;
+    targetNumber?: number;
+    diceCount?: number;
+    keepHighest?: boolean;
+    gmCanResolve?: boolean;
+  }) => {
     try {
-      await requestSkillCheck({
-        targetPlayerId,
-        targetEntityId,
-        skill,
-        targetNumber,
-      });
+      await requestSkillCheck(params);
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : "Failed to request skill check");
+      throw err;
+    }
+  };
+
+  const handleGmSkillCheckRoll = async (checkId: string, roll: any) => {
+    try {
+      await submitSkillCheck({ checkId, roll });
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to resolve skill check");
     }
   };
 
@@ -717,23 +749,35 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
             </div>
           )}
 
+          {/* GM Skill Check Resolution Panel */}
+          {gmPendingChecks.length > 0 && state && (
+            <div className="war-gm-page__contest-panel">
+              <GmSkillCheckResolutionPanel
+                pendingChecks={gmPendingChecks}
+                entities={state.entities}
+                onResolveCheck={handleGmSkillCheckRoll}
+              />
+            </div>
+          )}
+
           {/* NPC Action Panel */}
           {isNpcTurn && activeEntity && phase === "active-turn" && (
             <div className="war-gm-page__npc-panel">
               <NpcActionPanel
                 npcEntities={gmEntities}
-                targetableEntities={playerEntities}
+                targetableEntities={allEntities}
                 activeNpcId={activeEntity.id}
                 onInitiateAttack={handleNpcAttack}
               />
             </div>
           )}
 
-          {/* Skill Check Request Panel - Always visible during active combat */}
-          {phase === "active-turn" && playerEntities.length > 0 && (
+          {/* GM Skill Action Panel - Always visible during active combat */}
+          {phase === "active-turn" && allEntities.length > 0 && (
             <div className="war-gm-page__skill-check-panel">
-              <SkillCheckRequestPanel
-                playerEntities={playerEntities}
+              <GmSkillActionPanel
+                entities={allEntities}
+                onInitiateContest={handleInitiateSkillContest}
                 onRequestSkillCheck={handleRequestSkillCheck}
               />
             </div>
