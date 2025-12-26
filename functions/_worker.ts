@@ -110,6 +110,22 @@ interface CombatStatusEffect {
   tickDamage?: { woundType: WoundType; amount: number };
 }
 
+interface ResourceModifier {
+  id: string;
+  type: 'add_max' | 'reduce_max' | 'add_current';
+  amount: number;
+  duration: number | null;  // null = permanent, number = rounds remaining
+  source: string;           // Description of what caused this
+  createdAt: string;
+}
+
+interface CombatResource {
+  current: number;
+  max: number;
+  baseMax: number;
+  modifiers: ResourceModifier[];
+}
+
 interface CombatEntity {
   id: string;
   name: string;
@@ -117,8 +133,8 @@ interface CombatEntity {
   faction: EntityFaction;
   skills: Record<string, number>;
   initiativeSkill: string;
-  energy: { current: number; max: number };
-  ap: { current: number; max: number };
+  energy: CombatResource;
+  ap: CombatResource;
   tier: number;
   reaction: { available: boolean };
   statusEffects: CombatStatusEffect[];
@@ -1820,6 +1836,38 @@ export class CampaignDurableObject {
     return result;
   }
 
+  // Calculate effective max for a resource based on modifiers
+  private calculateEffectiveMax(resource: CombatResource): number {
+    let effectiveMax = resource.baseMax;
+
+    for (const modifier of resource.modifiers) {
+      if (modifier.type === 'add_max') {
+        effectiveMax += modifier.amount;
+      } else if (modifier.type === 'reduce_max') {
+        effectiveMax -= modifier.amount;
+      }
+    }
+
+    return Math.max(0, effectiveMax);
+  }
+
+  // Create a new resource modifier
+  private createResourceModifier(
+    type: ResourceModifier['type'],
+    amount: number,
+    duration: number | null,
+    source: string
+  ): ResourceModifier {
+    return {
+      id: crypto.randomUUID(),
+      type,
+      amount,
+      duration,
+      source,
+      createdAt: new Date().toISOString()
+    };
+  }
+
   // Handler: Get current authoritative combat state
   private async handleAuthoritativeState(campaignId: string, request: Request): Promise<Response> {
     const combatState = await this.loadAuthCombatState(campaignId);
@@ -1842,6 +1890,32 @@ export class CampaignDurableObject {
 
     if (!entities || Object.keys(entities).length === 0) {
       return jsonResponse({ error: "No entities provided." }, 400, {}, request);
+    }
+
+    // Initialize resource structure for all entities
+    // This ensures backwards compatibility and proper structure
+    for (const entity of Object.values(entities)) {
+      // Initialize energy resource
+      if (!entity.energy.hasOwnProperty('baseMax')) {
+        const energyMax = entity.energy.max;
+        entity.energy = {
+          current: entity.energy.current,
+          max: energyMax,
+          baseMax: energyMax,
+          modifiers: []
+        };
+      }
+
+      // Initialize AP resource
+      if (!entity.ap.hasOwnProperty('baseMax')) {
+        const apMax = entity.ap.max;
+        entity.ap = {
+          current: entity.ap.current,
+          max: apMax,
+          baseMax: apMax,
+          modifiers: []
+        };
+      }
     }
 
     let initiativeRolls: Record<string, InitiativeEntry> = {};
@@ -2587,6 +2661,64 @@ export class CampaignDurableObject {
           }
           break;
 
+        case "add_resource_modifier":
+          if (targetEntityId && combatState.entities[targetEntityId]) {
+            const resource = body.data?.resource as 'ap' | 'energy' | undefined;
+            const modifierType = body.data?.modifierType as ResourceModifier['type'] | undefined;
+            const amount = parseNumberField(body.data?.amount, "amount", 0, request);
+            const duration = body.data?.duration === null ? null : (body.data?.duration as number | undefined) ?? null;
+            const source = (body.data?.source as string) ?? 'GM Override';
+
+            if (resource && modifierType && typeof amount === 'number') {
+              const entity = combatState.entities[targetEntityId];
+              const modifier = this.createResourceModifier(modifierType, amount, duration, source);
+              entity[resource].modifiers.push(modifier);
+
+              // Recalculate effective max
+              entity[resource].max = this.calculateEffectiveMax(entity[resource]);
+
+              // If modifier adds to current, apply it
+              if (modifierType === 'add_current') {
+                entity[resource].current = Math.min(entity[resource].current + amount, entity[resource].max);
+              }
+
+              // Clamp current to new max if needed
+              entity[resource].current = Math.min(entity[resource].current, entity[resource].max);
+            }
+          }
+          break;
+
+        case "remove_resource_modifier":
+          if (targetEntityId && combatState.entities[targetEntityId]) {
+            const resource = body.data?.resource as 'ap' | 'energy' | undefined;
+            const modifierId = body.data?.modifierId as string | undefined;
+
+            if (resource && modifierId) {
+              const entity = combatState.entities[targetEntityId];
+              entity[resource].modifiers = entity[resource].modifiers.filter(m => m.id !== modifierId);
+
+              // Recalculate effective max
+              entity[resource].max = this.calculateEffectiveMax(entity[resource]);
+
+              // Clamp current to new max if needed
+              entity[resource].current = Math.min(entity[resource].current, entity[resource].max);
+            }
+          }
+          break;
+
+        case "set_resource_current":
+          if (targetEntityId && combatState.entities[targetEntityId]) {
+            const resource = body.data?.resource as 'ap' | 'energy' | undefined;
+            const value = parseNumberField(body.data?.value, "value", 0, request);
+
+            if (resource && typeof value === 'number') {
+              const entity = combatState.entities[targetEntityId];
+              // This allows exceeding max (for temporary boosts)
+              entity[resource].current = Math.max(0, value);
+            }
+          }
+          break;
+
         case "skip_entity":
           if (combatState.activeEntityId === targetEntityId) {
             // Force end turn for this entity
@@ -2606,6 +2738,20 @@ export class CampaignDurableObject {
             combatState.round += 1;
             for (const entity of Object.values(combatState.entities)) {
               entity.reaction.available = true;
+
+              // Decrement modifier durations and remove expired ones
+              for (const resource of ['ap', 'energy'] as const) {
+                entity[resource].modifiers = entity[resource].modifiers.filter(mod => {
+                  if (mod.duration === null) return true; // Permanent
+                  mod.duration -= 1;
+                  return mod.duration > 0;
+                });
+
+                // Recalculate max after removing expired modifiers
+                entity[resource].max = this.calculateEffectiveMax(entity[resource]);
+                // Clamp current if max decreased
+                entity[resource].current = Math.min(entity[resource].current, entity[resource].max);
+              }
             }
           }
           combatState.turnIndex = nextIdx;
@@ -2668,6 +2814,50 @@ export class CampaignDurableObject {
             combatState.pendingReactions = combatState.pendingReactions.filter(
               r => r.reactionId !== body.data?.reactionId
             );
+          }
+          break;
+
+        case "force_initiative_roll":
+          if (combatState.phase === "initiative-rolling" && targetEntityId) {
+            const entity = combatState.entities[targetEntityId];
+            if (entity && !combatState.initiativeRolls[targetEntityId]) {
+              // Generate server-side roll
+              const roll = Math.floor(Math.random() * 100) + 1;
+              const skillValue = entity.skills[entity.initiativeSkill] ?? 0;
+
+              combatState.initiativeRolls[targetEntityId] = {
+                entityId: targetEntityId,
+                roll,
+                skillValue,
+                currentEnergy: entity.energy.current,
+              };
+
+              // Check if all entities have rolled
+              const allEntityIds = Object.keys(combatState.entities);
+              const rolledEntityIds = Object.keys(combatState.initiativeRolls);
+              const allRolled = allEntityIds.every(id => rolledEntityIds.includes(id));
+
+              if (allRolled) {
+                // Compute initiative order
+                const initiativeOrder = combatState.initiativeMode === "group"
+                  ? this.sortGroupInitiative(Object.values(combatState.initiativeRolls), combatState.entities)
+                  : this.sortInitiative(Object.values(combatState.initiativeRolls));
+
+                combatState.initiativeOrder = initiativeOrder;
+                combatState.phase = "active-turn";
+                combatState.turnIndex = 0;
+                combatState.activeEntityId = initiativeOrder[0] ?? null;
+
+                // Restore AP for first entity
+                if (combatState.activeEntityId) {
+                  const activeEntity = combatState.entities[combatState.activeEntityId];
+                  if (activeEntity) {
+                    activeEntity.ap.current = activeEntity.ap.max;
+                    activeEntity.reaction.available = true;
+                  }
+                }
+              }
+            }
           }
           break;
 
