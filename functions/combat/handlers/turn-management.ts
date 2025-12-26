@@ -5,6 +5,7 @@
  */
 
 import type { CombatDurableObject, WebSocketMetadata, ClientMessageType } from "../CombatDurableObject";
+import { canControlEntity } from "./permissions";
 
 // Wrapper to call SQL storage methods
 function runQuery(sql: SqlStorage, query: string, ...params: unknown[]) {
@@ -66,18 +67,7 @@ async function handleInitiativeRoll(
 
   const entityId = payload.entityId as string;
   const roll = payload.roll as number;
-  const skillValue = payload.skillValue as number;
-
-  // Verify player controls this entity or is GM
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "You do not control this entity" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
+  const skillValue = (payload.skillValue as number) ?? (payload.tiebreaker as number) ?? 0;
 
   // Get entity's current energy
   const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
@@ -95,6 +85,17 @@ async function handleInitiativeRoll(
   const entity = JSON.parse(entityRow.data);
   const currentEnergy = entity.energy?.current ?? 100;
 
+  // Verify player controls this entity or is GM
+  if (!canControlEntity(session, entityId, entity)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
+
   // Insert or update initiative
   runQuery(sql,
     `INSERT OR REPLACE INTO initiative (entity_id, roll, skill_value, current_energy, position)
@@ -107,12 +108,19 @@ async function handleInitiativeRoll(
   const entityCount = runQuery(sql, "SELECT COUNT(*) as count FROM entities").one() as { count: number };
   const initiativeCount = runQuery(sql, "SELECT COUNT(*) as count FROM initiative").one() as { count: number };
 
+  const initiativeRows = runQuery(sql, "SELECT * FROM initiative ORDER BY position").toArray() as Array<Record<string, unknown>>;
+  const initiative = initiativeRows.map((row) => ({
+    entityId: row.entity_id as string,
+    roll: row.roll as number,
+    tiebreaker: (row.skill_value as number) ?? 0,
+    delayed: false,
+    readied: false,
+  }));
+
   combat.broadcast({
     type: "INITIATIVE_UPDATED",
     payload: {
-      entityId,
-      roll,
-      skillValue,
+      initiative,
       allRolled: entityCount.count === initiativeCount.count,
     },
     timestamp,
@@ -190,22 +198,23 @@ async function handleEndTurn(
 
   const activeEntityId = state.active_entity_id as string;
 
-  // Verify it's the player's turn or they're GM
-  if (!session.isGM && !session.controlledEntityIds.includes(activeEntityId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "Not your turn" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
-
   // Process AP to Energy conversion
   const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", activeEntityId);
 
   if (entityRow) {
     const entity = JSON.parse(entityRow.data);
+
+    // Verify it's the player's turn or they're GM
+    if (!canControlEntity(session, activeEntityId, entity)) {
+      combat.sendToSocket(ws, {
+        type: "ACTION_REJECTED",
+        payload: { reason: "Not your turn" },
+        timestamp,
+        requestId,
+      });
+      return;
+    }
+
     const unspentAP = entity.ap?.current ?? 0;
     const tier = Math.ceil((entity.level ?? 1) / 5);
     const factor = 3 + (entity.staminaPotionBonus ?? 0);
@@ -282,8 +291,12 @@ async function handleDelayTurn(
 
   const activeEntityId = state.active_entity_id as string;
 
+  const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", activeEntityId);
+  if (!entityRow) return;
+  const entity = JSON.parse(entityRow.data);
+
   // Verify permissions
-  if (!session.isGM && !session.controlledEntityIds.includes(activeEntityId)) {
+  if (!canControlEntity(session, activeEntityId, entity)) {
     combat.sendToSocket(ws, {
       type: "ACTION_REJECTED",
       payload: { reason: "Not your turn" },
@@ -338,6 +351,20 @@ async function handleReadyAction(
   const entityId = payload.entityId as string || state.active_entity_id as string;
   const trigger = payload.trigger as string;
   const actionType = payload.actionType as string;
+
+  const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
+  if (!entityRow) return;
+  const entity = JSON.parse(entityRow.data);
+
+  if (!canControlEntity(session, entityId, entity)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
 
   // Store readied action
   runQuery(sql,

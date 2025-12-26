@@ -5,158 +5,406 @@
  * Shows all entities, provides override controls, and manages combat flow.
  */
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { CombatProvider, useCombat } from "../context/CombatProvider";
+import { gmApi, type CampaignMember, type BestiaryEntry } from "../../../api/gm";
+import { api, type Character } from "../../../api/client";
 import { HexGrid } from "../components/grid";
 import { EntityCard, WoundTracker } from "../components/entities";
 import { GmControls, EntityOverrides } from "../components/gm";
 import { ChannelingTracker } from "../components/channeling";
-import type { HexPosition } from "../../../api/combatV2Socket";
+import type { HexPosition, CombatV2Entity } from "../../../api/combatV2Socket";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ADD ENTITY MODAL
 // ═══════════════════════════════════════════════════════════════════════════
 
+type EntityType = "pc" | "npc" | "monster";
+type InitiativeTiming = "immediate" | "end";
+
+type AddEntityRequest = {
+  entity: CombatV2Entity;
+  initiativeRoll: number;
+  initiativeTiebreaker: number;
+  initiativeTiming: InitiativeTiming;
+  placeAfterAdd: boolean;
+};
+
 interface AddEntityModalProps {
-  onAdd: (entity: {
-    name: string;
-    displayName: string;
-    faction: "ally" | "enemy" | "neutral";
-    tier: "minion" | "full" | "lieutenant" | "hero";
-    level: number;
-    position: HexPosition;
-  }) => void;
+  onAdd: (payload: AddEntityRequest) => void;
   onCancel: () => void;
+  members: CampaignMember[];
+  characters: Character[];
+  bestiaryEntries: BestiaryEntry[];
+  isCombatActive: boolean;
 }
 
-function AddEntityModal({ onAdd, onCancel }: AddEntityModalProps) {
+function AddEntityModal({
+  onAdd,
+  onCancel,
+  members,
+  characters,
+  bestiaryEntries,
+  isCombatActive,
+}: AddEntityModalProps) {
+  const [entityType, setEntityType] = useState<EntityType>("npc");
   const [name, setName] = useState("New Entity");
   const [displayName, setDisplayName] = useState("");
   const [faction, setFaction] = useState<"ally" | "enemy" | "neutral">("enemy");
-  const [tier, setTier] = useState<"minion" | "full" | "lieutenant" | "hero">("minion");
+  const [tier, setTier] = useState<"minion" | "full" | "lieutenant" | "hero">("full");
   const [level, setLevel] = useState(1);
-  const [q, setQ] = useState(0);
-  const [r, setR] = useState(0);
+  const [controller, setController] = useState("gm");
+  const [selectedCharacterId, setSelectedCharacterId] = useState("");
+  const [selectedBestiaryId, setSelectedBestiaryId] = useState("");
+  const [search, setSearch] = useState("");
+  const [initiativeRoll, setInitiativeRoll] = useState(10);
+  const [initiativeTiming, setInitiativeTiming] = useState<InitiativeTiming>("end");
+  const [placeAfterAdd, setPlaceAfterAdd] = useState(true);
+
+  const memberByCharacterId = useMemo(() => {
+    return new Map(
+      members
+        .filter((member) => member.characterId)
+        .map((member) => [member.characterId as string, member.playerUserId])
+    );
+  }, [members]);
+
+  const controllerOptions = useMemo(() => {
+    const uniquePlayers = Array.from(new Set(members.map((member) => member.playerUserId)));
+    return ["gm", ...uniquePlayers.map((id) => `player:${id}`)];
+  }, [members]);
+
+  const selectedCharacter = useMemo(() => {
+    return characters.find((entry) => entry.id === selectedCharacterId);
+  }, [characters, selectedCharacterId]);
+
+  const selectedBestiary = useMemo(() => {
+    return bestiaryEntries.find((entry) => entry.id === selectedBestiaryId);
+  }, [bestiaryEntries, selectedBestiaryId]);
+
+  const filteredBestiary = useMemo(() => {
+    if (!search.trim()) return bestiaryEntries;
+    const term = search.toLowerCase();
+    return bestiaryEntries.filter((entry) => entry.name.toLowerCase().includes(term));
+  }, [bestiaryEntries, search]);
+
+  useEffect(() => {
+    if (entityType === "pc" && selectedCharacter) {
+      setName(selectedCharacter.name);
+      setDisplayName(selectedCharacter.name);
+      setLevel(selectedCharacter.level ?? 1);
+      setFaction("ally");
+      setTier("hero");
+      const ownerId = memberByCharacterId.get(selectedCharacter.id);
+      if (ownerId) {
+        setController(`player:${ownerId}`);
+      }
+    }
+  }, [entityType, selectedCharacter, memberByCharacterId]);
+
+  useEffect(() => {
+    if (entityType === "monster" && selectedBestiary) {
+      setName(selectedBestiary.name);
+      setDisplayName(selectedBestiary.name);
+      setFaction("enemy");
+    }
+  }, [entityType, selectedBestiary]);
+
+  const handleTypeChange = useCallback((nextType: EntityType) => {
+    setEntityType(nextType);
+    if (nextType === "npc") {
+      setFaction("enemy");
+      setTier("full");
+      setController("gm");
+      setName("New Entity");
+      setDisplayName("");
+    }
+    if (nextType === "monster") {
+      setFaction("enemy");
+      setTier("full");
+      setController("gm");
+    }
+    if (nextType === "pc") {
+      setFaction("ally");
+      setTier("hero");
+    }
+  }, []);
 
   const handleSubmit = useCallback(() => {
-    onAdd({
-      name,
-      displayName: displayName || name,
+    const cleanedName = name.trim() || "Unknown Entity";
+    const cleanedDisplay = displayName.trim() || cleanedName;
+    const apMax = tier === "minion" ? 3 : 6;
+    const energyMax = tier === "minion" ? 30 : 100;
+    const entityId = crypto.randomUUID();
+
+    const entity: CombatV2Entity = {
+      id: entityId,
+      name: cleanedName,
+      displayName: cleanedDisplay,
       faction,
       tier,
       level,
-      position: { q, r },
+      controller: controller as CombatV2Entity["controller"],
+      entityType,
+      characterId: entityType === "pc" ? selectedCharacter?.id : undefined,
+      bestiaryEntryId: entityType === "monster" ? selectedBestiary?.id : undefined,
+      ap: { current: apMax, max: apMax },
+      energy: { current: energyMax, max: energyMax },
+    };
+
+    onAdd({
+      entity,
+      initiativeRoll,
+      initiativeTiebreaker: Math.random(),
+      initiativeTiming,
+      placeAfterAdd,
     });
-  }, [onAdd, name, displayName, faction, tier, level, q, r]);
+  }, [
+    name,
+    displayName,
+    faction,
+    tier,
+    level,
+    controller,
+    entityType,
+    selectedCharacter,
+    selectedBestiary,
+    initiativeRoll,
+    initiativeTiming,
+    placeAfterAdd,
+    onAdd,
+  ]);
+
+  const canSubmit = useMemo(() => {
+    if (entityType === "pc") return !!selectedCharacterId;
+    if (entityType === "monster") return !!selectedBestiaryId;
+    return name.trim().length > 0;
+  }, [entityType, selectedCharacterId, selectedBestiaryId, name]);
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 w-full max-w-md space-y-4">
-        <h2 className="text-xl font-bold text-amber-400">Add Entity</h2>
-
-        {/* Name */}
-        <div className="space-y-1">
-          <label className="text-sm text-slate-400">Name (Internal)</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 rounded bg-slate-700 border border-slate-600 text-slate-200"
-            placeholder="Entity name..."
-          />
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-2xl space-y-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-amber-400">Summoning Bay</h2>
+          <button
+            onClick={onCancel}
+            className="text-slate-400 hover:text-slate-200 transition-colors"
+          >
+            Close
+          </button>
         </div>
 
-        {/* Display Name */}
-        <div className="space-y-1">
-          <label className="text-sm text-slate-400">Display Name (Optional)</label>
-          <input
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            className="w-full px-3 py-2 rounded bg-slate-700 border border-slate-600 text-slate-200"
-            placeholder="Name shown to players..."
-          />
-        </div>
-
-        {/* Faction & Tier */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-sm text-slate-400">Faction</label>
-            <select
-              value={faction}
-              onChange={(e) => setFaction(e.target.value as "ally" | "enemy" | "neutral")}
-              className="w-full px-3 py-2 rounded bg-slate-700 border border-slate-600 text-slate-200"
+        <div className="flex gap-2">
+          {(["pc", "npc", "monster"] as EntityType[]).map((type) => (
+            <button
+              key={type}
+              onClick={() => handleTypeChange(type)}
+              className={`px-3 py-2 rounded text-sm uppercase tracking-wide transition-colors ${
+                entityType === type
+                  ? "bg-amber-600 text-amber-100"
+                  : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+              }`}
             >
-              <option value="ally">Ally</option>
-              <option value="enemy">Enemy</option>
-              <option value="neutral">Neutral</option>
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm text-slate-400">Tier</label>
-            <select
-              value={tier}
-              onChange={(e) => setTier(e.target.value as "minion" | "full" | "lieutenant" | "hero")}
-              className="w-full px-3 py-2 rounded bg-slate-700 border border-slate-600 text-slate-200"
-            >
-              <option value="minion">Minion (1-hit)</option>
-              <option value="full">Full</option>
-              <option value="lieutenant">Lieutenant</option>
-              <option value="hero">Hero</option>
-            </select>
-          </div>
+              {type === "pc" ? "Player" : type}
+            </button>
+          ))}
         </div>
 
-        {/* Level */}
-        <div className="space-y-1">
-          <label className="text-sm text-slate-400">Level</label>
-          <input
-            type="number"
-            value={level}
-            onChange={(e) => setLevel(parseInt(e.target.value) || 1)}
-            min={1}
-            max={30}
-            className="w-full px-3 py-2 rounded bg-slate-700 border border-slate-600 text-slate-200"
-          />
-        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
+            {entityType === "pc" && (
+              <div className="space-y-1">
+                <label className="text-sm text-slate-400">Player Character</label>
+                <select
+                  value={selectedCharacterId}
+                  onChange={(e) => setSelectedCharacterId(e.target.value)}
+                  className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200"
+                >
+                  <option value="">Select a character</option>
+                  {characters.map((character) => (
+                    <option key={character.id} value={character.id}>
+                      {character.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-        {/* Position */}
-        <div className="space-y-1">
-          <label className="text-sm text-slate-400">Starting Position (Hex)</label>
-          <div className="flex gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-slate-500">Q:</span>
+            {entityType === "monster" && (
+              <div className="space-y-2">
+                <label className="text-sm text-slate-400">Monster</label>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search bestiary..."
+                  className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200"
+                />
+                <select
+                  value={selectedBestiaryId}
+                  onChange={(e) => setSelectedBestiaryId(e.target.value)}
+                  className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200"
+                >
+                  <option value="">Select a monster</option>
+                  {filteredBestiary.map((entry) => (
+                    <option key={entry.id} value={entry.id}>
+                      {entry.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {entityType === "npc" && (
+              <div className="space-y-1">
+                <label className="text-sm text-slate-400">NPC Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200"
+                  placeholder="Entity name..."
+                />
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <label className="text-sm text-slate-400">Display Name</label>
               <input
-                type="number"
-                value={q}
-                onChange={(e) => setQ(parseInt(e.target.value) || 0)}
-                className="w-20 px-3 py-2 rounded bg-slate-700 border border-slate-600 text-slate-200 text-center"
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200"
+                placeholder="Name shown to players..."
               />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-slate-500">R:</span>
+          </div>
+
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm text-slate-400">Faction</label>
+                <select
+                  value={faction}
+                  onChange={(e) => setFaction(e.target.value as "ally" | "enemy" | "neutral")}
+                  className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200"
+                >
+                  <option value="ally">Ally</option>
+                  <option value="enemy">Enemy</option>
+                  <option value="neutral">Neutral</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm text-slate-400">Tier</label>
+                <select
+                  value={tier}
+                  onChange={(e) => setTier(e.target.value as "minion" | "full" | "lieutenant" | "hero")}
+                  className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200"
+                >
+                  <option value="minion">Minion</option>
+                  <option value="full">Full</option>
+                  <option value="lieutenant">Lieutenant</option>
+                  <option value="hero">Hero</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm text-slate-400">Level</label>
               <input
                 type="number"
-                value={r}
-                onChange={(e) => setR(parseInt(e.target.value) || 0)}
-                className="w-20 px-3 py-2 rounded bg-slate-700 border border-slate-600 text-slate-200 text-center"
+                value={level}
+                onChange={(e) => setLevel(parseInt(e.target.value) || 1)}
+                min={1}
+                max={30}
+                className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200"
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-sm text-slate-400">Controller</label>
+              <select
+                value={controller}
+                onChange={(e) => setController(e.target.value)}
+                className="w-full px-3 py-2 rounded bg-slate-800 border border-slate-700 text-slate-200"
+              >
+                {controllerOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "gm" ? "GM" : option.replace("player:", "Player ")}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
+        <div className="grid grid-cols-2 gap-4 bg-slate-800/60 border border-slate-700 rounded-lg p-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm text-slate-400">Initiative Roll</label>
+              <button
+                onClick={() => setInitiativeRoll(Math.floor(Math.random() * 20) + 1)}
+                className="text-xs text-amber-300 hover:text-amber-200"
+              >
+                Auto Roll
+              </button>
+            </div>
+            <input
+              type="number"
+              value={initiativeRoll}
+              onChange={(e) => setInitiativeRoll(parseInt(e.target.value) || 1)}
+              min={1}
+              max={30}
+              className="w-full px-3 py-2 rounded bg-slate-900 border border-slate-700 text-slate-200"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm text-slate-400">Initiative Timing</label>
+            <div className="flex gap-2">
+              {(["immediate", "end"] as InitiativeTiming[]).map((timing) => (
+                <button
+                  key={timing}
+                  onClick={() => setInitiativeTiming(timing)}
+                  className={`flex-1 px-3 py-2 rounded text-sm transition-colors ${
+                    initiativeTiming === timing
+                      ? "bg-amber-600 text-amber-100"
+                      : "bg-slate-900 text-slate-400 hover:bg-slate-700"
+                  }`}
+                >
+                  {timing === "immediate" ? "Next Up" : "End of Order"}
+                </button>
+              ))}
+            </div>
+            {!isCombatActive && (
+              <p className="text-xs text-slate-500">
+                Timing applies once combat is active.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <label className="flex items-center gap-3 text-sm text-slate-300">
+          <input
+            type="checkbox"
+            checked={placeAfterAdd}
+            onChange={(e) => setPlaceAfterAdd(e.target.checked)}
+            className="accent-amber-500"
+          />
+          Enter placement mode after adding
+        </label>
+
         <div className="flex gap-3 pt-2">
           <button
             onClick={handleSubmit}
-            className="flex-1 px-4 py-2 rounded bg-green-600 hover:bg-green-500 text-green-100 font-medium transition-colors"
+            disabled={!canSubmit}
+            className="flex-1 px-4 py-2 rounded bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 text-green-100 font-medium transition-colors"
           >
-            Add Entity
+            Spawn Entity
           </button>
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-2 rounded bg-slate-600 hover:bg-slate-500 text-slate-200 transition-colors"
+            className="flex-1 px-4 py-2 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 transition-colors"
           >
             Cancel
           </button>
@@ -170,11 +418,17 @@ function AddEntityModal({ onAdd, onCancel }: AddEntityModalProps) {
 // INNER COMPONENT (uses combat context)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function GmCombatContent() {
-  const { state, actions, getInitiativeOrder, getEntity } = useCombat();
+function GmCombatContent({ campaignId }: { campaignId: string }) {
+  const { state, actions, getInitiativeOrder } = useCombat();
   const [hoveredHex, setHoveredHex] = useState<HexPosition | null>(null);
   const [showAddEntity, setShowAddEntity] = useState(false);
   const [overrideEntityId, setOverrideEntityId] = useState<string | null>(null);
+  const [placementEntityId, setPlacementEntityId] = useState<string | null>(null);
+  const [placementForce, setPlacementForce] = useState(false);
+  const [members, setMembers] = useState<CampaignMember[]>([]);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [bestiaryEntries, setBestiaryEntries] = useState<BestiaryEntry[]>([]);
+  const [rosterError, setRosterError] = useState<string | null>(null);
 
   const {
     connectionStatus,
@@ -184,7 +438,34 @@ function GmCombatContent() {
     initiative,
     selectedEntityId,
     currentEntityId,
+    hexPositions,
   } = state;
+
+  useEffect(() => {
+    let isActive = true;
+    const loadRoster = async () => {
+      try {
+        const [membersData, characterData, bestiaryData] = await Promise.all([
+          gmApi.listCampaignMembers(campaignId),
+          api.listCampaignCharacters(campaignId),
+          gmApi.listBestiaryEntries(campaignId),
+        ]);
+        if (!isActive) return;
+        setMembers(membersData);
+        setCharacters(characterData);
+        setBestiaryEntries(bestiaryData);
+        setRosterError(null);
+      } catch (err) {
+        if (!isActive) return;
+        setRosterError(err instanceof Error ? err.message : "Failed to load roster data");
+      }
+    };
+
+    loadRoster();
+    return () => {
+      isActive = false;
+    };
+  }, [campaignId]);
 
   // Get all entities sorted by faction
   const allEntities = useMemo(() => {
@@ -201,12 +482,24 @@ function GmCombatContent() {
 
   // Get selected entity
   const selectedEntity = selectedEntityId ? entities[selectedEntityId] : null;
+  const placementEntity = placementEntityId ? entities[placementEntityId] : null;
+  const isCombatActive = phase === "active" || phase === "active-turn";
+
+  const unplacedEntities = useMemo(() => {
+    return Object.values(entities).filter((entity) => !hexPositions[entity.id]);
+  }, [entities, hexPositions]);
 
   // Handle hex click
   const handleHexClick = useCallback((position: HexPosition) => {
-    // GM can click hex to see position
-    console.log("GM hex click:", position);
-  }, []);
+    if (placementEntityId) {
+      actions.gmMoveEntity(placementEntityId, position.q, position.r, {
+        force: placementForce,
+        ignoreApCost: true,
+      });
+      setPlacementEntityId(null);
+      return;
+    }
+  }, [actions, placementEntityId, placementForce]);
 
   // Handle entity selection
   const handleEntityClick = useCallback((entityId: string) => {
@@ -214,19 +507,21 @@ function GmCombatContent() {
   }, [actions, selectedEntityId]);
 
   // Handle add entity
-  const handleAddEntity = useCallback((entity: {
-    name: string;
-    displayName: string;
-    faction: "ally" | "enemy" | "neutral";
-    tier: "minion" | "full" | "lieutenant" | "hero";
-    level: number;
-    position: HexPosition;
-  }) => {
-    // This would call an action to add the entity to combat
-    // For now, we'll use the GM override system
-    console.log("Add entity:", entity);
+  const handleAddEntity = useCallback((payload: AddEntityRequest) => {
+    actions.gmAddEntity({
+      entity: payload.entity,
+      initiativeRoll: payload.initiativeRoll,
+      initiativeTiebreaker: payload.initiativeTiebreaker,
+      initiativeTiming: payload.initiativeTiming,
+      combatId: campaignId,
+      campaignId,
+    });
+    if (payload.placeAfterAdd) {
+      setPlacementEntityId(payload.entity.id);
+      setPlacementForce(false);
+    }
     setShowAddEntity(false);
-  }, []);
+  }, [actions, campaignId]);
 
   // Render connection status
   if (connectionStatus === "connecting") {
@@ -288,6 +583,11 @@ function GmCombatContent() {
 
       {/* Main content */}
       <div className="max-w-7xl mx-auto p-4">
+        {rosterError && (
+          <div className="mb-4 rounded border border-red-700/60 bg-red-900/30 px-4 py-2 text-sm text-red-200">
+            Failed to load campaign roster data: {rosterError}
+          </div>
+        )}
         <div className="grid grid-cols-12 gap-4">
           {/* Left sidebar - GM Controls & Initiative */}
           <div className="col-span-3 space-y-4">
@@ -350,6 +650,33 @@ function GmCombatContent() {
 
           {/* Center - Hex Grid */}
           <div className="col-span-6">
+            {placementEntity && (
+              <div className="mb-3 rounded border border-amber-600/40 bg-amber-900/30 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm text-amber-200">Placement Mode</div>
+                    <div className="text-lg font-semibold text-amber-100">
+                      Placing {placementEntity.displayName || placementEntity.name}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setPlacementEntityId(null)}
+                    className="text-xs text-amber-200 hover:text-amber-100"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <label className="mt-2 flex items-center gap-2 text-sm text-amber-100">
+                  <input
+                    type="checkbox"
+                    checked={placementForce}
+                    onChange={(e) => setPlacementForce(e.target.checked)}
+                    className="accent-amber-400"
+                  />
+                  Force placement (ignore occupancy/AP)
+                </label>
+              </div>
+            )}
             <div className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
               <HexGrid
                 width={15}
@@ -365,6 +692,28 @@ function GmCombatContent() {
             {hoveredHex && (
               <div className="mt-2 text-sm text-slate-400">
                 Hex: ({hoveredHex.q}, {hoveredHex.r})
+              </div>
+            )}
+
+            {unplacedEntities.length > 0 && (
+              <div className="mt-3 rounded border border-slate-700 bg-slate-800/70 p-3">
+                <div className="text-xs uppercase tracking-wide text-slate-400">
+                  Unplaced Entities
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {unplacedEntities.map((entity) => (
+                    <button
+                      key={entity.id}
+                      onClick={() => {
+                        setPlacementEntityId(entity.id);
+                        setPlacementForce(false);
+                      }}
+                      className="rounded border border-slate-600 bg-slate-900/70 px-3 py-1 text-xs text-slate-200 hover:border-amber-500 hover:text-amber-200"
+                    >
+                      {entity.displayName || entity.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -522,6 +871,10 @@ function GmCombatContent() {
         <AddEntityModal
           onAdd={handleAddEntity}
           onCancel={() => setShowAddEntity(false)}
+          members={members}
+          characters={characters}
+          bestiaryEntries={bestiaryEntries}
+          isCombatActive={isCombatActive}
         />
       )}
 
@@ -564,7 +917,7 @@ export function GmCombatPage() {
       playerId={gmId}
       isGM={true}
     >
-      <GmCombatContent />
+      <GmCombatContent campaignId={campaignId} />
     </CombatProvider>
   );
 }

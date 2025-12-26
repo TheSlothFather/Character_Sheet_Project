@@ -5,6 +5,7 @@
  */
 
 import type { CombatDurableObject, WebSocketMetadata, ClientMessageType } from "../CombatDurableObject";
+import { canControlEntity } from "./permissions";
 
 // Wrapper to call SQL storage methods
 function runQuery(sql: SqlStorage, query: string, ...params: unknown[]) {
@@ -72,17 +73,6 @@ async function handleStartChanneling(
   const initialEnergy = payload.initialEnergy as number || 0;
   const initialAP = payload.initialAP as number || 0;
 
-  // Validate entity control
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "You do not control this entity" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
-
   // Check if already channeling
   const existing = queryOneOrNull<{ entity_id: string }>(sql, "SELECT entity_id FROM channeling WHERE entity_id = ?", entityId);
 
@@ -102,6 +92,16 @@ async function handleStartChanneling(
   if (!entityRow) return;
 
   const entity = JSON.parse(entityRow.data);
+
+  if (!canControlEntity(session, entityId, entity)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
 
   if ((entity.energy?.current ?? 0) < initialEnergy) {
     combat.sendToSocket(ws, { type: "ACTION_REJECTED", payload: { reason: "Insufficient energy" }, timestamp, requestId });
@@ -166,17 +166,6 @@ async function handleContinueChanneling(
   const additionalEnergy = payload.additionalEnergy as number || 0;
   const additionalAP = payload.additionalAP as number || 0;
 
-  // Validate entity control
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "You do not control this entity" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
-
   // Get channeling state
   const channelingRow = queryOneOrNull<{ spell_data: string }>(sql, "SELECT spell_data FROM channeling WHERE entity_id = ?", entityId);
 
@@ -191,6 +180,16 @@ async function handleContinueChanneling(
   if (!entityRow) return;
 
   const entity = JSON.parse(entityRow.data);
+
+  if (!canControlEntity(session, entityId, entity)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
 
   if ((entity.energy?.current ?? 0) < additionalEnergy || (entity.ap?.current ?? 0) < additionalAP) {
     combat.sendToSocket(ws, { type: "ACTION_REJECTED", payload: { reason: "Insufficient resources" }, timestamp, requestId });
@@ -244,17 +243,6 @@ async function handleReleaseSpell(
   const entityId = payload.entityId as string;
   const targetId = payload.targetId as string;
 
-  // Validate entity control
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "You do not control this entity" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
-
   // Get channeling state
   const channelingRow = queryOneOrNull<{ spell_data: string }>(sql, "SELECT spell_data FROM channeling WHERE entity_id = ?", entityId);
 
@@ -264,6 +252,20 @@ async function handleReleaseSpell(
   }
 
   const spellData = JSON.parse(channelingRow.spell_data);
+
+  const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
+  if (!entityRow) return;
+  const entity = JSON.parse(entityRow.data);
+
+  if (!canControlEntity(session, entityId, entity)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
 
   // Check if fully charged
   if (spellData.energyChanneled < spellData.totalCost || spellData.apChanneled < spellData.totalCost) {
@@ -343,17 +345,6 @@ async function handleAbortChanneling(
 
   const entityId = payload.entityId as string;
 
-  // Validate entity control
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "You do not control this entity" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
-
   // Get channeling state
   const channelingRow = queryOneOrNull<{ spell_data: string }>(sql, "SELECT spell_data FROM channeling WHERE entity_id = ?", entityId);
 
@@ -363,6 +354,20 @@ async function handleAbortChanneling(
   }
 
   const spellData = JSON.parse(channelingRow.spell_data);
+
+  const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
+  if (!entityRow) return;
+  const entity = JSON.parse(entityRow.data);
+
+  if (!canControlEntity(session, entityId, entity)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
 
   // Clear channeling state (no blowback on voluntary abort)
   runQuery(sql, "DELETE FROM channeling WHERE entity_id = ?", entityId);

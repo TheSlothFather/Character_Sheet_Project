@@ -185,14 +185,80 @@ async function handleGMAction(
 
   if (type === "GM_ADD_ENTITY") {
     const entity = payload.entity as Record<string, unknown>;
+    const initiativeRoll = (payload.initiativeRoll as number) ?? (entity.initiativeRoll as number) ?? 10;
+    const initiativeTiebreaker = (payload.initiativeTiebreaker as number) ?? (entity.initiativeTiebreaker as number) ?? 0;
+    const initiativeTiming = (payload.initiativeTiming as string) ?? "end";
     if (!entity?.id) {
       combat.sendToSocket(ws, { type: "ACTION_REJECTED", payload: { reason: "Invalid entity" }, timestamp, requestId });
       return;
     }
+
+    const existingState = combat.getCombatState() as Record<string, unknown> | null;
+    if (!existingState) {
+      const combatId = (payload.combatId as string) || (payload.campaignId as string) || crypto.randomUUID();
+      const campaignId = (payload.campaignId as string) || "";
+      sql.exec(
+        `INSERT INTO combat_state (id, combat_id, campaign_id, phase, round, turn_index, version, started_at, last_updated_at)
+         VALUES ('current', ?, ?, 'setup', 0, 0, 1, ?, ?)`,
+        combatId, campaignId, timestamp, timestamp
+      );
+    }
+
+    const state = combat.getCombatState() as Record<string, unknown> | null;
+    const campaignId = (state?.campaign_id as string) || (payload.campaignId as string) || "";
+
+    if (!entity.controller && entity.characterId && campaignId) {
+      const members = await combat.fetchFromSupabase(
+        "campaign_members",
+        `campaign_id=eq.${encodeURIComponent(campaignId)}&character_id=eq.${encodeURIComponent(entity.characterId as string)}&select=player_user_id`
+      );
+      const playerUserId = (members?.[0] as { player_user_id?: string } | undefined)?.player_user_id;
+      if (playerUserId) {
+        entity.controller = `player:${playerUserId}`;
+      }
+    }
+
+    if (!entity.controller) {
+      entity.controller = "gm";
+    }
+
     sql.exec("INSERT OR REPLACE INTO entities (id, data, created_at) VALUES (?, ?, ?)",
       entity.id as string, JSON.stringify(entity), timestamp);
+
+    const phase = (state?.phase as string) ?? "setup";
+    const turnIndex = (state?.turn_index as number) ?? -1;
+
+    const maxRow = queryOneOrNull<{ max_position: number }>(sql, "SELECT COALESCE(MAX(position), -1) as max_position FROM initiative");
+    const maxPosition = maxRow?.max_position ?? -1;
+
+    let insertPosition = maxPosition + 1;
+    if ((phase === "active" || phase === "active-turn") && initiativeTiming === "immediate") {
+      insertPosition = Math.min(Math.max(turnIndex + 1, 0), maxPosition + 1);
+      sql.exec("UPDATE initiative SET position = position + 1 WHERE position >= ?", insertPosition);
+    }
+
+    const currentEnergy = (entity as any)?.energy?.current ?? (entity as any)?.energy?.max ?? 100;
+    sql.exec(
+      "INSERT OR REPLACE INTO initiative (entity_id, roll, skill_value, current_energy, position) VALUES (?, ?, ?, ?, ?)",
+      entity.id as string,
+      initiativeRoll,
+      initiativeTiebreaker,
+      currentEnergy,
+      insertPosition
+    );
     combat.incrementVersion();
+
+    const initiativeRows = sql.exec("SELECT * FROM initiative ORDER BY position").toArray() as Array<Record<string, unknown>>;
+    const initiative = initiativeRows.map((row) => ({
+      entityId: row.entity_id as string,
+      roll: row.roll as number,
+      tiebreaker: (row.skill_value as number) ?? 0,
+      delayed: false,
+      readied: false,
+    }));
+
     combat.broadcast({ type: "ENTITY_UPDATED", payload: { action: "added", entity }, timestamp, requestId });
+    combat.broadcast({ type: "INITIATIVE_UPDATED", payload: { initiative }, timestamp, requestId });
   }
 
   if (type === "GM_REMOVE_ENTITY") {
@@ -200,7 +266,16 @@ async function handleGMAction(
     sql.exec("DELETE FROM entities WHERE id = ?", entityId);
     sql.exec("DELETE FROM initiative WHERE entity_id = ?", entityId);
     combat.incrementVersion();
+    const initiativeRows = sql.exec("SELECT * FROM initiative ORDER BY position").toArray() as Array<Record<string, unknown>>;
+    const initiative = initiativeRows.map((row) => ({
+      entityId: row.entity_id as string,
+      roll: row.roll as number,
+      tiebreaker: (row.skill_value as number) ?? 0,
+      delayed: false,
+      readied: false,
+    }));
     combat.broadcast({ type: "ENTITY_UPDATED", payload: { action: "removed", entityId }, timestamp, requestId });
+    combat.broadcast({ type: "INITIATIVE_UPDATED", payload: { initiative }, timestamp, requestId });
   }
 
   if (type === "GM_APPLY_DAMAGE") {
@@ -242,11 +317,25 @@ async function handleGMAction(
   }
 
   if (type === "GM_OVERRIDE") {
-    const overrideType = payload.overrideType as string;
+    const overrideType = payload.overrideType as string | undefined;
+    const entityId = payload.entityId as string | undefined;
+    const updates = payload.updates as Record<string, unknown> | undefined;
+
     if (overrideType === "set_phase") {
       sql.exec("UPDATE combat_state SET phase = ?, last_updated_at = ? WHERE id = 'current'", payload.phase, timestamp);
       combat.incrementVersion();
       combat.broadcast({ type: "GM_OVERRIDE_APPLIED", payload: { overrideType, phase: payload.phase }, timestamp, requestId });
+      return;
+    }
+
+    if (entityId && updates) {
+      const row = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
+      if (!row) return;
+      const entity = JSON.parse(row.data);
+      const updatedEntity = { ...entity, ...updates };
+      sql.exec("UPDATE entities SET data = ? WHERE id = ?", JSON.stringify(updatedEntity), entityId);
+      combat.incrementVersion();
+      combat.broadcast({ type: "ENTITY_UPDATED", payload: { action: "updated", entity: updatedEntity }, timestamp, requestId });
     }
   }
 }

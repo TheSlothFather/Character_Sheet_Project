@@ -5,6 +5,7 @@
  */
 
 import type { CombatDurableObject, WebSocketMetadata, ClientMessageType } from "../CombatDurableObject";
+import { canControlEntity } from "./permissions";
 
 // Wrapper to call SQL storage methods
 function runQuery(sql: SqlStorage, query: string, ...params: unknown[]) {
@@ -27,17 +28,24 @@ export async function handleMovement(
 ): Promise<void> {
   const timestamp = new Date().toISOString();
 
-  if (type !== "DECLARE_MOVEMENT") {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "Unknown movement action" },
-      timestamp,
-      requestId,
-    });
-    return;
+  switch (type) {
+    case "DECLARE_MOVEMENT":
+      await handleMoveEntity(combat, ws, session, payload, requestId, {
+        force: false,
+        ignoreApCost: false,
+      });
+      break;
+    case "GM_MOVE_ENTITY":
+      await handleGmMoveEntity(combat, ws, session, payload, requestId);
+      break;
+    default:
+      combat.sendToSocket(ws, {
+        type: "ACTION_REJECTED",
+        payload: { reason: "Unknown movement action" },
+        timestamp,
+        requestId,
+      });
   }
-
-  await handleMoveEntity(combat, ws, session, payload, requestId);
 }
 
 async function handleMoveEntity(
@@ -45,7 +53,8 @@ async function handleMoveEntity(
   ws: WebSocket,
   session: WebSocketMetadata,
   payload: Record<string, unknown>,
-  requestId?: string
+  requestId?: string,
+  options?: { force: boolean; ignoreApCost: boolean }
 ): Promise<void> {
   const sql = combat.getSql();
   const timestamp = new Date().toISOString();
@@ -54,17 +63,8 @@ async function handleMoveEntity(
   const targetQ = payload.targetQ as number;
   const targetR = payload.targetR as number;
   const path = payload.path as Array<{ q: number; r: number }> | undefined;
-
-  // Validate entity control
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "You do not control this entity" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
+  const force = options?.force ?? false;
+  const ignoreApCost = options?.ignoreApCost ?? false;
 
   // Get entity
   const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
@@ -81,11 +81,22 @@ async function handleMoveEntity(
 
   const entity = JSON.parse(entityRow.data);
 
+  // Validate entity control
+  if (!canControlEntity(session, entityId, entity)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
+
   // Get current position
   const positionRow = queryOneOrNull<{ q: number; r: number }>(sql, "SELECT q, r FROM hex_positions WHERE entity_id = ?", entityId);
 
-  const startQ = positionRow?.q ?? 0;
-  const startR = positionRow?.r ?? 0;
+  const startQ = positionRow?.q ?? targetQ;
+  const startR = positionRow?.r ?? targetR;
 
   // Calculate distance (axial hex distance)
   const distance = hexDistance(startQ, startR, targetQ, targetR);
@@ -96,8 +107,12 @@ async function handleMoveEntity(
   const hexesPerAP = Math.max(physicalAttr, 3);
   const apCost = Math.ceil(distance / hexesPerAP);
 
+  const state = combat.getCombatState() as { phase?: string } | null;
+  const isActive = state?.phase === "active" || state?.phase === "active-turn";
+  const shouldChargeAp = !force && isActive && !ignoreApCost;
+
   // Check AP
-  if ((entity.ap?.current ?? 0) < apCost) {
+  if (shouldChargeAp && (entity.ap?.current ?? 0) < apCost) {
     combat.sendToSocket(ws, {
       type: "ACTION_REJECTED",
       payload: { reason: "Insufficient AP for movement", required: apCost, available: entity.ap?.current },
@@ -108,7 +123,9 @@ async function handleMoveEntity(
   }
 
   // Check if target hex is occupied
-  const occupiedRow = queryOneOrNull<{ entity_id: string }>(sql, "SELECT entity_id FROM hex_positions WHERE q = ? AND r = ?", targetQ, targetR);
+  const occupiedRow = force
+    ? null
+    : queryOneOrNull<{ entity_id: string }>(sql, "SELECT entity_id FROM hex_positions WHERE q = ? AND r = ?", targetQ, targetR);
 
   if (occupiedRow) {
     combat.sendToSocket(ws, {
@@ -121,8 +138,11 @@ async function handleMoveEntity(
   }
 
   // Spend AP
-  entity.ap.current -= apCost;
-  runQuery(sql, "UPDATE entities SET data = ? WHERE id = ?", JSON.stringify(entity), entityId);
+  if (shouldChargeAp) {
+    entity.ap = entity.ap || { current: 0, max: 6 };
+    entity.ap.current = Math.max(0, entity.ap.current - apCost);
+    runQuery(sql, "UPDATE entities SET data = ? WHERE id = ?", JSON.stringify(entity), entityId);
+  }
 
   // Update position
   if (positionRow) {
@@ -146,14 +166,39 @@ async function handleMoveEntity(
     payload: {
       entityId,
       from: { q: startQ, r: startR },
-      to: { q: targetQ, r: targetR },
-      path,
-      distance,
-      apCost,
-      remainingAP: entity.ap.current,
-    },
+    to: { q: targetQ, r: targetR },
+    path,
+    distance,
+    apCost: shouldChargeAp ? apCost : 0,
+    remainingAP: entity.ap?.current ?? 0,
+  },
     timestamp,
     requestId,
+  });
+}
+
+async function handleGmMoveEntity(
+  combat: CombatDurableObject,
+  ws: WebSocket,
+  session: WebSocketMetadata,
+  payload: Record<string, unknown>,
+  requestId?: string
+): Promise<void> {
+  const timestamp = new Date().toISOString();
+
+  if (!session.isGM) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "GM privileges required" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
+
+  await handleMoveEntity(combat, ws, session, payload, requestId, {
+    force: Boolean(payload.force),
+    ignoreApCost: Boolean(payload.ignoreApCost),
   });
 }
 

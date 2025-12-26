@@ -5,6 +5,7 @@
  */
 
 import type { CombatDurableObject, WebSocketMetadata, ClientMessageType } from "../CombatDurableObject";
+import { canControlEntity } from "./permissions";
 
 // Wrapper to call SQL storage methods
 function runQuery(sql: SqlStorage, query: string, ...params: unknown[]) {
@@ -60,17 +61,6 @@ async function handleEndureRoll(
   const rollTotal = payload.rollTotal as number;
   const success = payload.success as boolean;
 
-  // Validate entity control
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "You do not control this entity" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
-
   // Get entity
   const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
 
@@ -85,6 +75,17 @@ async function handleEndureRoll(
   }
 
   const entity = JSON.parse(entityRow.data);
+
+  // Validate entity control
+  if (!canControlEntity(session, entityId, entity)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
 
   if (success) {
     // Entity stays conscious at 0 energy
@@ -137,17 +138,6 @@ async function handleDeathCheck(
   const rollTotal = payload.rollTotal as number;
   const success = payload.success as boolean;
 
-  // Validate entity control
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "You do not control this entity" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
-
   // Get entity
   const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
 
@@ -162,6 +152,17 @@ async function handleDeathCheck(
   }
 
   const entity = JSON.parse(entityRow.data);
+
+  // Validate entity control
+  if (!canControlEntity(session, entityId, entity)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
 
   if (success) {
     // Feat of Defiance succeeds - entity survives (still unconscious)
