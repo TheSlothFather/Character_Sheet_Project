@@ -146,6 +146,19 @@ export interface CombatContextValue {
   gmOverride: (params: GmOverrideParams) => Promise<void>;
   removeEntity: (params: RemoveEntityParams) => Promise<void>;
 
+  // GM resource management
+  forceInitiativeRoll: (entityId: string) => Promise<void>;
+  addResourceModifier: (
+    entityId: string,
+    resource: 'ap' | 'energy',
+    modifierType: 'add_max' | 'reduce_max' | 'add_current',
+    amount: number,
+    duration: number | null,
+    source: string
+  ) => Promise<void>;
+  removeResourceModifier: (entityId: string, resource: 'ap' | 'energy', modifierId: string) => Promise<void>;
+  adjustResource: (entityId: string, resource: 'ap' | 'energy', delta: number) => Promise<void>;
+
   // Lobby actions
   joinLobby: (characterId?: string) => void;
   leaveLobby: () => void;
@@ -882,6 +895,74 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
   );
 
   // ─────────────────────────────────────────────────────────────────────────
+  // GM Resource Management Actions
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const forceInitiativeRoll = React.useCallback(
+    async (entityId: string) => {
+      return gmOverride({
+        type: "force_initiative_roll",
+        targetEntityId: entityId,
+        gmId: userId,
+      });
+    },
+    [gmOverride, userId]
+  );
+
+  const addResourceModifier = React.useCallback(
+    async (
+      entityId: string,
+      resource: 'ap' | 'energy',
+      modifierType: 'add_max' | 'reduce_max' | 'add_current',
+      amount: number,
+      duration: number | null,
+      source: string
+    ) => {
+      return gmOverride({
+        type: "add_resource_modifier",
+        targetEntityId: entityId,
+        gmId: userId,
+        data: {
+          resource,
+          modifierType,
+          amount,
+          duration,
+          source,
+        },
+      });
+    },
+    [gmOverride, userId]
+  );
+
+  const removeResourceModifier = React.useCallback(
+    async (entityId: string, resource: 'ap' | 'energy', modifierId: string) => {
+      return gmOverride({
+        type: "remove_resource_modifier",
+        targetEntityId: entityId,
+        gmId: userId,
+        data: {
+          resource,
+          modifierId,
+        },
+      });
+    },
+    [gmOverride, userId]
+  );
+
+  const adjustResource = React.useCallback(
+    async (entityId: string, resource: 'ap' | 'energy', delta: number) => {
+      const overrideType = resource === 'ap' ? 'adjust_ap' : 'adjust_energy';
+      return gmOverride({
+        type: overrideType,
+        targetEntityId: entityId,
+        gmId: userId,
+        data: { delta },
+      });
+    },
+    [gmOverride, userId]
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
   // Skill Contest Actions
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -1081,6 +1162,12 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       gmOverride,
       removeEntity,
 
+      // GM resource management
+      forceInitiativeRoll,
+      addResourceModifier,
+      removeResourceModifier,
+      adjustResource,
+
       // Lobby actions
       joinLobby,
       leaveLobby,
@@ -1126,6 +1213,10 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
       resolveReactions,
       gmOverride,
       removeEntity,
+      forceInitiativeRoll,
+      addResourceModifier,
+      removeResourceModifier,
+      adjustResource,
       joinLobby,
       leaveLobby,
       toggleReady,

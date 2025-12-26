@@ -24,7 +24,9 @@ import {
   NotificationBanner,
   TurnAnnouncement,
   RollOverlay,
+  ContestResultToast,
   type RollSubmitData,
+  type ContestResult,
 } from "../../components/combat";
 import { useCombatNotifications } from "../../hooks/useCombatNotifications";
 import {
@@ -84,6 +86,7 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const [loading, setLoading] = React.useState(true);
   const [showTurnAnnouncement, setShowTurnAnnouncement] = React.useState(false);
   const [previousActiveEntityId, setPreviousActiveEntityId] = React.useState<string | null>(null);
+  const [contestResult, setContestResult] = React.useState<ContestResult | null>(null);
   const lastTurnEntityRef = React.useRef<string | null>(null);
   const hasSeenTurnRef = React.useRef(false);
 
@@ -211,6 +214,32 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
 
     lastTurnEntityRef.current = state.activeEntityId;
   }, [state?.activeEntityId, state?.entities, notifyCombatEvent]);
+
+  // Detect contest results from combat log
+  React.useEffect(() => {
+    if (!state?.log || state.log.length === 0) return;
+
+    // Check the most recent log entry for contest results
+    const recentLog = state.log[state.log.length - 1];
+    if (recentLog?.type === 'skill-contest-resolved' && recentLog.data) {
+      const myEntityIds = myControlledEntities.map(e => e.id);
+      const isInvolvedInContest =
+        myEntityIds.includes(recentLog.data.winnerId) ||
+        myEntityIds.includes(recentLog.data.loserId);
+
+      if (isInvolvedInContest) {
+        setContestResult({
+          contestId: recentLog.data.contestId || '',
+          winnerId: recentLog.data.winnerId || null,
+          loserId: recentLog.data.loserId || null,
+          winnerTotal: recentLog.data.winnerTotal || 0,
+          loserTotal: recentLog.data.loserTotal || 0,
+          criticalTier: recentLog.data.criticalTier || 'normal',
+          isTie: recentLog.data.isTie || false,
+        });
+      }
+    }
+  }, [state?.log, myControlledEntities]);
 
   // Handlers
   const handleDeclareAction = async (
@@ -661,6 +690,16 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
           ap={activeEntity.ap}
           energy={activeEntity.energy}
           onDismiss={() => setShowTurnAnnouncement(false)}
+        />
+      )}
+
+      {/* Contest Result Toast - Brief notification when skill contest resolves */}
+      {contestResult && state?.entities && (
+        <ContestResultToast
+          result={contestResult}
+          entities={state.entities}
+          onDismiss={() => setContestResult(null)}
+          autoDismissMs={5000}
         />
       )}
     </div>

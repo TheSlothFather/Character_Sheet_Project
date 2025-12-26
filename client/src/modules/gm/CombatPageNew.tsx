@@ -26,6 +26,8 @@ import {
   GmSkillCheckResolutionPanel,
   NpcActionPanel,
   RollOverlay,
+  GmInitiativeStatusPanel,
+  GmResourcePanel,
 } from "../../components/combat";
 import {
   GmCombatLobby,
@@ -171,6 +173,10 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
     requestSkillCheck,
     submitSkillCheck,
     pendingSkillChecks,
+    forceInitiativeRoll,
+    addResourceModifier,
+    removeResourceModifier,
+    adjustResource,
   } = useCombat();
 
   const { phase, round, activeEntity, pendingAction } = useCombatTurn();
@@ -738,6 +744,17 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
             </div>
           )}
 
+          {/* Initiative Status Panel - Shows during manual initiative rolling */}
+          {phase === "initiative-rolling" && state && (
+            <div className="war-gm-page__initiative-status-panel">
+              <GmInitiativeStatusPanel
+                entities={state.entities}
+                initiativeRolls={state.initiativeRolls || {}}
+                onForceRoll={forceInitiativeRoll}
+              />
+            </div>
+          )}
+
           {/* GM Contest Resolution Panel */}
           {gmPendingContests.length > 0 && state && (
             <div className="war-gm-page__contest-panel">
@@ -881,29 +898,18 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
                   </div>
                 )}
 
-                {/* GM Override Controls */}
+                {/* GM Resource Management Panel */}
                 <div className="war-gm-page__detail-section war-gm-page__detail-section--gm">
-                  <h4 className="war-gm-page__detail-section-title">👁️ GM Override</h4>
-                  <div className="war-gm-page__override-controls">
-                    <button
-                      className="war-gm-page__override-btn"
-                      onClick={() => handleGMOverride("heal", selectedEntity.energy.max)}
-                    >
-                      Full Heal
-                    </button>
-                    <button
-                      className="war-gm-page__override-btn"
-                      onClick={() => handleGMOverride("restore_ap", selectedEntity.ap.max)}
-                    >
-                      Restore AP
-                    </button>
-                    <button
-                      className="war-gm-page__override-btn war-gm-page__override-btn--danger"
-                      onClick={() => handleGMOverride("kill", null)}
-                    >
-                      Defeat
-                    </button>
-                  </div>
+                  <GmResourcePanel
+                    entity={selectedEntity}
+                    onAdjustResource={(resource, delta) => adjustResource(selectedEntity.id, resource, delta)}
+                    onAddModifier={(resource, modifierType, amount, duration, source) =>
+                      addResourceModifier(selectedEntity.id, resource, modifierType, amount, duration, source)
+                    }
+                    onRemoveModifier={(resource, modifierId) =>
+                      removeResourceModifier(selectedEntity.id, resource, modifierId)
+                    }
+                  />
                 </div>
               </div>
             </div>
