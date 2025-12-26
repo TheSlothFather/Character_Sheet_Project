@@ -21,12 +21,10 @@ export interface GmControlsProps {
 
 export function GmControls({ onAddEntity }: GmControlsProps) {
   const { state, actions } = useCombat();
-  const { phase, round, currentEntityId, entities, connectionStatus, lastError } = state;
+  const { phase, round, currentEntityId, entities } = state;
   const [confirmEnd, setConfirmEnd] = useState(false);
 
   const currentEntity = currentEntityId ? entities[currentEntityId] : null;
-  const hasEntities = Object.keys(entities).length > 0;
-  const canStartCombat = connectionStatus === "connected" && hasEntities;
 
   // Handle start combat
   const handleStartCombat = useCallback(() => {
@@ -82,21 +80,10 @@ export function GmControls({ onAddEntity }: GmControlsProps) {
         <div className="space-y-2">
           <button
             onClick={handleStartCombat}
-            disabled={!canStartCombat}
-            className="w-full px-4 py-3 rounded bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 text-green-100 font-bold transition-colors"
+            className="w-full px-4 py-3 rounded bg-green-600 hover:bg-green-500 text-green-100 font-bold transition-colors"
           >
             Start Combat
           </button>
-          {!hasEntities && (
-            <p className="text-xs text-amber-300/70 text-center">
-              Add at least one entity before starting combat
-            </p>
-          )}
-          {connectionStatus !== "connected" && (
-            <p className="text-xs text-amber-300/70 text-center">
-              Not connected to the combat server
-            </p>
-          )}
           <p className="text-xs text-slate-500 text-center">
             All players must have rolled initiative before starting
           </p>
@@ -194,12 +181,6 @@ export function GmControls({ onAddEntity }: GmControlsProps) {
           <p className="text-sm text-slate-500 mt-1">
             Results have been saved. Wounds persist until healed.
           </p>
-        </div>
-      )}
-
-      {lastError && (
-        <div className="rounded border border-red-700/60 bg-red-900/30 px-3 py-2 text-xs text-red-200">
-          {lastError}
         </div>
       )}
     </div>
