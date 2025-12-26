@@ -344,15 +344,18 @@ export interface CombatProviderProps {
   controlledCharacterIds?: string[];
 }
 
+const EMPTY_CONTROLLED_IDS: string[] = [];
+
 export function CombatProvider({
   children,
   combatId,
   playerId,
   isGM,
-  controlledCharacterIds = [],
+  controlledCharacterIds = EMPTY_CONTROLLED_IDS,
 }: CombatProviderProps) {
   const [state, dispatch] = useReducer(combatReducer, initialState);
   const socketRef = useRef<ReconnectingCombatV2Socket | null>(null);
+  const controlledEntityKey = controlledCharacterIds.join(",");
 
   // Connect to WebSocket
   useEffect(() => {
@@ -520,7 +523,7 @@ export function CombatProvider({
       socket.close();
       socketRef.current = null;
     };
-  }, [combatId, playerId, isGM, controlledCharacterIds]);
+  }, [combatId, playerId, isGM, controlledEntityKey]);
 
   // Send helper
   const send = useCallback(<T extends ClientMessageType>(type: T, payload?: Record<string, unknown>) => {
