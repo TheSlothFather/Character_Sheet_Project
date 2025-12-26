@@ -21,6 +21,8 @@ export interface HexCellProps {
   isAttackTarget?: boolean;
   /** Whether this hex is part of the current movement path */
   isPathHex?: boolean;
+  /** Whether this hex is the current drag target */
+  isDragTarget?: boolean;
   /** Whether an entity on this hex is selected */
   isSelected?: boolean;
   /** Whether this hex contains the current turn entity */
@@ -66,6 +68,7 @@ export function HexCell({
   isMovementTarget = false,
   isAttackTarget = false,
   isPathHex = false,
+  isDragTarget = false,
   isSelected = false,
   isCurrentTurn = false,
   isOccupied = false,
@@ -102,6 +105,14 @@ export function HexCell({
 
   if (isPathHex) {
     fillColor = "rgba(34, 197, 94, 0.5)"; // green-500 with transparency
+  }
+
+  if (isDragTarget && !isSelected) {
+    strokeColor = "rgba(59, 130, 246, 0.9)"; // blue-500
+    strokeWidth = 2;
+    if (!isMovementTarget && !isAttackTarget && !isPathHex) {
+      fillColor = "rgba(59, 130, 246, 0.2)";
+    }
   }
 
   return (

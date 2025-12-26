@@ -5,7 +5,7 @@
  * Supports selection, movement highlighting, and entity markers.
  */
 
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useEffect, useRef, useState } from "react";
 import { defineHex, Grid, Orientation, rectangle } from "honeycomb-grid";
 import { useCombat } from "../../context/CombatProvider";
 import { HexCell, type HexCellProps } from "./HexCell";
@@ -49,6 +49,8 @@ export interface HexGridProps {
   onHexHover?: (position: HexPosition | null) => void;
   /** Called when an entity is clicked */
   onEntityClick?: (entityId: string) => void;
+  /** Called when a draggable entity is dropped on a hex */
+  onEntityDrop?: (entityId: string, position: HexPosition) => void;
   /** Additional CSS class */
   className?: string;
 }
@@ -102,6 +104,54 @@ function axialDistance(from: HexPosition, to: HexPosition): number {
   );
 }
 
+function roundAxial(q: number, r: number): HexPosition {
+  const x = q;
+  const z = r;
+  const y = -x - z;
+
+  let rx = Math.round(x);
+  let ry = Math.round(y);
+  let rz = Math.round(z);
+
+  const xDiff = Math.abs(rx - x);
+  const yDiff = Math.abs(ry - y);
+  const zDiff = Math.abs(rz - z);
+
+  if (xDiff > yDiff && xDiff > zDiff) {
+    rx = -ry - rz;
+  } else if (yDiff > zDiff) {
+    ry = -rx - rz;
+  } else {
+    rz = -rx - ry;
+  }
+
+  return { q: rx, r: rz };
+}
+
+function pixelToAxial(x: number, y: number, size: number): HexPosition {
+  const q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / size;
+  const r = ((2 / 3) * y) / size;
+  return roundAxial(q, r);
+}
+
+function isWithinBounds(position: HexPosition, width: number, height: number): boolean {
+  return position.q >= 0 && position.r >= 0 && position.q < width && position.r < height;
+}
+
+function getSvgPoint(
+  svg: SVGSVGElement,
+  clientX: number,
+  clientY: number
+): { x: number; y: number } | null {
+  const point = svg.createSVGPoint();
+  point.x = clientX;
+  point.y = clientY;
+  const matrix = svg.getScreenCTM();
+  if (!matrix) return null;
+  const transformed = point.matrixTransform(matrix.inverse());
+  return { x: transformed.x, y: transformed.y };
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
@@ -116,10 +166,21 @@ export function HexGrid({
   onHexClick,
   onHexHover,
   onEntityClick,
+  onEntityDrop,
   className = "",
 }: HexGridProps) {
-  const { state, getEntity, getEntityPosition, canControlEntity } = useCombat();
+  const { state, canControlEntity } = useCombat();
   const { entities, hexPositions, selectedEntityId, currentEntityId } = state;
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const dragStateRef = useRef<{
+    entityId: string;
+    startX: number;
+    startY: number;
+    dragging: boolean;
+  } | null>(null);
+  const dragHoverRef = useRef<HexPosition | null>(null);
+  const suppressClickRef = useRef(false);
+  const [dragHoverHex, setDragHoverHex] = useState<HexPosition | null>(null);
 
   // Create Honeycomb grid for coordinate calculations
   const grid = useMemo(() => {
@@ -169,10 +230,106 @@ export function HexGrid({
   const handleEntityClick = useCallback(
     (entityId: string, e: React.MouseEvent) => {
       e.stopPropagation();
+      if (suppressClickRef.current) {
+        suppressClickRef.current = false;
+        return;
+      }
       onEntityClick?.(entityId);
     },
     [onEntityClick]
   );
+
+  const canDragEntity = useCallback((entityId: string) => {
+    return !!onEntityDrop && canControlEntity(entityId);
+  }, [canControlEntity, onEntityDrop]);
+
+  const updateDragHover = useCallback((next: HexPosition | null) => {
+    const current = dragHoverRef.current;
+    if (current && next && current.q === next.q && current.r === next.r) {
+      return;
+    }
+    if (!current && !next) {
+      return;
+    }
+    dragHoverRef.current = next;
+    setDragHoverHex(next);
+    onHexHover?.(next);
+  }, [onHexHover]);
+
+  const handleEntityPointerDown = useCallback((entityId: string, event: React.PointerEvent<SVGGElement>) => {
+    if (event.button !== 0) return;
+    if (!canDragEntity(entityId)) return;
+    event.stopPropagation();
+    event.preventDefault();
+    dragStateRef.current = {
+      entityId,
+      startX: event.clientX,
+      startY: event.clientY,
+      dragging: false,
+    };
+  }, [canDragEntity]);
+
+  useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      const drag = dragStateRef.current;
+      if (!drag) return;
+
+      const dx = event.clientX - drag.startX;
+      const dy = event.clientY - drag.startY;
+      if (!drag.dragging) {
+        if (Math.hypot(dx, dy) < 6) {
+          return;
+        }
+        drag.dragging = true;
+        suppressClickRef.current = true;
+      }
+
+      const svg = svgRef.current;
+      if (!svg) return;
+      const point = getSvgPoint(svg, event.clientX, event.clientY);
+      if (!point) return;
+
+      const hex = pixelToAxial(point.x, point.y, HEX_SIZE);
+      if (!isWithinBounds(hex, width, height)) {
+        updateDragHover(null);
+        return;
+      }
+
+      updateDragHover(hex);
+    };
+
+    const finalizeDrag = () => {
+      const drag = dragStateRef.current;
+      if (!drag) return;
+      const wasDragging = drag.dragging;
+      const entityId = drag.entityId;
+      dragStateRef.current = null;
+
+      if (!wasDragging) {
+        return;
+      }
+
+      const target = dragHoverRef.current;
+      updateDragHover(null);
+      if (target && onEntityDrop) {
+        onEntityDrop(entityId, target);
+      }
+
+      setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", finalizeDrag);
+    window.addEventListener("pointercancel", finalizeDrag);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", finalizeDrag);
+      window.removeEventListener("pointercancel", finalizeDrag);
+    };
+  }, [onEntityDrop, updateDragHover, width, height]);
 
   // Build entity position lookup
   const entityPositionLookup = useMemo(() => {
@@ -198,9 +355,11 @@ export function HexGrid({
       const isMovementTarget = movementRange?.has(key) ?? false;
       const isAttackTarget = attackRange?.has(key) ?? false;
       const isPathHex = movementPath?.some((p) => p.q === hex.q && p.r === hex.r) ?? false;
+      const isDragTarget = !!dragHoverHex && dragHoverHex.q === hex.q && dragHoverHex.r === hex.r;
       const isSelected = selectedEntityId && entityId === selectedEntityId;
       const isCurrentTurn = entityId === currentEntityId;
       const isControlled = entityId ? canControlEntity(entityId) : false;
+      const isDraggable = entityId ? canDragEntity(entityId) : false;
 
       cells.push(
         <g
@@ -217,6 +376,7 @@ export function HexGrid({
             isMovementTarget={isMovementTarget}
             isAttackTarget={isAttackTarget}
             isPathHex={isPathHex}
+            isDragTarget={isDragTarget}
             isSelected={!!isSelected}
             isCurrentTurn={!!isCurrentTurn}
             isOccupied={!!entityId}
@@ -228,6 +388,8 @@ export function HexGrid({
               isCurrentTurn={!!isCurrentTurn}
               isControlled={isControlled}
               onClick={(e) => handleEntityClick(entity.id, e)}
+              onPointerDown={isDraggable ? (e) => handleEntityPointerDown(entity.id, e) : undefined}
+              isDraggable={isDraggable}
             />
           )}
         </g>
@@ -244,17 +406,21 @@ export function HexGrid({
     movementRange,
     attackRange,
     movementPath,
+    dragHoverHex,
     selectedEntityId,
     currentEntityId,
     canControlEntity,
+    canDragEntity,
     handleHexClick,
     handleHexHover,
     handleEntityClick,
+    handleEntityPointerDown,
   ]);
 
   return (
     <div className={`relative overflow-auto ${className}`}>
       <svg
+        ref={svgRef}
         viewBox={viewBox}
         className="w-full h-full min-w-[800px] min-h-[600px]"
         style={{ background: "transparent" }}

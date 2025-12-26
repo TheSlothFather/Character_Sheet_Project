@@ -18,6 +18,8 @@ export interface EntityMarkerProps {
   isCurrentTurn?: boolean;
   isControlled?: boolean;
   onClick?: (e: React.MouseEvent) => void;
+  onPointerDown?: (e: React.PointerEvent<SVGGElement>) => void;
+  isDraggable?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -63,6 +65,8 @@ export function EntityMarker({
   isCurrentTurn = false,
   isControlled = false,
   onClick,
+  onPointerDown,
+  isDraggable = false,
 }: EntityMarkerProps) {
   const colors = FACTION_COLORS[entity.faction] || FACTION_COLORS.ally;
   const size = TIER_SIZES[entity.tier] || TIER_SIZES.full;
@@ -92,10 +96,11 @@ export function EntityMarker({
 
   return (
     <g
-      className={`entity-marker cursor-pointer transition-transform duration-150 ${
-        isControlled ? "hover:scale-110" : ""
-      }`}
+      className={`entity-marker transition-transform duration-150 ${
+        isDraggable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"
+      } ${isControlled ? "hover:scale-110" : ""}`}
       onClick={onClick}
+      onPointerDown={onPointerDown}
     >
       {/* Selection ring */}
       {isSelected && (
