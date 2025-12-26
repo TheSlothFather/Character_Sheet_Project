@@ -17,6 +17,7 @@ import { CampaignCharactersPage } from "./campaigns/CampaignCharactersPage";
 import { CampaignSettingsPage } from "./campaigns/CampaignSettingsPage";
 import { ACTIVE_CAMPAIGN_STORAGE_KEY } from "./campaigns/campaignStorage";
 import CombatPageNew from "./characters/CombatPageNew";
+import { PlayerCombatPage, CombatLobbyPage } from "./combat-v2";
 import { useTheme } from "../hooks/useTheme";
 import "./App.css";
 
@@ -164,7 +165,9 @@ const PlayerApp: React.FC = () => {
             <Route index element={<Navigate to="characters" replace />} />
             <Route path="characters" element={<CampaignCharactersPage />} />
             <Route path="settings" element={<CampaignSettingsPage />} />
-            <Route path="combat" element={<CombatPageNew />} />
+            <Route path="combat" element={<PlayerCombatPage />} />
+            <Route path="combat/lobby" element={<CombatLobbyPage />} />
+            <Route path="combat-legacy" element={<CombatPageNew />} />
           </Route>
           <Route path="characters" element={<CharactersPage />} />
           <Route path="character-creation" element={<CharacterCreationPage />} />

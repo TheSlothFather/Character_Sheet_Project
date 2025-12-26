@@ -1,0 +1,697 @@
+/**
+ * Combat V2 - Durable Object
+ *
+ * Server-authoritative combat system using Cloudflare Durable Objects.
+ * - SQLite for fast real-time combat state
+ * - Supabase/PostgreSQL for persistent character/campaign data
+ * - WebSocket hibernation for scalable connections
+ */
+
+import { DurableObject } from "cloudflare:workers";
+import type { DurableObjectState } from "cloudflare:workers";
+
+// Import handlers
+import { handleCombatLifecycle } from "./handlers/combat-lifecycle";
+import { handleTurnManagement } from "./handlers/turn-management";
+import { handleActionProcessing } from "./handlers/action-processing";
+import { handleDamageProcessing } from "./handlers/damage-processing";
+import { handleChanneling } from "./handlers/channeling";
+import { handleMovement } from "./handlers/movement";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ENVIRONMENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface Env {
+  COMBAT_DO: DurableObjectNamespace<CombatDurableObject>;
+  SUPABASE_URL: string;
+  SUPABASE_SERVICE_ROLE_KEY: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WEBSOCKET METADATA (survives hibernation)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface WebSocketMetadata {
+  connectionId: string;
+  playerId: string;
+  isGM: boolean;
+  controlledEntityIds: string[];
+  connectedAt: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLIENT MESSAGE TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type ClientMessageType =
+  // Combat lifecycle
+  | "START_COMBAT"
+  | "END_COMBAT"
+  // Initiative
+  | "SUBMIT_INITIATIVE_ROLL"
+  // Turn management
+  | "END_TURN"
+  | "DELAY_TURN"
+  | "READY_ACTION"
+  // Actions
+  | "DECLARE_MOVEMENT"
+  | "DECLARE_ATTACK"
+  | "DECLARE_ABILITY"
+  | "DECLARE_REACTION"
+  // Channeling
+  | "START_CHANNELING"
+  | "CONTINUE_CHANNELING"
+  | "RELEASE_SPELL"
+  | "ABORT_CHANNELING"
+  // Death system
+  | "SUBMIT_ENDURE_ROLL"
+  | "SUBMIT_DEATH_CHECK"
+  // GM overrides
+  | "GM_OVERRIDE"
+  | "GM_MOVE_ENTITY"
+  | "GM_APPLY_DAMAGE"
+  | "GM_MODIFY_RESOURCES"
+  | "GM_ADD_ENTITY"
+  | "GM_REMOVE_ENTITY";
+
+export interface ClientMessage {
+  type: ClientMessageType;
+  payload: Record<string, unknown>;
+  requestId?: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SERVER EVENT TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type ServerEventType =
+  | "STATE_SYNC"
+  | "COMBAT_STARTED"
+  | "COMBAT_ENDED"
+  | "ROUND_STARTED"
+  | "TURN_STARTED"
+  | "TURN_ENDED"
+  | "INITIATIVE_UPDATED"
+  | "MOVEMENT_EXECUTED"
+  | "ATTACK_RESOLVED"
+  | "ABILITY_RESOLVED"
+  | "REACTION_RESOLVED"
+  | "CHANNELING_STARTED"
+  | "CHANNELING_CONTINUED"
+  | "CHANNELING_RELEASED"
+  | "CHANNELING_INTERRUPTED"
+  | "BLOWBACK_APPLIED"
+  | "DAMAGE_APPLIED"
+  | "WOUNDS_INFLICTED"
+  | "HEALING_APPLIED"
+  | "ENDURE_ROLL_REQUIRED"
+  | "DEATH_CHECK_REQUIRED"
+  | "ENTITY_UNCONSCIOUS"
+  | "ENTITY_DIED"
+  | "ENTITY_UPDATED"
+  | "GM_OVERRIDE_APPLIED"
+  | "ACTION_REJECTED"
+  | "ERROR";
+
+export interface ServerEvent {
+  type: ServerEventType;
+  payload: Record<string, unknown>;
+  timestamp: string;
+  requestId?: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMBAT DURABLE OBJECT
+// ═══════════════════════════════════════════════════════════════════════════
+
+export class CombatDurableObject extends DurableObject<Env> {
+  private sql: SqlStorage;
+  private sessions: Map<WebSocket, WebSocketMetadata>;
+  private supabaseUrl: string;
+  private supabaseKey: string;
+
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+
+    this.sql = ctx.storage.sql;
+    this.sessions = new Map();
+    this.supabaseUrl = env.SUPABASE_URL;
+    this.supabaseKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+    // Initialize SQL schema
+    this.initializeSchema();
+
+    // Restore WebSocket sessions after hibernation
+    ctx.getWebSockets().forEach((ws) => {
+      const metadata = ws.deserializeAttachment() as WebSocketMetadata;
+      if (metadata) {
+        this.sessions.set(ws, metadata);
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SCHEMA INITIALIZATION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private initializeSchema(): void {
+    this.sql.exec(`
+      -- Combat state (single row per combat)
+      CREATE TABLE IF NOT EXISTS combat_state (
+        id TEXT PRIMARY KEY DEFAULT 'current',
+        combat_id TEXT NOT NULL,
+        campaign_id TEXT NOT NULL,
+        phase TEXT NOT NULL DEFAULT 'setup',
+        round INTEGER NOT NULL DEFAULT 0,
+        turn_index INTEGER NOT NULL DEFAULT 0,
+        active_entity_id TEXT,
+        version INTEGER NOT NULL DEFAULT 1,
+        started_at TEXT NOT NULL,
+        last_updated_at TEXT NOT NULL
+      );
+
+      -- Entities in combat
+      CREATE TABLE IF NOT EXISTS entities (
+        id TEXT PRIMARY KEY,
+        data TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
+
+      -- Initiative order
+      CREATE TABLE IF NOT EXISTS initiative (
+        entity_id TEXT PRIMARY KEY,
+        roll INTEGER NOT NULL,
+        skill_value INTEGER NOT NULL,
+        current_energy INTEGER NOT NULL,
+        position INTEGER NOT NULL
+      );
+
+      -- Hex grid positions
+      CREATE TABLE IF NOT EXISTS hex_positions (
+        entity_id TEXT PRIMARY KEY,
+        q INTEGER NOT NULL,
+        r INTEGER NOT NULL,
+        UNIQUE(q, r)
+      );
+
+      -- Channeling state
+      CREATE TABLE IF NOT EXISTS channeling (
+        entity_id TEXT PRIMARY KEY,
+        spell_data TEXT NOT NULL,
+        started_at TEXT NOT NULL
+      );
+
+      -- Combat log
+      CREATE TABLE IF NOT EXISTS combat_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        data TEXT,
+        created_at TEXT NOT NULL
+      );
+
+      -- Pending actions/reactions
+      CREATE TABLE IF NOT EXISTS pending_actions (
+        id TEXT PRIMARY KEY,
+        type TEXT NOT NULL,
+        data TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
+
+      -- Indexes for performance
+      CREATE INDEX IF NOT EXISTS idx_initiative_position ON initiative(position);
+      CREATE INDEX IF NOT EXISTS idx_hex_positions ON hex_positions(q, r);
+      CREATE INDEX IF NOT EXISTS idx_log_created ON combat_log(created_at);
+
+      PRAGMA optimize;
+    `);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HTTP HANDLER (WebSocket upgrades)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+
+    // WebSocket upgrade
+    if (request.headers.get("Upgrade") === "websocket") {
+      return this.handleWebSocketUpgrade(request, url);
+    }
+
+    // HTTP endpoints for debugging/admin
+    if (url.pathname === "/state") {
+      return this.handleGetState();
+    }
+
+    if (url.pathname === "/health") {
+      return new Response(JSON.stringify({ status: "ok" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response("Not Found", { status: 404 });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WEBSOCKET UPGRADE
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private async handleWebSocketUpgrade(request: Request, url: URL): Promise<Response> {
+    const pair = new WebSocketPair();
+    const [client, server] = Object.values(pair);
+
+    // Extract connection metadata from query params
+    const playerId = url.searchParams.get("playerId") || "";
+    const isGM = url.searchParams.get("isGM") === "true";
+    const controlledEntityIds = url.searchParams.get("entities")?.split(",") || [];
+
+    const metadata: WebSocketMetadata = {
+      connectionId: crypto.randomUUID(),
+      playerId,
+      isGM,
+      controlledEntityIds,
+      connectedAt: new Date().toISOString(),
+    };
+
+    // Accept WebSocket with hibernation support
+    this.ctx.acceptWebSocket(server);
+    server.serializeAttachment(metadata);
+    this.sessions.set(server, metadata);
+
+    // Send initial state sync
+    this.sendToSocket(server, {
+      type: "STATE_SYNC",
+      payload: {
+        state: this.buildCombatV2State(),
+        yourControlledEntities: metadata.controlledEntityIds,
+      },
+      timestamp: new Date().toISOString(),
+    });
+
+    return new Response(null, { status: 101, webSocket: client });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WEBSOCKET MESSAGE HANDLER
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+    const session = this.sessions.get(ws);
+    if (!session) {
+      ws.close(1008, "Session not found");
+      return;
+    }
+
+    try {
+      const msg: ClientMessage = JSON.parse(
+        typeof message === "string" ? message : new TextDecoder().decode(message)
+      );
+
+      await this.handleMessage(ws, session, msg);
+    } catch (error) {
+      console.error("Message handling error:", error);
+      this.sendToSocket(ws, {
+        type: "ERROR",
+        payload: { error: error instanceof Error ? error.message : "Unknown error" },
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MESSAGE ROUTING
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private async handleMessage(
+    ws: WebSocket,
+    session: WebSocketMetadata,
+    msg: ClientMessage
+  ): Promise<void> {
+    const { type, payload, requestId } = msg;
+
+    // Route to appropriate handler
+    switch (type) {
+      // Combat lifecycle
+      case "START_COMBAT":
+      case "END_COMBAT":
+        await handleCombatLifecycle(this, ws, session, type, payload, requestId);
+        break;
+
+      // Initiative & turns
+      case "SUBMIT_INITIATIVE_ROLL":
+      case "END_TURN":
+      case "DELAY_TURN":
+      case "READY_ACTION":
+        await handleTurnManagement(this, ws, session, type, payload, requestId);
+        break;
+
+      // Actions
+      case "DECLARE_ATTACK":
+      case "DECLARE_ABILITY":
+      case "DECLARE_REACTION":
+        await handleActionProcessing(this, ws, session, type, payload, requestId);
+        break;
+
+      // Movement
+      case "DECLARE_MOVEMENT":
+        await handleMovement(this, ws, session, type, payload, requestId);
+        break;
+
+      // Channeling
+      case "START_CHANNELING":
+      case "CONTINUE_CHANNELING":
+      case "RELEASE_SPELL":
+      case "ABORT_CHANNELING":
+        await handleChanneling(this, ws, session, type, payload, requestId);
+        break;
+
+      // Death system
+      case "SUBMIT_ENDURE_ROLL":
+      case "SUBMIT_DEATH_CHECK":
+        await handleDamageProcessing(this, ws, session, type, payload, requestId);
+        break;
+
+      // GM overrides
+      case "GM_OVERRIDE":
+      case "GM_MOVE_ENTITY":
+      case "GM_APPLY_DAMAGE":
+      case "GM_MODIFY_RESOURCES":
+      case "GM_ADD_ENTITY":
+      case "GM_REMOVE_ENTITY":
+        if (!session.isGM) {
+          this.sendToSocket(ws, {
+            type: "ACTION_REJECTED",
+            payload: { reason: "GM privileges required" },
+            timestamp: new Date().toISOString(),
+            requestId,
+          });
+          return;
+        }
+        await handleCombatLifecycle(this, ws, session, type, payload, requestId);
+        break;
+
+      default:
+        this.sendToSocket(ws, {
+          type: "ACTION_REJECTED",
+          payload: { reason: "Unknown message type" },
+          timestamp: new Date().toISOString(),
+          requestId,
+        });
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WEBSOCKET LIFECYCLE
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  async webSocketClose(ws: WebSocket, code: number, reason: string): Promise<void> {
+    const session = this.sessions.get(ws);
+    if (session) {
+      this.sessions.delete(ws);
+      // Broadcast player disconnection
+      this.broadcast({
+        type: "ENTITY_UPDATED",
+        payload: {
+          playerId: session.playerId,
+          connected: false,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    ws.close(code, reason);
+  }
+
+  async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
+    console.error("WebSocket error:", error);
+    this.sessions.delete(ws);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ALARM HANDLER (for turn timers, status ticks, etc.)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  async alarm(): Promise<void> {
+    // Process status effect ticks, turn timers, etc.
+    const state = this.getCombatState();
+    if (!state) return;
+
+    // Could be used for:
+    // - Auto-ending turns after timeout
+    // - Processing status effect ticks
+    // - Cleanup of stale connections
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PUBLIC API FOR HANDLERS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  public getSql(): SqlStorage {
+    return this.sql;
+  }
+
+  public getStorage(): DurableObjectStorage {
+    return this.ctx.storage;
+  }
+
+  public getSessions(): Map<WebSocket, WebSocketMetadata> {
+    return this.sessions;
+  }
+
+  public getSupabaseConfig(): { url: string; key: string } {
+    return { url: this.supabaseUrl, key: this.supabaseKey };
+  }
+
+  public sendToSocket(ws: WebSocket, event: ServerEvent): void {
+    try {
+      ws.send(JSON.stringify(event));
+    } catch (error) {
+      console.error("Failed to send to socket:", error);
+    }
+  }
+
+  public broadcast(event: ServerEvent, excludeSocket?: WebSocket): void {
+    for (const [ws] of this.sessions) {
+      if (ws !== excludeSocket) {
+        this.sendToSocket(ws, event);
+      }
+    }
+  }
+
+  public broadcastToPlayer(playerId: string, event: ServerEvent): void {
+    for (const [ws, session] of this.sessions) {
+      if (session.playerId === playerId) {
+        this.sendToSocket(ws, event);
+      }
+    }
+  }
+
+  public broadcastToGMs(event: ServerEvent): void {
+    for (const [ws, session] of this.sessions) {
+      if (session.isGM) {
+        this.sendToSocket(ws, event);
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // STATE HELPERS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  public getCombatState(): Record<string, unknown> | null {
+    const rows = this.sql.exec("SELECT * FROM combat_state WHERE id = 'current'").toArray();
+    return rows.length > 0 ? (rows[0] as Record<string, unknown>) : null;
+  }
+
+  public getFullState(): Record<string, unknown> {
+    const combatState = this.getCombatState();
+
+    // Return empty state when no combat exists
+    if (!combatState) {
+      return {
+        combat: null,
+        entities: [],
+        initiative: [],
+        hexPositions: [],
+        channeling: [],
+      };
+    }
+
+    const entities = this.sql.exec("SELECT * FROM entities").toArray();
+    const initiative = this.sql.exec("SELECT * FROM initiative ORDER BY position").toArray();
+    const hexPositions = this.sql.exec("SELECT * FROM hex_positions").toArray();
+    const channeling = this.sql.exec("SELECT * FROM channeling").toArray();
+
+    return {
+      combat: combatState,
+      entities: entities.map((e: any) => ({ id: e.id, ...JSON.parse(e.data) })),
+      initiative,
+      hexPositions,
+      channeling: channeling.map((c: any) => ({
+        entityId: c.entity_id,
+        ...JSON.parse(c.spell_data),
+      })),
+    };
+  }
+
+  /**
+   * Build CombatV2State in the format expected by the client
+   */
+  public buildCombatV2State(): Record<string, unknown> {
+    const combatState = this.getCombatState();
+
+    // Return empty state when no combat exists
+    if (!combatState) {
+      return {
+        combatId: "",
+        campaignId: "",
+        phase: "setup",
+        round: 0,
+        currentTurnIndex: -1,
+        currentEntityId: null,
+        entities: {},
+        initiative: [],
+        hexPositions: {},
+        version: 0,
+      };
+    }
+
+    const entitiesRaw = this.sql.exec("SELECT * FROM entities").toArray();
+    const initiativeRaw = this.sql.exec("SELECT * FROM initiative ORDER BY position").toArray();
+    const hexPositionsRaw = this.sql.exec("SELECT * FROM hex_positions").toArray();
+    const channelingRaw = this.sql.exec("SELECT * FROM channeling").toArray();
+
+    // Build entities record with channeling merged in
+    const channelingMap = new Map<string, Record<string, unknown>>();
+    for (const c of channelingRaw as any[]) {
+      channelingMap.set(c.entity_id, JSON.parse(c.spell_data));
+    }
+
+    const entities: Record<string, Record<string, unknown>> = {};
+    for (const e of entitiesRaw as any[]) {
+      const entityData = JSON.parse(e.data);
+      entities[e.id] = {
+        id: e.id,
+        ...entityData,
+        channeling: channelingMap.get(e.id) || null,
+      };
+    }
+
+    // Build initiative array
+    const initiative = (initiativeRaw as any[]).map((row) => ({
+      entityId: row.entity_id,
+      roll: row.roll,
+      tiebreaker: row.skill_value || 0,
+      delayed: false,
+      readied: false,
+    }));
+
+    // Build hex positions record
+    const hexPositions: Record<string, { q: number; r: number }> = {};
+    for (const pos of hexPositionsRaw as any[]) {
+      hexPositions[pos.entity_id] = { q: pos.q, r: pos.r };
+    }
+
+    // Get current entity from initiative order
+    const currentTurnIndex = (combatState as any)?.turn_index ?? -1;
+    const currentEntityId = initiative[currentTurnIndex]?.entityId ?? null;
+
+    return {
+      combatId: (combatState as any)?.combat_id ?? "",
+      campaignId: (combatState as any)?.campaign_id ?? "",
+      phase: (combatState as any)?.phase ?? "setup",
+      round: (combatState as any)?.round ?? 0,
+      currentTurnIndex,
+      currentEntityId,
+      entities,
+      initiative,
+      hexPositions,
+      version: (combatState as any)?.version ?? 0,
+    };
+  }
+
+  public incrementVersion(): number {
+    this.sql.exec(
+      "UPDATE combat_state SET version = version + 1, last_updated_at = ? WHERE id = 'current'",
+      new Date().toISOString()
+    );
+
+    const row = this.sql.exec("SELECT version FROM combat_state WHERE id = 'current'").one();
+    return (row as { version: number }).version;
+  }
+
+  public addLogEntry(type: string, data?: Record<string, unknown>): void {
+    this.sql.exec(
+      "INSERT INTO combat_log (type, data, created_at) VALUES (?, ?, ?)",
+      type,
+      data ? JSON.stringify(data) : null,
+      new Date().toISOString()
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SUPABASE SYNC
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  public async syncToSupabase(table: string, data: Record<string, unknown>): Promise<void> {
+    if (!this.supabaseUrl || !this.supabaseKey) return;
+
+    try {
+      const response = await fetch(this.supabaseUrl + "/rest/v1/" + table, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": this.supabaseKey,
+          "Authorization": "Bearer " + this.supabaseKey,
+          "Prefer": "resolution=merge-duplicates",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        console.error("Supabase sync failed:", await response.text());
+      }
+    } catch (error) {
+      console.error("Supabase sync error:", error);
+    }
+  }
+
+  public async fetchFromSupabase(
+    table: string,
+    query: string
+  ): Promise<unknown[]> {
+    if (!this.supabaseUrl || !this.supabaseKey) return [];
+
+    try {
+      const response = await fetch(this.supabaseUrl + "/rest/v1/" + table + "?" + query, {
+        headers: {
+          "apikey": this.supabaseKey,
+          "Authorization": "Bearer " + this.supabaseKey,
+        },
+      });
+
+      if (!response.ok) {
+        console.error("Supabase fetch failed:", await response.text());
+        return [];
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Supabase fetch error:", error);
+      return [];
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DEBUG ENDPOINT
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  private handleGetState(): Response {
+    return new Response(JSON.stringify(this.getFullState(), null, 2), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
+
+// Export the DO class (REQUIRED for Cloudflare)
+export default CombatDurableObject;
