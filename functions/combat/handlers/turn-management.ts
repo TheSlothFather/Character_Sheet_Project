@@ -133,7 +133,7 @@ async function handleInitiativeRoll(
   }
 }
 
-function sortAndStartCombat(combat: CombatDurableObject): void {
+export function sortAndStartCombat(combat: CombatDurableObject): void {
   const sql = combat.getSql();
   const timestamp = new Date().toISOString();
 
@@ -147,6 +147,20 @@ function sortAndStartCombat(combat: CombatDurableObject): void {
   // Update positions
   sorted.forEach((entry: any, index: number) => {
     runQuery(sql, "UPDATE initiative SET position = ? WHERE entity_id = ?", index, entry.entity_id);
+  });
+
+  const initiative = sorted.map((entry: any) => ({
+    entityId: entry.entity_id as string,
+    roll: entry.roll as number,
+    tiebreaker: (entry.skill_value as number) ?? 0,
+    delayed: false,
+    readied: false,
+  }));
+
+  combat.broadcast({
+    type: "INITIATIVE_UPDATED",
+    payload: { initiative },
+    timestamp,
   });
 
   // Update combat state

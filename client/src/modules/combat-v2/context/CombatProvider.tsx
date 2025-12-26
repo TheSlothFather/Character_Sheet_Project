@@ -76,7 +76,7 @@ export type GmAddEntityPayload = {
 type CombatAction =
   | { type: "SET_CONNECTION_STATUS"; status: ConnectionStatus; attempt?: number }
   | { type: "STATE_SYNC"; state: CombatV2State; controlledEntityIds: string[] }
-  | { type: "COMBAT_STARTED"; combatId: string }
+  | { type: "COMBAT_STARTED"; combatId: string; campaignId?: string; phase?: CombatV2State["phase"] }
   | { type: "COMBAT_ENDED" }
   | { type: "ROUND_STARTED"; round: number }
   | { type: "TURN_STARTED"; entityId: string; turnIndex: number }
@@ -145,7 +145,12 @@ function combatReducer(state: CombatContextState, action: CombatAction): CombatC
       };
 
     case "COMBAT_STARTED":
-      return { ...state, combatId: action.combatId, phase: "setup" };
+      return {
+        ...state,
+        combatId: action.combatId,
+        campaignId: action.campaignId ?? state.campaignId,
+        phase: action.phase ?? "initiative",
+      };
 
     case "COMBAT_ENDED":
       return {
@@ -426,7 +431,12 @@ export function CombatProvider({
           });
         },
         onCombatStarted: (payload) => {
-          dispatch({ type: "COMBAT_STARTED", combatId: payload.combatId });
+          dispatch({
+            type: "COMBAT_STARTED",
+            combatId: payload.combatId,
+            campaignId: payload.campaignId,
+            phase: payload.phase,
+          });
         },
         onCombatEnded: () => {
           dispatch({ type: "COMBAT_ENDED" });
