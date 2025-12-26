@@ -58,6 +58,29 @@ export interface CombatStatusEffect {
 }
 
 /**
+ * Resource modifier - temporary or permanent changes to resources
+ * Used for tracking effects that increase/decrease max values or grant temporary bonuses
+ */
+export interface ResourceModifier {
+  id: string;
+  type: 'add_max' | 'reduce_max' | 'add_current';
+  amount: number;
+  duration: number | null;  // null = permanent, number = rounds remaining
+  source: string;           // Description of what caused this (e.g., "Blessing of Strength")
+  createdAt: string;
+}
+
+/**
+ * Combat resource (Energy or AP) with modifier tracking
+ */
+export interface CombatResource {
+  current: number;
+  max: number;
+  baseMax: number;               // Original max before modifiers
+  modifiers: ResourceModifier[]; // Active modifiers affecting this resource
+}
+
+/**
  * Combat entity - a participant in combat
  */
 export interface CombatEntity {
@@ -71,14 +94,8 @@ export interface CombatEntity {
   initiativeSkill: string;  // Key into skills map used for initiative
 
   // Resources
-  energy: {
-    current: number;
-    max: number;
-  };
-  ap: {
-    current: number;
-    max: number;
-  };
+  energy: CombatResource;
+  ap: CombatResource;
   tier: number;  // Used for energy gain calculations
 
   // Combat state
@@ -342,6 +359,10 @@ export type GmOverrideType =
   | "modify_initiative"
   | "adjust_ap"
   | "adjust_energy"
+  | "add_resource_modifier"      // Add modifier to resource (AP or Energy)
+  | "remove_resource_modifier"   // Remove modifier by ID
+  | "set_resource_current"       // Set current value (bypass clamping)
+  | "force_initiative_roll"      // Force roll initiative for an entity
   | "force_reaction"
   | "cancel_reaction"
   | "skip_entity"
@@ -677,4 +698,47 @@ export interface SkillCheckRequest {
   rollData?: RollData;          // Filled when player rolls
   createdAt: string;
   resolvedAt?: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RESOURCE MODIFIER HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate the effective maximum value for a resource based on its modifiers
+ * @param resource - The combat resource with modifiers
+ * @returns The effective maximum after applying all modifiers
+ */
+export function calculateEffectiveMax(resource: CombatResource): number {
+  let effectiveMax = resource.baseMax;
+
+  for (const modifier of resource.modifiers) {
+    if (modifier.type === 'add_max') {
+      effectiveMax += modifier.amount;
+    } else if (modifier.type === 'reduce_max') {
+      effectiveMax -= modifier.amount;
+    }
+  }
+
+  // Effective max can't go below 0
+  return Math.max(0, effectiveMax);
+}
+
+/**
+ * Create a new resource modifier
+ */
+export function createResourceModifier(
+  type: ResourceModifier['type'],
+  amount: number,
+  duration: number | null,
+  source: string
+): ResourceModifier {
+  return {
+    id: crypto.randomUUID(),
+    type,
+    amount,
+    duration,
+    source,
+    createdAt: new Date().toISOString()
+  };
 }

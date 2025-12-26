@@ -9,3 +9,10 @@ __pycache__/
 
 # Legacy background data (replaced by backgrounds.json)
 client/src/data/backgrounds.csv
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
