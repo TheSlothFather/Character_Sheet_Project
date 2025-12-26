@@ -31,15 +31,14 @@ function PlayerCombatContent() {
     initiative,
     selectedEntityId,
     currentEntityId,
-    controlledEntityIds,
     pendingEndureRoll,
     pendingDeathCheck,
   } = state;
 
   // Get controlled entities
   const myEntities = useMemo(() => {
-    return Object.values(entities).filter((e) => controlledEntityIds.includes(e.id));
-  }, [entities, controlledEntityIds]);
+    return Object.values(entities).filter((e) => canControlEntity(e.id));
+  }, [entities, canControlEntity]);
 
   // Get initiative order with entity data
   const initiativeOrder = getInitiativeOrder();
@@ -49,11 +48,17 @@ function PlayerCombatContent() {
 
   // Handle hex click
   const handleHexClick = useCallback((position: HexPosition) => {
-    if (actionMode === "move" && selectedEntityId) {
+    if (
+      actionMode === "move" &&
+      selectedEntityId &&
+      selectedEntityId === currentEntityId &&
+      canControlEntity(selectedEntityId) &&
+      isMyTurn
+    ) {
       actions.declareMovement(selectedEntityId, position.q, position.r);
       setActionMode("none");
     }
-  }, [actionMode, selectedEntityId, actions]);
+  }, [actionMode, selectedEntityId, currentEntityId, canControlEntity, isMyTurn, actions]);
 
   // Handle entity selection
   const handleEntityClick = useCallback((entityId: string) => {
@@ -137,7 +142,7 @@ function PlayerCombatContent() {
                     className={`flex items-center gap-2 px-2 py-1 rounded text-sm ${
                       entity.id === currentEntityId
                         ? "bg-green-900/50 text-green-200"
-                        : controlledEntityIds.includes(entity.id)
+                        : canControlEntity(entity.id)
                         ? "bg-blue-900/30 text-blue-200"
                         : "text-slate-400"
                     }`}

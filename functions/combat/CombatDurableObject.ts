@@ -301,7 +301,9 @@ export class CombatDurableObject extends DurableObject<Env> {
     // Extract connection metadata from query params
     const playerId = url.searchParams.get("playerId") || "";
     const isGM = url.searchParams.get("isGM") === "true";
-    const controlledEntityIds = url.searchParams.get("entities")?.split(",") || [];
+    const requestedEntityIds = url.searchParams.get("entities")?.split(",").filter(Boolean) || [];
+    const resolvedEntityIds = playerId ? this.getControlledEntitiesForPlayer(playerId) : [];
+    const controlledEntityIds = resolvedEntityIds.length > 0 ? resolvedEntityIds : requestedEntityIds;
 
     const metadata: WebSocketMetadata = {
       connectionId: crypto.randomUUID(),
@@ -396,6 +398,7 @@ export class CombatDurableObject extends DurableObject<Env> {
 
       // Movement
       case "DECLARE_MOVEMENT":
+      case "GM_MOVE_ENTITY":
         await handleMovement(this, ws, session, type, payload, requestId);
         break;
 
@@ -415,7 +418,6 @@ export class CombatDurableObject extends DurableObject<Env> {
 
       // GM overrides
       case "GM_OVERRIDE":
-      case "GM_MOVE_ENTITY":
       case "GM_APPLY_DAMAGE":
       case "GM_MODIFY_RESOURCES":
       case "GM_ADD_ENTITY":
@@ -668,6 +670,22 @@ export class CombatDurableObject extends DurableObject<Env> {
       data ? JSON.stringify(data) : null,
       new Date().toISOString()
     );
+  }
+
+  private getControlledEntitiesForPlayer(playerId: string): string[] {
+    const entitiesRaw = this.sql.exec("SELECT * FROM entities").toArray();
+    const ids: string[] = [];
+    for (const row of entitiesRaw as any[]) {
+      try {
+        const data = JSON.parse(row.data);
+        if (data?.controller === `player:${playerId}`) {
+          ids.push(row.id);
+        }
+      } catch {
+        // Ignore malformed entity data
+      }
+    }
+    return ids;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

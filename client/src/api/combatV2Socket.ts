@@ -89,6 +89,11 @@ export interface CombatV2Entity {
   tier: "minion" | "full" | "lieutenant" | "hero";
   faction: "ally" | "enemy" | "neutral";
   controller: "gm" | `player:${string}`;
+  entityType?: "pc" | "npc" | "monster";
+  characterId?: string;
+  bestiaryEntryId?: string;
+  level?: number;
+  skills?: Record<string, number>;
   ap?: { current: number; max: number };
   energy?: { current: number; max: number };
   wounds?: Record<string, number>;
@@ -117,6 +122,15 @@ export interface InitiativeEntry {
   tiebreaker: number;
   delayed: boolean;
   readied: boolean;
+}
+
+export interface InitiativeUpdatedPayload {
+  initiative?: InitiativeEntry[];
+  entityId?: string;
+  roll?: number;
+  skillValue?: number;
+  tiebreaker?: number;
+  allRolled?: boolean;
 }
 
 export interface CombatV2State {
@@ -191,6 +205,10 @@ export interface DeathCheckRequiredPayload {
 
 export interface EntityUpdatedPayload {
   entityId: string;
+  action?: "added" | "removed" | "updated";
+  entity?: CombatV2Entity;
+  initiative?: InitiativeEntry[];
+  hexPosition?: HexPosition;
   endureResult?: "success" | "failure";
   deathCheckResult?: "success" | "failure";
   rollTotal?: number;
@@ -211,7 +229,7 @@ export interface CombatV2SocketHandlers {
   onRoundStarted?: (payload: { round: number }) => void;
   onTurnStarted?: (payload: { entityId: string; round: number; turnIndex: number }) => void;
   onTurnEnded?: (payload: { entityId: string; energyGained: number }) => void;
-  onInitiativeUpdated?: (payload: { initiative: InitiativeEntry[] }) => void;
+  onInitiativeUpdated?: (payload: InitiativeUpdatedPayload) => void;
 
   // Actions
   onMovementExecuted?: (payload: MovementExecutedPayload) => void;
@@ -335,7 +353,7 @@ export const connectCombatV2Socket = (
           handlers.onTurnEnded?.(payload as { entityId: string; energyGained: number });
           break;
         case "INITIATIVE_UPDATED":
-          handlers.onInitiativeUpdated?.(payload as { initiative: InitiativeEntry[] });
+          handlers.onInitiativeUpdated?.(payload as InitiativeUpdatedPayload);
           break;
         case "MOVEMENT_EXECUTED":
           handlers.onMovementExecuted?.(payload as unknown as MovementExecutedPayload);

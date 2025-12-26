@@ -64,6 +64,15 @@ export interface CombatContextState {
 // ACTIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
+export type GmAddEntityPayload = {
+  entity: Partial<CombatV2Entity> & { id: string; name: string };
+  initiativeRoll?: number;
+  initiativeTiebreaker?: number;
+  initiativeTiming?: "immediate" | "end";
+  combatId?: string;
+  campaignId?: string;
+};
+
 type CombatAction =
   | { type: "SET_CONNECTION_STATUS"; status: ConnectionStatus; attempt?: number }
   | { type: "STATE_SYNC"; state: CombatV2State; controlledEntityIds: string[] }
@@ -73,6 +82,8 @@ type CombatAction =
   | { type: "TURN_STARTED"; entityId: string; turnIndex: number }
   | { type: "TURN_ENDED"; entityId: string; energyGained: number }
   | { type: "INITIATIVE_UPDATED"; initiative: InitiativeEntry[] }
+  | { type: "ENTITY_ADDED"; entity: CombatV2Entity; position?: HexPosition; initiative?: InitiativeEntry[] }
+  | { type: "ENTITY_REMOVED"; entityId: string; initiative?: InitiativeEntry[] }
   | { type: "ENTITY_UPDATED"; entityId: string; updates: Partial<CombatV2Entity> }
   | { type: "ENTITY_POSITION_UPDATED"; entityId: string; position: HexPosition }
   | { type: "SET_PENDING_ENDURE"; entityId: string; damage: number }
@@ -180,6 +191,35 @@ function combatReducer(state: CombatContextState, action: CombatAction): CombatC
 
     case "INITIATIVE_UPDATED":
       return { ...state, initiative: action.initiative };
+
+    case "ENTITY_ADDED":
+      return {
+        ...state,
+        entities: {
+          ...state.entities,
+          [action.entity.id]: action.entity,
+        },
+        hexPositions: action.position
+          ? {
+              ...state.hexPositions,
+              [action.entity.id]: action.position,
+            }
+          : state.hexPositions,
+        initiative: action.initiative ?? state.initiative,
+        version: state.version + 1,
+      };
+
+    case "ENTITY_REMOVED": {
+      const { [action.entityId]: _removed, ...rest } = state.entities;
+      const { [action.entityId]: _removedPos, ...remainingPositions } = state.hexPositions;
+      return {
+        ...state,
+        entities: rest,
+        hexPositions: remainingPositions,
+        initiative: action.initiative ?? state.initiative,
+        version: state.version + 1,
+      };
+    }
 
     case "ENTITY_UPDATED": {
       const existing = state.entities[action.entityId];
@@ -304,10 +344,15 @@ interface CombatContextActions {
 
   // GM controls
   gmOverride: (entityId: string, data: Partial<CombatV2Entity>) => void;
-  gmMoveEntity: (entityId: string, targetQ: number, targetR: number) => void;
+  gmMoveEntity: (
+    entityId: string,
+    targetQ: number,
+    targetR: number,
+    options?: { force?: boolean; ignoreApCost?: boolean }
+  ) => void;
   gmApplyDamage: (entityId: string, damage: number, damageType: string) => void;
   gmModifyResources: (entityId: string, ap?: number, energy?: number) => void;
-  gmAddEntity: (entity: Partial<CombatV2Entity> & { id: string; name: string }) => void;
+  gmAddEntity: (payload: GmAddEntityPayload) => void;
   gmRemoveEntity: (entityId: string) => void;
 
   // UI actions
@@ -404,7 +449,35 @@ export function CombatProvider({
           });
         },
         onInitiativeUpdated: (payload) => {
-          dispatch({ type: "INITIATIVE_UPDATED", initiative: payload.initiative });
+          if (Array.isArray(payload.initiative)) {
+            dispatch({ type: "INITIATIVE_UPDATED", initiative: payload.initiative });
+            return;
+          }
+        },
+        onEntityUpdated: (payload) => {
+          if (payload.action === "removed" && payload.entityId) {
+            dispatch({ type: "ENTITY_REMOVED", entityId: payload.entityId, initiative: payload.initiative });
+            return;
+          }
+
+          if (payload.action === "added" && payload.entity) {
+            dispatch({
+              type: "ENTITY_ADDED",
+              entity: payload.entity,
+              position: payload.hexPosition,
+              initiative: payload.initiative,
+            });
+            return;
+          }
+
+          if (payload.entity && payload.entity.id) {
+            dispatch({
+              type: "ENTITY_UPDATED",
+              entityId: payload.entity.id,
+              updates: payload.entity,
+            });
+            return;
+          }
         },
         onMovementExecuted: (payload) => {
           dispatch({
@@ -566,13 +639,13 @@ export function CombatProvider({
     },
 
     gmOverride: (entityId, data) => send("GM_OVERRIDE", { entityId, updates: data }),
-    gmMoveEntity: (entityId, targetQ, targetR) =>
-      send("GM_MOVE_ENTITY", { entityId, targetQ, targetR }),
+    gmMoveEntity: (entityId, targetQ, targetR, options) =>
+      send("GM_MOVE_ENTITY", { entityId, targetQ, targetR, ...options }),
     gmApplyDamage: (entityId, damage, damageType) =>
       send("GM_APPLY_DAMAGE", { entityId, damage, damageType }),
     gmModifyResources: (entityId, ap, energy) =>
       send("GM_MODIFY_RESOURCES", { entityId, ap, energy }),
-    gmAddEntity: (entity) => send("GM_ADD_ENTITY", { entity }),
+    gmAddEntity: (payload) => send("GM_ADD_ENTITY", payload),
     gmRemoveEntity: (entityId) => send("GM_REMOVE_ENTITY", { entityId }),
 
     selectEntity: (entityId) => dispatch({ type: "SELECT_ENTITY", entityId }),
@@ -583,8 +656,12 @@ export function CombatProvider({
   // Computed helpers
   const canControlEntity = useCallback((entityId: string) => {
     if (isGM) return true;
+    const entity = state.entities[entityId];
+    if (entity?.controller) {
+      return entity.controller === `player:${playerId}`;
+    }
     return state.controlledEntityIds.includes(entityId);
-  }, [isGM, state.controlledEntityIds]);
+  }, [isGM, playerId, state.controlledEntityIds, state.entities]);
 
   const isMyTurn = useMemo(() => {
     if (!state.currentEntityId) return false;

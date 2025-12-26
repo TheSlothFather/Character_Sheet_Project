@@ -15,7 +15,7 @@ import { CombatProvider, useCombat } from "../context/CombatProvider";
 
 function CombatLobbyContent() {
   const navigate = useNavigate();
-  const { state, actions, isGM } = useCombat();
+  const { state, actions, isGM, canControlEntity } = useCombat();
   const [initiativeRoll, setInitiativeRoll] = useState<number>(10);
   const [selectedEntityForInit, setSelectedEntityForInit] = useState<string | null>(null);
 
@@ -24,7 +24,6 @@ function CombatLobbyContent() {
     phase,
     entities,
     initiative,
-    controlledEntityIds,
     combatId,
   } = state;
 
@@ -39,9 +38,9 @@ function CombatLobbyContent() {
     return {
       withInitiative: all.filter((e) => initiativeEntityIds.includes(e.id)),
       withoutInitiative: all.filter((e) => !initiativeEntityIds.includes(e.id)),
-      controlled: all.filter((e) => controlledEntityIds.includes(e.id)),
+      controlled: all.filter((e) => canControlEntity(e.id)),
     };
-  }, [entities, initiativeEntityIds, controlledEntityIds]);
+  }, [entities, initiativeEntityIds, canControlEntity]);
 
   // Check if all entities have initiative
   const allHaveInitiative = useMemo(() => {

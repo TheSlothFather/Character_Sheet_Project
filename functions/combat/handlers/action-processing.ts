@@ -5,6 +5,7 @@
  */
 
 import type { CombatDurableObject, WebSocketMetadata, ClientMessageType } from "../CombatDurableObject";
+import { canControlEntity } from "./permissions";
 
 // Wrapper to call SQL storage methods
 function runQuery(sql: SqlStorage, query: string, ...params: unknown[]) {
@@ -73,16 +74,6 @@ async function handleAttack(
   const state = combat.getCombatState();
   if (!state) return;
 
-  if (!session.isGM && !session.controlledEntityIds.includes(attackerId)) {
-    combat.sendToSocket(ws, {
-      type: "ACTION_REJECTED",
-      payload: { reason: "You do not control this entity" },
-      timestamp,
-      requestId,
-    });
-    return;
-  }
-
   // Get attacker entity
   const attackerRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", attackerId);
 
@@ -92,6 +83,16 @@ async function handleAttack(
   }
 
   const attacker = JSON.parse(attackerRow.data);
+
+  if (!canControlEntity(session, attackerId, attacker)) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "You do not control this entity" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
 
   // Check resources
   if ((attacker.ap?.current ?? 0) < apCost) {
@@ -193,8 +194,14 @@ async function handleAbility(
   const energyCost = payload.energyCost as number || 1;
   const effects = payload.effects as Record<string, unknown>;
 
-  // Validate entity control
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
+  // Get entity
+  const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
+
+  if (!entityRow) return;
+
+  const entity = JSON.parse(entityRow.data);
+
+  if (!canControlEntity(session, entityId, entity)) {
     combat.sendToSocket(ws, {
       type: "ACTION_REJECTED",
       payload: { reason: "You do not control this entity" },
@@ -203,13 +210,6 @@ async function handleAbility(
     });
     return;
   }
-
-  // Get entity
-  const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
-
-  if (!entityRow) return;
-
-  const entity = JSON.parse(entityRow.data);
 
   // Check and spend resources
   if ((entity.ap?.current ?? 0) < apCost || (entity.energy?.current ?? 0) < energyCost) {
@@ -245,8 +245,14 @@ async function handleReaction(
   const apCost = payload.apCost as number || 1;
   const triggerActionId = payload.triggerActionId as string;
 
-  // Validate entity control
-  if (!session.isGM && !session.controlledEntityIds.includes(entityId)) {
+  // Get entity
+  const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
+
+  if (!entityRow) return;
+
+  const entity = JSON.parse(entityRow.data);
+
+  if (!canControlEntity(session, entityId, entity)) {
     combat.sendToSocket(ws, {
       type: "ACTION_REJECTED",
       payload: { reason: "You do not control this entity" },
@@ -255,13 +261,6 @@ async function handleReaction(
     });
     return;
   }
-
-  // Get entity
-  const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
-
-  if (!entityRow) return;
-
-  const entity = JSON.parse(entityRow.data);
 
   // Check AP for reaction
   if ((entity.ap?.current ?? 0) < apCost) {
