@@ -10,6 +10,37 @@
 import { DurableObject } from "cloudflare:workers";
 import type { DurableObjectState } from "cloudflare:workers";
 
+// ═══════════════════════════════════════════════════════════════════════════
+// CORS HELPER (copied from _worker.ts for standalone use)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function getCorsHeaders(request: Request): HeadersInit {
+  const origin = request.headers.get("Origin");
+
+  const allowedOrigins = [
+    "https://character-sheet-project.pages.dev",
+    "http://localhost:5173",
+  ];
+
+  const isAllowed = origin && (
+    allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed)) ||
+    /^https:\/\/[a-z0-9-]+\.character-sheet-project\.pages\.dev$/.test(origin) ||
+    /^http:\/\/localhost(:\d+)?$/.test(origin)
+  );
+
+  if (isAllowed) {
+    return {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, Upgrade, Connection",
+      "Access-Control-Max-Age": "86400",
+      "Access-Control-Allow-Credentials": "true",
+    };
+  }
+
+  return {};
+}
+
 // Import handlers
 import { handleCombatLifecycle } from "./handlers/combat-lifecycle";
 import { handleTurnManagement } from "./handlers/turn-management";
@@ -233,6 +264,12 @@ export class CombatDurableObject extends DurableObject<Env> {
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    const corsHeaders = getCorsHeaders(request);
+
+    // Handle CORS preflight
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
 
     // WebSocket upgrade
     if (request.headers.get("Upgrade") === "websocket") {
@@ -241,16 +278,16 @@ export class CombatDurableObject extends DurableObject<Env> {
 
     // HTTP endpoints for debugging/admin
     if (url.pathname === "/state") {
-      return this.handleGetState();
+      return this.handleGetState(corsHeaders);
     }
 
     if (url.pathname === "/health") {
       return new Response(JSON.stringify({ status: "ok" }), {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response("Not Found", { status: 404, headers: corsHeaders });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -289,7 +326,11 @@ export class CombatDurableObject extends DurableObject<Env> {
       timestamp: new Date().toISOString(),
     });
 
-    return new Response(null, { status: 101, webSocket: client });
+    return new Response(null, {
+      status: 101,
+      webSocket: client,
+      headers: getCorsHeaders(request),
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -686,9 +727,9 @@ export class CombatDurableObject extends DurableObject<Env> {
   // DEBUG ENDPOINT
   // ═══════════════════════════════════════════════════════════════════════════
 
-  private handleGetState(): Response {
+  private handleGetState(corsHeaders: HeadersInit = {}): Response {
     return new Response(JSON.stringify(this.getFullState(), null, 2), {
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   }
 }
