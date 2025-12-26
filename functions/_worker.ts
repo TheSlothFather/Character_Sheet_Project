@@ -7,8 +7,15 @@
  * Combat phases: setup -> initiative -> active-turn <-> reaction-interrupt -> resolution -> completed
  */
 
+// Import CombatDurableObject from the combat module
+import { CombatDurableObject } from "./combat/CombatDurableObject";
+
+// Re-export for Cloudflare Workers (CRITICAL: DO classes must be exported)
+export { CombatDurableObject };
+
 interface Env {
   CAMPAIGN_DO: DurableObjectNamespace;
+  COMBAT_DO: DurableObjectNamespace<CombatDurableObject>;
   SUPABASE_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
 }
@@ -4114,6 +4121,27 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // COMBAT V2 ROUTES (new system with CombatDurableObject)
+    // ═══════════════════════════════════════════════════════════════════════════
+    const combatV2Match = url.pathname.match(/^\/api\/combat\/([^/]+)\/(connect|state|health)$/);
+    if (combatV2Match) {
+      const combatId = decodeURIComponent(combatV2Match[1]);
+      const id = env.COMBAT_DO.idFromName(combatId);
+      const stub = env.COMBAT_DO.get(id);
+
+      // Rewrite path for DO (remove /api/combat/:id prefix)
+      const doUrl = new URL(request.url);
+      doUrl.pathname = "/" + combatV2Match[2];
+      const doRequest = new Request(doUrl.toString(), request);
+
+      return stub.fetch(doRequest);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LEGACY CAMPAIGN ROUTES (existing system with CampaignDurableObject)
+    // ═══════════════════════════════════════════════════════════════════════════
     const match = url.pathname.match(/^\/api\/campaigns\/([^/]+)\/(connect|roll|contest)$/);
     const combatMatch = url.pathname.match(
       /^\/api\/campaigns\/([^/]+)\/combat\/[^/]+$/,

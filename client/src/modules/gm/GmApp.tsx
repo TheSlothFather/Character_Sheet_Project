@@ -8,6 +8,7 @@ import { NpcHubPage } from "./NpcHubPage";
 import { SettingInfoPage } from "./SettingInfoPage";
 import { PlayerCharactersPage } from "./PlayerCharactersPage";
 import CombatPageNew from "./CombatPageNew";
+import { GmCombatPage, CombatLobbyPage } from "../combat-v2";
 import { GmCampaignLayout } from "./GmCampaignLayout";
 import "./GmApp.css";
 
@@ -216,7 +217,9 @@ export const GmApp: React.FC = () => {
           <Route path="campaigns/:campaignId" element={<GmCampaignLayout />}>
             <Route index element={<Navigate to="bestiary" replace />} />
             <Route path="bestiary" element={<BestiaryPage />} />
-            <Route path="combat" element={<CombatPageNew />} />
+            <Route path="combat" element={<GmCombatPage />} />
+            <Route path="combat/lobby" element={<CombatLobbyPage />} />
+            <Route path="combat-legacy" element={<CombatPageNew />} />
             <Route path="npc-hub" element={<NpcHubPage />} />
             <Route path="setting-info" element={<SettingInfoPage />} />
             <Route path="player-characters" element={<PlayerCharactersPage />} />

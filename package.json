@@ -24,5 +24,8 @@
     "@types/node": "^25.0.3",
     "wrangler": "^4.56.0",
     "wscat": "^6.1.0"
+  },
+  "dependencies": {
+    "honeycomb-grid": "^4.1.5"
   }
 }
