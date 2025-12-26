@@ -21,6 +21,7 @@ const NotFound: React.FC = () => (
 
 export const GmApp: React.FC = () => {
   const client = getSupabaseClient();
+  const location = useLocation(); // Must be at top level before any conditional returns
   const [user, setUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [authMode, setAuthMode] = React.useState<"sign-in" | "sign-up">("sign-in");
@@ -28,6 +29,10 @@ export const GmApp: React.FC = () => {
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
+
+  // Derive campaignId from location at render time (not after conditionals)
+  const campaignMatch = location.pathname.match(/^\/gm\/campaigns\/([^/]+)/);
+  const campaignId = campaignMatch?.[1] ?? null;
 
   React.useEffect(() => {
     let active = true;
@@ -151,10 +156,6 @@ export const GmApp: React.FC = () => {
       </div>
     );
   }
-
-  const location = useLocation();
-  const campaignMatch = location.pathname.match(/^\/gm\/campaigns\/([^/]+)/);
-  const campaignId = campaignMatch?.[1] ?? null;
 
   return (
     <div className="gm-app">
