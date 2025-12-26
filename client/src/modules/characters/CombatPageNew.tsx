@@ -19,6 +19,7 @@ import {
   InitiativeTower,
   EntityToken,
   ActionGrimoire,
+  InitiativeRollPanel,
   ReactionSigil,
   CombatChronicle,
   NotificationBanner,
@@ -588,6 +589,17 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
           </div>
 
           {/* Initiative Rolling Panel - Note: RollOverlay handles this via modal below */}
+          {phase === "initiative-rolling" && myPendingInitiativeRolls.length > 0 && (
+            <div className="war-page__initiative-panel">
+              {myPendingInitiativeRolls.map((entity) => (
+                <InitiativeRollPanel
+                  key={entity.id}
+                  entity={entity}
+                  onRoll={(roll) => handleInitiativeRoll(entity.id, roll)}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Action Grimoire (Bottom Panel - only visible on your turn) */}
           {isMyTurn && activeEntity && phase === "active-turn" && (
@@ -628,19 +640,6 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
       {/* ═══════════════════════════════════════════════════════════════════════
           ROLL OVERLAY (Unified roll experience)
           ═══════════════════════════════════════════════════════════════════════ */}
-
-      {/* Initiative Roll */}
-      {myPendingInitiativeRolls.length > 0 && (
-        <RollOverlay
-          isOpen={true}
-          variant="initiative"
-          entity={myPendingInitiativeRolls[0]}
-          onSubmit={handleRollOverlaySubmit}
-          onClose={() => {
-            /* Can't close until initiative rolled */
-          }}
-        />
-      )}
 
       {/* Defense Contest */}
       {myPendingDefense && myControlledEntities.length > 0 && (

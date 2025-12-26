@@ -306,17 +306,16 @@ const CombatPageInner: React.FC<{ campaignId: string; userId: string }> = ({ cam
   const handleAddPlayerCharacter = async (characterId: string) => {
     try {
       const character = charactersById.get(characterId);
-      if (!character) {
-        throw new Error("Character not found");
-      }
+      const energyMax = character ? computeCharacterEnergyMax(character) : 100;
+      const tier = character ? Math.max(1, character.level) : 1;
 
       const newCombatant = await gmApi.createCombatant({
         campaignId,
         characterId,
         faction: "ally",
-        energyMax: computeCharacterEnergyMax(character),
+        energyMax,
         apMax: 6,
-        tier: Math.max(1, character.level),
+        tier,
       });
 
       setCombatants(prev => [...prev, newCombatant]);
