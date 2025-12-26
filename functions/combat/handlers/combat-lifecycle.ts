@@ -5,6 +5,7 @@
  */
 
 import type { CombatDurableObject, WebSocketMetadata, ClientMessageType } from "../CombatDurableObject";
+import { sortAndStartCombat } from "./turn-management";
 
 // Helper for optional single-row queries (since .one() throws on empty)
 function queryOneOrNull<T>(sql: SqlStorage, query: string, ...params: unknown[]): T | null {
@@ -68,44 +69,82 @@ async function handleStartCombat(
 
   const sql = combat.getSql();
   const timestamp = new Date().toISOString();
-  const combatId = (payload.combatId as string) || crypto.randomUUID();
-  const campaignId = (payload.campaignId as string) || "";
-  const entities = (payload.entities as Array<Record<string, unknown>>) || [];
+  const payloadEntities = Array.isArray(payload.entities)
+    ? (payload.entities as Array<Record<string, unknown>>)
+    : [];
+  const existingState = combat.getCombatState();
 
-  // Clear existing state
-  sql.exec("DELETE FROM combat_state");
-  sql.exec("DELETE FROM entities");
-  sql.exec("DELETE FROM initiative");
-  sql.exec("DELETE FROM hex_positions");
-  sql.exec("DELETE FROM channeling");
-  sql.exec("DELETE FROM combat_log");
-  sql.exec("DELETE FROM pending_actions");
+  if (!existingState && payloadEntities.length === 0) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "Add at least one entity before starting combat" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
 
-  // Create new combat
-  sql.exec(
-    `INSERT INTO combat_state (id, combat_id, campaign_id, phase, round, turn_index, version, started_at, last_updated_at)
-     VALUES ('current', ?, ?, 'setup', 0, 0, 1, ?, ?)`,
-    combatId, campaignId, timestamp, timestamp
-  );
+  const combatId = (payload.combatId as string) || (existingState?.combat_id as string) || crypto.randomUUID();
+  const campaignId = (payload.campaignId as string) || (existingState?.campaign_id as string) || "";
 
-  // Add entities
-  for (const entity of entities) {
+  if (payloadEntities.length > 0 || !existingState) {
+    // Clear existing state for a fresh start
+    sql.exec("DELETE FROM combat_state");
+    sql.exec("DELETE FROM entities");
+    sql.exec("DELETE FROM initiative");
+    sql.exec("DELETE FROM hex_positions");
+    sql.exec("DELETE FROM channeling");
+    sql.exec("DELETE FROM combat_log");
+    sql.exec("DELETE FROM pending_actions");
+
     sql.exec(
-      "INSERT INTO entities (id, data, created_at) VALUES (?, ?, ?)",
-      entity.id as string,
-      JSON.stringify(entity),
+      `INSERT INTO combat_state (id, combat_id, campaign_id, phase, round, turn_index, version, started_at, last_updated_at)
+       VALUES ('current', ?, ?, 'initiative', 0, 0, 1, ?, ?)`,
+      combatId, campaignId, timestamp, timestamp
+    );
+
+    for (const entity of payloadEntities) {
+      sql.exec(
+        "INSERT INTO entities (id, data, created_at) VALUES (?, ?, ?)",
+        entity.id as string,
+        JSON.stringify(entity),
+        timestamp
+      );
+    }
+  } else {
+    sql.exec(
+      "UPDATE combat_state SET phase = 'initiative', last_updated_at = ? WHERE id = 'current'",
       timestamp
     );
   }
 
-  combat.addLogEntry("combat_started", { combatId, entityCount: entities.length });
+  const entityCount = queryOneOrNull<{ count: number }>(sql, "SELECT COUNT(*) as count FROM entities")?.count ?? 0;
+  const initiativeCount = queryOneOrNull<{ count: number }>(sql, "SELECT COUNT(*) as count FROM initiative")?.count ?? 0;
+
+  if (entityCount === 0) {
+    combat.sendToSocket(ws, {
+      type: "ACTION_REJECTED",
+      payload: { reason: "Add at least one entity before starting combat" },
+      timestamp,
+      requestId,
+    });
+    return;
+  }
+
+  combat.addLogEntry("combat_started", { combatId, entityCount });
 
   combat.broadcast({
     type: "COMBAT_STARTED",
-    payload: { combatId, campaignId, entities, phase: "setup" },
+    payload: { combatId, campaignId, entities: payloadEntities, phase: "initiative" },
     timestamp,
     requestId,
   });
+
+  if (initiativeCount === entityCount && entityCount > 0) {
+    sortAndStartCombat(combat);
+  } else {
+    combat.incrementVersion();
+  }
 }
 
 async function handleEndCombat(

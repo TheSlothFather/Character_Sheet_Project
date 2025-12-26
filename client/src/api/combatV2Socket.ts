@@ -136,7 +136,7 @@ export interface InitiativeUpdatedPayload {
 export interface CombatV2State {
   combatId: string;
   campaignId: string;
-  phase: "setup" | "initiative" | "active" | "completed";
+  phase: "setup" | "initiative" | "active" | "active-turn" | "completed";
   round: number;
   currentTurnIndex: number;
   currentEntityId: string | null;
@@ -149,6 +149,12 @@ export interface CombatV2State {
 export interface StateSyncPayload {
   state: CombatV2State;
   yourControlledEntities: string[];
+}
+
+export interface CombatStartedPayload {
+  combatId: string;
+  campaignId?: string;
+  phase?: CombatV2State["phase"];
 }
 
 export interface MovementExecutedPayload {
@@ -222,7 +228,7 @@ export interface EntityUpdatedPayload {
 export interface CombatV2SocketHandlers {
   // State sync
   onStateSync?: (payload: StateSyncPayload) => void;
-  onCombatStarted?: (payload: { combatId: string }) => void;
+  onCombatStarted?: (payload: CombatStartedPayload) => void;
   onCombatEnded?: (payload: { reason: string }) => void;
 
   // Round/Turn management
@@ -338,7 +344,7 @@ export const connectCombatV2Socket = (
           handlers.onStateSync?.(payload as unknown as StateSyncPayload);
           break;
         case "COMBAT_STARTED":
-          handlers.onCombatStarted?.(payload as { combatId: string });
+          handlers.onCombatStarted?.(payload as CombatStartedPayload);
           break;
         case "COMBAT_ENDED":
           handlers.onCombatEnded?.(payload as { reason: string });
