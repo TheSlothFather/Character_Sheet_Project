@@ -2137,7 +2137,11 @@ export class CampaignDurableObject {
       roll: update.result.rollResult,
     });
 
-    if (update.result.allRolled) {
+    if (!update.result.allRolled) {
+      this.broadcastAuthEvent("STATE_SYNC", campaignId, sequence, {
+        state: combatState,
+      });
+    } else {
       this.broadcastAuthEvent("ALL_INITIATIVE_ROLLED", campaignId, sequence, {
         initiativeOrder: update.result.initiativeOrder,
         rollResults: update.result.rollResults ?? {},

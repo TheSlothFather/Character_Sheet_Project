@@ -338,6 +338,7 @@ export const CombatProvider: React.FC<CombatProviderProps> = ({
             lastUpdatedAt: new Date().toISOString(),
           };
         });
+        socketRef.current?.requestState();
         onTurnEnded?.(payload);
       },
 
