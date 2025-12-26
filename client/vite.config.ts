@@ -24,9 +24,13 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,  // Enable WebSocket proxy
       },
+      "/api/combat": {
+        target: "http://localhost:8787",
+        changeOrigin: true,
+        ws: true,
+      },
       // All other API requests go to Express server
       "/api": "http://localhost:4000"
     }
   }
 });
-
