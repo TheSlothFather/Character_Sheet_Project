@@ -145,6 +145,8 @@ async function handleStartCombat(
   } else {
     combat.incrementVersion();
   }
+
+  combat.broadcastStateSync();
 }
 
 async function handleEndCombat(

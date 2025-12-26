@@ -79,6 +79,7 @@ export type ClientMessageType =
   // Combat lifecycle
   | "START_COMBAT"
   | "END_COMBAT"
+  | "REQUEST_STATE"
   // Initiative
   | "SUBMIT_INITIATIVE_ROLL"
   // Turn management
@@ -319,14 +320,7 @@ export class CombatDurableObject extends DurableObject<Env> {
     this.sessions.set(server, metadata);
 
     // Send initial state sync
-    this.sendToSocket(server, {
-      type: "STATE_SYNC",
-      payload: {
-        state: this.buildCombatV2State(),
-        yourControlledEntities: metadata.controlledEntityIds,
-      },
-      timestamp: new Date().toISOString(),
-    });
+    this.sendStateSync(server, metadata);
 
     return new Response(null, {
       status: 101,
@@ -356,7 +350,7 @@ export class CombatDurableObject extends DurableObject<Env> {
       console.error("Message handling error:", error);
       this.sendToSocket(ws, {
         type: "ERROR",
-        payload: { error: error instanceof Error ? error.message : "Unknown error" },
+        payload: { message: error instanceof Error ? error.message : "Unknown error" },
         timestamp: new Date().toISOString(),
       });
     }
@@ -379,6 +373,9 @@ export class CombatDurableObject extends DurableObject<Env> {
       case "START_COMBAT":
       case "END_COMBAT":
         await handleCombatLifecycle(this, ws, session, type, payload, requestId);
+        break;
+      case "REQUEST_STATE":
+        this.sendStateSync(ws, session);
         break;
 
       // Initiative & turns
@@ -639,10 +636,13 @@ export class CombatDurableObject extends DurableObject<Env> {
     const currentTurnIndex = (combatState as any)?.turn_index ?? -1;
     const currentEntityId = initiative[currentTurnIndex]?.entityId ?? null;
 
+    const rawPhase = (combatState as any)?.phase ?? "setup";
+    const phase = rawPhase === "active-turn" ? "active" : rawPhase;
+
     return {
       combatId: (combatState as any)?.combat_id ?? "",
       campaignId: (combatState as any)?.campaign_id ?? "",
-      phase: (combatState as any)?.phase ?? "setup",
+      phase,
       round: (combatState as any)?.round ?? 0,
       currentTurnIndex,
       currentEntityId,
@@ -651,6 +651,33 @@ export class CombatDurableObject extends DurableObject<Env> {
       hexPositions,
       version: (combatState as any)?.version ?? 0,
     };
+  }
+
+  public sendStateSync(ws: WebSocket, session: WebSocketMetadata, stateOverride?: Record<string, unknown>): void {
+    const state = stateOverride ?? this.buildCombatV2State();
+    this.sendToSocket(ws, {
+      type: "STATE_SYNC",
+      payload: {
+        state,
+        yourControlledEntities: session.controlledEntityIds,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  public broadcastStateSync(stateOverride?: Record<string, unknown>): void {
+    const state = stateOverride ?? this.buildCombatV2State();
+    const timestamp = new Date().toISOString();
+    for (const [ws, session] of this.sessions) {
+      this.sendToSocket(ws, {
+        type: "STATE_SYNC",
+        payload: {
+          state,
+          yourControlledEntities: session.controlledEntityIds,
+        },
+        timestamp,
+      });
+    }
   }
 
   public incrementVersion(): number {
