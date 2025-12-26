@@ -8,6 +8,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { CombatProvider, useCombat } from "../context/CombatProvider";
+import { useCombatIdentity } from "../hooks/useCombatIdentity";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // INNER COMPONENT (uses combat context)
@@ -357,14 +358,31 @@ export function CombatLobbyPage() {
   const [searchParams] = useSearchParams();
   const isGM = searchParams.get("gm") === "true";
 
-  // TODO: Get from auth context and campaign membership
-  const playerId = isGM ? "gm-1" : "player-1";
-  const controlledCharacterIds = isGM ? [] : ["char-1", "char-2"];
+  const { playerId, controlledCharacterIds, loading, error } = useCombatIdentity(campaignId, isGM);
 
   if (!campaignId) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-900">
         <p className="text-red-400">No campaign ID provided</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-slate-300">Loading combat lobby...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !playerId) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-900">
+        <p className="text-red-400">{error ?? "Not authenticated"}</p>
       </div>
     );
   }

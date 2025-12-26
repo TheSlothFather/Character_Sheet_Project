@@ -8,6 +8,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { CombatProvider, useCombat } from "../context/CombatProvider";
+import { useCombatIdentity } from "../hooks/useCombatIdentity";
 import { gmApi, type CampaignMember, type BestiaryEntry } from "../../../api/gm";
 import { api, type Character } from "../../../api/client";
 import { HexGrid } from "../components/grid";
@@ -489,6 +490,22 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
     return Object.values(entities).filter((entity) => !hexPositions[entity.id]);
   }, [entities, hexPositions]);
 
+  const handleEntityDrop = useCallback((entityId: string, position: HexPosition) => {
+    const current = hexPositions[entityId];
+    if (current && current.q === position.q && current.r === position.r) {
+      return;
+    }
+
+    const isPlacementMove = placementEntityId === entityId;
+    actions.gmMoveEntity(entityId, position.q, position.r, {
+      force: isPlacementMove ? placementForce : false,
+      ignoreApCost: true,
+    });
+    if (isPlacementMove) {
+      setPlacementEntityId(null);
+    }
+  }, [actions, hexPositions, placementEntityId, placementForce]);
+
   // Handle hex click
   const handleHexClick = useCallback((position: HexPosition) => {
     if (placementEntityId) {
@@ -684,6 +701,7 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
                 onHexClick={handleHexClick}
                 onHexHover={setHoveredHex}
                 onEntityClick={handleEntityClick}
+                onEntityDrop={handleEntityDrop}
                 className="h-[500px]"
               />
             </div>
@@ -900,8 +918,7 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
 export function GmCombatPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
 
-  // TODO: Get from auth context
-  const gmId = "gm-1";
+  const { playerId, loading, error } = useCombatIdentity(campaignId, true);
 
   if (!campaignId) {
     return (
@@ -911,10 +928,29 @@ export function GmCombatPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-slate-300">Loading GM console...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !playerId) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-900">
+        <p className="text-red-400">{error ?? "Not authenticated"}</p>
+      </div>
+    );
+  }
+
   return (
     <CombatProvider
       combatId={campaignId}
-      playerId={gmId}
+      playerId={playerId}
       isGM={true}
     >
       <GmCombatContent campaignId={campaignId} />

@@ -7,7 +7,8 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { CombatProvider, useCombat, useCombatState } from "../context/CombatProvider";
+import { CombatProvider, useCombat } from "../context/CombatProvider";
+import { useCombatIdentity } from "../hooks/useCombatIdentity";
 import { HexGrid } from "../components/grid";
 import { EntityCard } from "../components/entities";
 import { ActionBar, type ActionMode } from "../components/actions";
@@ -69,6 +70,24 @@ function PlayerCombatContent() {
   const handleTargetClick = useCallback((entityId: string) => {
     actions.setTarget(entityId);
   }, [actions]);
+
+  const handleEntityDrop = useCallback((entityId: string, position: HexPosition) => {
+    const current = state.hexPositions[entityId];
+    if (current && current.q === position.q && current.r === position.r) {
+      return;
+    }
+
+    if (!canControlEntity(entityId) || !isMyTurn) {
+      return;
+    }
+
+    if (entityId !== currentEntityId) {
+      return;
+    }
+
+    actions.declareMovement(entityId, position.q, position.r);
+    setActionMode("none");
+  }, [actions, canControlEntity, currentEntityId, isMyTurn, state.hexPositions]);
 
   // Render connection status
   if (connectionStatus === "connecting") {
@@ -198,6 +217,7 @@ function PlayerCombatContent() {
                 onHexClick={handleHexClick}
                 onHexHover={setHoveredHex}
                 onEntityClick={handleEntityClick}
+                onEntityDrop={handleEntityDrop}
                 className="h-[500px]"
               />
             </div>
@@ -322,14 +342,31 @@ function PlayerCombatContent() {
 export function PlayerCombatPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
 
-  // TODO: Get from auth context and campaign membership
-  const playerId = "player-1";
-  const controlledCharacterIds = ["char-1", "char-2"];
+  const { playerId, controlledCharacterIds, loading, error } = useCombatIdentity(campaignId, false);
 
   if (!campaignId) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-900">
         <p className="text-red-400">No campaign ID provided</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-900">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-slate-300">Loading combat profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !playerId) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-900">
+        <p className="text-red-400">{error ?? "Not authenticated"}</p>
       </div>
     );
   }
