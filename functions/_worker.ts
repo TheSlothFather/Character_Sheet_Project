@@ -16,6 +16,7 @@ export { CombatDurableObject };
 interface Env {
   CAMPAIGN_DO: DurableObjectNamespace;
   COMBAT_DO: DurableObjectNamespace<CombatDurableObject>;
+  COMBAT_MAPS_BUCKET: R2Bucket;
   SUPABASE_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
 }
@@ -4121,6 +4122,94 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MAP UPLOAD ROUTE (for battle map images)
+    // ═══════════════════════════════════════════════════════════════════════════
+    const mapUploadMatch = url.pathname.match(/^\/api\/combat\/([^/]+)\/map\/upload$/);
+    if (mapUploadMatch && request.method === "POST") {
+      const combatId = decodeURIComponent(mapUploadMatch[1]);
+
+      try {
+        // Parse multipart form data
+        const formData = await request.formData();
+        const file = formData.get("file") as File | null;
+
+        if (!file) {
+          return new Response(
+            JSON.stringify({ error: "No file provided" }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            }
+          );
+        }
+
+        // Validate file type (must be image)
+        if (!file.type.startsWith("image/")) {
+          return new Response(
+            JSON.stringify({ error: "File must be an image" }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            }
+          );
+        }
+
+        // Validate file size (15 MB max)
+        const maxSize = 15 * 1024 * 1024; // 15 MB
+        if (file.size > maxSize) {
+          return new Response(
+            JSON.stringify({ error: "File size must be less than 15 MB" }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            }
+          );
+        }
+
+        // Generate unique key for R2
+        const extension = file.name.split(".").pop() || "jpg";
+        const key = `maps/${combatId}/${crypto.randomUUID()}.${extension}`;
+
+        // Upload to R2
+        await env.COMBAT_MAPS_BUCKET.put(key, file.stream(), {
+          httpMetadata: {
+            contentType: file.type,
+          },
+          customMetadata: {
+            originalName: file.name,
+            uploadedAt: new Date().toISOString(),
+          },
+        });
+
+        // Generate public URL (will need to be configured in R2 settings)
+        const publicUrl = `https://combat-maps.adurun.com/${key}`;
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            imageUrl: publicUrl,
+            imageKey: key,
+            width: null, // Client should provide dimensions
+            height: null,
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      } catch (error) {
+        console.error("Map upload error:", error);
+        return new Response(
+          JSON.stringify({ error: "Upload failed", details: error instanceof Error ? error.message : "Unknown error" }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // COMBAT V2 ROUTES (new system with CombatDurableObject)

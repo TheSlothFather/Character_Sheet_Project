@@ -2,6 +2,6 @@
  * Combat V2 - Grid Components Index
  */
 
-export { HexGrid, type HexGridProps } from "./HexGrid";
-export { HexCell, type HexCellProps } from "./HexCell";
+export { SquareGrid, type SquareGridProps } from "./SquareGrid";
+export { SquareCell, type SquareCellProps } from "./SquareCell";
 export { EntityMarker, type EntityMarkerProps } from "./EntityMarker";

@@ -17,15 +17,14 @@
     "dev:client": "npm run dev --workspace client",
     "preview:client": "npm run preview --workspace client",
     "lint": "echo \"add linter\"",
-    "test": "echo \"add tests\""
+    "test": "echo \"add tests\"",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "@types/node": "^25.0.3",
     "wrangler": "^4.56.0",
     "wscat": "^6.1.0"
-  },
-  "dependencies": {
-    "honeycomb-grid": "^4.1.5"
   }
 }

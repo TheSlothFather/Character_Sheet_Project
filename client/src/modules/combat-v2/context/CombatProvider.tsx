@@ -19,7 +19,9 @@ import {
   type ReconnectingCombatV2Socket,
   type CombatV2State,
   type CombatV2Entity,
-  type HexPosition,
+  type GridPosition,
+  type GridConfig,
+  type MapConfig,
   type InitiativeEntry,
   type ClientMessageType,
   type SkillContestInitiatedPayload,
@@ -50,7 +52,9 @@ export interface CombatContextState {
   // Entities
   entities: Record<string, CombatV2Entity>;
   initiative: InitiativeEntry[];
-  hexPositions: Record<string, HexPosition>;
+  gridPositions: Record<string, GridPosition>;
+  gridConfig: GridConfig;
+  mapConfig: MapConfig;
   controlledEntityIds: string[];
 
   // Version for optimistic updates
@@ -91,10 +95,12 @@ type CombatAction =
   | { type: "TURN_STARTED"; entityId: string; turnIndex: number }
   | { type: "TURN_ENDED"; entityId: string; energyGained: number }
   | { type: "INITIATIVE_UPDATED"; initiative: InitiativeEntry[] }
-  | { type: "ENTITY_ADDED"; entity: CombatV2Entity; position?: HexPosition; initiative?: InitiativeEntry[] }
+  | { type: "ENTITY_ADDED"; entity: CombatV2Entity; position?: GridPosition; initiative?: InitiativeEntry[] }
   | { type: "ENTITY_REMOVED"; entityId: string; initiative?: InitiativeEntry[] }
   | { type: "ENTITY_UPDATED"; entityId: string; updates: Partial<CombatV2Entity> }
-  | { type: "ENTITY_POSITION_UPDATED"; entityId: string; position: HexPosition }
+  | { type: "ENTITY_POSITION_UPDATED"; entityId: string; position: GridPosition }
+  | { type: "GRID_CONFIG_UPDATED"; config: Partial<GridConfig> }
+  | { type: "MAP_CONFIG_UPDATED"; config: Partial<MapConfig> }
   | { type: "SET_PENDING_ENDURE"; entityId: string; damage: number }
   | { type: "SET_PENDING_DEATH_CHECK"; entityId: string; damage: number }
   | { type: "CLEAR_PENDING_ROLLS" }
@@ -122,7 +128,23 @@ const initialState: CombatContextState = {
   currentEntityId: null,
   entities: {},
   initiative: [],
-  hexPositions: {},
+  gridPositions: {},
+  gridConfig: {
+    rows: 20,
+    cols: 30,
+    cellSize: 40,
+    offsetX: 0,
+    offsetY: 0,
+    visible: true,
+    opacity: 0.5,
+  },
+  mapConfig: {
+    imageUrl: null,
+    imageKey: null,
+    imageWidth: null,
+    imageHeight: null,
+    templateId: null,
+  },
   controlledEntityIds: [],
   version: 0,
   selectedEntityId: null,
@@ -155,7 +177,9 @@ function combatReducer(state: CombatContextState, action: CombatAction): CombatC
         currentEntityId: action.state.currentEntityId,
         entities: action.state.entities,
         initiative: action.state.initiative,
-        hexPositions: action.state.hexPositions,
+        gridPositions: action.state.gridPositions,
+        gridConfig: action.state.gridConfig,
+        mapConfig: action.state.mapConfig,
         controlledEntityIds: action.controlledEntityIds,
         version: action.state.version,
       };
@@ -222,23 +246,23 @@ function combatReducer(state: CombatContextState, action: CombatAction): CombatC
           ...state.entities,
           [action.entity.id]: action.entity,
         },
-        hexPositions: action.position
+        gridPositions: action.position
           ? {
-              ...state.hexPositions,
+              ...state.gridPositions,
               [action.entity.id]: action.position,
             }
-          : state.hexPositions,
+          : state.gridPositions,
         initiative: action.initiative ?? state.initiative,
         version: state.version + 1,
       };
 
     case "ENTITY_REMOVED": {
       const { [action.entityId]: _removed, ...rest } = state.entities;
-      const { [action.entityId]: _removedPos, ...remainingPositions } = state.hexPositions;
+      const { [action.entityId]: _removedPos, ...remainingPositions } = state.gridPositions;
       return {
         ...state,
         entities: rest,
-        hexPositions: remainingPositions,
+        gridPositions: remainingPositions,
         initiative: action.initiative ?? state.initiative,
         version: state.version + 1,
       };
@@ -260,9 +284,29 @@ function combatReducer(state: CombatContextState, action: CombatAction): CombatC
     case "ENTITY_POSITION_UPDATED":
       return {
         ...state,
-        hexPositions: {
-          ...state.hexPositions,
+        gridPositions: {
+          ...state.gridPositions,
           [action.entityId]: action.position,
+        },
+        version: state.version + 1,
+      };
+
+    case "GRID_CONFIG_UPDATED":
+      return {
+        ...state,
+        gridConfig: {
+          ...state.gridConfig,
+          ...action.config,
+        },
+        version: state.version + 1,
+      };
+
+    case "MAP_CONFIG_UPDATED":
+      return {
+        ...state,
+        mapConfig: {
+          ...state.mapConfig,
+          ...action.config,
         },
         version: state.version + 1,
       };
@@ -347,7 +391,7 @@ interface CombatContextActions {
   readyAction: (entityId: string, triggerCondition: string) => void;
 
   // Movement
-  declareMovement: (entityId: string, targetQ: number, targetR: number, path?: HexPosition[]) => void;
+  declareMovement: (entityId: string, targetRow: number, targetCol: number, path?: GridPosition[]) => void;
 
   // Combat actions
   declareAttack: (params: {
@@ -399,8 +443,8 @@ interface CombatContextActions {
   gmOverride: (entityId: string, data: Partial<CombatV2Entity>) => void;
   gmMoveEntity: (
     entityId: string,
-    targetQ: number,
-    targetR: number,
+    targetRow: number,
+    targetCol: number,
     options?: { force?: boolean; ignoreApCost?: boolean }
   ) => void;
   gmApplyDamage: (entityId: string, damage: number, damageType: string) => void;
@@ -465,7 +509,7 @@ export interface CombatContextValue {
   isMyTurn: boolean;
   canControlEntity: (entityId: string) => boolean;
   getEntity: (entityId: string) => CombatV2Entity | undefined;
-  getEntityPosition: (entityId: string) => HexPosition | undefined;
+  getEntityPosition: (entityId: string) => GridPosition | undefined;
   getCurrentTurnEntity: () => CombatV2Entity | undefined;
   getInitiativeOrder: () => (CombatV2Entity & { initiativeRoll: number })[];
 }
@@ -564,7 +608,7 @@ export function CombatProvider({
             dispatch({
               type: "ENTITY_ADDED",
               entity: payload.entity,
-              position: payload.hexPosition,
+              position: payload.gridPosition,
               initiative: payload.initiative,
             });
             return;
@@ -767,8 +811,8 @@ export function CombatProvider({
     readyAction: (entityId, triggerCondition) =>
       send("READY_ACTION", { entityId, triggerCondition }),
 
-    declareMovement: (entityId, targetQ, targetR, path) =>
-      send("DECLARE_MOVEMENT", { entityId, targetQ, targetR, path }),
+    declareMovement: (entityId, targetRow, targetCol, path) =>
+      send("DECLARE_MOVEMENT", { entityId, targetRow, targetCol, path }),
 
     declareAttack: (params) => send("DECLARE_ATTACK", params),
     declareAbility: (params) => send("DECLARE_ABILITY", params),
@@ -790,8 +834,8 @@ export function CombatProvider({
     },
 
     gmOverride: (entityId, data) => send("GM_OVERRIDE", { entityId, updates: data }),
-    gmMoveEntity: (entityId, targetQ, targetR, options) =>
-      send("GM_MOVE_ENTITY", { entityId, targetQ, targetR, ...options }),
+    gmMoveEntity: (entityId, targetRow, targetCol, options) =>
+      send("GM_MOVE_ENTITY", { entityId, targetRow, targetCol, ...options }),
     gmApplyDamage: (entityId, damage, damageType) =>
       send("GM_APPLY_DAMAGE", { entityId, damage, damageType }),
     gmModifyResources: (entityId, ap, energy) =>
@@ -830,8 +874,8 @@ export function CombatProvider({
   }, [state.entities]);
 
   const getEntityPosition = useCallback((entityId: string) => {
-    return state.hexPositions[entityId];
-  }, [state.hexPositions]);
+    return state.gridPositions[entityId];
+  }, [state.gridPositions]);
 
   const getCurrentTurnEntity = useCallback(() => {
     if (!state.currentEntityId) return undefined;

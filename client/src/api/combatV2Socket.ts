@@ -37,6 +37,8 @@ export type ServerEventType =
   | "SKILL_CONTEST_RESOLVED"
   | "ATTACK_CONTEST_INITIATED"
   | "ATTACK_CONTEST_RESOLVED"
+  | "MAP_CONFIG_UPDATED"
+  | "MAP_TEMPLATE_SAVED"
   | "ACTION_REJECTED"
   | "ERROR";
 
@@ -70,7 +72,11 @@ export type ClientMessageType =
   | "REQUEST_STATE"
   | "INITIATE_SKILL_CONTEST"
   | "INITIATE_ATTACK_CONTEST"
-  | "RESPOND_SKILL_CONTEST";
+  | "RESPOND_SKILL_CONTEST"
+  | "UPDATE_MAP_CONFIG"
+  | "UPDATE_GRID_CONFIG"
+  | "LOAD_MAP_TEMPLATE"
+  | "SAVE_MAP_TEMPLATE";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DAMAGE TYPES
@@ -119,9 +125,27 @@ export interface CombatV2Entity {
   };
 }
 
-export interface HexPosition {
-  q: number;
-  r: number;
+export interface GridPosition {
+  row: number;
+  col: number;
+}
+
+export interface GridConfig {
+  rows: number;
+  cols: number;
+  cellSize: number;
+  offsetX: number;
+  offsetY: number;
+  visible: boolean;
+  opacity: number;
+}
+
+export interface MapConfig {
+  imageUrl: string | null;
+  imageKey: string | null;
+  imageWidth: number | null;
+  imageHeight: number | null;
+  templateId: string | null;
 }
 
 export interface InitiativeEntry {
@@ -150,7 +174,9 @@ export interface CombatV2State {
   currentEntityId: string | null;
   entities: Record<string, CombatV2Entity>;
   initiative: InitiativeEntry[];
-  hexPositions: Record<string, HexPosition>;
+  gridPositions: Record<string, GridPosition>;
+  gridConfig: GridConfig;
+  mapConfig: MapConfig;
   version: number;
 }
 
@@ -167,9 +193,9 @@ export interface CombatStartedPayload {
 
 export interface MovementExecutedPayload {
   entityId: string;
-  from: HexPosition;
-  to: HexPosition;
-  path?: HexPosition[];
+  from: GridPosition;
+  to: GridPosition;
+  path?: GridPosition[];
   distance: number;
   apCost: number;
   remainingAP: number;

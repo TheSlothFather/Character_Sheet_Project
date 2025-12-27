@@ -9,12 +9,12 @@ import React, { useState, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { CombatProvider, useCombat } from "../context/CombatProvider";
 import { useCombatIdentity } from "../hooks/useCombatIdentity";
-import { HexGrid } from "../components/grid";
+import { SquareGrid } from "../components/grid";
 import { EntityCard } from "../components/entities";
 import { ActionBar, type ActionMode } from "../components/actions";
 import { ChannelingTracker } from "../components/channeling";
 import { SkillContestPanel } from "../components/SkillContestPanel";
-import type { HexPosition } from "../../../api/combatV2Socket";
+import type { GridPosition } from "../../../api/combatV2Socket";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // INNER COMPONENT (uses combat context)
@@ -23,7 +23,7 @@ import type { HexPosition } from "../../../api/combatV2Socket";
 function PlayerCombatContent() {
   const { state, actions, isMyTurn, canControlEntity, getInitiativeOrder } = useCombat();
   const [actionMode, setActionMode] = useState<ActionMode>("none");
-  const [hoveredHex, setHoveredHex] = useState<HexPosition | null>(null);
+  const [hoveredCell, setHoveredCell] = useState<GridPosition | null>(null);
 
   const {
     connectionStatus,
@@ -35,6 +35,8 @@ function PlayerCombatContent() {
     currentEntityId,
     pendingEndureRoll,
     pendingDeathCheck,
+    gridConfig,
+    mapConfig,
   } = state;
 
   // Get controlled entities
@@ -48,8 +50,8 @@ function PlayerCombatContent() {
   // Get selected entity
   const selectedEntity = selectedEntityId ? entities[selectedEntityId] : null;
 
-  // Handle hex click
-  const handleHexClick = useCallback((position: HexPosition) => {
+  // Handle cell click
+  const handleCellClick = useCallback((position: GridPosition) => {
     if (
       actionMode === "move" &&
       selectedEntityId &&
@@ -57,7 +59,7 @@ function PlayerCombatContent() {
       canControlEntity(selectedEntityId) &&
       isMyTurn
     ) {
-      actions.declareMovement(selectedEntityId, position.q, position.r);
+      actions.declareMovement(selectedEntityId, position.row, position.col);
       setActionMode("none");
     }
   }, [actionMode, selectedEntityId, currentEntityId, canControlEntity, isMyTurn, actions]);
@@ -72,9 +74,9 @@ function PlayerCombatContent() {
     actions.setTarget(entityId);
   }, [actions]);
 
-  const handleEntityDrop = useCallback((entityId: string, position: HexPosition) => {
-    const current = state.hexPositions[entityId];
-    if (current && current.q === position.q && current.r === position.r) {
+  const handleEntityDrop = useCallback((entityId: string, position: GridPosition) => {
+    const current = state.gridPositions[entityId];
+    if (current && current.row === position.row && current.col === position.col) {
       return;
     }
 
@@ -86,9 +88,9 @@ function PlayerCombatContent() {
       return;
     }
 
-    actions.declareMovement(entityId, position.q, position.r);
+    actions.declareMovement(entityId, position.row, position.col);
     setActionMode("none");
-  }, [actions, canControlEntity, currentEntityId, isMyTurn, state.hexPositions]);
+  }, [actions, canControlEntity, currentEntityId, isMyTurn, state.gridPositions]);
 
   // Render connection status
   if (connectionStatus === "connecting") {
@@ -212,24 +214,23 @@ function PlayerCombatContent() {
             <SkillContestPanel isGM={false} />
           </div>
 
-          {/* Center - Hex Grid */}
+          {/* Center - Square Grid */}
           <div className="col-span-6">
             <div className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
-              <HexGrid
-                width={15}
-                height={10}
-                onHexClick={handleHexClick}
-                onHexHover={setHoveredHex}
+              <SquareGrid
+                gridConfig={gridConfig}
+                mapConfig={mapConfig}
+                onCellClick={handleCellClick}
+                onCellHover={setHoveredCell}
                 onEntityClick={handleEntityClick}
                 onEntityDrop={handleEntityDrop}
-                className="h-[500px]"
               />
             </div>
 
-            {/* Hex info */}
-            {hoveredHex && (
+            {/* Cell info */}
+            {hoveredCell && (
               <div className="mt-2 text-sm text-slate-400">
-                Hex: ({hoveredHex.q}, {hoveredHex.r})
+                Cell: (row {hoveredCell.row}, col {hoveredCell.col})
               </div>
             )}
           </div>
