@@ -33,6 +33,25 @@ type AddEntityRequest = {
   placeAfterAdd: boolean;
 };
 
+// Build skills from character data (skillAllocations + skillBonuses)
+function buildCharacterSkills(character: Character): Record<string, number> {
+  const allocations = character.skillAllocations ?? {};
+  const bonuses = character.skillBonuses ?? {};
+  const skills: Record<string, number> = {};
+  const keys = new Set([...Object.keys(allocations), ...Object.keys(bonuses)]);
+  keys.forEach((key) => {
+    skills[key] = (allocations[key] ?? 0) + (bonuses[key] ?? 0);
+  });
+  return skills;
+}
+
+// Get skills from bestiary entry (try multiple possible field names)
+function getBestiarySkills(entry: BestiaryEntry): Record<string, number> {
+  return (entry.skills as Record<string, number> | undefined) ??
+    (entry.statsSkills as Record<string, number> | undefined) ??
+    {};
+}
+
 interface AddEntityModalProps {
   onAdd: (payload: AddEntityRequest) => void;
   onCancel: () => void;
@@ -140,6 +159,14 @@ function AddEntityModal({
     const energyMax = tier === "minion" ? 30 : 100;
     const entityId = crypto.randomUUID();
 
+    // Build skills from character or bestiary entry
+    let skills: Record<string, number> = {};
+    if (entityType === "pc" && selectedCharacter) {
+      skills = buildCharacterSkills(selectedCharacter);
+    } else if (entityType === "monster" && selectedBestiary) {
+      skills = getBestiarySkills(selectedBestiary);
+    }
+
     const entity: CombatV2Entity = {
       id: entityId,
       name: cleanedName,
@@ -153,6 +180,7 @@ function AddEntityModal({
       bestiaryEntryId: entityType === "monster" ? selectedBestiary?.id : undefined,
       ap: { current: apMax, max: apMax },
       energy: { current: energyMax, max: energyMax },
+      skills,
     };
 
     onAdd({
