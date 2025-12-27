@@ -319,7 +319,7 @@ export function SquareGrid({
         cells.push(
           <g
             key={key}
-            transform={`translate(${pixel.x}, ${pixel.y})`}
+            transform={`translate(${pixel.x + cellSize / 2}, ${pixel.y + cellSize / 2})`}
             onClick={() => handleCellClick(row, col)}
             onMouseEnter={() => handleCellHover(row, col, true)}
             onMouseLeave={() => handleCellHover(row, col, false)}

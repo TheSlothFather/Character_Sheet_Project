@@ -67,6 +67,29 @@ function ensureSkillContestsTable(sql: SqlStorage): void {
       attack_energy_cost INTEGER
     )
   `);
+
+  // Migration: Add contest_type column if it doesn't exist (for tables created before this column was added)
+  try {
+    sql["exec"](`ALTER TABLE skill_contests ADD COLUMN contest_type TEXT NOT NULL DEFAULT 'skill'`);
+  } catch {
+    // Column already exists, ignore the error
+  }
+
+  // Migration: Add attack contest fields if they don't exist
+  const attackColumns = [
+    "attack_base_damage INTEGER",
+    "attack_damage_type TEXT",
+    "attack_physical_attribute INTEGER",
+    "attack_ap_cost INTEGER",
+    "attack_energy_cost INTEGER",
+  ];
+  for (const col of attackColumns) {
+    try {
+      sql["exec"](`ALTER TABLE skill_contests ADD COLUMN ${col}`);
+    } catch {
+      // Column already exists, ignore the error
+    }
+  }
 }
 
 /**

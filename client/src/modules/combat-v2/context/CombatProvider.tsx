@@ -451,6 +451,8 @@ interface CombatContextActions {
   gmModifyResources: (entityId: string, ap?: number, energy?: number) => void;
   gmAddEntity: (payload: GmAddEntityPayload) => void;
   gmRemoveEntity: (entityId: string) => void;
+  gmUpdateMapConfig: (config: Partial<MapConfig>) => void;
+  gmUpdateGridConfig: (config: Partial<GridConfig>) => void;
 
   // UI actions
   selectEntity: (entityId: string | null) => void;
@@ -842,6 +844,8 @@ export function CombatProvider({
       send("GM_MODIFY_RESOURCES", { entityId, ap, energy }),
     gmAddEntity: (payload) => send("GM_ADD_ENTITY", payload),
     gmRemoveEntity: (entityId) => send("GM_REMOVE_ENTITY", { entityId }),
+    gmUpdateMapConfig: (config) => send("UPDATE_MAP_CONFIG", config),
+    gmUpdateGridConfig: (config) => send("UPDATE_GRID_CONFIG", config),
 
     selectEntity: (entityId) => dispatch({ type: "SELECT_ENTITY", entityId }),
     setTarget: (entityId) => dispatch({ type: "SET_TARGET", entityId }),

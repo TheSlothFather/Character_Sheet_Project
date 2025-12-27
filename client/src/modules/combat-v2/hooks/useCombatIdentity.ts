@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { gmApi } from "../../../api/gm";
 import { getSupabaseClient } from "../../../api/supabaseClient";
+import { isTestMode, getTestModeIdentity } from "../../../test-utils/combat-v2/testMode";
 
 type CombatIdentity = {
   playerId: string | null;
@@ -19,6 +20,18 @@ export function useCombatIdentity(campaignId: string | undefined, isGM: boolean)
     let isActive = true;
 
     const loadIdentity = async () => {
+      // TEST MODE: Return mock identity without hitting Supabase
+      if (isTestMode()) {
+        const testIdentity = getTestModeIdentity();
+        if (testIdentity) {
+          if (!isActive) return;
+          setPlayerId(testIdentity.playerId);
+          setControlledCharacterIds(testIdentity.controlledCharacterIds);
+          setLoading(false);
+          setError(null);
+          return;
+        }
+      }
       if (!campaignId) {
         if (!isActive) return;
         setLoading(false);

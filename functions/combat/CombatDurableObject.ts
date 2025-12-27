@@ -108,6 +108,9 @@ export type ClientMessageType =
   | "GM_MODIFY_RESOURCES"
   | "GM_ADD_ENTITY"
   | "GM_REMOVE_ENTITY"
+  // Map and grid management
+  | "UPDATE_MAP_CONFIG"
+  | "UPDATE_GRID_CONFIG"
   // Skill contests
   | "INITIATE_SKILL_CONTEST"
   | "INITIATE_ATTACK_CONTEST"
@@ -151,6 +154,9 @@ export type ServerEventType =
   | "GM_OVERRIDE_APPLIED"
   | "ACTION_REJECTED"
   | "ERROR"
+  // Map and grid management
+  | "MAP_CONFIG_UPDATED"
+  | "GRID_CONFIG_UPDATED"
   // Skill contests
   | "SKILL_CONTEST_INITIATED"
   | "SKILL_CONTEST_RESPONSE_REQUESTED"
@@ -465,6 +471,21 @@ export class CombatDurableObject extends DurableObject<Env> {
         await handleCombatLifecycle(this, ws, session, type, payload, requestId);
         break;
 
+      // Map and grid configuration (GM only)
+      case "UPDATE_MAP_CONFIG":
+      case "UPDATE_GRID_CONFIG":
+        if (!session.isGM) {
+          this.sendToSocket(ws, {
+            type: "ACTION_REJECTED",
+            payload: { reason: "GM privileges required" },
+            timestamp: new Date().toISOString(),
+            requestId,
+          });
+          return;
+        }
+        await this.handleMapGridConfig(ws, session, type, payload, requestId);
+        break;
+
       default:
         this.sendToSocket(ws, {
           type: "ACTION_REJECTED",
@@ -472,6 +493,56 @@ export class CombatDurableObject extends DurableObject<Env> {
           timestamp: new Date().toISOString(),
           requestId,
         });
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MAP AND GRID CONFIGURATION HANDLER
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  async handleMapGridConfig(
+    ws: WebSocket,
+    session: WebSocketMetadata,
+    type: "UPDATE_MAP_CONFIG" | "UPDATE_GRID_CONFIG",
+    payload: Record<string, unknown>,
+    requestId?: string
+  ): Promise<void> {
+    try {
+      if (type === "UPDATE_MAP_CONFIG") {
+        // Update map config in storage
+        const currentConfig = (await this.ctx.storage.get<Record<string, unknown>>("mapConfig")) || {};
+        const newConfig = { ...currentConfig, ...payload };
+        await this.ctx.storage.put("mapConfig", newConfig);
+
+        // Broadcast to all clients
+        this.broadcast({
+          type: "MAP_CONFIG_UPDATED",
+          payload: { config: newConfig },
+          timestamp: new Date().toISOString(),
+          requestId,
+        });
+      } else if (type === "UPDATE_GRID_CONFIG") {
+        // Update grid config in storage
+        const currentConfig = (await this.ctx.storage.get<Record<string, unknown>>("gridConfig")) || {};
+        const newConfig = { ...currentConfig, ...payload };
+        await this.ctx.storage.put("gridConfig", newConfig);
+
+        // Broadcast to all clients
+        this.broadcast({
+          type: "GRID_CONFIG_UPDATED",
+          payload: { config: newConfig },
+          timestamp: new Date().toISOString(),
+          requestId,
+        });
+      }
+    } catch (error) {
+      console.error(`Error handling ${type}:`, error);
+      this.sendToSocket(ws, {
+        type: "ERROR",
+        payload: { error: `Failed to update configuration: ${error instanceof Error ? error.message : "Unknown error"}` },
+        timestamp: new Date().toISOString(),
+        requestId,
+      });
     }
   }
 
