@@ -207,6 +207,12 @@ export function GmControls({ onAddEntity }: GmControlsProps) {
           </p>
         </div>
       )}
+
+      {lastError && (
+        <div className="rounded border border-red-700/60 bg-red-900/30 px-3 py-2 text-xs text-red-200">
+          {lastError}
+        </div>
+      )}
     </div>
   );
 }
