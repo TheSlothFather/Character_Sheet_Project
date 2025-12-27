@@ -109,6 +109,7 @@ export type ClientMessageType =
   | "GM_REMOVE_ENTITY"
   // Skill contests
   | "INITIATE_SKILL_CONTEST"
+  | "INITIATE_ATTACK_CONTEST"
   | "RESPOND_SKILL_CONTEST";
 
 export interface ClientMessage {
@@ -421,8 +422,9 @@ export class CombatDurableObject extends DurableObject<Env> {
         await handleDamageProcessing(this, ws, session, type, payload, requestId);
         break;
 
-      // Skill contests
+      // Skill contests (including attack contests)
       case "INITIATE_SKILL_CONTEST":
+      case "INITIATE_ATTACK_CONTEST":
       case "RESPOND_SKILL_CONTEST":
         await handleSkillContest(this, ws, session, type, payload, requestId);
         break;

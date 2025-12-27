@@ -35,6 +35,8 @@ export type ServerEventType =
   | "SKILL_CONTEST_INITIATED"
   | "SKILL_CONTEST_RESPONSE_REQUESTED"
   | "SKILL_CONTEST_RESOLVED"
+  | "ATTACK_CONTEST_INITIATED"
+  | "ATTACK_CONTEST_RESOLVED"
   | "ACTION_REJECTED"
   | "ERROR";
 
@@ -67,6 +69,7 @@ export type ClientMessageType =
   | "GM_REMOVE_ENTITY"
   | "REQUEST_STATE"
   | "INITIATE_SKILL_CONTEST"
+  | "INITIATE_ATTACK_CONTEST"
   | "RESPOND_SKILL_CONTEST";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -234,6 +237,7 @@ export interface EntityUpdatedPayload {
 
 export interface SkillContestInitiatedPayload {
   contestId: string;
+  contestType?: "skill" | "attack";
   initiatorEntityId: string;
   initiatorName: string;
   initiatorSkill: string;
@@ -246,19 +250,42 @@ export interface SkillContestInitiatedPayload {
   targetPlayerId?: string;
   diceCount: number;
   keepHighest: boolean;
+  // Attack-specific data
+  baseDamage?: number;
+  damageType?: string;
+  physicalAttribute?: number;
+  apCost?: number;
+  energyCost?: number;
+  attackerAp?: number;
+  attackerEnergy?: number;
 }
 
 export interface SkillContestResponseRequestedPayload {
   contestId: string;
+  contestType?: "skill" | "attack";
   initiatorEntityId: string;
   initiatorName: string;
   initiatorSkill: string;
   initiatorTotal: number;
   targetEntityId: string;
+  isAttack?: boolean;
+}
+
+export interface AttackContestResult {
+  hit: boolean;
+  baseDamage: number;
+  physicalAttribute: number;
+  finalDamage: number;
+  damageType: string;
+  criticalType: "normal" | "wicked" | "vicious" | "brutal";
+  woundsDealt: number;
+  targetEnergy: number;
+  targetWounds: Record<string, number>;
 }
 
 export interface SkillContestResolvedPayload {
   contestId: string;
+  contestType?: "skill" | "attack";
   initiatorEntityId: string;
   initiatorName: string;
   initiatorSkill: string;
@@ -277,15 +304,19 @@ export interface SkillContestResolvedPayload {
   winnerName: string | null;
   isTie: boolean;
   margin: number;
+  // Attack-specific results
+  attack?: AttackContestResult;
 }
 
 export interface PendingSkillContest {
   contestId: string;
+  contestType?: "skill" | "attack";
   initiatorEntityId: string;
   initiatorName: string;
   initiatorSkill: string;
   initiatorTotal: number;
   targetEntityId: string;
+  isAttack?: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -327,6 +358,10 @@ export interface CombatV2SocketHandlers {
   onSkillContestInitiated?: (payload: SkillContestInitiatedPayload) => void;
   onSkillContestResponseRequested?: (payload: SkillContestResponseRequestedPayload) => void;
   onSkillContestResolved?: (payload: SkillContestResolvedPayload) => void;
+
+  // Attack contests (reuse skill contest types with attack-specific data)
+  onAttackContestInitiated?: (payload: SkillContestInitiatedPayload) => void;
+  onAttackContestResolved?: (payload: SkillContestResolvedPayload) => void;
 
   // Errors
   onActionRejected?: (payload: { reason: string; [key: string]: unknown }) => void;
@@ -480,6 +515,12 @@ export const connectCombatV2Socket = (
           break;
         case "SKILL_CONTEST_RESOLVED":
           handlers.onSkillContestResolved?.(payload as unknown as SkillContestResolvedPayload);
+          break;
+        case "ATTACK_CONTEST_INITIATED":
+          handlers.onAttackContestInitiated?.(payload as unknown as SkillContestInitiatedPayload);
+          break;
+        case "ATTACK_CONTEST_RESOLVED":
+          handlers.onAttackContestResolved?.(payload as unknown as SkillContestResolvedPayload);
           break;
         case "ACTION_REJECTED":
           console.warn(`[CombatWS] Action rejected:`, payload);

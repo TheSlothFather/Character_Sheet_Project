@@ -436,6 +436,24 @@ interface CombatContextActions {
     selectedRoll?: number;
   }) => void;
   clearContest: () => void;
+
+  // Attack contests (attacks as skill contests)
+  initiateAttackContest: (params: {
+    initiatorEntityId: string;
+    targetEntityId: string;
+    targetPlayerId?: string;
+    skill: string;
+    skillModifier: number;
+    diceCount: number;
+    keepHighest: boolean;
+    baseDamage: number;
+    damageType: string;
+    physicalAttribute: number;
+    apCost: number;
+    energyCost: number;
+    rawRolls?: number[];
+    selectedRoll?: number;
+  }) => void;
 }
 
 export interface CombatContextValue {
@@ -690,6 +708,28 @@ export function CombatProvider({
         onSkillContestResolved: (payload) => {
           dispatch({ type: "SKILL_CONTEST_RESOLVED", result: payload });
         },
+        onAttackContestInitiated: (payload) => {
+          // Attack contests use the same UI as skill contests
+          dispatch({ type: "SKILL_CONTEST_INITIATED", contest: payload });
+        },
+        onAttackContestResolved: (payload) => {
+          dispatch({ type: "SKILL_CONTEST_RESOLVED", result: payload });
+
+          // If this was an attack that hit, update the target entity
+          if (payload.attack && payload.attack.hit && payload.defenderEntityId) {
+            dispatch({
+              type: "ENTITY_UPDATED",
+              entityId: payload.defenderEntityId,
+              updates: {
+                energy: {
+                  current: payload.attack.targetEnergy,
+                  max: state.entities[payload.defenderEntityId]?.energy?.max ?? 100,
+                },
+                wounds: payload.attack.targetWounds,
+              },
+            });
+          }
+        },
       },
       {
         playerId,
@@ -766,6 +806,8 @@ export function CombatProvider({
     initiateSkillContest: (params) => send("INITIATE_SKILL_CONTEST", params),
     respondToSkillContest: (params) => send("RESPOND_SKILL_CONTEST", params),
     clearContest: () => dispatch({ type: "CLEAR_CONTEST" }),
+
+    initiateAttackContest: (params) => send("INITIATE_ATTACK_CONTEST", params),
   }), [send]);
 
   // Computed helpers
