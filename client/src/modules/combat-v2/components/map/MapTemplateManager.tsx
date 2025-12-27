@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
-import { supabase } from "../../../../api/supabaseClient";
+import { getSupabaseClient } from "../../../../api/supabaseClient";
 import type { GridConfig, MapConfig } from "../../../../api/combatV2Socket";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -67,7 +67,7 @@ export function MapTemplateManager({
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await getSupabaseClient()
         .from("combat_map_templates")
         .select("*")
         .eq("campaign_id", campaignId)
@@ -99,7 +99,7 @@ export function MapTemplateManager({
       setSaving(true);
       setError(null);
 
-      const { data: userData } = await supabase.auth.getUser();
+      const { data: userData } = await getSupabaseClient().auth.getUser();
       if (!userData.user) {
         throw new Error("User not authenticated");
       }
@@ -122,7 +122,7 @@ export function MapTemplateManager({
         grid_opacity: currentGridConfig.opacity,
       };
 
-      const { error: insertError } = await supabase
+      const { error: insertError } = await getSupabaseClient()
         .from("combat_map_templates")
         .insert(template);
 
@@ -160,7 +160,7 @@ export function MapTemplateManager({
       try {
         setError(null);
 
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await getSupabaseClient()
           .from("combat_map_templates")
           .delete()
           .eq("id", templateId);
