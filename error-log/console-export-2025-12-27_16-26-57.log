@@ -1,0 +1,39 @@
+Loading failed for the <script> with source “https://static.cloudflareinsights.com/beacon.min.js”. bestiary:12:173
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://static.cloudflareinsights.com/beacon.min.js from being executed because it violates the following directive: “script-src 'self' 'unsafe-inline' 'unsafe-eval'” bestiary
+Content-Security-Policy: The page’s settings blocked a style (style-src-elem) at https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Spectral:wght@400;600;700&family=Alegreya+Sans:wght@400;500;700&display=swap from being applied because it violates the following directive: “style-src 'self' 'unsafe-inline'” bestiary
+Content-Security-Policy: The page’s settings blocked a style (style-src-elem) at https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap from being applied because it violates the following directive: “style-src 'self' 'unsafe-inline'” bestiary
+[CombatWS] Sending REQUEST_STATE undefined index-n1nzdAJU.js:2070:63733
+TypeError: can't access property "36ee3919-387c-4586-bedb-00172aae6dc0", te is undefined
+    Y https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:2070
+    Y https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:2070
+    ty https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:38
+    useMemo https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:9
+    P1 https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:2070
+    Kd https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:38
+    Pu https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Iy https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Ey https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    R_ https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    fl https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Wu https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Ny https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    T https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+    $ https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+index-n1nzdAJU.js:40:161
+Uncaught TypeError: can't access property "36ee3919-387c-4586-bedb-00172aae6dc0", te is undefined
+    Y https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:2070
+    Y https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:2070
+    ty https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:38
+    useMemo https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:9
+    P1 https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:2070
+    Kd https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:38
+    Pu https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Iy https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Ey https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    R_ https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    fl https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Wu https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Ny https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    T https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+    $ https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+index-n1nzdAJU.js:2070:156477

@@ -1,0 +1,19 @@
+Loading failed for the <script> with source “https://static.cloudflareinsights.com/beacon.min.js”. combat:12:173
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://static.cloudflareinsights.com/beacon.min.js from being executed because it violates the following directive: “script-src 'self' 'unsafe-inline' 'unsafe-eval'” combat
+Content-Security-Policy: The page’s settings blocked a style (style-src-elem) at https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Spectral:wght@400;600;700&family=Alegreya+Sans:wght@400;500;700&display=swap from being applied because it violates the following directive: “style-src 'self' 'unsafe-inline'” combat
+Content-Security-Policy: The page’s settings blocked a style (style-src-elem) at https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap from being applied because it violates the following directive: “style-src 'self' 'unsafe-inline'” combat
+[CombatWS] Sending REQUEST_STATE undefined index-CoNz9Sak.js:2070:63283
+[CombatWS] Sending END_TURN 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0" }
+index-CoNz9Sak.js:2070:63283
+Unexpected value NaN parsing width attribute. 2 index-CoNz9Sak.js:33:5105
+[CombatWS] Sending REQUEST_STATE undefined index-CoNz9Sak.js:2070:63283
+The connection to wss://adurun-campaigns.larhackman.workers.dev/api/combat/296b620d-c3af-4222-9f2f-5fe266f8b2a5/connect?playerId=2bc967e6-c836-42e1-82fc-5ba261dd2ae0&isGM=false&entities=99a53142-3e7c-41e1-81af-a0387da1f9f0 was interrupted while the page was loading. index-CoNz9Sak.js:2070:61009
+[CombatWS] Sending REQUEST_STATE undefined 3 index-CoNz9Sak.js:2070:63283
+[CombatWS] Sending END_TURN 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0" }
+index-CoNz9Sak.js:2070:63283
+Unexpected value NaN parsing width attribute. 2 index-CoNz9Sak.js:33:5105
+[CombatWS] Sending END_TURN 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0" }
+index-CoNz9Sak.js:2070:63283

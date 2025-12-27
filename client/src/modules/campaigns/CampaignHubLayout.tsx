@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, Outlet, useParams } from "react-router-dom";
 import { getCampaign } from "../../api/campaigns";
+import { isTestMode } from "../../test-utils/combat-v2/testMode";
 import "./CampaignHubLayout.css";
 
 export const CampaignHubLayout: React.FC = () => {
@@ -12,6 +13,13 @@ export const CampaignHubLayout: React.FC = () => {
   React.useEffect(() => {
     if (!campaignId) {
       setError("Campaign ID is missing.");
+      setLoading(false);
+      return;
+    }
+
+    // TEST MODE: Skip campaign loading and use mock data
+    if (isTestMode()) {
+      setCampaignName("Test Campaign");
       setLoading(false);
       return;
     }

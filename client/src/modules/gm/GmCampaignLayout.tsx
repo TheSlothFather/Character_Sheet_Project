@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet, useParams } from "react-router-dom";
 import { gmApi, type Campaign } from "../../api/gm";
+import { isTestMode } from "../../test-utils/combat-v2/testMode";
 import "./GmCampaignLayout.css";
 
 export const GmCampaignLayout: React.FC = () => {
@@ -12,6 +13,13 @@ export const GmCampaignLayout: React.FC = () => {
   React.useEffect(() => {
     if (!campaignId) {
       setError("Campaign ID is missing.");
+      setLoading(false);
+      return;
+    }
+
+    // TEST MODE: Skip campaign loading and use mock data
+    if (isTestMode()) {
+      setCampaign({ id: campaignId, name: "Test Campaign", gmUserId: "dev-gm-id" } as Campaign);
       setLoading(false);
       return;
     }

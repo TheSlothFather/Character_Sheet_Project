@@ -460,6 +460,8 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [bestiaryEntries, setBestiaryEntries] = useState<BestiaryEntry[]>([]);
   const [rosterError, setRosterError] = useState<string | null>(null);
+  const [showMapControls, setShowMapControls] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
 
   const {
     connectionStatus,
@@ -571,6 +573,26 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
     }
     setShowAddEntity(false);
   }, [actions, campaignId]);
+
+  // Handle map upload
+  const handleMapUpload = useCallback((imageUrl: string, dimensions: { width: number; height: number }) => {
+    actions.gmUpdateMapConfig({
+      imageUrl,
+      imageWidth: dimensions.width,
+      imageHeight: dimensions.height,
+    });
+    setMapError(null);
+  }, [actions]);
+
+  // Handle map error
+  const handleMapError = useCallback((error: string) => {
+    setMapError(error);
+  }, []);
+
+  // Handle grid config change
+  const handleGridConfigChange = useCallback((newConfig: typeof gridConfig) => {
+    actions.gmUpdateGridConfig(newConfig);
+  }, [actions]);
 
   // Render connection status
   if (connectionStatus === "connecting") {
@@ -913,6 +935,52 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Map Management */}
+            <div className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setShowMapControls(!showMapControls)}
+                className="w-full px-3 py-2 flex items-center justify-between text-sm font-semibold text-slate-400 hover:bg-slate-700/50 transition-colors"
+              >
+                <span>Map Management</span>
+                <span className="text-xs">{showMapControls ? "▼" : "▶"}</span>
+              </button>
+
+              {showMapControls && (
+                <div className="p-3 space-y-4 border-t border-slate-700">
+                  {mapError && (
+                    <div className="text-xs text-red-400 bg-red-900/20 border border-red-700/50 rounded p-2">
+                      {mapError}
+                    </div>
+                  )}
+
+                  {/* Map Upload */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-slate-400 mb-2">Battle Map</h4>
+                    <MapUploader
+                      combatId={campaignId}
+                      onUploadComplete={handleMapUpload}
+                      onError={handleMapError}
+                      currentImageUrl={mapConfig?.imageUrl}
+                    />
+                  </div>
+
+                  {/* Grid Configuration */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-slate-400 mb-2">Grid Setup</h4>
+                    <GridConfigurator
+                      config={gridConfig}
+                      onChange={handleGridConfigChange}
+                      imageSize={
+                        mapConfig?.imageWidth && mapConfig?.imageHeight
+                          ? { width: mapConfig.imageWidth, height: mapConfig.imageHeight }
+                          : undefined
+                      }
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

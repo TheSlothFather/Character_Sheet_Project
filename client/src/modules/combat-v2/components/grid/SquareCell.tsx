@@ -119,8 +119,8 @@ export function SquareCell({
     <g className="square-cell">
       {/* Base square */}
       <rect
-        x="0"
-        y="0"
+        x={-size / 2}
+        y={-size / 2}
         width={size}
         height={size}
         fill={fillColor}
@@ -132,8 +132,8 @@ export function SquareCell({
       {/* Hazard indicator */}
       {terrainType === "hazard" && (
         <text
-          x={size / 2}
-          y={size / 2}
+          x="0"
+          y="0"
           textAnchor="middle"
           dominantBaseline="middle"
           className="text-xs fill-red-400 font-bold pointer-events-none select-none"
@@ -147,19 +147,19 @@ export function SquareCell({
       {terrainType === "impassable" && (
         <>
           <line
-            x1="0"
-            y1="0"
-            x2={size}
-            y2={size}
+            x1={-size / 2}
+            y1={-size / 2}
+            x2={size / 2}
+            y2={size / 2}
             stroke="rgba(127, 29, 29, 0.8)"
             strokeWidth="2"
             className="pointer-events-none"
           />
           <line
-            x1={size}
-            y1="0"
-            x2="0"
-            y2={size}
+            x1={size / 2}
+            y1={-size / 2}
+            x2={-size / 2}
+            y2={size / 2}
             stroke="rgba(127, 29, 29, 0.8)"
             strokeWidth="2"
             className="pointer-events-none"

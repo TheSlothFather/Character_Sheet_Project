@@ -10,6 +10,7 @@ import { PlayerCharactersPage } from "./PlayerCharactersPage";
 import CombatPageNew from "./CombatPageNew";
 import { GmCombatPage, CombatLobbyPage } from "../combat-v2";
 import { GmCampaignLayout } from "./GmCampaignLayout";
+import { isTestMode } from "../../test-utils/combat-v2/testMode";
 import "./GmApp.css";
 
 const NotFound: React.FC = () => (
@@ -36,6 +37,14 @@ export const GmApp: React.FC = () => {
 
   React.useEffect(() => {
     let active = true;
+
+    // TEST MODE: Skip auth check and use mock user
+    if (isTestMode()) {
+      setUser({ id: "dev-gm-id", email: "gm@test.dev" } as User);
+      setLoading(false);
+      return;
+    }
+
     client.auth.getUser().then(({ data, error: authError }) => {
       if (!active) return;
       if (authError) {

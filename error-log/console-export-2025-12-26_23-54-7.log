@@ -1,0 +1,39 @@
+Loading failed for the <script> with source “https://static.cloudflareinsights.com/beacon.min.js”. combat:12:173
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://static.cloudflareinsights.com/beacon.min.js from being executed because it violates the following directive: “script-src 'self' 'unsafe-inline' 'unsafe-eval'” combat
+Content-Security-Policy: The page’s settings blocked a style (style-src-elem) at https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Spectral:wght@400;600;700&family=Alegreya+Sans:wght@400;500;700&display=swap from being applied because it violates the following directive: “style-src 'self' 'unsafe-inline'” combat
+Content-Security-Policy: The page’s settings blocked a style (style-src-elem) at https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap from being applied because it violates the following directive: “style-src 'self' 'unsafe-inline'” combat
+[CombatWS] Sending REQUEST_STATE undefined index-CoNz9Sak.js:2070:63283
+[CombatWS] Sending DELAY_TURN 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0" }
+index-CoNz9Sak.js:2070:63283
+Unexpected value NaN parsing width attribute. 2 index-CoNz9Sak.js:33:5105
+[CombatWS] Sending REQUEST_STATE undefined index-CoNz9Sak.js:2070:63283
+[CombatWS] Sending END_TURN 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0" }
+index-CoNz9Sak.js:2070:63283
+Unexpected value NaN parsing width attribute. 2 index-CoNz9Sak.js:33:5105
+[CombatWS] Sending DECLARE_MOVEMENT 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0", targetQ: 4, targetR: 6, path: undefined }
+index-CoNz9Sak.js:2070:63283
+Unexpected value NaN parsing width attribute. index-CoNz9Sak.js:33:5105
+[CombatWS] Sending DECLARE_MOVEMENT 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0", targetQ: 7, targetR: 5, path: undefined }
+index-CoNz9Sak.js:2070:63283
+Unexpected value NaN parsing width attribute. index-CoNz9Sak.js:33:5105
+[CombatWS] Sending DECLARE_MOVEMENT 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0", targetQ: 11, targetR: 2, path: undefined }
+index-CoNz9Sak.js:2070:63283
+Unexpected value NaN parsing width attribute. index-CoNz9Sak.js:33:5105
+[CombatWS] Sending DECLARE_MOVEMENT 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0", targetQ: 4, targetR: 5, path: undefined }
+index-CoNz9Sak.js:2070:63283
+[CombatWS] Action rejected: 
+Object { reason: "Insufficient AP for movement", required: 3, available: 2 }
+index-CoNz9Sak.js:2070:62970
+[CombatWS] Sending DECLARE_MOVEMENT 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0", targetQ: 7, targetR: 4, path: undefined }
+index-CoNz9Sak.js:2070:63283
+Unexpected value NaN parsing width attribute. index-CoNz9Sak.js:33:5105
+[CombatWS] Sending END_TURN 
+Object { entityId: "36ee3919-387c-4586-bedb-00172aae6dc0" }
+index-CoNz9Sak.js:2070:63283

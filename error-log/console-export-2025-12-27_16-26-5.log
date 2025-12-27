@@ -1,0 +1,33 @@
+Loading failed for the <script> with source “https://static.cloudflareinsights.com/beacon.min.js”. combat:12:173
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://static.cloudflareinsights.com/beacon.min.js from being executed because it violates the following directive: “script-src 'self' 'unsafe-inline' 'unsafe-eval'” combat
+Content-Security-Policy: The page’s settings blocked a style (style-src-elem) at https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Spectral:wght@400;600;700&family=Alegreya+Sans:wght@400;500;700&display=swap from being applied because it violates the following directive: “style-src 'self' 'unsafe-inline'” combat
+Content-Security-Policy: The page’s settings blocked a style (style-src-elem) at https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap from being applied because it violates the following directive: “style-src 'self' 'unsafe-inline'” combat
+[CombatWS] Sending REQUEST_STATE undefined index-n1nzdAJU.js:2070:63733
+TypeError: e is undefined
+    Xv https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:2070
+    Kd https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:38
+    Iy https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Ey https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    R_ https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    fl https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Wu https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Ny https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    T https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+    $ https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+    EventHandlerNonNull* https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+    <anonymous> https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+index-n1nzdAJU.js:40:161
+Uncaught TypeError: e is undefined
+    Xv https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:2070
+    Kd https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:38
+    Iy https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Ey https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    R_ https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    fl https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Wu https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    Ny https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:40
+    T https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+    $ https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+    EventHandlerNonNull* https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+    <anonymous> https://character-sheet-project.pages.dev/assets/index-n1nzdAJU.js:25
+index-n1nzdAJU.js:2070:82008
