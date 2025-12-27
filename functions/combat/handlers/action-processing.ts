@@ -94,13 +94,19 @@ async function handleAttack(
     return;
   }
 
+  // Ensure attacker has valid AP and energy with defaults
+  attacker.ap = attacker.ap || { current: 6, max: 6 };
+  attacker.ap.current = attacker.ap.current ?? attacker.ap.max ?? 6;
+  attacker.energy = attacker.energy || { current: 100, max: 100 };
+  attacker.energy.current = attacker.energy.current ?? 100;
+
   // Check resources
-  if ((attacker.ap?.current ?? 0) < apCost) {
+  if (attacker.ap.current < apCost) {
     combat.sendToSocket(ws, { type: "ACTION_REJECTED", payload: { reason: "Insufficient AP" }, timestamp, requestId });
     return;
   }
 
-  if ((attacker.energy?.current ?? 0) < energyCost) {
+  if (attacker.energy.current < energyCost) {
     combat.sendToSocket(ws, { type: "ACTION_REJECTED", payload: { reason: "Insufficient Energy" }, timestamp, requestId });
     return;
   }
@@ -136,9 +142,11 @@ async function handleAttack(
     finalDamage = finalDamage * 2;
   }
 
-  // Apply damage
-  const oldEnergy = target.energy?.current ?? 100;
+  // Apply damage - ensure target has valid energy with defaults
   target.energy = target.energy || { current: 100, max: 100 };
+  target.energy.current = target.energy.current ?? 100;
+  target.energy.max = target.energy.max ?? 100;
+  const oldEnergy = target.energy.current;
   target.energy.current = Math.max(0, target.energy.current - finalDamage);
 
   // Apply wounds
@@ -163,6 +171,8 @@ async function handleAttack(
       damageType,
       targetEnergy: target.energy.current,
       targetWounds: target.wounds,
+      attackerAp: attacker.ap.current,
+      attackerEnergy: attacker.energy.current,
     },
     timestamp,
     requestId,

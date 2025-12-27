@@ -329,6 +329,7 @@ async function handleGMAction(
 
     const entity = JSON.parse(row.data);
     entity.energy = entity.energy || { current: 100, max: 100 };
+    entity.energy.current = entity.energy.current ?? 100;
     entity.energy.current = Math.max(0, entity.energy.current - amount);
 
     if (damageType) {

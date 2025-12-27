@@ -229,19 +229,25 @@ async function handleEndTurn(
       return;
     }
 
-    const unspentAP = entity.ap?.current ?? 0;
+    // Ensure entity has valid AP and energy objects with defaults
+    entity.ap = entity.ap || { current: 6, max: 6 };
+    entity.ap.current = entity.ap.current ?? entity.ap.max ?? 6;
+    entity.ap.max = entity.ap.max ?? 6;
+
+    entity.energy = entity.energy || { current: 100, max: 100 };
+    entity.energy.current = entity.energy.current ?? 100;
+    entity.energy.max = entity.energy.max ?? 100;
+
+    const unspentAP = entity.ap.current;
     const tier = Math.ceil((entity.level ?? 1) / 5);
     const factor = 3 + (entity.staminaPotionBonus ?? 0);
     const energyGain = tier * factor * unspentAP;
 
     if (energyGain > 0) {
-      const maxEnergy = entity.energy?.max ?? 100;
-      entity.energy = entity.energy || { current: 100, max: 100 };
-      entity.energy.current = Math.min(maxEnergy, entity.energy.current + energyGain);
+      entity.energy.current = Math.min(entity.energy.max, entity.energy.current + energyGain);
     }
 
     // Reset AP for next turn
-    entity.ap = entity.ap || { current: 6, max: 6 };
     entity.ap.current = entity.ap.max;
 
     runQuery(sql, "UPDATE entities SET data = ? WHERE id = ?", JSON.stringify(entity), activeEntityId);

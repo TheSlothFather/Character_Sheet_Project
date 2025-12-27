@@ -177,6 +177,8 @@ export interface AttackResolvedPayload {
   damageType: string;
   targetEnergy: number;
   targetWounds: Record<string, number>;
+  attackerAp: number;
+  attackerEnergy: number;
 }
 
 export interface ChannelingPayload {

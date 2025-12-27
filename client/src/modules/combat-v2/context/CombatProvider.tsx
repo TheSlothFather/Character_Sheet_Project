@@ -502,12 +502,22 @@ export function CombatProvider({
           });
         },
         onAttackResolved: (payload) => {
+          // Update target's energy and wounds
           dispatch({
             type: "ENTITY_UPDATED",
             entityId: payload.targetId,
             updates: {
               energy: { current: payload.targetEnergy, max: state.entities[payload.targetId]?.energy?.max ?? 100 },
               wounds: payload.targetWounds,
+            },
+          });
+          // Update attacker's AP and energy
+          dispatch({
+            type: "ENTITY_UPDATED",
+            entityId: payload.attackerId,
+            updates: {
+              ap: { current: payload.attackerAp, max: state.entities[payload.attackerId]?.ap?.max ?? 6 },
+              energy: { current: payload.attackerEnergy, max: state.entities[payload.attackerId]?.energy?.max ?? 100 },
             },
           });
         },
