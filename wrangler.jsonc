@@ -11,6 +11,13 @@
     ]
   },
 
+  "r2_buckets": [
+    {
+      "binding": "COMBAT_MAPS_BUCKET",
+      "bucket_name": "adurun-combat-maps"
+    }
+  ],
+
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["CampaignDurableObject"] },
     { "tag": "v2", "new_sqlite_classes": ["CombatDurableObject"] }

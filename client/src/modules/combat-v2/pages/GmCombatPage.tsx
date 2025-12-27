@@ -11,12 +11,13 @@ import { CombatProvider, useCombat } from "../context/CombatProvider";
 import { useCombatIdentity } from "../hooks/useCombatIdentity";
 import { gmApi, type CampaignMember, type BestiaryEntry } from "../../../api/gm";
 import { api, type Character } from "../../../api/client";
-import { HexGrid } from "../components/grid";
+import { SquareGrid } from "../components/grid";
+import { MapUploader, GridConfigurator } from "../components/map";
 import { EntityCard, WoundTracker } from "../components/entities";
 import { GmControls, EntityOverrides } from "../components/gm";
 import { ChannelingTracker } from "../components/channeling";
 import { SkillContestPanel } from "../components/SkillContestPanel";
-import type { HexPosition, CombatV2Entity } from "../../../api/combatV2Socket";
+import type { GridPosition, CombatV2Entity } from "../../../api/combatV2Socket";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ADD ENTITY MODAL
@@ -450,7 +451,7 @@ function AddEntityModal({
 
 function GmCombatContent({ campaignId }: { campaignId: string }) {
   const { state, actions, getInitiativeOrder } = useCombat();
-  const [hoveredHex, setHoveredHex] = useState<HexPosition | null>(null);
+  const [hoveredCell, setHoveredCell] = useState<GridPosition | null>(null);
   const [showAddEntity, setShowAddEntity] = useState(false);
   const [overrideEntityId, setOverrideEntityId] = useState<string | null>(null);
   const [placementEntityId, setPlacementEntityId] = useState<string | null>(null);
@@ -468,7 +469,9 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
     initiative,
     selectedEntityId,
     currentEntityId,
-    hexPositions,
+    gridPositions,
+    gridConfig,
+    mapConfig,
   } = state;
 
   useEffect(() => {
@@ -516,29 +519,29 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
   const isCombatActive = phase === "active" || phase === "active-turn";
 
   const unplacedEntities = useMemo(() => {
-    return Object.values(entities).filter((entity) => !hexPositions[entity.id]);
-  }, [entities, hexPositions]);
+    return Object.values(entities).filter((entity) => !gridPositions[entity.id]);
+  }, [entities, gridPositions]);
 
-  const handleEntityDrop = useCallback((entityId: string, position: HexPosition) => {
-    const current = hexPositions[entityId];
-    if (current && current.q === position.q && current.r === position.r) {
+  const handleEntityDrop = useCallback((entityId: string, position: GridPosition) => {
+    const current = gridPositions[entityId];
+    if (current && current.row === position.row && current.col === position.col) {
       return;
     }
 
     const isPlacementMove = placementEntityId === entityId;
-    actions.gmMoveEntity(entityId, position.q, position.r, {
+    actions.gmMoveEntity(entityId, position.row, position.col, {
       force: isPlacementMove ? placementForce : false,
       ignoreApCost: true,
     });
     if (isPlacementMove) {
       setPlacementEntityId(null);
     }
-  }, [actions, hexPositions, placementEntityId, placementForce]);
+  }, [actions, gridPositions, placementEntityId, placementForce]);
 
-  // Handle hex click
-  const handleHexClick = useCallback((position: HexPosition) => {
+  // Handle cell click
+  const handleCellClick = useCallback((position: GridPosition) => {
     if (placementEntityId) {
-      actions.gmMoveEntity(placementEntityId, position.q, position.r, {
+      actions.gmMoveEntity(placementEntityId, position.row, position.col, {
         force: placementForce,
         ignoreApCost: true,
       });
@@ -697,7 +700,7 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
             <SkillContestPanel isGM={true} />
           </div>
 
-          {/* Center - Hex Grid */}
+          {/* Center - Square Grid */}
           <div className="col-span-6">
             {placementEntity && (
               <div className="mb-3 rounded border border-amber-600/40 bg-amber-900/30 px-4 py-3">
@@ -727,21 +730,20 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
               </div>
             )}
             <div className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
-              <HexGrid
-                width={15}
-                height={10}
-                onHexClick={handleHexClick}
-                onHexHover={setHoveredHex}
+              <SquareGrid
+                gridConfig={gridConfig}
+                mapConfig={mapConfig}
+                onCellClick={handleCellClick}
+                onCellHover={setHoveredCell}
                 onEntityClick={handleEntityClick}
                 onEntityDrop={handleEntityDrop}
-                className="h-[500px]"
               />
             </div>
 
-            {/* Hex info */}
-            {hoveredHex && (
+            {/* Cell info */}
+            {hoveredCell && (
               <div className="mt-2 text-sm text-slate-400">
-                Hex: ({hoveredHex.q}, {hoveredHex.r})
+                Cell: (row {hoveredCell.row}, col {hoveredCell.col})
               </div>
             )}
 

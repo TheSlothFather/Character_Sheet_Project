@@ -1,7 +1,7 @@
 /**
- * Combat V2 - Hex Cell Component
+ * Combat V2 - Square Cell Component
  *
- * Individual hex cell with terrain styling and state indicators.
+ * Individual square cell with terrain styling and state indicators.
  */
 
 import React from "react";
@@ -10,24 +10,24 @@ import React from "react";
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
 
-export interface HexCellProps {
-  /** Pre-calculated hex polygon points */
-  points: string;
+export interface SquareCellProps {
+  /** Size of the square cell */
+  size: number;
   /** Terrain type for styling */
   terrainType?: string;
-  /** Whether this hex is a valid movement target */
+  /** Whether this cell is a valid movement target */
   isMovementTarget?: boolean;
-  /** Whether this hex is a valid attack target */
+  /** Whether this cell is a valid attack target */
   isAttackTarget?: boolean;
-  /** Whether this hex is part of the current movement path */
-  isPathHex?: boolean;
-  /** Whether this hex is the current drag target */
+  /** Whether this cell is part of the current movement path */
+  isPathCell?: boolean;
+  /** Whether this cell is the current drag target */
   isDragTarget?: boolean;
-  /** Whether an entity on this hex is selected */
+  /** Whether an entity on this cell is selected */
   isSelected?: boolean;
-  /** Whether this hex contains the current turn entity */
+  /** Whether this cell contains the current turn entity */
   isCurrentTurn?: boolean;
-  /** Whether this hex is occupied by an entity */
+  /** Whether this cell is occupied by an entity */
   isOccupied?: boolean;
 }
 
@@ -62,17 +62,17 @@ const TERRAIN_COLORS: Record<string, { fill: string; stroke: string }> = {
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function HexCell({
-  points,
+export function SquareCell({
+  size,
   terrainType = "normal",
   isMovementTarget = false,
   isAttackTarget = false,
-  isPathHex = false,
+  isPathCell = false,
   isDragTarget = false,
   isSelected = false,
   isCurrentTurn = false,
   isOccupied = false,
-}: HexCellProps) {
+}: SquareCellProps) {
   // Get base terrain colors
   const terrain = TERRAIN_COLORS[terrainType] || TERRAIN_COLORS.normal;
 
@@ -103,23 +103,26 @@ export function HexCell({
     }
   }
 
-  if (isPathHex) {
+  if (isPathCell) {
     fillColor = "rgba(34, 197, 94, 0.5)"; // green-500 with transparency
   }
 
   if (isDragTarget && !isSelected) {
     strokeColor = "rgba(59, 130, 246, 0.9)"; // blue-500
     strokeWidth = 2;
-    if (!isMovementTarget && !isAttackTarget && !isPathHex) {
+    if (!isMovementTarget && !isAttackTarget && !isPathCell) {
       fillColor = "rgba(59, 130, 246, 0.2)";
     }
   }
 
   return (
-    <g className="hex-cell">
-      {/* Base hex */}
-      <polygon
-        points={points}
+    <g className="square-cell">
+      {/* Base square */}
+      <rect
+        x="0"
+        y="0"
+        width={size}
+        height={size}
         fill={fillColor}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
@@ -129,12 +132,12 @@ export function HexCell({
       {/* Hazard indicator */}
       {terrainType === "hazard" && (
         <text
-          x="0"
-          y="0"
+          x={size / 2}
+          y={size / 2}
           textAnchor="middle"
           dominantBaseline="middle"
           className="text-xs fill-red-400 font-bold pointer-events-none select-none"
-          style={{ fontSize: "10px" }}
+          style={{ fontSize: "12px" }}
         >
           ⚠
         </text>
@@ -142,18 +145,29 @@ export function HexCell({
 
       {/* Impassable indicator */}
       {terrainType === "impassable" && (
-        <line
-          x1="-12"
-          y1="-12"
-          x2="12"
-          y2="12"
-          stroke="rgba(127, 29, 29, 0.8)"
-          strokeWidth="2"
-          className="pointer-events-none"
-        />
+        <>
+          <line
+            x1="0"
+            y1="0"
+            x2={size}
+            y2={size}
+            stroke="rgba(127, 29, 29, 0.8)"
+            strokeWidth="2"
+            className="pointer-events-none"
+          />
+          <line
+            x1={size}
+            y1="0"
+            x2="0"
+            y2={size}
+            stroke="rgba(127, 29, 29, 0.8)"
+            strokeWidth="2"
+            className="pointer-events-none"
+          />
+        </>
       )}
     </g>
   );
 }
 
-export default HexCell;
+export default SquareCell;

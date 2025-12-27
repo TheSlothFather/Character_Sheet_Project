@@ -60,9 +60,9 @@ async function handleMoveEntity(
   const timestamp = new Date().toISOString();
 
   const entityId = payload.entityId as string;
-  const targetQ = payload.targetQ as number;
-  const targetR = payload.targetR as number;
-  const path = payload.path as Array<{ q: number; r: number }> | undefined;
+  const targetRow = payload.targetRow as number;
+  const targetCol = payload.targetCol as number;
+  const path = payload.path as Array<{ row: number; col: number }> | undefined;
   const force = options?.force ?? false;
   const ignoreApCost = options?.ignoreApCost ?? false;
 
@@ -93,19 +93,19 @@ async function handleMoveEntity(
   }
 
   // Get current position
-  const positionRow = queryOneOrNull<{ q: number; r: number }>(sql, "SELECT q, r FROM hex_positions WHERE entity_id = ?", entityId);
+  const positionRow = queryOneOrNull<{ row: number; col: number }>(sql, "SELECT row, col FROM grid_positions WHERE entity_id = ?", entityId);
 
-  const startQ = positionRow?.q ?? targetQ;
-  const startR = positionRow?.r ?? targetR;
+  const startRow = positionRow?.row ?? targetRow;
+  const startCol = positionRow?.col ?? targetCol;
 
-  // Calculate distance (axial hex distance)
-  const distance = hexDistance(startQ, startR, targetQ, targetR);
+  // Calculate distance (Manhattan distance for square grid)
+  const distance = gridDistance(startRow, startCol, targetRow, targetCol);
 
   // Calculate movement cost
-  // Movement = max(Physical Attr, 3) hexes per 1 AP
+  // Movement = max(Physical Attr, 3) squares per 1 AP
   const physicalAttr = entity.skills?.Physical ?? 3;
-  const hexesPerAP = Math.max(physicalAttr, 3);
-  const apCost = Math.ceil(distance / hexesPerAP);
+  const squaresPerAP = Math.max(physicalAttr, 3);
+  const apCost = Math.ceil(distance / squaresPerAP);
 
   const state = combat.getCombatState() as { phase?: string } | null;
   const isActive = state?.phase === "active" || state?.phase === "active-turn";
@@ -122,15 +122,15 @@ async function handleMoveEntity(
     return;
   }
 
-  // Check if target hex is occupied
+  // Check if target cell is occupied
   const occupiedRow = force
     ? null
-    : queryOneOrNull<{ entity_id: string }>(sql, "SELECT entity_id FROM hex_positions WHERE q = ? AND r = ?", targetQ, targetR);
+    : queryOneOrNull<{ entity_id: string }>(sql, "SELECT entity_id FROM grid_positions WHERE row = ? AND col = ?", targetRow, targetCol);
 
   if (occupiedRow) {
     combat.sendToSocket(ws, {
       type: "ACTION_REJECTED",
-      payload: { reason: "Target hex is occupied" },
+      payload: { reason: "Target cell is occupied" },
       timestamp,
       requestId,
     });
@@ -146,17 +146,17 @@ async function handleMoveEntity(
 
   // Update position
   if (positionRow) {
-    runQuery(sql, "UPDATE hex_positions SET q = ?, r = ? WHERE entity_id = ?", targetQ, targetR, entityId);
+    runQuery(sql, "UPDATE grid_positions SET row = ?, col = ? WHERE entity_id = ?", targetRow, targetCol, entityId);
   } else {
-    runQuery(sql, "INSERT INTO hex_positions (entity_id, q, r) VALUES (?, ?, ?)", entityId, targetQ, targetR);
+    runQuery(sql, "INSERT INTO grid_positions (entity_id, row, col) VALUES (?, ?, ?)", entityId, targetRow, targetCol);
   }
 
   combat.incrementVersion();
 
   combat.addLogEntry("movement", {
     entityId,
-    from: { q: startQ, r: startR },
-    to: { q: targetQ, r: targetR },
+    from: { row: startRow, col: startCol },
+    to: { row: targetRow, col: targetCol },
     distance,
     apCost,
   });
@@ -165,13 +165,13 @@ async function handleMoveEntity(
     type: "MOVEMENT_EXECUTED",
     payload: {
       entityId,
-      from: { q: startQ, r: startR },
-    to: { q: targetQ, r: targetR },
-    path,
-    distance,
-    apCost: shouldChargeAp ? apCost : 0,
-    remainingAP: entity.ap?.current ?? 0,
-  },
+      from: { row: startRow, col: startCol },
+      to: { row: targetRow, col: targetCol },
+      path,
+      distance,
+      apCost: shouldChargeAp ? apCost : 0,
+      remainingAP: entity.ap?.current ?? 0,
+    },
     timestamp,
     requestId,
   });
@@ -203,8 +203,8 @@ async function handleGmMoveEntity(
 }
 
 /**
- * Calculate axial hex distance
+ * Calculate Manhattan distance for square grid
  */
-function hexDistance(q1: number, r1: number, q2: number, r2: number): number {
-  return (Math.abs(q1 - q2) + Math.abs(q1 + r1 - q2 - r2) + Math.abs(r1 - r2)) / 2;
+function gridDistance(row1: number, col1: number, row2: number, col2: number): number {
+  return Math.abs(row1 - row2) + Math.abs(col1 - col2);
 }

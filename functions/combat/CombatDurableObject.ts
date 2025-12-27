@@ -56,6 +56,7 @@ import { handleSkillContest } from "./handlers/skill-contest";
 
 export interface Env {
   COMBAT_DO: DurableObjectNamespace<CombatDurableObject>;
+  COMBAT_MAPS_BUCKET: R2Bucket;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
 }
@@ -228,12 +229,29 @@ export class CombatDurableObject extends DurableObject<Env> {
         position INTEGER NOT NULL
       );
 
-      -- Hex grid positions
-      CREATE TABLE IF NOT EXISTS hex_positions (
+      -- Square grid positions
+      CREATE TABLE IF NOT EXISTS grid_positions (
         entity_id TEXT PRIMARY KEY,
-        q INTEGER NOT NULL,
-        r INTEGER NOT NULL,
-        UNIQUE(q, r)
+        row INTEGER NOT NULL,
+        col INTEGER NOT NULL,
+        UNIQUE(row, col)
+      );
+
+      -- Map configuration
+      CREATE TABLE IF NOT EXISTS map_config (
+        id TEXT PRIMARY KEY DEFAULT 'current',
+        image_url TEXT,
+        image_key TEXT,
+        image_width INTEGER,
+        image_height INTEGER,
+        grid_rows INTEGER NOT NULL DEFAULT 20,
+        grid_cols INTEGER NOT NULL DEFAULT 30,
+        cell_size INTEGER NOT NULL DEFAULT 40,
+        offset_x INTEGER NOT NULL DEFAULT 0,
+        offset_y INTEGER NOT NULL DEFAULT 0,
+        grid_visible INTEGER NOT NULL DEFAULT 1,
+        grid_opacity REAL NOT NULL DEFAULT 0.5,
+        template_id TEXT
       );
 
       -- Channeling state
@@ -261,7 +279,7 @@ export class CombatDurableObject extends DurableObject<Env> {
 
       -- Indexes for performance
       CREATE INDEX IF NOT EXISTS idx_initiative_position ON initiative(position);
-      CREATE INDEX IF NOT EXISTS idx_hex_positions ON hex_positions(q, r);
+      CREATE INDEX IF NOT EXISTS idx_grid_positions ON grid_positions(row, col);
       CREATE INDEX IF NOT EXISTS idx_log_created ON combat_log(created_at);
 
       PRAGMA optimize;
@@ -568,21 +586,24 @@ export class CombatDurableObject extends DurableObject<Env> {
         combat: null,
         entities: [],
         initiative: [],
-        hexPositions: [],
+        gridPositions: [],
+        mapConfig: null,
         channeling: [],
       };
     }
 
     const entities = this.sql.exec("SELECT * FROM entities").toArray();
     const initiative = this.sql.exec("SELECT * FROM initiative ORDER BY position").toArray();
-    const hexPositions = this.sql.exec("SELECT * FROM hex_positions").toArray();
+    const gridPositions = this.sql.exec("SELECT * FROM grid_positions").toArray();
     const channeling = this.sql.exec("SELECT * FROM channeling").toArray();
+    const mapConfig = this.sql.exec("SELECT * FROM map_config WHERE id = 'current'").toArray();
 
     return {
       combat: combatState,
       entities: entities.map((e: any) => ({ id: e.id, ...JSON.parse(e.data) })),
       initiative,
-      hexPositions,
+      gridPositions,
+      mapConfig: mapConfig.length > 0 ? mapConfig[0] : null,
       channeling: channeling.map((c: any) => ({
         entityId: c.entity_id,
         ...JSON.parse(c.spell_data),
@@ -607,15 +628,32 @@ export class CombatDurableObject extends DurableObject<Env> {
         currentEntityId: null,
         entities: {},
         initiative: [],
-        hexPositions: {},
+        gridPositions: {},
+        gridConfig: {
+          rows: 20,
+          cols: 30,
+          cellSize: 40,
+          offsetX: 0,
+          offsetY: 0,
+          visible: true,
+          opacity: 0.5,
+        },
+        mapConfig: {
+          imageUrl: null,
+          imageKey: null,
+          imageWidth: null,
+          imageHeight: null,
+          templateId: null,
+        },
         version: 0,
       };
     }
 
     const entitiesRaw = this.sql.exec("SELECT * FROM entities").toArray();
     const initiativeRaw = this.sql.exec("SELECT * FROM initiative ORDER BY position").toArray();
-    const hexPositionsRaw = this.sql.exec("SELECT * FROM hex_positions").toArray();
+    const gridPositionsRaw = this.sql.exec("SELECT * FROM grid_positions").toArray();
     const channelingRaw = this.sql.exec("SELECT * FROM channeling").toArray();
+    const mapConfigRaw = this.sql.exec("SELECT * FROM map_config WHERE id = 'current'").toArray();
 
     // Build entities record with channeling merged in
     const channelingMap = new Map<string, Record<string, unknown>>();
@@ -651,11 +689,45 @@ export class CombatDurableObject extends DurableObject<Env> {
       readied: false,
     }));
 
-    // Build hex positions record
-    const hexPositions: Record<string, { q: number; r: number }> = {};
-    for (const pos of hexPositionsRaw as any[]) {
-      hexPositions[pos.entity_id] = { q: pos.q, r: pos.r };
+    // Build grid positions record
+    const gridPositions: Record<string, { row: number; col: number }> = {};
+    for (const pos of gridPositionsRaw as any[]) {
+      gridPositions[pos.entity_id] = { row: pos.row, col: pos.col };
     }
+
+    // Extract map config
+    const mapConfigData = mapConfigRaw.length > 0 ? (mapConfigRaw[0] as any) : null;
+    const gridConfig = mapConfigData ? {
+      rows: mapConfigData.grid_rows,
+      cols: mapConfigData.grid_cols,
+      cellSize: mapConfigData.cell_size,
+      offsetX: mapConfigData.offset_x,
+      offsetY: mapConfigData.offset_y,
+      visible: mapConfigData.grid_visible === 1,
+      opacity: mapConfigData.grid_opacity,
+    } : {
+      rows: 20,
+      cols: 30,
+      cellSize: 40,
+      offsetX: 0,
+      offsetY: 0,
+      visible: true,
+      opacity: 0.5,
+    };
+
+    const mapConfig = mapConfigData ? {
+      imageUrl: mapConfigData.image_url,
+      imageKey: mapConfigData.image_key,
+      imageWidth: mapConfigData.image_width,
+      imageHeight: mapConfigData.image_height,
+      templateId: mapConfigData.template_id,
+    } : {
+      imageUrl: null,
+      imageKey: null,
+      imageWidth: null,
+      imageHeight: null,
+      templateId: null,
+    };
 
     // Get current entity from initiative order
     const currentTurnIndex = (combatState as any)?.turn_index ?? -1;
@@ -673,7 +745,9 @@ export class CombatDurableObject extends DurableObject<Env> {
       currentEntityId,
       entities,
       initiative,
-      hexPositions,
+      gridPositions,
+      gridConfig,
+      mapConfig,
       version: (combatState as any)?.version ?? 0,
     };
   }
