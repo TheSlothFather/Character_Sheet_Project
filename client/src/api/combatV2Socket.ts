@@ -32,6 +32,9 @@ export type ServerEventType =
   | "ENTITY_DIED"
   | "ENDURE_ROLL_REQUIRED"
   | "DEATH_CHECK_REQUIRED"
+  | "SKILL_CONTEST_INITIATED"
+  | "SKILL_CONTEST_RESPONSE_REQUESTED"
+  | "SKILL_CONTEST_RESOLVED"
   | "ACTION_REJECTED"
   | "ERROR";
 
@@ -62,7 +65,9 @@ export type ClientMessageType =
   | "GM_MODIFY_RESOURCES"
   | "GM_ADD_ENTITY"
   | "GM_REMOVE_ENTITY"
-  | "REQUEST_STATE";
+  | "REQUEST_STATE"
+  | "INITIATE_SKILL_CONTEST"
+  | "RESPOND_SKILL_CONTEST";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DAMAGE TYPES
@@ -224,6 +229,66 @@ export interface EntityUpdatedPayload {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// SKILL CONTEST TYPES
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface SkillContestInitiatedPayload {
+  contestId: string;
+  initiatorEntityId: string;
+  initiatorName: string;
+  initiatorSkill: string;
+  initiatorRawRolls: number[];
+  initiatorSelectedRoll: number;
+  initiatorSkillModifier: number;
+  initiatorTotal: number;
+  targetEntityId?: string;
+  targetName?: string;
+  targetPlayerId?: string;
+  diceCount: number;
+  keepHighest: boolean;
+}
+
+export interface SkillContestResponseRequestedPayload {
+  contestId: string;
+  initiatorEntityId: string;
+  initiatorName: string;
+  initiatorSkill: string;
+  initiatorTotal: number;
+  targetEntityId: string;
+}
+
+export interface SkillContestResolvedPayload {
+  contestId: string;
+  initiatorEntityId: string;
+  initiatorName: string;
+  initiatorSkill: string;
+  initiatorRawRolls: number[];
+  initiatorSelectedRoll: number;
+  initiatorSkillModifier: number;
+  initiatorTotal: number;
+  defenderEntityId: string;
+  defenderName: string;
+  defenderSkill: string;
+  defenderRawRolls: number[];
+  defenderSelectedRoll: number;
+  defenderSkillModifier: number;
+  defenderTotal: number;
+  winnerEntityId: string | null;
+  winnerName: string | null;
+  isTie: boolean;
+  margin: number;
+}
+
+export interface PendingSkillContest {
+  contestId: string;
+  initiatorEntityId: string;
+  initiatorName: string;
+  initiatorSkill: string;
+  initiatorTotal: number;
+  targetEntityId: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // SOCKET HANDLERS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -257,6 +322,11 @@ export interface CombatV2SocketHandlers {
   onEntityDied?: (payload: { entityId: string; message: string }) => void;
   onEndureRollRequired?: (payload: EndureRollRequiredPayload) => void;
   onDeathCheckRequired?: (payload: DeathCheckRequiredPayload) => void;
+
+  // Skill contests
+  onSkillContestInitiated?: (payload: SkillContestInitiatedPayload) => void;
+  onSkillContestResponseRequested?: (payload: SkillContestResponseRequestedPayload) => void;
+  onSkillContestResolved?: (payload: SkillContestResolvedPayload) => void;
 
   // Errors
   onActionRejected?: (payload: { reason: string; [key: string]: unknown }) => void;
@@ -401,6 +471,15 @@ export const connectCombatV2Socket = (
           break;
         case "DEATH_CHECK_REQUIRED":
           handlers.onDeathCheckRequired?.(payload as unknown as DeathCheckRequiredPayload);
+          break;
+        case "SKILL_CONTEST_INITIATED":
+          handlers.onSkillContestInitiated?.(payload as unknown as SkillContestInitiatedPayload);
+          break;
+        case "SKILL_CONTEST_RESPONSE_REQUESTED":
+          handlers.onSkillContestResponseRequested?.(payload as unknown as SkillContestResponseRequestedPayload);
+          break;
+        case "SKILL_CONTEST_RESOLVED":
+          handlers.onSkillContestResolved?.(payload as unknown as SkillContestResolvedPayload);
           break;
         case "ACTION_REJECTED":
           console.warn(`[CombatWS] Action rejected:`, payload);

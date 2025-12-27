@@ -48,6 +48,7 @@ import { handleActionProcessing } from "./handlers/action-processing";
 import { handleDamageProcessing } from "./handlers/damage-processing";
 import { handleChanneling } from "./handlers/channeling";
 import { handleMovement } from "./handlers/movement";
+import { handleSkillContest } from "./handlers/skill-contest";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ENVIRONMENT TYPES
@@ -105,7 +106,10 @@ export type ClientMessageType =
   | "GM_APPLY_DAMAGE"
   | "GM_MODIFY_RESOURCES"
   | "GM_ADD_ENTITY"
-  | "GM_REMOVE_ENTITY";
+  | "GM_REMOVE_ENTITY"
+  // Skill contests
+  | "INITIATE_SKILL_CONTEST"
+  | "RESPOND_SKILL_CONTEST";
 
 export interface ClientMessage {
   type: ClientMessageType;
@@ -144,7 +148,11 @@ export type ServerEventType =
   | "ENTITY_UPDATED"
   | "GM_OVERRIDE_APPLIED"
   | "ACTION_REJECTED"
-  | "ERROR";
+  | "ERROR"
+  // Skill contests
+  | "SKILL_CONTEST_INITIATED"
+  | "SKILL_CONTEST_RESPONSE_REQUESTED"
+  | "SKILL_CONTEST_RESOLVED";
 
 export interface ServerEvent {
   type: ServerEventType;
@@ -411,6 +419,12 @@ export class CombatDurableObject extends DurableObject<Env> {
       case "SUBMIT_ENDURE_ROLL":
       case "SUBMIT_DEATH_CHECK":
         await handleDamageProcessing(this, ws, session, type, payload, requestId);
+        break;
+
+      // Skill contests
+      case "INITIATE_SKILL_CONTEST":
+      case "RESPOND_SKILL_CONTEST":
+        await handleSkillContest(this, ws, session, type, payload, requestId);
         break;
 
       // GM overrides

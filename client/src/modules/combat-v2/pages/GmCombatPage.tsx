@@ -15,6 +15,7 @@ import { HexGrid } from "../components/grid";
 import { EntityCard, WoundTracker } from "../components/entities";
 import { GmControls, EntityOverrides } from "../components/gm";
 import { ChannelingTracker } from "../components/channeling";
+import { SkillContestPanel } from "../components/SkillContestPanel";
 import type { HexPosition, CombatV2Entity } from "../../../api/combatV2Socket";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -663,6 +664,9 @@ function GmCombatContent({ campaignId }: { campaignId: string }) {
                 <p>Current turn: {currentEntityId ? entities[currentEntityId]?.name ?? "Unknown" : "None"}</p>
               </div>
             </div>
+
+            {/* Skill Contests */}
+            <SkillContestPanel isGM={true} />
           </div>
 
           {/* Center - Hex Grid */}
