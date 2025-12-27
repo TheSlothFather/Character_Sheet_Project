@@ -214,6 +214,7 @@ async function handleEndTurn(
 
   // Process AP to Energy conversion
   const entityRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", activeEntityId);
+  let energyGained = 0;
 
   if (entityRow) {
     const entity = JSON.parse(entityRow.data);
@@ -241,10 +242,10 @@ async function handleEndTurn(
     const unspentAP = entity.ap.current;
     const tier = Math.ceil((entity.level ?? 1) / 5);
     const factor = 3 + (entity.staminaPotionBonus ?? 0);
-    const energyGain = tier * factor * unspentAP;
+    energyGained = tier * factor * unspentAP;
 
-    if (energyGain > 0) {
-      entity.energy.current = Math.min(entity.energy.max, entity.energy.current + energyGain);
+    if (energyGained > 0) {
+      entity.energy.current = Math.min(entity.energy.max, entity.energy.current + energyGained);
     }
 
     // Reset AP for next turn
@@ -274,9 +275,12 @@ async function handleEndTurn(
 
   combat.incrementVersion();
 
+  // Also broadcast a STATE_SYNC to ensure all clients have the updated entity state
+  combat.broadcastStateSync();
+
   combat.broadcast({
     type: "TURN_ENDED",
-    payload: { entityId: activeEntityId },
+    payload: { entityId: activeEntityId, energyGained },
     timestamp,
     requestId,
   });
@@ -343,7 +347,7 @@ async function handleDelayTurn(
 
   combat.broadcast({
     type: "TURN_ENDED",
-    payload: { entityId: activeEntityId, delayed: true },
+    payload: { entityId: activeEntityId, delayed: true, energyGained: 0 },
     timestamp,
     requestId,
   });

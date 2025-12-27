@@ -13,6 +13,7 @@ import { HexGrid } from "../components/grid";
 import { EntityCard } from "../components/entities";
 import { ActionBar, type ActionMode } from "../components/actions";
 import { ChannelingTracker } from "../components/channeling";
+import { SkillContestPanel } from "../components/SkillContestPanel";
 import type { HexPosition } from "../../../api/combatV2Socket";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -206,6 +207,9 @@ function PlayerCombatContent() {
                 )}
               </div>
             </div>
+
+            {/* Skill Contests */}
+            <SkillContestPanel isGM={false} />
           </div>
 
           {/* Center - Hex Grid */}

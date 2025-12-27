@@ -22,6 +22,10 @@ import {
   type HexPosition,
   type InitiativeEntry,
   type ClientMessageType,
+  type SkillContestInitiatedPayload,
+  type SkillContestResponseRequestedPayload,
+  type SkillContestResolvedPayload,
+  type PendingSkillContest,
 } from "../../../api/combatV2Socket";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -58,6 +62,11 @@ export interface CombatContextState {
   pendingEndureRoll: { entityId: string; damage: number } | null;
   pendingDeathCheck: { entityId: string; damage: number } | null;
   lastError: string | null;
+
+  // Skill contests
+  pendingSkillContests: PendingSkillContest[];
+  activeContest: SkillContestInitiatedPayload | null;
+  lastContestResult: SkillContestResolvedPayload | null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -92,7 +101,11 @@ type CombatAction =
   | { type: "SELECT_ENTITY"; entityId: string | null }
   | { type: "SET_TARGET"; entityId: string | null }
   | { type: "SET_ERROR"; error: string | null }
-  | { type: "INCREMENT_VERSION" };
+  | { type: "INCREMENT_VERSION" }
+  | { type: "SKILL_CONTEST_INITIATED"; contest: SkillContestInitiatedPayload }
+  | { type: "SKILL_CONTEST_RESPONSE_REQUESTED"; contest: PendingSkillContest }
+  | { type: "SKILL_CONTEST_RESOLVED"; result: SkillContestResolvedPayload }
+  | { type: "CLEAR_CONTEST" };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // REDUCER
@@ -117,6 +130,9 @@ const initialState: CombatContextState = {
   pendingEndureRoll: null,
   pendingDeathCheck: null,
   lastError: null,
+  pendingSkillContests: [],
+  activeContest: null,
+  lastContestResult: null,
 };
 
 function combatReducer(state: CombatContextState, action: CombatAction): CombatContextState {
@@ -173,7 +189,9 @@ function combatReducer(state: CombatContextState, action: CombatAction): CombatC
 
     case "TURN_ENDED": {
       const entity = state.entities[action.entityId];
-      if (entity?.energy) {
+      // Default energyGained to 0 if undefined to prevent NaN
+      const gained = action.energyGained ?? 0;
+      if (entity?.energy && gained > 0) {
         return {
           ...state,
           entities: {
@@ -184,7 +202,7 @@ function combatReducer(state: CombatContextState, action: CombatAction): CombatC
                 ...entity.energy,
                 current: Math.min(
                   entity.energy.max,
-                  entity.energy.current + action.energyGained
+                  entity.energy.current + gained
                 ),
               },
             },
@@ -276,6 +294,36 @@ function combatReducer(state: CombatContextState, action: CombatAction): CombatC
     case "INCREMENT_VERSION":
       return { ...state, version: state.version + 1 };
 
+    case "SKILL_CONTEST_INITIATED":
+      return {
+        ...state,
+        activeContest: action.contest,
+        lastContestResult: null,
+      };
+
+    case "SKILL_CONTEST_RESPONSE_REQUESTED":
+      return {
+        ...state,
+        pendingSkillContests: [...state.pendingSkillContests, action.contest],
+      };
+
+    case "SKILL_CONTEST_RESOLVED":
+      return {
+        ...state,
+        activeContest: null,
+        pendingSkillContests: state.pendingSkillContests.filter(
+          (c) => c.contestId !== action.result.contestId
+        ),
+        lastContestResult: action.result,
+      };
+
+    case "CLEAR_CONTEST":
+      return {
+        ...state,
+        activeContest: null,
+        lastContestResult: null,
+      };
+
     default:
       return state;
   }
@@ -364,6 +412,30 @@ interface CombatContextActions {
   selectEntity: (entityId: string | null) => void;
   setTarget: (entityId: string | null) => void;
   clearError: () => void;
+
+  // Skill contests
+  initiateSkillContest: (params: {
+    initiatorEntityId: string;
+    targetEntityId?: string;
+    targetPlayerId?: string;
+    skill: string;
+    skillModifier: number;
+    diceCount: number;
+    keepHighest: boolean;
+    rawRolls?: number[];
+    selectedRoll?: number;
+  }) => void;
+  respondToSkillContest: (params: {
+    contestId: string;
+    entityId: string;
+    skill: string;
+    skillModifier: number;
+    diceCount: number;
+    keepHighest: boolean;
+    rawRolls?: number[];
+    selectedRoll?: number;
+  }) => void;
+  clearContest: () => void;
 }
 
 export interface CombatContextValue {
@@ -599,6 +671,25 @@ export function CombatProvider({
         onError: (payload) => {
           dispatch({ type: "SET_ERROR", error: payload.message });
         },
+        onSkillContestInitiated: (payload) => {
+          dispatch({ type: "SKILL_CONTEST_INITIATED", contest: payload });
+        },
+        onSkillContestResponseRequested: (payload) => {
+          dispatch({
+            type: "SKILL_CONTEST_RESPONSE_REQUESTED",
+            contest: {
+              contestId: payload.contestId,
+              initiatorEntityId: payload.initiatorEntityId,
+              initiatorName: payload.initiatorName,
+              initiatorSkill: payload.initiatorSkill,
+              initiatorTotal: payload.initiatorTotal,
+              targetEntityId: payload.targetEntityId,
+            },
+          });
+        },
+        onSkillContestResolved: (payload) => {
+          dispatch({ type: "SKILL_CONTEST_RESOLVED", result: payload });
+        },
       },
       {
         playerId,
@@ -671,6 +762,10 @@ export function CombatProvider({
     selectEntity: (entityId) => dispatch({ type: "SELECT_ENTITY", entityId }),
     setTarget: (entityId) => dispatch({ type: "SET_TARGET", entityId }),
     clearError: () => dispatch({ type: "SET_ERROR", error: null }),
+
+    initiateSkillContest: (params) => send("INITIATE_SKILL_CONTEST", params),
+    respondToSkillContest: (params) => send("RESPOND_SKILL_CONTEST", params),
+    clearContest: () => dispatch({ type: "CLEAR_CONTEST" }),
   }), [send]);
 
   // Computed helpers
