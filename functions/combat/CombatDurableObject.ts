@@ -610,9 +610,18 @@ export class CombatDurableObject extends DurableObject<Env> {
     const entities: Record<string, Record<string, unknown>> = {};
     for (const e of entitiesRaw as any[]) {
       const entityData = JSON.parse(e.data);
+      // Ensure AP and energy have valid defaults to prevent NaN in client
+      const ap = entityData.ap || { current: 6, max: 6 };
+      ap.current = ap.current ?? ap.max ?? 6;
+      ap.max = ap.max ?? 6;
+      const energy = entityData.energy || { current: 100, max: 100 };
+      energy.current = energy.current ?? 100;
+      energy.max = energy.max ?? 100;
       entities[e.id] = {
         id: e.id,
         ...entityData,
+        ap,
+        energy,
         channeling: channelingMap.get(e.id) || null,
       };
     }
