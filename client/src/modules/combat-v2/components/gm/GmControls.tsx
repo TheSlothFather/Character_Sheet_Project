@@ -21,14 +21,18 @@ export interface GmControlsProps {
 
 export function GmControls({ onAddEntity }: GmControlsProps) {
   const { state, actions } = useCombat();
-  const { phase, round, currentEntityId, entities } = state;
+  const { phase, round, currentEntityId, entities, lastError } = state;
   const [confirmEnd, setConfirmEnd] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
   const currentEntity = currentEntityId ? entities[currentEntityId] : null;
 
-  // Handle start combat
+  // Handle start combat with loading feedback
   const handleStartCombat = useCallback(() => {
+    setIsStarting(true);
     actions.startCombat();
+    // Reset loading state after timeout (server response will update phase)
+    setTimeout(() => setIsStarting(false), 3000);
   }, [actions]);
 
   // Handle end combat
@@ -59,6 +63,21 @@ export function GmControls({ onAddEntity }: GmControlsProps) {
         <span>GM Controls</span>
       </h2>
 
+      {/* Error Display */}
+      {lastError && (
+        <div className="p-3 bg-red-900/30 border border-red-700/50 rounded">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-red-200 text-sm">{lastError}</span>
+            <button
+              onClick={actions.clearError}
+              className="text-red-400 hover:text-red-200 text-lg leading-none"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Combat Status */}
       <div className="flex items-center justify-between p-3 bg-slate-700/50 rounded">
         <div>
@@ -80,9 +99,14 @@ export function GmControls({ onAddEntity }: GmControlsProps) {
         <div className="space-y-2">
           <button
             onClick={handleStartCombat}
-            className="w-full px-4 py-3 rounded bg-green-600 hover:bg-green-500 text-green-100 font-bold transition-colors"
+            disabled={isStarting}
+            className={`w-full px-4 py-3 rounded font-bold transition-colors ${
+              isStarting
+                ? "bg-green-700 cursor-wait text-green-200"
+                : "bg-green-600 hover:bg-green-500 text-green-100"
+            }`}
           >
-            Start Combat
+            {isStarting ? "Starting Combat..." : "Start Combat"}
           </button>
           <p className="text-xs text-slate-500 text-center">
             All players must have rolled initiative before starting

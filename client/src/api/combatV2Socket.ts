@@ -401,9 +401,11 @@ export const connectCombatV2Socket = (
           handlers.onDeathCheckRequired?.(payload as unknown as DeathCheckRequiredPayload);
           break;
         case "ACTION_REJECTED":
+          console.warn(`[CombatWS] Action rejected:`, payload);
           handlers.onActionRejected?.(payload as { reason: string });
           break;
         case "ERROR":
+          console.error(`[CombatWS] Server error:`, payload);
           handlers.onError?.(payload as { message: string });
           break;
       }
@@ -414,11 +416,15 @@ export const connectCombatV2Socket = (
 
   const send = <T extends ClientMessageType>(type: T, payload?: Record<string, unknown>) => {
     if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({
+      const message = {
         type,
         payload: payload ?? {},
         requestId: crypto.randomUUID(),
-      }));
+      };
+      console.debug(`[CombatWS] Sending ${type}`, payload);
+      socket.send(JSON.stringify(message));
+    } else {
+      console.warn(`[CombatWS] Cannot send ${type} - socket not open (state: ${socket.readyState})`);
     }
   };
 
