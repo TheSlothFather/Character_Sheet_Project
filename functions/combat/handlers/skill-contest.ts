@@ -6,6 +6,14 @@
  * Skill contests allow players and GMs to roll skill checks against each other.
  * The initiator rolls d100 dice (taking highest or lowest based on circumstance),
  * then the target responds with their own roll. Winner is determined by total.
+ *
+ * ATTACK CONTESTS:
+ * Attacks are a special type of skill contest. When resolved:
+ * - If attacker wins: damage = baseDamage + physicalAttribute
+ * - Critical hits based on margin (% above loser's total):
+ *   - Wicked (50%+): Normal damage + 1 wound
+ *   - Vicious (100%+): 1.5x damage + 1 wound
+ *   - Brutal (200%+): 2x damage + 2 wounds
  */
 
 import type { CombatDurableObject, WebSocketMetadata, ClientMessageType } from "../CombatDurableObject";
@@ -17,11 +25,17 @@ function queryOneOrNull<T>(sql: SqlStorage, query: string, ...params: unknown[])
   return rows.length > 0 ? (rows[0] as T) : null;
 }
 
+// Wrapper to call SQL storage methods
+function runQuery(sql: SqlStorage, query: string, ...params: unknown[]) {
+  return sql["exec"](query, ...params);
+}
+
 // Ensure the skill_contests table exists
 function ensureSkillContestsTable(sql: SqlStorage): void {
   sql["exec"](`
     CREATE TABLE IF NOT EXISTS skill_contests (
       id TEXT PRIMARY KEY,
+      contest_type TEXT NOT NULL DEFAULT 'skill',
       initiator_entity_id TEXT NOT NULL,
       initiator_player_id TEXT NOT NULL,
       target_entity_id TEXT,
@@ -44,7 +58,13 @@ function ensureSkillContestsTable(sql: SqlStorage): void {
       winner_entity_id TEXT,
       margin INTEGER,
       created_at TEXT NOT NULL,
-      resolved_at TEXT
+      resolved_at TEXT,
+      -- Attack contest fields
+      attack_base_damage INTEGER,
+      attack_damage_type TEXT,
+      attack_physical_attribute INTEGER,
+      attack_ap_cost INTEGER,
+      attack_energy_cost INTEGER
     )
   `);
 }
@@ -73,7 +93,11 @@ export async function handleSkillContest(
 
   switch (type) {
     case "INITIATE_SKILL_CONTEST":
-      await handleInitiateContest(combat, ws, session, payload, requestId);
+      await handleInitiateContest(combat, ws, session, payload, requestId, "skill");
+      break;
+
+    case "INITIATE_ATTACK_CONTEST":
+      await handleInitiateContest(combat, ws, session, payload, requestId, "attack");
       break;
 
     case "RESPOND_SKILL_CONTEST":
@@ -95,7 +119,8 @@ async function handleInitiateContest(
   ws: WebSocket,
   session: WebSocketMetadata,
   payload: Record<string, unknown>,
-  requestId?: string
+  requestId?: string,
+  contestType: "skill" | "attack" = "skill"
 ): Promise<void> {
   const sql = combat.getSql();
   const timestamp = new Date().toISOString();
@@ -110,6 +135,13 @@ async function handleInitiateContest(
   const skillModifier = (payload.skillModifier as number) ?? 0;
   const diceCount = (payload.diceCount as number) ?? 1;
   const keepHighest = payload.keepHighest !== false; // default true
+
+  // Attack-specific fields
+  const baseDamage = (payload.baseDamage as number) ?? 0;
+  const damageType = (payload.damageType as string) ?? "physical";
+  const physicalAttribute = (payload.physicalAttribute as number) ?? 0;
+  const apCost = (payload.apCost as number) ?? (contestType === "attack" ? 1 : 0);
+  const energyCost = (payload.energyCost as number) ?? (contestType === "attack" ? 1 : 0);
 
   // If preRolled values are provided (client-side roll), use them
   const preRolledRawRolls = payload.rawRolls as number[] | undefined;
@@ -141,6 +173,30 @@ async function handleInitiateContest(
     return;
   }
 
+  // For attack contests, check and spend resources
+  if (contestType === "attack") {
+    // Ensure initiator has valid AP and energy with defaults
+    initiator.ap = initiator.ap || { current: 6, max: 6 };
+    initiator.ap.current = initiator.ap.current ?? initiator.ap.max ?? 6;
+    initiator.energy = initiator.energy || { current: 100, max: 100 };
+    initiator.energy.current = initiator.energy.current ?? 100;
+
+    if (initiator.ap.current < apCost) {
+      combat.sendToSocket(ws, { type: "ACTION_REJECTED", payload: { reason: "Insufficient AP" }, timestamp, requestId });
+      return;
+    }
+
+    if (initiator.energy.current < energyCost) {
+      combat.sendToSocket(ws, { type: "ACTION_REJECTED", payload: { reason: "Insufficient Energy" }, timestamp, requestId });
+      return;
+    }
+
+    // Spend resources
+    initiator.ap.current -= apCost;
+    initiator.energy.current -= energyCost;
+    runQuery(sql, "UPDATE entities SET data = ? WHERE id = ?", JSON.stringify(initiator), initiatorEntityId);
+  }
+
   // Roll dice (use pre-rolled values if provided, otherwise roll server-side)
   let rawRolls: number[];
   let selectedRoll: number;
@@ -161,12 +217,14 @@ async function handleInitiateContest(
 
   sql["exec"](
     `INSERT INTO skill_contests (
-      id, initiator_entity_id, initiator_player_id, target_entity_id, target_player_id,
+      id, contest_type, initiator_entity_id, initiator_player_id, target_entity_id, target_player_id,
       initiator_skill, initiator_dice_count, initiator_keep_highest,
       initiator_raw_rolls, initiator_selected_roll, initiator_skill_modifier, initiator_total,
-      status, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      status, created_at,
+      attack_base_damage, attack_damage_type, attack_physical_attribute, attack_ap_cost, attack_energy_cost
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     contestId,
+    contestType,
     initiatorEntityId,
     session.playerId,
     targetEntityId || null,
@@ -179,7 +237,12 @@ async function handleInitiateContest(
     skillModifier,
     initiatorTotal,
     "awaiting_response",
-    timestamp
+    timestamp,
+    contestType === "attack" ? baseDamage : null,
+    contestType === "attack" ? damageType : null,
+    contestType === "attack" ? physicalAttribute : null,
+    contestType === "attack" ? apCost : null,
+    contestType === "attack" ? energyCost : null
   );
 
   // Get entity names for display
@@ -196,9 +259,10 @@ async function handleInitiateContest(
 
   // Broadcast contest initiated to all
   combat.broadcast({
-    type: "SKILL_CONTEST_INITIATED",
+    type: contestType === "attack" ? "ATTACK_CONTEST_INITIATED" : "SKILL_CONTEST_INITIATED",
     payload: {
       contestId,
+      contestType,
       initiatorEntityId,
       initiatorName,
       initiatorSkill: skill,
@@ -211,26 +275,83 @@ async function handleInitiateContest(
       targetPlayerId,
       diceCount,
       keepHighest,
+      // Attack-specific data
+      ...(contestType === "attack" && {
+        baseDamage,
+        damageType,
+        physicalAttribute,
+        apCost,
+        energyCost,
+        attackerAp: initiator.ap?.current,
+        attackerEnergy: initiator.energy?.current,
+      }),
     },
     timestamp,
     requestId,
   });
 
   // If there's a target, send them a response request
-  if (targetEntityId && targetPlayerId) {
-    combat.broadcastToPlayer(targetPlayerId, {
-      type: "SKILL_CONTEST_RESPONSE_REQUESTED",
+  if (targetEntityId) {
+    const responsePayload = {
+      type: "SKILL_CONTEST_RESPONSE_REQUESTED" as const,
       payload: {
         contestId,
+        contestType,
         initiatorEntityId,
         initiatorName,
         initiatorSkill: skill,
         initiatorTotal,
         targetEntityId,
+        // Include attack info so defender knows this is an attack
+        ...(contestType === "attack" && { isAttack: true }),
       },
       timestamp,
-    });
+    };
+
+    if (targetPlayerId) {
+      // Target is player-controlled
+      combat.broadcastToPlayer(targetPlayerId, responsePayload);
+    } else {
+      // Target is GM-controlled (controller === "gm" or undefined)
+      // Get target entity to check controller
+      const targetRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", targetEntityId);
+      if (targetRow) {
+        const targetEntity = JSON.parse(targetRow.data);
+        if (targetEntity.controller === "gm" || !targetEntity.controller) {
+          combat.broadcastToGMs(responsePayload);
+        }
+      }
+    }
   }
+}
+
+/**
+ * Determine critical hit type based on margin percentage
+ * - Wicked Critical: 50%+ margin (normal damage + 1 wound)
+ * - Vicious Critical: 100%+ margin (1.5x damage + 1 wound)
+ * - Brutal Critical: 200%+ margin (2x damage + 2 wounds)
+ */
+function determineCriticalType(winnerTotal: number, loserTotal: number): {
+  type: "normal" | "wicked" | "vicious" | "brutal";
+  damageMultiplier: number;
+  woundCount: number;
+} {
+  if (loserTotal <= 0) {
+    // Avoid division by zero - treat as brutal critical
+    return { type: "brutal", damageMultiplier: 2, woundCount: 2 };
+  }
+
+  const marginPercent = ((winnerTotal - loserTotal) / loserTotal) * 100;
+
+  if (marginPercent >= 200) {
+    return { type: "brutal", damageMultiplier: 2, woundCount: 2 };
+  } else if (marginPercent >= 100) {
+    return { type: "vicious", damageMultiplier: 1.5, woundCount: 1 };
+  } else if (marginPercent >= 50) {
+    return { type: "wicked", damageMultiplier: 1, woundCount: 1 };
+  }
+
+  return { type: "normal", damageMultiplier: 1, woundCount: 0 };
 }
 
 async function handleRespondContest(
@@ -256,9 +377,10 @@ async function handleRespondContest(
   const preRolledRawRolls = payload.rawRolls as number[] | undefined;
   const preRolledSelectedRoll = payload.selectedRoll as number | undefined;
 
-  // Find the contest
+  // Find the contest - include attack fields
   const contestRow = queryOneOrNull<{
     id: string;
+    contest_type: string;
     initiator_entity_id: string;
     initiator_player_id: string;
     target_entity_id: string;
@@ -268,6 +390,9 @@ async function handleRespondContest(
     initiator_selected_roll: number;
     initiator_skill_modifier: number;
     status: string;
+    attack_base_damage: number | null;
+    attack_damage_type: string | null;
+    attack_physical_attribute: number | null;
   }>(sql, "SELECT * FROM skill_contests WHERE id = ?", contestId);
 
   if (!contestRow) {
@@ -373,14 +498,107 @@ async function handleRespondContest(
 
   // Get entity names
   const initiatorRow = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", contestRow.initiator_entity_id);
-  const initiatorName = initiatorRow ? JSON.parse(initiatorRow.data).displayName || JSON.parse(initiatorRow.data).name : "Unknown";
+  const initiator = initiatorRow ? JSON.parse(initiatorRow.data) : null;
+  const initiatorName = initiator?.displayName || initiator?.name || "Unknown";
   const defenderName = defender.displayName || defender.name || "Unknown";
+
+  // Attack contest resolution - apply damage if attacker won
+  let attackResult: {
+    hit: boolean;
+    baseDamage: number;
+    physicalAttribute: number;
+    finalDamage: number;
+    damageType: string;
+    criticalType: "normal" | "wicked" | "vicious" | "brutal";
+    woundsDealt: number;
+    targetEnergy: number;
+    targetWounds: Record<string, number>;
+  } | null = null;
+
+  const isAttackContest = contestRow.contest_type === "attack";
+
+  if (isAttackContest && winnerEntityId === contestRow.initiator_entity_id) {
+    // Attacker wins - calculate and apply damage
+    const baseDamage = contestRow.attack_base_damage ?? 0;
+    const physicalAttribute = contestRow.attack_physical_attribute ?? 0;
+    const damageType = contestRow.attack_damage_type ?? "physical";
+
+    // Determine critical type
+    const critical = determineCriticalType(initiatorTotal, defenderTotal);
+
+    // Calculate damage: (baseDamage + physicalAttribute) * damageMultiplier
+    let finalDamage = Math.floor((baseDamage + physicalAttribute) * critical.damageMultiplier);
+
+    // Check target immunities/resistances/weaknesses
+    const immunities = defender.immunities || [];
+    const resistances = defender.resistances || [];
+    const weaknesses = defender.weaknesses || [];
+
+    if (immunities.includes(damageType)) {
+      finalDamage = 0;
+    } else if (resistances.includes(damageType)) {
+      finalDamage = Math.floor(finalDamage / 2);
+    } else if (weaknesses.includes(damageType)) {
+      finalDamage = finalDamage * 2;
+    }
+
+    // Apply damage to defender energy
+    defender.energy = defender.energy || { current: 100, max: 100 };
+    defender.energy.current = defender.energy.current ?? 100;
+    defender.energy.max = defender.energy.max ?? 100;
+    defender.energy.current = Math.max(0, defender.energy.current - finalDamage);
+
+    // Apply wounds from critical hits
+    defender.wounds = defender.wounds || {};
+    if (critical.woundCount > 0) {
+      defender.wounds[damageType] = (defender.wounds[damageType] || 0) + critical.woundCount;
+    }
+
+    // Update defender in database
+    runQuery(sql, "UPDATE entities SET data = ? WHERE id = ?", JSON.stringify(defender), defenderEntityId);
+    combat.incrementVersion();
+
+    attackResult = {
+      hit: true,
+      baseDamage,
+      physicalAttribute,
+      finalDamage,
+      damageType,
+      criticalType: critical.type,
+      woundsDealt: critical.woundCount,
+      targetEnergy: defender.energy.current,
+      targetWounds: defender.wounds,
+    };
+
+    // Check for death/unconscious
+    if (defender.energy.current <= 0 && !defender.unconscious) {
+      combat.broadcast({
+        type: "ENDURE_ROLL_REQUIRED",
+        payload: { entityId: defenderEntityId, triggeringDamage: finalDamage },
+        timestamp,
+      });
+    }
+  } else if (isAttackContest) {
+    // Attack missed (defender won or tie)
+    attackResult = {
+      hit: false,
+      baseDamage: contestRow.attack_base_damage ?? 0,
+      physicalAttribute: contestRow.attack_physical_attribute ?? 0,
+      finalDamage: 0,
+      damageType: contestRow.attack_damage_type ?? "physical",
+      criticalType: "normal",
+      woundsDealt: 0,
+      targetEnergy: defender.energy?.current ?? 100,
+      targetWounds: defender.wounds || {},
+    };
+  }
 
   // Broadcast resolution to all
   combat.broadcast({
-    type: "SKILL_CONTEST_RESOLVED",
+    type: isAttackContest ? "ATTACK_CONTEST_RESOLVED" : "SKILL_CONTEST_RESOLVED",
     payload: {
       contestId,
+      contestType: contestRow.contest_type,
       initiatorEntityId: contestRow.initiator_entity_id,
       initiatorName,
       initiatorSkill: contestRow.initiator_skill,
@@ -400,6 +618,10 @@ async function handleRespondContest(
                   winnerEntityId === defenderEntityId ? defenderName : null,
       isTie: winnerEntityId === null,
       margin,
+      // Attack-specific results
+      ...(attackResult && {
+        attack: attackResult,
+      }),
     },
     timestamp,
     requestId,

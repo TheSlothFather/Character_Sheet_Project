@@ -212,6 +212,60 @@ export function SkillContestPanel({ isGM = false }: SkillContestPanelProps) {
               {lastContestResult.winnerName} wins by {lastContestResult.margin}!
             </div>
           )}
+
+          {/* Attack contest result details */}
+          {lastContestResult.attack && (
+            <div className="mt-3 bg-slate-800/60 rounded-lg p-3 space-y-2">
+              {lastContestResult.attack.hit ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-400">Attack Result</span>
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded font-bold ${
+                        lastContestResult.attack.criticalType === "brutal"
+                          ? "bg-red-700 text-red-100"
+                          : lastContestResult.attack.criticalType === "vicious"
+                          ? "bg-orange-700 text-orange-100"
+                          : lastContestResult.attack.criticalType === "wicked"
+                          ? "bg-amber-700 text-amber-100"
+                          : "bg-slate-600 text-slate-200"
+                      }`}
+                    >
+                      {lastContestResult.attack.criticalType === "normal"
+                        ? "Hit"
+                        : `${lastContestResult.attack.criticalType.charAt(0).toUpperCase()}${lastContestResult.attack.criticalType.slice(1)} Critical`}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="text-slate-400">
+                      Damage:{" "}
+                      <span className="text-red-400 font-bold">
+                        {lastContestResult.attack.finalDamage}
+                      </span>
+                      <span className="text-slate-500 text-xs ml-1">
+                        ({lastContestResult.attack.baseDamage} + {lastContestResult.attack.physicalAttribute}
+                        {lastContestResult.attack.criticalType !== "normal" &&
+                          lastContestResult.attack.criticalType !== "wicked" &&
+                          ` ×${lastContestResult.attack.criticalType === "vicious" ? "1.5" : "2"}`}
+                        )
+                      </span>
+                    </div>
+                    <div className="text-slate-400 text-right">
+                      Type: <span className="text-amber-300 capitalize">{lastContestResult.attack.damageType}</span>
+                    </div>
+                  </div>
+                  {lastContestResult.attack.woundsDealt > 0 && (
+                    <div className="text-center text-red-400 font-medium">
+                      {lastContestResult.attack.woundsDealt} Wound{lastContestResult.attack.woundsDealt > 1 ? "s" : ""} Inflicted!
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center text-green-400 font-medium">Attack Missed!</div>
+              )}
+            </div>
+          )}
+
           <button
             onClick={() => actions.clearContest()}
             className="mt-2 w-full px-3 py-1 text-xs bg-slate-600 hover:bg-slate-500 rounded"
@@ -237,7 +291,14 @@ export function SkillContestPanel({ isGM = false }: SkillContestPanelProps) {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium text-slate-200">{contest.initiatorName}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-slate-200">{contest.initiatorName}</span>
+                    {(contest.isAttack || contest.contestType === "attack") && (
+                      <span className="px-1.5 py-0.5 text-xs bg-red-700 text-red-100 rounded">
+                        Attack
+                      </span>
+                    )}
+                  </div>
                   <div className="text-xs text-slate-400">{formatSkillName(contest.initiatorSkill)}</div>
                 </div>
                 <div className="text-xl font-bold text-red-400">{contest.initiatorTotal}</div>

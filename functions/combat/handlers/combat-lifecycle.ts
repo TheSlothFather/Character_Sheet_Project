@@ -321,7 +321,8 @@ async function handleGMAction(
 
   if (type === "GM_APPLY_DAMAGE") {
     const entityId = payload.entityId as string;
-    const amount = payload.amount as number;
+    // Client sends "damage" not "amount"
+    const amount = (payload.damage as number) ?? (payload.amount as number) ?? 0;
     const damageType = payload.damageType as string;
 
     const row = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
@@ -330,32 +331,68 @@ async function handleGMAction(
     const entity = JSON.parse(row.data);
     entity.energy = entity.energy || { current: 100, max: 100 };
     entity.energy.current = entity.energy.current ?? 100;
-    entity.energy.current = Math.max(0, entity.energy.current - amount);
+    entity.energy.max = entity.energy.max ?? 100;
 
-    if (damageType) {
-      entity.wounds = entity.wounds || {};
-      entity.wounds[damageType] = (entity.wounds[damageType] || 0) + Math.ceil(amount / 20);
+    if (amount > 0) {
+      // Damage: reduce current energy (min 0)
+      entity.energy.current = Math.max(0, entity.energy.current - amount);
+    } else if (amount < 0) {
+      // Healing: increase current energy (max is entity's max)
+      entity.energy.current = Math.min(entity.energy.max, entity.energy.current + Math.abs(amount));
     }
 
     sql.exec("UPDATE entities SET data = ? WHERE id = ?", JSON.stringify(entity), entityId);
     combat.incrementVersion();
-    combat.broadcast({ type: "DAMAGE_APPLIED", payload: { entityId, amount, newEnergy: entity.energy.current }, timestamp, requestId });
+
+    // Broadcast ENTITY_UPDATED so client updates state properly
+    combat.broadcast({
+      type: "ENTITY_UPDATED",
+      payload: {
+        entity: { id: entityId, energy: entity.energy, wounds: entity.wounds },
+      },
+      timestamp,
+      requestId,
+    });
   }
 
   if (type === "GM_MODIFY_RESOURCES") {
     const entityId = payload.entityId as string;
-    const changes = payload.changes as Record<string, number>;
+    // Client sends ap and energy directly, not in a changes object
+    // These values should ADD to both current and max
+    const apChange = (payload.ap as number | undefined) ?? 0;
+    const energyChange = (payload.energy as number | undefined) ?? 0;
 
     const row = queryOneOrNull<{ data: string }>(sql, "SELECT data FROM entities WHERE id = ?", entityId);
     if (!row) return;
 
     const entity = JSON.parse(row.data);
-    if (changes.energy !== undefined) entity.energy = { ...entity.energy, current: changes.energy };
-    if (changes.ap !== undefined) entity.ap = { ...entity.ap, current: changes.ap };
+
+    // Initialize defaults if needed
+    entity.ap = entity.ap || { current: 6, max: 6 };
+    entity.energy = entity.energy || { current: 100, max: 100 };
+
+    // Add to both current and max for AP
+    if (apChange !== 0) {
+      entity.ap.current = Math.max(0, (entity.ap.current ?? 6) + apChange);
+      entity.ap.max = Math.max(1, (entity.ap.max ?? 6) + apChange);
+    }
+
+    // Add to both current and max for Energy
+    if (energyChange !== 0) {
+      entity.energy.current = Math.max(0, (entity.energy.current ?? 100) + energyChange);
+      entity.energy.max = Math.max(1, (entity.energy.max ?? 100) + energyChange);
+    }
 
     sql.exec("UPDATE entities SET data = ? WHERE id = ?", JSON.stringify(entity), entityId);
     combat.incrementVersion();
-    combat.broadcast({ type: "ENTITY_UPDATED", payload: { entityId, energy: entity.energy, ap: entity.ap }, timestamp, requestId });
+    combat.broadcast({
+      type: "ENTITY_UPDATED",
+      payload: {
+        entity: { id: entityId, ap: entity.ap, energy: entity.energy },
+      },
+      timestamp,
+      requestId,
+    });
   }
 
   if (type === "GM_OVERRIDE") {
